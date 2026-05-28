@@ -25,27 +25,6 @@ func Section(w io.Writer, title string, results []check.Result) {
 	fmt.Fprintln(w)
 }
 
-func Suggestions(w io.Writer, results []check.Result) {
-	useColor := isTTY(w)
-	seen := map[string]bool{}
-	hints := make([]string, 0, len(results))
-	for _, r := range results {
-		if r.FixHint == "" || seen[r.FixHint] {
-			continue
-		}
-		seen[r.FixHint] = true
-		hints = append(hints, r.FixHint)
-	}
-	if len(hints) == 0 {
-		return
-	}
-	fmt.Fprintln(w, paint("Comandos sugeridos", colorBold, useColor))
-	for _, h := range hints {
-		fmt.Fprintln(w, "  • "+h)
-	}
-	fmt.Fprintln(w)
-}
-
 func Summary(w io.Writer, results []check.Result) int {
 	useColor := isTTY(w)
 	missing := 0

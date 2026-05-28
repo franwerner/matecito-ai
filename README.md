@@ -73,8 +73,6 @@ El CLI verifica, inicia e instala las dependencias del ecosistema (Engram, codeg
 # Reportar estado del entorno (qué está instalado / registrado)
 matecito-ai verify
 
-# Diagnóstico accionable (qué falta y cómo arreglarlo)
-matecito-ai doctor
 
 # Instalar lo que falte (con backup de la config y confirmación)
 matecito-ai install --dry-run
