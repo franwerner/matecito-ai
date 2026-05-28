@@ -63,7 +63,33 @@ Requisitos:
 
 Engram se descarga como binario precompilado desde sus [GitHub Releases](https://github.com/Gentleman-Programming/engram/releases) y se verifica por SHA256; no requiere Go.
 
-Build local (sólo si vas a compilar el CLI desde el código fuente, requiere **Go `≥ 1.22`**):
+### Instalación rápida (Linux y macOS)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/franwerner/matecito-ai/master/scripts/install.sh | bash
+```
+
+El script detecta tu OS/arch, baja el binario apropiado desde la última release, verifica el SHA256 contra `checksums.txt`, y lo instala en `~/.local/bin/matecito-ai`.
+
+Variables de entorno opcionales:
+- `INSTALL_DIR=/usr/local/bin` para cambiar el destino (puede requerir `sudo`).
+- `VERSION=v0.1.0` para pinear una versión específica en vez de `latest`.
+
+### Descarga manual (todos los SO)
+
+1. Andá a [Releases](https://github.com/franwerner/matecito-ai/releases) y descargá el asset que corresponda:
+   - `matecito-ai_<version>_linux_amd64.tar.gz`
+   - `matecito-ai_<version>_linux_arm64.tar.gz`
+   - `matecito-ai_<version>_darwin_amd64.tar.gz` (macOS Intel)
+   - `matecito-ai_<version>_darwin_arm64.tar.gz` (macOS Apple Silicon)
+   - `matecito-ai_<version>_windows_amd64.zip`
+   - `matecito-ai_<version>_windows_arm64.zip`
+2. (Opcional pero recomendado) Descargá `checksums.txt` y verificá el SHA256 del archivo bajado.
+3. Extraé el archivo y mové el binario `matecito-ai` (o `matecito-ai.exe` en Windows) a una carpeta que esté en tu `PATH`.
+
+### Build desde fuente
+
+Requiere **Go `≥ 1.22`**:
 
 ```bash
 go build -o matecito-ai ./cmd/matecito-ai
