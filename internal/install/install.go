@@ -8,11 +8,11 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/franwerner/matecito-ai/internal/deploy"
+	"github.com/franwerner/matecito-ai/internal/engramdl"
 	"github.com/franwerner/matecito-ai/internal/mcp"
 	"github.com/franwerner/matecito-ai/internal/platform"
 )
@@ -180,28 +180,40 @@ func prepareDeploy() deployPrep {
 }
 
 func engramBinaryStep(opts Options) Step {
-	hasGo := hasGoAtLeast(1, 21)
-	plan := "go install github.com/Gentleman-Programming/engram/cmd/engram@latest"
-	if !hasGo {
-		plan = "(requiere Go ≥ 1.21 — no disponible)"
-	}
 	return Step{
 		Name: "Engram (binario)",
-		Plan: plan,
+		Plan: "descargar última release de GitHub → ~/.local/bin/engram (SHA256 verificado)",
 		Check: func() bool {
 			_, err := exec.LookPath("engram")
 			return err != nil
 		},
 		Run: func() error {
-			if !hasGo {
-				return errors.New("Engram requiere Go ≥ 1.21 — instalalo desde https://go.dev/")
-			}
-			if err := runIO(opts, "go", "install", "github.com/Gentleman-Programming/engram/cmd/engram@latest"); err != nil {
-				return err
-			}
-			return ensureGoBinPath(opts)
+			return InstallEngram(opts)
 		},
 	}
+}
+
+// InstallEngram descarga la última release de Engram desde GitHub, verifica
+// el checksum SHA256, instala el binario y asegura que la carpeta destino
+// esté en PATH. Es reutilizada por el comando `matecito-ai update`.
+func InstallEngram(opts Options) error {
+	plat, err := engramdl.Detect()
+	if err != nil {
+		return err
+	}
+	rel, err := engramdl.LatestRelease(plat)
+	if err != nil {
+		return err
+	}
+	dest, err := engramdl.DefaultBinaryPath()
+	if err != nil {
+		return err
+	}
+	if err := engramdl.Download(rel, dest, opts.Stdout); err != nil {
+		return err
+	}
+	_, err = platform.Detect().EnsurePathInShell(filepath.Dir(dest), opts.Stdout)
+	return err
 }
 
 func codegraphBinaryStep(opts Options) Step {
@@ -230,44 +242,6 @@ func isSystemPath(p string) bool {
 		return true
 	}
 	return strings.HasPrefix(p, "/usr/") || strings.HasPrefix(p, "/opt/")
-}
-
-func hasGoAtLeast(majorReq, minorReq int) bool {
-	if _, err := exec.LookPath("go"); err != nil {
-		return false
-	}
-	out, err := exec.Command("go", "version").CombinedOutput()
-	if err != nil {
-		return false
-	}
-	fields := strings.Fields(string(out))
-	if len(fields) < 3 {
-		return false
-	}
-	v := strings.TrimPrefix(fields[2], "go")
-	parts := strings.Split(v, ".")
-	if len(parts) < 2 {
-		return false
-	}
-	major, err1 := strconv.Atoi(parts[0])
-	minor, err2 := strconv.Atoi(parts[1])
-	if err1 != nil || err2 != nil {
-		return false
-	}
-	if major > majorReq {
-		return true
-	}
-	return major == majorReq && minor >= minorReq
-}
-
-func ensureGoBinPath(opts Options) error {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return err
-	}
-	binDir := filepath.Join(home, "go", "bin")
-	_, err = platform.Detect().EnsurePathInShell(binDir, opts.Stdout)
-	return err
 }
 
 func ensureUserNpmPrefix(opts Options) error {

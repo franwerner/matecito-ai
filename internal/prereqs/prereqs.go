@@ -13,7 +13,6 @@ func All() []check.Result {
 		detectNpm(),
 		detectNpx(),
 		detectGit(),
-		detectGo(),
 	}
 }
 
@@ -55,22 +54,4 @@ func detectNpx() check.Result {
 func detectGit() check.Result {
 	return check.RunVersion("git", "git", []string{"--version"}, true,
 		"Instalá git: https://git-scm.com/")
-}
-
-func detectGo() check.Result {
-	r := check.RunVersion("go", "go", []string{"version"}, false,
-		"Opcional. Sólo si instalás Engram vía `go install`: https://go.dev/")
-	if r.Status != check.StatusOK {
-		return r
-	}
-	major, minor, ok := check.ParseMajorMinor(r.Version)
-	if !ok {
-		return r
-	}
-	if major < 1 || (major == 1 && minor < 18) {
-		r.Status = check.StatusOutdated
-		r.Detail = fmt.Sprintf("go%d.%d (se requiere ≥ 1.18)", major, minor)
-		r.FixHint = "Actualizá Go a 1.18+: https://go.dev/"
-	}
-	return r
 }
