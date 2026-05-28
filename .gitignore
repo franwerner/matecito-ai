@@ -1,0 +1,8 @@
+/matecito
+/matecito-doctor
+/dist/
+/bin/
+*.exe
+*.test
+*.out
+.atl
