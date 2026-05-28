@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/franwerner/matecito-ai/internal/check"
+	"github.com/franwerner/matecito-ai/internal/claudemd"
 	"github.com/franwerner/matecito-ai/internal/codegraph"
 	"github.com/franwerner/matecito-ai/internal/context7"
 	"github.com/franwerner/matecito-ai/internal/engram"
@@ -33,19 +34,22 @@ func NewVerifyCmd() *cobra.Command {
 			eng := engram.All()
 			cg := codegraph.All()
 			c7 := context7.All()
+			integ := claudemd.All()
 			sx := sdd.CrossCheck(sddDir)
 
 			render.Section(os.Stdout, "Prerequisites", pre)
 			render.Section(os.Stdout, "Engram", eng)
 			render.Section(os.Stdout, "CodeGraph", cg)
 			render.Section(os.Stdout, "context7", c7)
+			render.Section(os.Stdout, "Integración con Claude Code", integ)
 			render.Section(os.Stdout, "Cross-check SDD ↔ MCP ("+sddDir+")", sx)
 
-			all := make([]check.Result, 0, len(pre)+len(eng)+len(cg)+len(c7)+len(sx))
+			all := make([]check.Result, 0, len(pre)+len(eng)+len(cg)+len(c7)+len(integ)+len(sx))
 			all = append(all, pre...)
 			all = append(all, eng...)
 			all = append(all, cg...)
 			all = append(all, c7...)
+			all = append(all, integ...)
 			all = append(all, sx...)
 
 			if code := render.Summary(os.Stdout, all); code != 0 {
