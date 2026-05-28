@@ -41,7 +41,7 @@ func detectProjectInit() check.Result {
 	r := check.Result{
 		Name:     ".codegraph/",
 		Required: false,
-		FixHint:  "Inicializá en este proyecto: matecito init (o `codegraph init -i`)",
+		FixHint:  "Inicializá en este proyecto: matecito-ai init (o `codegraph init -i`)",
 	}
 	cwd, err := os.Getwd()
 	if err != nil {

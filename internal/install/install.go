@@ -92,7 +92,7 @@ func Run(opts Options) error {
 		fmt.Fprintln(opts.Stdout, "✓ OK")
 	}
 
-	fmt.Fprintln(opts.Stdout, "\nListo. Verificá con: matecito verify")
+	fmt.Fprintln(opts.Stdout, "\nListo. Verificá con: matecito-ai verify")
 	return nil
 }
 
