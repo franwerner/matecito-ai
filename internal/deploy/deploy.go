@@ -83,6 +83,17 @@ func BackupRoot() (string, error) {
 	return filepath.Join(home, ".matecito-ai", "backups"), nil
 }
 
+// BackupDir devuelve la carpeta de backup para la corrida actual:
+// ~/.matecito-ai/backups/<timestamp>/. NO crea el directorio; el caller
+// lo crea solo si llega a haber algo que respaldar (lazy).
+func BackupDir() (string, error) {
+	root, err := BackupRoot()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(root, time.Now().Format("20060102-150405")), nil
+}
+
 // Plan arma la lista de operaciones de copia para todos los Mappings.
 // payloadFS es la raíz del payload (sea os.DirFS sobre un payload/ local, o
 // un sub-FS de PayloadFS embebido). claudeHome es la carpeta real de destino.
@@ -219,37 +230,37 @@ func Summarize(ops []FileOp) Summary {
 
 // Apply ejecuta las copias en disco. Lee de payloadFS y escribe en
 // claudeHome. Si hay cambios sobre archivos existentes, los respalda en
-// backupRoot/<timestamp>/.
-func Apply(payloadFS fs.FS, ops []FileOp, claudeHome, backupRoot string) (string, error) {
-	backupDir := ""
+// backupDir/<rel-path>. backupDir es la carpeta concreta de esta corrida
+// (típicamente de deploy.BackupDir()) — Apply lo crea on-demand solo si
+// llega a haber al menos un archivo cambiado.
+func Apply(payloadFS fs.FS, ops []FileOp, claudeHome, backupDir string) (bool, error) {
+	backupCreated := false
 	for _, op := range ops {
 		if op.Status == StatusSame {
 			continue
 		}
 		if err := os.MkdirAll(filepath.Dir(op.Target), 0o755); err != nil {
-			return backupDir, err
+			return backupCreated, err
 		}
 		if op.Status == StatusChanged {
-			if backupDir == "" {
-				backupDir = filepath.Join(backupRoot, time.Now().Format("20060102-150405"))
-			}
 			rel, err := filepath.Rel(claudeHome, op.Target)
 			if err != nil {
-				return backupDir, err
+				return backupCreated, err
 			}
 			bk := filepath.Join(backupDir, rel)
 			if err := os.MkdirAll(filepath.Dir(bk), 0o755); err != nil {
-				return backupDir, err
+				return backupCreated, err
 			}
 			if err := copyDiskFile(op.Target, bk); err != nil {
-				return backupDir, err
+				return backupCreated, err
 			}
+			backupCreated = true
 		}
 		if err := copyFromFS(payloadFS, op.Source, op.Target); err != nil {
-			return backupDir, err
+			return backupCreated, err
 		}
 	}
-	return backupDir, nil
+	return backupCreated, nil
 }
 
 func copyFromFS(payloadFS fs.FS, src, dst string) error {

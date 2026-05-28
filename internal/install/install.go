@@ -10,7 +10,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"time"
 
 	matecitoai "github.com/franwerner/matecito-ai"
 	"github.com/franwerner/matecito-ai/internal/deploy"
@@ -32,6 +31,11 @@ type Options struct {
 	Stdin  io.Reader
 	Stdout io.Writer
 	Stderr io.Writer
+
+	// BackupDir es la carpeta donde se respaldan todos los archivos que
+	// la corrida de install modifique. La setea Run una sola vez para
+	// que todas las funciones de backup compartan el mismo timestamp.
+	BackupDir string
 }
 
 func Run(opts Options) error {
@@ -43,6 +47,13 @@ func Run(opts Options) error {
 	}
 	if opts.Stderr == nil {
 		opts.Stderr = os.Stderr
+	}
+	if opts.BackupDir == "" {
+		bd, err := deploy.BackupDir()
+		if err != nil {
+			return fmt.Errorf("resolviendo backup dir: %w", err)
+		}
+		opts.BackupDir = bd
 	}
 
 	steps := AllSteps(opts)
@@ -75,28 +86,37 @@ func Run(opts Options) error {
 		}
 	}
 
-	backup, err := backupClaudeJSON()
-	if err != nil {
+	if err := backupClaudeJSON(opts.BackupDir); err != nil {
 		return fmt.Errorf("falló el backup de ~/.claude.json: %w", err)
-	}
-	if backup != "" {
-		fmt.Fprintf(opts.Stdout, "\nBackup: %s\n", backup)
 	}
 
 	for i, s := range plan {
 		fmt.Fprintf(opts.Stdout, "\n[%d/%d] %s\n", i+1, len(plan), s.Name)
 		if err := s.Run(); err != nil {
 			fmt.Fprintf(opts.Stderr, "✗ falló: %v\n", err)
-			if backup != "" {
-				fmt.Fprintf(opts.Stderr, "Backup intacto en %s\n", backup)
+			if hasBackup(opts.BackupDir) {
+				fmt.Fprintf(opts.Stderr, "Backup intacto en %s\n", opts.BackupDir)
 			}
 			return fmt.Errorf("install detenido en %q", s.Name)
 		}
 		fmt.Fprintln(opts.Stdout, "✓ OK")
 	}
 
+	if hasBackup(opts.BackupDir) {
+		fmt.Fprintf(opts.Stdout, "\nBackup: %s\n", opts.BackupDir)
+	}
 	fmt.Fprintln(opts.Stdout, "\nListo. Verificá con: matecito-ai verify")
 	return nil
+}
+
+// hasBackup devuelve true si la carpeta de backup existe en disco — i.e. si
+// alguno de los pasos de la corrida tuvo algo que respaldar.
+func hasBackup(backupDir string) bool {
+	if backupDir == "" {
+		return false
+	}
+	info, err := os.Stat(backupDir)
+	return err == nil && info.IsDir()
 }
 
 func AllSteps(opts Options) []Step {
@@ -126,19 +146,12 @@ func deployStep(opts Options) Step {
 			if err != nil {
 				return err
 			}
-			backupRoot, err := deploy.BackupRoot()
-			if err != nil {
-				return err
-			}
-			backup, err := deploy.Apply(prep.payloadFS, prep.ops, claudeHome, backupRoot)
+			_, err = deploy.Apply(prep.payloadFS, prep.ops, claudeHome, opts.BackupDir)
 			if err != nil {
 				return err
 			}
 			s := deploy.Summarize(prep.ops)
 			fmt.Fprintf(opts.Stdout, "  %d nuevos, %d cambiados, %d sin cambio\n", s.New, s.Changed, s.Same)
-			if backup != "" {
-				fmt.Fprintf(opts.Stdout, "  Backup: %s\n", backup)
-			}
 			return nil
 		},
 	}
@@ -399,7 +412,7 @@ func claudeMdReferenceStep(opts Options) Step {
 			if err != nil {
 				return err
 			}
-			if err := backupClaudeMd(claudeMdPath, opts); err != nil {
+			if err := backupClaudeMd(claudeMdPath, opts.BackupDir); err != nil {
 				return err
 			}
 			newContent := claudeMdMarker + "\n\n" + string(existing)
@@ -408,26 +421,15 @@ func claudeMdReferenceStep(opts Options) Step {
 	}
 }
 
-func backupClaudeMd(claudeMdPath string, opts Options) error {
-	root, err := deploy.BackupRoot()
-	if err != nil {
-		return err
-	}
-	stamp := time.Now().Format("20060102-150405")
-	bkDir := filepath.Join(root, stamp)
-	if err := os.MkdirAll(bkDir, 0o755); err != nil {
-		return err
-	}
-	bkPath := filepath.Join(bkDir, "CLAUDE.md")
+func backupClaudeMd(claudeMdPath, backupDir string) error {
 	data, err := os.ReadFile(claudeMdPath)
 	if err != nil {
 		return err
 	}
-	if err := os.WriteFile(bkPath, data, 0o644); err != nil {
+	if err := os.MkdirAll(backupDir, 0o755); err != nil {
 		return err
 	}
-	fmt.Fprintf(opts.Stdout, "  Backup: %s\n", bkPath)
-	return nil
+	return os.WriteFile(filepath.Join(backupDir, "CLAUDE.md"), data, 0o644)
 }
 
 func runIO(opts Options, bin string, args ...string) error {
@@ -438,31 +440,31 @@ func runIO(opts Options, bin string, args ...string) error {
 	return c.Run()
 }
 
-func backupClaudeJSON() (string, error) {
+func backupClaudeJSON(backupDir string) error {
 	home, err := os.UserHomeDir()
 	if err != nil {
-		return "", err
+		return err
 	}
 	src := filepath.Join(home, ".claude.json")
 	info, err := os.Stat(src)
 	if errors.Is(err, os.ErrNotExist) {
-		return "", nil
+		return nil
 	}
 	if err != nil {
-		return "", err
+		return err
 	}
 	if info.IsDir() {
-		return "", fmt.Errorf("%s es un directorio", src)
+		return fmt.Errorf("%s es un directorio", src)
 	}
 	data, err := os.ReadFile(src)
 	if err != nil {
-		return "", err
+		return err
 	}
-	dst := fmt.Sprintf("%s.bak.%s", src, time.Now().Format("20060102-150405"))
-	if err := os.WriteFile(dst, data, 0600); err != nil {
-		return "", err
+	if err := os.MkdirAll(backupDir, 0o755); err != nil {
+		return err
 	}
-	return dst, nil
+	dst := filepath.Join(backupDir, ".claude.json")
+	return os.WriteFile(dst, data, 0600)
 }
 
 func confirm(in io.Reader, out io.Writer, prompt string) bool {
