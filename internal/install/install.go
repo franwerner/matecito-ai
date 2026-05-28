@@ -179,12 +179,10 @@ func prepareDeploy() deployPrep {
 }
 
 func engramBinaryStep(opts Options) Step {
-	method := pickEngramMethod()
-	plan := "brew install gentleman-programming/tap/engram"
-	if method == "go" {
-		plan = "go install github.com/Gentleman-Programming/engram/cmd/engram@latest"
-	} else if method == "none" {
-		plan = "(requiere go ≥ 1.21 o brew — ninguno disponible)"
+	hasGo := hasGoAtLeast(1, 21)
+	plan := "go install github.com/Gentleman-Programming/engram/cmd/engram@latest"
+	if !hasGo {
+		plan = "(requiere Go ≥ 1.21 — no disponible)"
 	}
 	return Step{
 		Name: "Engram (binario)",
@@ -194,17 +192,13 @@ func engramBinaryStep(opts Options) Step {
 			return err != nil
 		},
 		Run: func() error {
-			switch method {
-			case "go":
-				if err := runIO(opts, "go", "install", "github.com/Gentleman-Programming/engram/cmd/engram@latest"); err != nil {
-					return err
-				}
-				return ensureGoBinPath(opts)
-			case "brew":
-				return runIO(opts, "brew", "install", "gentleman-programming/tap/engram")
-			default:
-				return errors.New("no se puede instalar Engram: no hay go ≥ 1.21 ni brew")
+			if !hasGo {
+				return errors.New("Engram requiere Go ≥ 1.21 — instalalo desde https://go.dev/")
 			}
+			if err := runIO(opts, "go", "install", "github.com/Gentleman-Programming/engram/cmd/engram@latest"); err != nil {
+				return err
+			}
+			return ensureGoBinPath(opts)
 		},
 	}
 }
@@ -235,16 +229,6 @@ func isSystemPath(p string) bool {
 		return true
 	}
 	return strings.HasPrefix(p, "/usr/") || strings.HasPrefix(p, "/opt/")
-}
-
-func pickEngramMethod() string {
-	if hasGoAtLeast(1, 21) {
-		return "go"
-	}
-	if _, err := exec.LookPath("brew"); err == nil {
-		return "brew"
-	}
-	return "none"
 }
 
 func hasGoAtLeast(majorReq, minorReq int) bool {

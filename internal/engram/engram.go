@@ -19,7 +19,7 @@ func All() []check.Result {
 
 func detectBinary() check.Result {
 	return check.RunVersion("engram", "engram", []string{"version"}, true,
-		"Instalá Engram: brew install gentleman-programming/tap/engram")
+		"Instalá Engram: go install github.com/Gentleman-Programming/engram/cmd/engram@latest")
 }
 
 func detectDB() check.Result {
