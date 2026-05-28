@@ -107,6 +107,7 @@ func AllSteps(opts Options) []Step {
 		codegraphMCPStep(opts),
 		context7MCPStep(opts),
 		deployStep(opts),
+		claudeMdReferenceStep(opts),
 	}
 }
 
@@ -364,6 +365,69 @@ func context7MCPStep(opts Options) Step {
 			return runIO(opts, "claude", "mcp", "add", "--scope", "user", "context7", "--", "npx", "-y", "@upstash/context7-mcp@latest")
 		},
 	}
+}
+
+// claudeMdMarker es la línea que importa el matecito-ai.md en el CLAUDE.md
+// del usuario. Claude Code lee @<archivo>.md como import nativo.
+const claudeMdMarker = "@matecito-ai.md"
+
+func claudeMdReferenceStep(opts Options) Step {
+	home, _ := os.UserHomeDir()
+	claudeMdPath := filepath.Join(home, ".claude", "CLAUDE.md")
+
+	return Step{
+		Name: "Referencia en ~/.claude/CLAUDE.md",
+		Plan: fmt.Sprintf("prependear `%s` (crea el archivo si no existe; backup automático si ya hay contenido)", claudeMdMarker),
+		Check: func() bool {
+			data, err := os.ReadFile(claudeMdPath)
+			if errors.Is(err, os.ErrNotExist) {
+				return true
+			}
+			if err != nil {
+				return false
+			}
+			return !strings.Contains(string(data), claudeMdMarker)
+		},
+		Run: func() error {
+			existing, err := os.ReadFile(claudeMdPath)
+			if errors.Is(err, os.ErrNotExist) {
+				if err := os.MkdirAll(filepath.Dir(claudeMdPath), 0o755); err != nil {
+					return err
+				}
+				return os.WriteFile(claudeMdPath, []byte(claudeMdMarker+"\n"), 0o644)
+			}
+			if err != nil {
+				return err
+			}
+			if err := backupClaudeMd(claudeMdPath, opts); err != nil {
+				return err
+			}
+			newContent := claudeMdMarker + "\n\n" + string(existing)
+			return os.WriteFile(claudeMdPath, []byte(newContent), 0o644)
+		},
+	}
+}
+
+func backupClaudeMd(claudeMdPath string, opts Options) error {
+	root, err := deploy.BackupRoot()
+	if err != nil {
+		return err
+	}
+	stamp := time.Now().Format("20060102-150405")
+	bkDir := filepath.Join(root, stamp)
+	if err := os.MkdirAll(bkDir, 0o755); err != nil {
+		return err
+	}
+	bkPath := filepath.Join(bkDir, "CLAUDE.md")
+	data, err := os.ReadFile(claudeMdPath)
+	if err != nil {
+		return err
+	}
+	if err := os.WriteFile(bkPath, data, 0o644); err != nil {
+		return err
+	}
+	fmt.Fprintf(opts.Stdout, "  Backup: %s\n", bkPath)
+	return nil
 }
 
 func runIO(opts Options, bin string, args ...string) error {
