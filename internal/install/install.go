@@ -14,9 +14,9 @@ import (
 
 	matecitoai "github.com/franwerner/matecito-ai"
 	"github.com/franwerner/matecito-ai/internal/deploy"
-	"github.com/franwerner/matecito-ai/internal/engramdl"
 	"github.com/franwerner/matecito-ai/internal/mcp"
 	"github.com/franwerner/matecito-ai/internal/platform"
+	"github.com/franwerner/matecito-ai/internal/releasedl"
 )
 
 type Step struct {
@@ -215,19 +215,19 @@ func engramBinaryStep(opts Options) Step {
 // el checksum SHA256, instala el binario y asegura que la carpeta destino
 // esté en PATH. Es reutilizada por el comando `matecito-ai update`.
 func InstallEngram(opts Options) error {
-	plat, err := engramdl.Detect()
+	plat, err := releasedl.Detect()
 	if err != nil {
 		return err
 	}
-	rel, err := engramdl.LatestRelease(plat)
+	rel, err := releasedl.LatestRelease(releasedl.EngramRepo, plat)
 	if err != nil {
 		return err
 	}
-	dest, err := engramdl.DefaultBinaryPath()
+	dest, err := releasedl.DefaultBinaryPath(releasedl.EngramRepo)
 	if err != nil {
 		return err
 	}
-	if err := engramdl.Download(rel, dest, opts.Stdout); err != nil {
+	if err := releasedl.Download(releasedl.EngramRepo, rel, dest, opts.Stdout); err != nil {
 		return err
 	}
 	_, err = platform.Detect().EnsurePathInShell(filepath.Dir(dest), opts.Stdout)

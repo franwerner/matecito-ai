@@ -1,4 +1,4 @@
-package engramdl
+package releasedl
 
 import (
 	"archive/tar"
@@ -18,13 +18,28 @@ import (
 	"time"
 )
 
-const (
-	owner = "Gentleman-Programming"
-	repo  = "engram"
+const httpTimeout = 60 * time.Second
 
-	apiLatestURL = "https://api.github.com/repos/" + owner + "/" + repo + "/releases/latest"
+// Repo describe un repositorio de GitHub que publica releases con assets
+// goreleaser-style: <binary>_<version>_<os>_<arch>.(tar.gz|zip) + checksums.txt.
+type Repo struct {
+	Owner  string
+	Name   string
+	Binary string // nombre del ejecutable dentro del archive (sin extensión)
+}
 
-	httpTimeout = 60 * time.Second
+// Repos predefinidos.
+var (
+	EngramRepo = Repo{
+		Owner:  "Gentleman-Programming",
+		Name:   "engram",
+		Binary: "engram",
+	}
+	MatecitoRepo = Repo{
+		Owner:  "franwerner",
+		Name:   "matecito-ai",
+		Binary: "matecito-ai",
+	}
 )
 
 type Release struct {
@@ -40,7 +55,7 @@ type Platform struct {
 	Ext  string
 }
 
-// Detect resuelve el OS/arch actual al formato usado por los assets de Engram
+// Detect resuelve el OS/arch actual al formato usado por los assets goreleaser
 // (ej: linux_amd64, darwin_arm64, windows_amd64).
 func Detect() (Platform, error) {
 	p := Platform{OS: runtime.GOOS, Arch: runtime.GOARCH}
@@ -60,12 +75,13 @@ func Detect() (Platform, error) {
 	return p, nil
 }
 
-// LatestRelease consulta la GitHub API y devuelve la URL del asset que
-// corresponde a la plataforma indicada y la URL del checksums.txt.
-func LatestRelease(p Platform) (Release, error) {
+// LatestRelease consulta la GitHub API de repo y devuelve la URL del asset
+// que corresponde a la plataforma indicada y la URL del checksums.txt.
+func LatestRelease(repo Repo, p Platform) (Release, error) {
 	var rel Release
+	apiURL := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", repo.Owner, repo.Name)
 	client := &http.Client{Timeout: httpTimeout}
-	req, err := http.NewRequest("GET", apiLatestURL, nil)
+	req, err := http.NewRequest("GET", apiURL, nil)
 	if err != nil {
 		return rel, err
 	}
@@ -92,7 +108,7 @@ func LatestRelease(p Platform) (Release, error) {
 
 	rel.Tag = payload.TagName
 	version := strings.TrimPrefix(payload.TagName, "v")
-	assetName := fmt.Sprintf("engram_%s_%s_%s.%s", version, p.OS, p.Arch, p.Ext)
+	assetName := fmt.Sprintf("%s_%s_%s_%s.%s", repo.Binary, version, p.OS, p.Arch, p.Ext)
 
 	for _, a := range payload.Assets {
 		if a.Name == assetName {
@@ -113,10 +129,9 @@ func LatestRelease(p Platform) (Release, error) {
 }
 
 // Download baja el asset, verifica SHA256 contra checksums.txt, extrae el
-// binario engram (o engram.exe en Windows) y lo deja en destBinary.
-// destBinary debe ser la ruta completa al archivo final.
-func Download(rel Release, destBinary string, out io.Writer) error {
-	tmpDir, err := os.MkdirTemp("", "engramdl-*")
+// binario (repo.Binary o repo.Binary.exe en Windows) y lo deja en destBinary.
+func Download(repo Repo, rel Release, destBinary string, out io.Writer) error {
+	tmpDir, err := os.MkdirTemp("", "releasedl-*")
 	if err != nil {
 		return err
 	}
@@ -141,9 +156,9 @@ func Download(rel Release, destBinary string, out io.Writer) error {
 	if err := os.MkdirAll(extractDir, 0o755); err != nil {
 		return err
 	}
-	binaryName := "engram"
+	binaryName := repo.Binary
 	if runtime.GOOS == "windows" {
-		binaryName = "engram.exe"
+		binaryName += ".exe"
 	}
 	extracted, err := extractBinary(archivePath, extractDir, binaryName)
 	if err != nil {
@@ -165,21 +180,23 @@ func Download(rel Release, destBinary string, out io.Writer) error {
 	return nil
 }
 
-// DefaultBinaryPath devuelve la ruta canónica del binario de engram:
-// ~/.local/bin/engram en POSIX, %LOCALAPPDATA%\matecito-ai\bin\engram.exe en Windows.
-func DefaultBinaryPath() (string, error) {
+// DefaultBinaryPath devuelve la ruta canónica donde instalar el binario:
+// ~/.local/bin/<name> en POSIX, %LOCALAPPDATA%\matecito-ai\bin\<name>.exe en Windows.
+func DefaultBinaryPath(repo Repo) (string, error) {
+	name := repo.Binary
 	if runtime.GOOS == "windows" {
+		name += ".exe"
 		localAppData := os.Getenv("LOCALAPPDATA")
 		if localAppData == "" {
 			return "", errors.New("LOCALAPPDATA no está definido")
 		}
-		return filepath.Join(localAppData, "matecito-ai", "bin", "engram.exe"), nil
+		return filepath.Join(localAppData, "matecito-ai", "bin", name), nil
 	}
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(home, ".local", "bin", "engram"), nil
+	return filepath.Join(home, ".local", "bin", name), nil
 }
 
 func downloadFile(url, dest string) error {
