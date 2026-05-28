@@ -211,6 +211,29 @@ func engramBinaryStep(opts Options) Step {
 	}
 }
 
+// InstallSelf descarga la última release de matecito-ai desde GitHub,
+// verifica SHA256 y reemplaza el binario actualmente en ejecución por la
+// nueva versión. Usa os.Executable para resolver dónde escribir.
+//
+// En Linux y macOS reemplazar el binario en uso es seguro: el kernel mantiene
+// la inode abierta y el proceso en curso sigue usando la versión vieja hasta
+// que termine; la siguiente invocación ya usa la nueva.
+func InstallSelf(opts Options) error {
+	plat, err := releasedl.Detect()
+	if err != nil {
+		return err
+	}
+	rel, err := releasedl.LatestRelease(releasedl.MatecitoRepo, plat)
+	if err != nil {
+		return err
+	}
+	dest, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	return releasedl.Download(releasedl.MatecitoRepo, rel, dest, opts.Stdout)
+}
+
 // InstallEngram descarga la última release de Engram desde GitHub, verifica
 // el checksum SHA256, instala el binario y asegura que la carpeta destino
 // esté en PATH. Es reutilizada por el comando `matecito-ai update`.
