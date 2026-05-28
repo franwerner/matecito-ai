@@ -160,6 +160,7 @@ Este es el procedimiento genérico del motor. Vale para cualquier fase, sea del 
 4. Si el archivo tiene **"Notas de lógica (para el motor)"**, aplicalas: defaults según stack, preguntas condicionales, propuestas según respuestas de fases previas.
 5. **Confirmá** la decisión antes de seguir.
 6. Si el archivo tiene **"Tech a registrar"** y se eligió una tecnología concreta, creá su mini-ADR en `tech/` en el momento (ver "Catálogo de tecnologías").
+6b. **Si la decisión corresponde a un patrón canónico** del catálogo en `~/.claude/references/design-patterns/` (típicamente fases de los dominios `structure`, `runtime`, `data`), preguntá UNA vez cuál patrón aplica y registralo en el ADR como `**Patrón aplicado:** <Nombre> — <1 línea de por qué>`. No fuerces: si la decisión no es un patrón (ej. una convención de naming, una política de rate limiting), omití este paso. El catálogo se consulta por nombre, sin link en el ADR — el pointer a la ubicación está en el `CLAUDE.md` del proyecto.
 7. **Materializá el ADR** en `.claude/adr/<dominio>/<adr-output>.md`, con el `tipo` del frontmatter en su encabezado, según la sección "Qué materializar" del archivo.
 
 Si la fase estaba recomendada pero el usuario la sacó, o no aplica: no la trates, pero generá igual su ADR (en la carpeta de su dominio) con `Status: Not Applicable`/`Pending` + razón.
@@ -374,6 +375,8 @@ Las decisiones de ingeniería de este proyecto (arquitectura, convenciones y pol
 
 **Antes de instalar/sugerir cualquier dependencia nueva (lib, framework, herramienta, DB), leé `.claude/adr/tech/INDEX.md`** para ver qué tecnologías ya están elegidas. Si tu sugerencia pisa con algo ya registrado, no la introduzcas sin preguntar.
 
+**Cuando un ADR declara `Patrón aplicado: X`,** la definición canónica del patrón está en `~/.claude/references/design-patterns/patterns/<x>.md`. Consultá ese archivo antes de implementar para entender el contrato del patrón. Si vas a desviarte de la definición canónica, justificalo en el ADR — no improvises una variante.
+
 Si una decisión no está documentada o algo no queda claro, **preguntá al usuario antes de inventar una convención**. Las decisiones se registran como ADR, no se improvisan.
 
 Para crear, actualizar o revisar decisiones de ingeniería (incluyendo agregar/cambiar tecnologías del catálogo), usá la skill `project-decisions-bootstrap`.
@@ -446,6 +449,7 @@ Las decisiones están organizadas por **dominio**. Este índice te dice qué dom
 - **Última actualización:** <YYYY-MM-DD>
 - **Decisores:** <usuario>
 - **Fase:** <slug>
+- **Patrón aplicado:** <Opcional. Solo si la decisión mapea a un patrón del catálogo canónico en `~/.claude/references/design-patterns/`. Formato: `<Nombre> — <1 línea de por qué este patrón>`. Ej: `Repository — necesitamos swap SQLite↔Postgres en tests sin tocar dominio`. Si no aplica, omitir la línea completa.>
 
 ## Contexto
 

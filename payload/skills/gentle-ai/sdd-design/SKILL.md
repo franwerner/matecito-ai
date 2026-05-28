@@ -52,11 +52,12 @@ Before designing, read the actual code that will be affected:
 If the project has `.claude/adr/` (decisions captured by `project-decisions-bootstrap`), you MUST consult it before proposing any architecture, because the design has to RESPECT decisions already made — not re-decide them.
 
 1. Read `.claude/adr/INDEX.md` (root index) to see which domains exist.
-2. For each domain this change touches (e.g. a new endpoint touches `security`, `contracts`, `runtime`), read the relevant ADRs in `.claude/adr/<domain>/` — focus on their **Decisión** and **Reglas concretas** sections.
+2. For each domain this change touches (e.g. a new endpoint touches `security`, `contracts`, `runtime`), read the relevant ADRs in `.claude/adr/<domain>/` — focus on their **Decisión**, **Reglas concretas**, AND **Patrón aplicado** (if present) sections.
 3. When writing the design:
    - **Respect every `Accepted` ADR that applies.** Your "Architecture Decisions" must align with them; cite the ADR (e.g. `security/auth.md`) when a decision is constrained by it.
+   - **If an applicable ADR declares `Patrón aplicado: X`,** your design MUST implement X according to the canonical definition in `~/.claude/references/design-patterns/patterns/<x>.md` — read that file before designing. Cite the pattern by name in your Architecture Decisions. Do not propose a variant unless the ADR itself justifies the deviation.
    - If the design would **contradict** an `Accepted` ADR → STOP. Do not silently override a standing decision. Report it as a blocker in your return summary so the user can either adjust the design or change the decision via `project-decisions-bootstrap` (update mode).
-   - If the change requires a decision **no ADR covers** (a genuinely new architectural choice) → flag it explicitly under "New decisions (not yet in ADRs)" in your design, and recommend capturing it via `project-decisions-bootstrap` before/with implementation. Document your proposed choice, but mark it as pending ADR capture.
+   - If the change requires a decision **no ADR covers** (a genuinely new architectural choice) → flag it explicitly under "New decisions (not yet in ADRs)" in your design, and recommend capturing it via `project-decisions-bootstrap` before/with implementation. Document your proposed choice, but mark it as pending ADR capture. When your new decision IS a canonical pattern, name it (the catalog is available at `~/.claude/references/design-patterns/`) so the future ADR can record `Patrón aplicado: <Nombre>`.
 
 If `.claude/adr/` does NOT exist, proceed normally (note that the project has no captured decisions).
 <!-- matecito-ai: read project ADRs before designing — END -->
@@ -84,6 +85,7 @@ How does this map to the proposal's approach? Reference specs.}
 **Alternatives considered**: {What we rejected}
 **Rationale**: {Why this choice over alternatives}
 <!-- matecito-ai: when a decision is constrained by an existing ADR, add: **Constrained by**: `<domain>/<slug>.md` -->
+<!-- matecito-ai: when the decision maps to a canonical pattern, add: **Patrón aplicado**: <Name> — <1-line why>. Definition at ~/.claude/references/design-patterns/patterns/<name>.md -->
 
 ### Decision: {Decision Title}
 
