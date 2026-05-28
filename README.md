@@ -8,7 +8,6 @@
 
 <p align="center">
   <a href="#instalación"><img alt="status" src="https://img.shields.io/badge/status-alpha-orange"></a>
-  <img alt="go" src="https://img.shields.io/badge/go-1.22-blue">
 </p>
 
 ---
@@ -31,13 +30,14 @@ Sobre eso corre un **flujo de desarrollo guiado (SDD)** que lleva cada cambio de
 
 | Capa        | Pieza                          | Rol                                                                                  |
 |-------------|--------------------------------|--------------------------------------------------------------------------------------|
-| **Skills**  | `project-decisions-bootstrap`  | Entrevista por fases que captura decisiones de ingeniería y las materializa como ADRs por dominio. |
-| **Skills**  | `project-decisions-validate`   | Validador consultivo: coherencia, completitud y verificabilidad de los ADRs.         |
-| **Skills**  | `SDD` *(fork del Gentleman)*   | Flujo de fases: intake → explore → propose → spec → design → tasks → apply → verify → archive. |
-| **MCP**     | `codegraph`                    | Grafo de código pre-indexado (tree-sitter + SQLite) para explorar por estructura.    |
-| **MCP**     | `context7`                     | Documentación de librerías al día, contra APIs no alucinadas.                        |
-| **Agentes** | Sub-agentes del SDD            | Uno por fase, con contexto propio. Forkeados y modificados.                          |
-| **Engram**  | Memoria persistente            | SQLite standalone con descubrimientos, contexto y fixes entre sesiones.              |
+| **Skills**     | `project-decisions-bootstrap`  | Entrevista por fases que captura decisiones de ingeniería y las materializa como ADRs por dominio. |
+| **Skills**     | `project-decisions-validate`   | Validador consultivo: coherencia, completitud y verificabilidad de los ADRs.         |
+| **Skills**     | `SDD` *(fork del Gentleman)*   | Flujo de fases: intake → explore → propose → spec → design → tasks → apply → verify → archive. |
+| **Referencia** | `design-patterns`              | Catálogo canónico de patrones de diseño consultable. Los ADRs lo citan por nombre; `sdd-design` lo respeta cuando un ADR declara `Patrón aplicado`. |
+| **MCP**        | `codegraph`                    | Grafo de código pre-indexado (tree-sitter + SQLite) para explorar por estructura.    |
+| **MCP**        | `context7`                     | Documentación de librerías al día, contra APIs no alucinadas.                        |
+| **Agentes**    | Sub-agentes del SDD            | Uno por fase, con contexto propio. Forkeados y modificados.                          |
+| **Engram**     | Memoria persistente            | SQLite standalone con descubrimientos, contexto y fixes entre sesiones.              |
 
 ## El flujo SDD
 
@@ -51,15 +51,19 @@ intake → explore → propose → spec → design → tasks → apply → verif
 
 - **intake** es la fase de entrada: hace 2-4 preguntas para estructurar el pedido, lo clasifica, y produce un brief. El orquestador **siempre muestra ese brief y espera tu confirmación** antes de seguir.
 - **design** y **apply** leen los ADRs vigentes; **explore** usa codegraph; **apply** usa context7.
+- Cuando un ADR declara `Patrón aplicado: X`, **design** consulta el catálogo `design-patterns` y respeta la definición canónica del patrón.
 - **verify** confirma que el cambio no viole los ADRs que tocó.
 
 ## Instalación
 
 Requisitos:
-- Go `1.22+`
-- [Claude Code](https://claude.com/claude-code) instalado y autenticado
+- **[Claude Code](https://claude.com/claude-code)** instalado y autenticado
+- **Node.js `≥ 18`** con `npm` y `npx` — CodeGraph se instala una vez con `npm install -g`; context7 se invoca runtime en cada sesión con `npx -y @upstash/context7-mcp@latest`
+- **git `≥ 2.23`** — el workflow SDD asume historial git para versionar ADRs y commits; la skill de git usa `git restore` (introducido en 2.23)
 
-Build local:
+Engram se descarga como binario precompilado desde sus [GitHub Releases](https://github.com/Gentleman-Programming/engram/releases) y se verifica por SHA256; no requiere Go.
+
+Build local (sólo si vas a compilar el CLI desde el código fuente, requiere **Go `≥ 1.22`**):
 
 ```bash
 go build -o matecito-ai ./cmd/matecito-ai
@@ -77,6 +81,9 @@ matecito-ai verify
 # Instalar lo que falte (con backup de la config y confirmación)
 matecito-ai install --dry-run
 matecito-ai install
+
+# Actualizar Engram a la última release de GitHub (correr cuando Engram saque versión nueva)
+matecito-ai update
 
 # Inicializar lo por-proyecto en el repo actual (ej: codegraph)
 matecito-ai init
