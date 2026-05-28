@@ -5,12 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
 
+	matecitoai "github.com/franwerner/matecito-ai"
 	"github.com/franwerner/matecito-ai/internal/deploy"
 	"github.com/franwerner/matecito-ai/internal/engramdl"
 	"github.com/franwerner/matecito-ai/internal/mcp"
@@ -112,7 +114,7 @@ func deployStep(opts Options) Step {
 	prep := prepareDeploy()
 
 	return Step{
-		Name:  "Deploy del fork (payload/ → ~/.claude/)",
+		Name:  "Deploy del fork (payload → ~/.claude/)",
 		Plan:  prep.summary,
 		Check: func() bool { return prep.shouldRun },
 		Run: func() error {
@@ -127,7 +129,7 @@ func deployStep(opts Options) Step {
 			if err != nil {
 				return err
 			}
-			backup, err := deploy.Apply(prep.ops, claudeHome, backupRoot)
+			backup, err := deploy.Apply(prep.payloadFS, prep.ops, claudeHome, backupRoot)
 			if err != nil {
 				return err
 			}
@@ -142,31 +144,47 @@ func deployStep(opts Options) Step {
 }
 
 type deployPrep struct {
-	payloadDir string
-	ops        []deploy.FileOp
-	summary    string
-	shouldRun  bool
-	err        error
+	payloadFS fs.FS
+	source    string
+	ops       []deploy.FileOp
+	summary   string
+	shouldRun bool
+	err       error
+}
+
+// resolvePayloadFS prefiere un payload/ local (modo dev/source) si existe en
+// el cwd o algún directorio padre. Si no, cae al payload embebido en el
+// binario via go:embed.
+func resolvePayloadFS() (payloadFS fs.FS, source string, err error) {
+	if cwd, cwdErr := os.Getwd(); cwdErr == nil {
+		if local, findErr := deploy.FindPayloadDir(cwd); findErr == nil {
+			return os.DirFS(local), local, nil
+		}
+	}
+	sub, err := fs.Sub(matecitoai.PayloadFS, "payload")
+	if err != nil {
+		return nil, "", err
+	}
+	return sub, "embedded", nil
 }
 
 func prepareDeploy() deployPrep {
 	var p deployPrep
-	cwd, err := os.Getwd()
+	payloadFS, source, err := resolvePayloadFS()
 	if err != nil {
-		p.summary = "no se pudo resolver cwd"
+		p.summary = "no se pudo resolver payload: " + err.Error()
+		p.err = err
 		return p
 	}
-	p.payloadDir, err = deploy.FindPayload(cwd)
-	if err != nil {
-		p.summary = "payload/ no encontrado (skip)"
-		return p
-	}
+	p.payloadFS = payloadFS
+	p.source = source
+
 	claudeHome, err := deploy.ClaudeHome()
 	if err != nil {
 		p.err = err
 		return p
 	}
-	p.ops, err = deploy.Plan(p.payloadDir, claudeHome)
+	p.ops, err = deploy.Plan(p.payloadFS, claudeHome)
 	if err != nil {
 		p.err = err
 		p.summary = "error planeando deploy: " + err.Error()
@@ -174,7 +192,7 @@ func prepareDeploy() deployPrep {
 	}
 	s := deploy.Summarize(p.ops)
 	p.summary = fmt.Sprintf("desde %s: %d nuevos, %d cambiados (%d sin cambio)",
-		p.payloadDir, s.New, s.Changed, s.Same)
+		source, s.New, s.Changed, s.Same)
 	p.shouldRun = s.New+s.Changed > 0
 	return p
 }

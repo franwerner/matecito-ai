@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"path"
 	"path/filepath"
 	"time"
 )
@@ -29,6 +30,7 @@ var Mappings = []Mapping{
 	{SourceRel: "CLAUDE.md", TargetRel: "matecito-ai.md", Mode: ModeFile},
 	{SourceRel: "agents", TargetRel: "agents", Mode: ModeDir},
 	{SourceRel: "skills", TargetRel: "skills", Mode: ModeGrouped},
+	{SourceRel: "references", TargetRel: "references", Mode: ModeDir},
 }
 
 type FileStatus int
@@ -39,13 +41,18 @@ const (
 	StatusSame
 )
 
+// FileOp describe la copia de un archivo del payload (Source, ruta interna al
+// fs.FS) hacia el filesystem real del usuario (Target).
 type FileOp struct {
 	Source string
 	Target string
 	Status FileStatus
 }
 
-func FindPayload(start string) (string, error) {
+// FindPayloadDir busca payload/ en el filesystem real desde start hacia
+// arriba. Solo se usa cuando el binario se ejecuta desde un clone del repo
+// (modo dev). En binarios distribuidos se prefiere el embedded FS.
+func FindPayloadDir(start string) (string, error) {
 	dir := start
 	for {
 		p := filepath.Join(dir, "payload")
@@ -76,10 +83,13 @@ func BackupRoot() (string, error) {
 	return filepath.Join(home, ".matecito-ai", "backups"), nil
 }
 
-func Plan(payloadDir, claudeHome string) ([]FileOp, error) {
+// Plan arma la lista de operaciones de copia para todos los Mappings.
+// payloadFS es la raíz del payload (sea os.DirFS sobre un payload/ local, o
+// un sub-FS de PayloadFS embebido). claudeHome es la carpeta real de destino.
+func Plan(payloadFS fs.FS, claudeHome string) ([]FileOp, error) {
 	var ops []FileOp
 	for _, m := range Mappings {
-		more, err := expandMapping(payloadDir, claudeHome, m)
+		more, err := expandMapping(payloadFS, claudeHome, m)
 		if err != nil {
 			return nil, err
 		}
@@ -95,14 +105,14 @@ func Plan(payloadDir, claudeHome string) ([]FileOp, error) {
 	}
 
 	for i := range ops {
-		ops[i].Status = computeStatus(ops[i].Source, ops[i].Target)
+		ops[i].Status = computeStatus(payloadFS, ops[i].Source, ops[i].Target)
 	}
 	return ops, nil
 }
 
-func expandMapping(payloadDir, claudeHome string, m Mapping) ([]FileOp, error) {
-	source := filepath.Join(payloadDir, m.SourceRel)
-	info, err := os.Stat(source)
+func expandMapping(payloadFS fs.FS, claudeHome string, m Mapping) ([]FileOp, error) {
+	source := m.SourceRel
+	info, err := fs.Stat(payloadFS, source)
 	if err != nil {
 		return nil, fmt.Errorf("payload no tiene %q: %w", m.SourceRel, err)
 	}
@@ -115,10 +125,10 @@ func expandMapping(payloadDir, claudeHome string, m Mapping) ([]FileOp, error) {
 		return []FileOp{{Source: source, Target: filepath.Join(claudeHome, m.TargetRel)}}, nil
 
 	case ModeDir:
-		return walkDir(source, filepath.Join(claudeHome, m.TargetRel))
+		return walkDir(payloadFS, source, filepath.Join(claudeHome, m.TargetRel))
 
 	case ModeGrouped:
-		groups, err := os.ReadDir(source)
+		groups, err := fs.ReadDir(payloadFS, source)
 		if err != nil {
 			return nil, err
 		}
@@ -127,17 +137,17 @@ func expandMapping(payloadDir, claudeHome string, m Mapping) ([]FileOp, error) {
 			if !g.IsDir() {
 				continue
 			}
-			groupPath := filepath.Join(source, g.Name())
-			entries, err := os.ReadDir(groupPath)
+			groupPath := path.Join(source, g.Name())
+			entries, err := fs.ReadDir(payloadFS, groupPath)
 			if err != nil {
 				return nil, err
 			}
 			targetBase := filepath.Join(claudeHome, m.TargetRel)
 			for _, e := range entries {
-				childSrc := filepath.Join(groupPath, e.Name())
+				childSrc := path.Join(groupPath, e.Name())
 				childDst := filepath.Join(targetBase, e.Name())
 				if e.IsDir() {
-					more, err := walkDir(childSrc, childDst)
+					more, err := walkDir(payloadFS, childSrc, childDst)
 					if err != nil {
 						return nil, err
 					}
@@ -152,31 +162,31 @@ func expandMapping(payloadDir, claudeHome string, m Mapping) ([]FileOp, error) {
 	return nil, fmt.Errorf("modo desconocido: %d", m.Mode)
 }
 
-func walkDir(sourceRoot, targetRoot string) ([]FileOp, error) {
+func walkDir(payloadFS fs.FS, sourceRoot, targetRoot string) ([]FileOp, error) {
 	var ops []FileOp
-	err := filepath.WalkDir(sourceRoot, func(path string, d fs.DirEntry, err error) error {
+	err := fs.WalkDir(payloadFS, sourceRoot, func(p string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
 		if d.IsDir() {
 			return nil
 		}
-		rel, err := filepath.Rel(sourceRoot, path)
+		rel, err := filepath.Rel(sourceRoot, p)
 		if err != nil {
 			return err
 		}
-		ops = append(ops, FileOp{Source: path, Target: filepath.Join(targetRoot, rel)})
+		ops = append(ops, FileOp{Source: p, Target: filepath.Join(targetRoot, rel)})
 		return nil
 	})
 	return ops, err
 }
 
-func computeStatus(source, target string) FileStatus {
+func computeStatus(payloadFS fs.FS, source, target string) FileStatus {
 	dst, err := os.ReadFile(target)
 	if err != nil {
 		return StatusNew
 	}
-	src, err := os.ReadFile(source)
+	src, err := fs.ReadFile(payloadFS, source)
 	if err != nil {
 		return StatusNew
 	}
@@ -207,7 +217,10 @@ func Summarize(ops []FileOp) Summary {
 	return s
 }
 
-func Apply(ops []FileOp, claudeHome, backupRoot string) (string, error) {
+// Apply ejecuta las copias en disco. Lee de payloadFS y escribe en
+// claudeHome. Si hay cambios sobre archivos existentes, los respalda en
+// backupRoot/<timestamp>/.
+func Apply(payloadFS fs.FS, ops []FileOp, claudeHome, backupRoot string) (string, error) {
 	backupDir := ""
 	for _, op := range ops {
 		if op.Status == StatusSame {
@@ -228,18 +241,35 @@ func Apply(ops []FileOp, claudeHome, backupRoot string) (string, error) {
 			if err := os.MkdirAll(filepath.Dir(bk), 0o755); err != nil {
 				return backupDir, err
 			}
-			if err := copyFile(op.Target, bk); err != nil {
+			if err := copyDiskFile(op.Target, bk); err != nil {
 				return backupDir, err
 			}
 		}
-		if err := copyFile(op.Source, op.Target); err != nil {
+		if err := copyFromFS(payloadFS, op.Source, op.Target); err != nil {
 			return backupDir, err
 		}
 	}
 	return backupDir, nil
 }
 
-func copyFile(src, dst string) error {
+func copyFromFS(payloadFS fs.FS, src, dst string) error {
+	in, err := payloadFS.Open(src)
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+	out, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+	if _, err := io.Copy(out, in); err != nil {
+		return err
+	}
+	return out.Sync()
+}
+
+func copyDiskFile(src, dst string) error {
 	in, err := os.Open(src)
 	if err != nil {
 		return err
