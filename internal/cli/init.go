@@ -12,9 +12,12 @@ import (
 
 func NewInitCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:   "init",
-		Short: "Inicializa lo por-proyecto en el cwd (.codegraph/)",
-		Long:  "init corre `codegraph init -i` en el directorio actual si CodeGraph está\ninstalado y falta `.codegraph/`. No toca config global.",
+		Use:     "init",
+		GroupID: "setup",
+		Short:   "Inicializa lo por-proyecto en el cwd (.codegraph/)",
+		Long:    "init corre `codegraph init -i` en el directorio actual si CodeGraph está\ninstalado y falta `.codegraph/`. No toca config global.",
+		Example: `  # Inicializa CodeGraph en el cwd
+  matecito-ai init`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cwd, err := os.Getwd()
 			if err != nil {

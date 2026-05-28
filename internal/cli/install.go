@@ -10,9 +10,15 @@ func NewInstallCmd() *cobra.Command {
 	opts := install.Options{}
 
 	cmd := &cobra.Command{
-		Use:   "install",
-		Short: "Instala/registra lo que falte (Engram, CodeGraph, MCPs)",
-		Long:  "install detecta qué falta, imprime un plan, hace backup de ~/.claude.json,\ny ejecuta los pasos necesarios en orden. Se detiene al primer error.",
+		Use:     "install",
+		GroupID: "setup",
+		Short:   "Instala/registra lo que falte (Engram, CodeGraph, MCPs) y deploya el fork",
+		Long:    "install detecta qué falta, imprime un plan, hace backup de ~/.claude.json,\ny ejecuta los pasos necesarios en orden. Se detiene al primer error.",
+		Example: `  # Preview del plan, no ejecuta nada
+  matecito-ai install --dry-run
+
+  # Instalación sin prompts (CI-friendly)
+  matecito-ai install --yes`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return install.Run(opts)
 		},

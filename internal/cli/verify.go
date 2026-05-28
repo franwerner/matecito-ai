@@ -19,9 +19,15 @@ func NewVerifyCmd() *cobra.Command {
 	var sddDir string
 
 	cmd := &cobra.Command{
-		Use:   "verify",
-		Short: "Reporta el estado del entorno (prerequisites + Engram + CodeGraph + context7 + SDD)",
-		Long:  "verify chequea prerequisites del sistema, el estado de los componentes\nregistrados y la coherencia entre el SDD forkeado y los MCP reales.",
+		Use:     "verify",
+		GroupID: "status",
+		Short:   "Reporta el estado del entorno (prereqs + Engram + CodeGraph + context7 + SDD)",
+		Long:    "verify chequea prerequisites del sistema, el estado de los componentes\nregistrados y la coherencia entre el SDD forkeado y los MCP reales.",
+		Example: `  # Estado del entorno (default sdd-dir: ~/.claude/agents)
+  matecito-ai verify
+
+  # Cross-check contra el fork local antes de install
+  matecito-ai verify --sdd-dir ./payload/agents`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			pre := prereqs.All()
 			eng := engram.All()
