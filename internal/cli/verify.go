@@ -1,0 +1,63 @@
+package cli
+
+import (
+	"os"
+	"path/filepath"
+
+	"github.com/spf13/cobra"
+
+	"github.com/franwerner/matecito-ai/internal/check"
+	"github.com/franwerner/matecito-ai/internal/codegraph"
+	"github.com/franwerner/matecito-ai/internal/context7"
+	"github.com/franwerner/matecito-ai/internal/engram"
+	"github.com/franwerner/matecito-ai/internal/prereqs"
+	"github.com/franwerner/matecito-ai/internal/render"
+	"github.com/franwerner/matecito-ai/internal/sdd"
+)
+
+func NewVerifyCmd() *cobra.Command {
+	var sddDir string
+
+	cmd := &cobra.Command{
+		Use:   "verify",
+		Short: "Reporta el estado del entorno (prerequisites + Engram + CodeGraph + context7 + SDD)",
+		Long:  "verify chequea prerequisites del sistema, el estado de los componentes\nregistrados y la coherencia entre el SDD forkeado y los MCP reales.",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			pre := prereqs.All()
+			eng := engram.All()
+			cg := codegraph.All()
+			c7 := context7.All()
+			sx := sdd.CrossCheck(sddDir)
+
+			render.Section(os.Stdout, "Prerequisites", pre)
+			render.Section(os.Stdout, "Engram", eng)
+			render.Section(os.Stdout, "CodeGraph", cg)
+			render.Section(os.Stdout, "context7", c7)
+			render.Section(os.Stdout, "Cross-check SDD ↔ MCP ("+sddDir+")", sx)
+
+			all := make([]check.Result, 0, len(pre)+len(eng)+len(cg)+len(c7)+len(sx))
+			all = append(all, pre...)
+			all = append(all, eng...)
+			all = append(all, cg...)
+			all = append(all, c7...)
+			all = append(all, sx...)
+
+			if code := render.Summary(os.Stdout, all); code != 0 {
+				os.Exit(code)
+			}
+			return nil
+		},
+	}
+
+	cmd.Flags().StringVar(&sddDir, "sdd-dir", defaultSDDDir(),
+		"Directorio donde viven los agentes del SDD (sdd-*.md)")
+	return cmd
+}
+
+func defaultSDDDir() string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return ".claude/agents"
+	}
+	return filepath.Join(home, ".claude", "agents")
+}
