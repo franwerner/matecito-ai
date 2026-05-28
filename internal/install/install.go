@@ -14,6 +14,7 @@ import (
 
 	"github.com/franwerner/matecito-ai/internal/deploy"
 	"github.com/franwerner/matecito-ai/internal/mcp"
+	"github.com/franwerner/matecito-ai/internal/platform"
 )
 
 type Step struct {
@@ -265,7 +266,8 @@ func ensureGoBinPath(opts Options) error {
 		return err
 	}
 	binDir := filepath.Join(home, "go", "bin")
-	return ensurePathManaged(opts, binDir, "go install")
+	_, err = platform.Detect().EnsurePathInShell(binDir, opts.Stdout)
+	return err
 }
 
 func ensureUserNpmPrefix(opts Options) error {
@@ -291,66 +293,8 @@ func ensureUserNpmPrefix(opts Options) error {
 	}
 	binDir := filepath.Join(userPrefix, "bin")
 	os.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
-	return ensurePathManaged(opts, binDir, "npm prefix")
-}
-
-func ensurePathManaged(opts Options, binDir, source string) error {
-	rc, err := userShellRC()
-	if err != nil {
-		return err
-	}
-	added, err := appendPathToRC(binDir, rc)
-	if err != nil {
-		return err
-	}
-	if added {
-		fmt.Fprintf(opts.Stdout, "  PATH (%s) añadido a %s — abrí shell nueva o `source %s`\n", source, rc, rc)
-	}
-	return nil
-}
-
-func userShellRC() (string, error) {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return "", err
-	}
-	shell := os.Getenv("SHELL")
-	switch {
-	case strings.Contains(shell, "zsh"):
-		return filepath.Join(home, ".zshrc"), nil
-	case strings.Contains(shell, "fish"):
-		return filepath.Join(home, ".config", "fish", "config.fish"), nil
-	default:
-		return filepath.Join(home, ".bashrc"), nil
-	}
-}
-
-func appendPathToRC(binDir, rcPath string) (bool, error) {
-	data, err := os.ReadFile(rcPath)
-	if err != nil && !os.IsNotExist(err) {
-		return false, err
-	}
-	if strings.Contains(string(data), binDir) {
-		return false, nil
-	}
-	var line string
-	if strings.HasSuffix(rcPath, "config.fish") {
-		line = fmt.Sprintf("set -gx PATH %s $PATH\n", binDir)
-	} else {
-		line = fmt.Sprintf("export PATH=\"%s:$PATH\"\n", binDir)
-	}
-	if err := os.MkdirAll(filepath.Dir(rcPath), 0o755); err != nil {
-		return false, err
-	}
-	f, err := os.OpenFile(rcPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
-	if err != nil {
-		return false, err
-	}
-	defer f.Close()
-	if _, err := f.WriteString("\n# matecito-ai\n" + line); err != nil {
-		return false, err
-	}
-	return true, nil
+	_, err = platform.Detect().EnsurePathInShell(binDir, opts.Stdout)
+	return err
 }
 
 func engramMCPStep(opts Options) Step {
