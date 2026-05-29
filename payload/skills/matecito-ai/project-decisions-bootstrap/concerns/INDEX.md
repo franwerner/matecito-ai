@@ -14,7 +14,7 @@ Menú de fases (concerns) que la skill puede recorrer, **organizado por dominio*
 
 ## Dominios canónicos (fijos)
 
-La taxonomía de dominios es **cerrada y la impone el motor** — la misma para el catálogo interno y para la salida `.claude/adr/`, así todos los repos del equipo se ven igual. Cada dominio tiene su propio `INDEX.md` con el detalle de sus concerns y el **criterio de pertenencia** (cuándo un concern nuevo va ahí).
+La taxonomía de dominios es **cerrada y la impone el motor** — la misma para el catálogo interno y para la salida `.matecito-ai/adr/`, así todos los repos del equipo se ven igual. Cada dominio tiene su propio `INDEX.md` con el detalle de sus concerns y el **criterio de pertenencia** (cuándo un concern nuevo va ahí).
 
 ### Activos (con concerns)
 

@@ -44,7 +44,7 @@ matecito-ai/
 
 ### SKILLS
 
-- **project-decisions-bootstrap** — entrevista por fases que captura decisiones de ingeniería (arquitectura, convenciones, políticas) y las materializa como ADRs por dominio en `.claude/adr/<dominio>/`. Catálogo de 39 concerns en 17 dominios canónicos. Incluye `CONCERN-TEMPLATE.md` como guía de autoría para expandir el catálogo (ratchet).
+- **project-decisions-bootstrap** — entrevista por fases que captura decisiones de ingeniería (arquitectura, convenciones, políticas) y las materializa como ADRs por dominio en `.matecito-ai/adr/<dominio>/`. Catálogo de 39 concerns en 17 dominios canónicos. Incluye `CONCERN-TEMPLATE.md` como guía de autoría para expandir el catálogo (ratchet).
 - **project-decisions-validate** — validador consultivo: chequea coherencia entre ADRs, completitud, verificabilidad e integridad de taxonomía. No modifica nada.
 - **SDD (fork del Gentleman)** — flujo de fases con sub-agentes reales: `intake → explore → propose → spec → design → tasks → apply → verify → archive`. Modificado para integrarse con ADRs, codegraph y context7, y para persistir solo en Engram.
 
@@ -117,7 +117,7 @@ Comandos: `verify` (default, solo lee), `doctor` (diagnóstico accionable), `ins
 
 ## Cómo se usa (flujo típico)
 
-1. **Setup del proyecto** (una vez): `project-decisions-bootstrap` captura las decisiones → genera `.claude/adr/` + `CLAUDE.md`.
+1. **Setup del proyecto** (una vez): `project-decisions-bootstrap` captura las decisiones → genera `.matecito-ai/adr/` + `CLAUDE.md`.
 2. **Al implementar un issue:** se describe el issue en el chat → `intake` lo estructura y muestra el brief para confirmar → el flujo SDD lo lleva por sus fases. design y apply leen los ADRs vigentes; explore usa codegraph; apply usa context7. Si el issue choca con un ADR o destapa una decisión nueva, se frena y se captura vía bootstrap antes de codear.
 3. **Al cerrar:** verify chequea que el cambio respete los ADRs que tocó. Engram guarda lo aprendido.
 4. **Mantenimiento del catálogo:** concerns nuevos se agregan vía `CONCERN-TEMPLATE.md`; coherencia entre ADRs se revisa con `project-decisions-validate`.

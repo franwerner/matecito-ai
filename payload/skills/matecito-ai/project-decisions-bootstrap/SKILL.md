@@ -1,11 +1,11 @@
 ---
 name: project-decisions-bootstrap
-description: Entrevista interactiva por fases para capturar las decisiones de ingeniería de un proyecto (arquitectura, convenciones y políticas) al iniciarlo y materializarlas como ADRs organizados por dominio en .claude/adr/<dominio>/. Usá esta skill SIEMPRE que el usuario inicie un proyecto nuevo, clone un repo vacío, mencione "arrancar un proyecto / empezar un proyecto / setup inicial", pida ayuda con la arquitectura inicial, hable de "definir capas, estructura, convenciones", quiera revisar o actualizar decisiones de arquitectura existentes, o cuando detectes un repo sin .claude/adr/ ni CLAUDE.md y el usuario esté por escribir código que toca estructura. También dispará si el usuario menciona "ADR", "decisión arquitectónica", "convenciones del proyecto", "manejo de errores", "capas", "acoplamiento", "estructura de carpetas".
+description: Entrevista interactiva por fases para capturar las decisiones de ingeniería de un proyecto (arquitectura, convenciones y políticas) al iniciarlo y materializarlas como ADRs organizados por dominio en .matecito-ai/adr/<dominio>/. Usá esta skill SIEMPRE que el usuario inicie un proyecto nuevo, clone un repo vacío, mencione "arrancar un proyecto / empezar un proyecto / setup inicial", pida ayuda con la arquitectura inicial, hable de "definir capas, estructura, convenciones", quiera revisar o actualizar decisiones de arquitectura existentes, o cuando detectes un repo sin .matecito-ai/adr/ ni CLAUDE.md y el usuario esté por escribir código que toca estructura. También dispará si el usuario menciona "ADR", "decisión arquitectónica", "convenciones del proyecto", "manejo de errores", "capas", "acoplamiento", "estructura de carpetas".
 ---
 
 # Project Decisions Bootstrap
 
-Entrevista al usuario para capturar las decisiones de ingeniería del proyecto —arquitectura, convenciones y políticas— y las materializa como ADRs estructurados, **organizados por dominio**, que Claude consultará en futuras sesiones vía `.claude/adr/INDEX.md`.
+Entrevista al usuario para capturar las decisiones de ingeniería del proyecto —arquitectura, convenciones y políticas— y las materializa como ADRs estructurados, **organizados por dominio**, que Claude consultará en futuras sesiones vía `.matecito-ai/adr/INDEX.md`.
 
 El objetivo es que las decisiones queden **registradas y verificables**, no implícitas en la cabeza del autor. Eso le permite a Claude (y a cualquier nuevo dev) trabajar respetando las convenciones sin volver a preguntarlas.
 
@@ -19,7 +19,7 @@ La skill está partida en **motor** y **datos**:
 
 - **`SKILL.md` (este archivo) = el motor.** Define CÓMO se trata cualquier fase: el flujo, las reglas de UX, cómo se materializa un ADR, el modo update. Es estable; casi no cambia.
 - **`concerns/` = el catálogo de fases (los datos), organizado por dominio.** Cada fase vive en `concerns/<dominio>/<slug>.md` con qué decide, qué preguntar y qué materializar. Cada dominio tiene su `concerns/<dominio>/INDEX.md` (detalle de sus concerns + criterio de pertenencia). `concerns/INDEX.md` es el índice raíz: mapa de dominios + matriz de aplicabilidad por tipo de proyecto. Esto crece con el tiempo (ver "Ratchet").
-- **Salida = ADRs en `.claude/adr/<dominio>/` del proyecto objetivo.** Misma taxonomía de dominios que el catálogo. No confundir con `concerns/`, que es el catálogo de la skill.
+- **Salida = ADRs en `.matecito-ai/adr/<dominio>/` del proyecto objetivo.** Misma taxonomía de dominios que el catálogo. No confundir con `concerns/`, que es el catálogo de la skill.
 
 El motor lee `concerns/INDEX.md` **una sola vez** para armar la lista de fases relevantes, y recién después lee el archivo individual de cada fase que se va a tratar. Así no carga al contexto fases que no aplican.
 
@@ -27,7 +27,7 @@ El motor lee `concerns/INDEX.md` **una sola vez** para armar la lista de fases r
 
 ## Dominios canónicos (taxonomía fija)
 
-La skill usa una taxonomía de dominios **cerrada e impuesta por el motor** — idéntica en el catálogo interno (`concerns/<dominio>/`) y en la salida (`.claude/adr/<dominio>/`). Esto garantiza que todos los repos del equipo se vean igual y que ningún tema quede sin un casillero claro.
+La skill usa una taxonomía de dominios **cerrada e impuesta por el motor** — idéntica en el catálogo interno (`concerns/<dominio>/`) y en la salida (`.matecito-ai/adr/<dominio>/`). Esto garantiza que todos los repos del equipo se vean igual y que ningún tema quede sin un casillero claro.
 
 **Activos** (tienen concerns hoy):
 `context` · `structure` · `runtime` · `data` · `observability` · `security` · `contracts` · `delivery` · `frontend` · `quality`
@@ -37,18 +37,18 @@ La skill usa una taxonomía de dominios **cerrada e impuesta por el motor** — 
 
 El significado de cada dominio y su criterio de pertenencia están en `concerns/<dominio>/INDEX.md`. **No inventés dominios nuevos por proyecto**: si de verdad falta uno, es una decisión de catálogo (agregarlo al motor y a `concerns/INDEX.md`), nunca improvisado en un repo.
 
-Cada fase declara su dominio en el frontmatter (`domain:`). En la salida, el ADR de una fase se escribe en `.claude/adr/<domain>/<adr-output>.md`.
+Cada fase declara su dominio en el frontmatter (`domain:`). En la salida, el ADR de una fase se escribe en `.matecito-ai/adr/<domain>/<adr-output>.md`.
 
 ---
 
 ## Cuándo correr esta skill
 
-- Proyecto nuevo (greenfield) sin `.claude/adr/` ni `CLAUDE.md`
+- Proyecto nuevo (greenfield) sin `.matecito-ai/adr/` ni `CLAUDE.md`
 - Repo existente que el usuario quiere "ordenar"
 - El usuario pide explícitamente revisar/actualizar decisiones de arquitectura
 - Detectás que vas a tocar estructura/capas/auth/errores y no hay convenciones documentadas
 
-Si `.claude/adr/INDEX.md` ya existe con contenido: **NO rehagas todo**. Andá al modo `update` (final del documento).
+Si `.matecito-ai/adr/INDEX.md` ya existe con contenido: **NO rehagas todo**. Andá al modo `update` (final del documento).
 
 ---
 
@@ -70,7 +70,7 @@ Estas reglas son la diferencia entre una skill que la gente usa y una que abando
 
 **Permití aplazar explícitamente.** Cualquier fase puede quedar `Pending` con la razón ("lo definimos cuando llegue el feature de pagos"). Mejor un ADR honesto con "pendiente + por qué" que una decisión inventada.
 
-**Registrá tecnologías a medida que aparecen.** Cada vez que el usuario menciona o confirma una tecnología concreta, creá su mini-ADR en `.claude/adr/tech/<nombre>.md` en el momento. No esperes a la materialización final. Ver "Catálogo de tecnologías".
+**Registrá tecnologías a medida que aparecen.** Cada vez que el usuario menciona o confirma una tecnología concreta, creá su mini-ADR en `.matecito-ai/adr/tech/<nombre>.md` en el momento. No esperes a la materialización final. Ver "Catálogo de tecnologías".
 
 ---
 
@@ -81,8 +81,8 @@ Antes de la primera pregunta, inspeccioná el repo objetivo:
 ```bash
 ls -la
 test -f CLAUDE.md && echo "--- CLAUDE.md existe ---" && cat CLAUDE.md
-test -d .claude/adr && echo "--- ADRs existentes (por dominio) ---" && find .claude/adr -name '*.md' | sort
-test -d .claude/adr/tech && echo "--- Tech ya registrada ---" && ls .claude/adr/tech/
+test -d .matecito-ai/adr && echo "--- ADRs existentes (por dominio) ---" && find .matecito-ai/adr -name '*.md' | sort
+test -d .matecito-ai/adr/tech && echo "--- Tech ya registrada ---" && ls .matecito-ai/adr/tech/
 test -f package.json && echo "--- package.json ---" && head -50 package.json
 test -f pyproject.toml && echo "--- pyproject.toml ---" && head -50 pyproject.toml
 test -f go.mod && echo "--- go.mod ---" && cat go.mod
@@ -92,7 +92,7 @@ test -f Gemfile && echo "--- Gemfile ---" && cat Gemfile
 ```
 
 Con eso ya sabés:
-- Si hay decisiones previas (`.claude/adr/INDEX.md` existe → modo update)
+- Si hay decisiones previas (`.matecito-ai/adr/INDEX.md` existe → modo update)
 - Stack y framework principal (para inferir tipo y defaults)
 - Si el repo es greenfield o tiene código existente
 
@@ -161,7 +161,7 @@ Este es el procedimiento genérico del motor. Vale para cualquier fase, sea del 
 5. **Confirmá** la decisión antes de seguir.
 6. Si el archivo tiene **"Tech a registrar"** y se eligió una tecnología concreta, creá su mini-ADR en `tech/` en el momento (ver "Catálogo de tecnologías").
 6b. **Si la decisión corresponde a un patrón canónico** del catálogo en `~/.claude/references/design-patterns/` (típicamente fases de los dominios `structure`, `runtime`, `data`), preguntá UNA vez cuál patrón aplica y registralo en el ADR como `**Patrón aplicado:** <Nombre> — <1 línea de por qué>`. No fuerces: si la decisión no es un patrón (ej. una convención de naming, una política de rate limiting), omití este paso. El catálogo se consulta por nombre, sin link en el ADR — el pointer a la ubicación está en el `CLAUDE.md` del proyecto.
-7. **Materializá el ADR** en `.claude/adr/<dominio>/<adr-output>.md`, con el `tipo` del frontmatter en su encabezado, según la sección "Qué materializar" del archivo.
+7. **Materializá el ADR** en `.matecito-ai/adr/<dominio>/<adr-output>.md`, con el `tipo` del frontmatter en su encabezado, según la sección "Qué materializar" del archivo.
 
 Si la fase estaba recomendada pero el usuario la sacó, o no aplica: no la trates, pero generá igual su ADR (en la carpeta de su dominio) con `Status: Not Applicable`/`Pending` + razón.
 
@@ -200,7 +200,7 @@ Si el usuario quiere un tema que no está en el catálogo:
 4. Antes de guardarlo, preguntá: **"¿La guardo en el catálogo para reusar en futuros proyectos, o solo para este proyecto?"**
    - **Reusable** → creá `concerns/<dominio>/<slug>.md` con el formato estándar (ver `concerns/runtime/error-handling.md` como referencia), sumá la fila al `concerns/<dominio>/INDEX.md` y a la matriz de `concerns/INDEX.md`. Si el dominio era reservado, pasalo a activo. Esto es el ratchet: un tema olvidado queda cubierto para siempre.
    - **Solo este proyecto** → no toques el catálogo; generá únicamente el ADR de salida.
-5. En ambos casos, materializá el ADR en `.claude/adr/<dominio>/<slug>.md`.
+5. En ambos casos, materializá el ADR en `.matecito-ai/adr/<dominio>/<slug>.md`.
 
 ---
 
@@ -230,7 +230,7 @@ Escribí el archivo y seguí con la fase. No detengas el flujo principal por est
 ### Estructura
 
 ```
-.claude/adr/tech/
+.matecito-ai/adr/tech/
 ├── INDEX.md                  # tabla por categoría
 ├── python.md
 ├── fastapi.md
@@ -265,7 +265,7 @@ Naming: `<nombre-en-kebab-case>.md`, sin prefijos numéricos.
 <opcional. Restricciones, gotchas, configuración no obvia>
 ```
 
-### Template del INDEX de tech (`.claude/adr/tech/INDEX.md`)
+### Template del INDEX de tech (`.matecito-ai/adr/tech/INDEX.md`)
 
 ```markdown
 # Catálogo de tecnologías
@@ -366,14 +366,14 @@ Reglas de la estructura:
 ```markdown
 # Project Conventions for Claude
 
-Las decisiones de ingeniería de este proyecto (arquitectura, convenciones y políticas) están en `.claude/adr/`, **organizadas por dominio**.
+Las decisiones de ingeniería de este proyecto (arquitectura, convenciones y políticas) están en `.matecito-ai/adr/`, **organizadas por dominio**.
 
 **Antes de escribir código que toque arquitectura, capas, errores, auth, datos o convenciones:**
-1. Abrí `.claude/adr/INDEX.md` (índice raíz) e identificá el **dominio** relevante a tu tarea.
-2. Abrí `.claude/adr/<dominio>/INDEX.md` y leé los ADRs de ese dominio antes de escribir código.
+1. Abrí `.matecito-ai/adr/INDEX.md` (índice raíz) e identificá el **dominio** relevante a tu tarea.
+2. Abrí `.matecito-ai/adr/<dominio>/INDEX.md` y leé los ADRs de ese dominio antes de escribir código.
 3. Si hay contradicción entre tu plan y un ADR: pará y preguntale al usuario.
 
-**Antes de instalar/sugerir cualquier dependencia nueva (lib, framework, herramienta, DB), leé `.claude/adr/tech/INDEX.md`** para ver qué tecnologías ya están elegidas. Si tu sugerencia pisa con algo ya registrado, no la introduzcas sin preguntar.
+**Antes de instalar/sugerir cualquier dependencia nueva (lib, framework, herramienta, DB), leé `.matecito-ai/adr/tech/INDEX.md`** para ver qué tecnologías ya están elegidas. Si tu sugerencia pisa con algo ya registrado, no la introduzcas sin preguntar.
 
 **Cuando un ADR declara `Patrón aplicado: X`,** la definición canónica del patrón está en `~/.claude/references/design-patterns/patterns/<x>.md`. Consultá ese archivo antes de implementar para entender el contrato del patrón. Si vas a desviarte de la definición canónica, justificalo en el ADR — no improvises una variante.
 
@@ -382,7 +382,7 @@ Si una decisión no está documentada o algo no queda claro, **preguntá al usua
 Para crear, actualizar o revisar decisiones de ingeniería (incluyendo agregar/cambiar tecnologías del catálogo), usá la skill `project-decisions-bootstrap`.
 ```
 
-**`.claude/adr/INDEX.md` (índice RAÍZ — enruta por dominio):**
+**`.matecito-ai/adr/INDEX.md` (índice RAÍZ — enruta por dominio):**
 
 ```markdown
 # Project Decision Records — Índice raíz
@@ -418,7 +418,7 @@ Las decisiones están organizadas por **dominio**. Este índice te dice qué dom
 - **Decisión nueva:** creá el ADR en su dominio y sumá la fila al índice de ese dominio (y, si el dominio es nuevo en el proyecto, a este índice raíz).
 ```
 
-**`.claude/adr/<dominio>/INDEX.md` (índice de DOMINIO — lista sus ADRs):**
+**`.matecito-ai/adr/<dominio>/INDEX.md` (índice de DOMINIO — lista sus ADRs):**
 
 ```markdown
 # Dominio: `<dominio>` — Decisiones
@@ -495,10 +495,10 @@ Las decisiones están organizadas por **dominio**. Este índice te dice qué dom
 
 ### Paso 4: Escribir y reportar
 
-1. Para cada dominio con al menos un ADR: `mkdir -p .claude/adr/<dominio>`. Además `mkdir -p .claude/adr/tech`.
+1. Para cada dominio con al menos un ADR: `mkdir -p .matecito-ai/adr/<dominio>`. Además `mkdir -p .matecito-ai/adr/tech`.
 2. Escribir `CLAUDE.md` (si no existe; si existe, **NO sobrescribir** — preguntar al usuario qué hacer)
-3. Escribir `.claude/adr/INDEX.md` (índice raíz) listando solo los dominios con ADRs.
-4. Escribir `.claude/adr/<dominio>/INDEX.md` para cada dominio usado, con la columna Status/Tipo reflejando el estado real.
+3. Escribir `.matecito-ai/adr/INDEX.md` (índice raíz) listando solo los dominios con ADRs.
+4. Escribir `.matecito-ai/adr/<dominio>/INDEX.md` para cada dominio usado, con la columna Status/Tipo reflejando el estado real.
 5. Escribir **todos** los ADRs de las fases del set, cada uno en la carpeta de su dominio (Accepted con contenido completo; omitidos con su status + razón).
 6. Escribir `tech/INDEX.md` (los archivos individuales de tech ya se fueron creando intercalados).
 7. Reportar al usuario:
@@ -511,9 +511,9 @@ Las decisiones están organizadas por **dominio**. Este índice te dice qué dom
 
 ---
 
-## Modo update (cuando `.claude/adr/INDEX.md` ya existe)
+## Modo update (cuando `.matecito-ai/adr/INDEX.md` ya existe)
 
-1. **Leé el índice raíz, los índices de dominio y los ADRs** existentes (`find .claude/adr -name '*.md'`).
+1. **Leé el índice raíz, los índices de dominio y los ADRs** existentes (`find .matecito-ai/adr -name '*.md'`).
 2. **Mostrá un resumen agrupado por dominio y, dentro de cada uno, por status:** `Accepted`, `Pending` (con trigger), `Not Applicable` (con razón), `Deferred`.
 3. **Preguntá si algún `Pending` o `Deferred` ya está listo para resolverse.** Es lo más importante del modo update — sin esto, los "lo decidimos después" se pierden.
 4. **Ratchet — barré el catálogo:** leé `concerns/INDEX.md`, listá las fases relevantes al tipo de proyecto que **no tengan ADR todavía** (típicamente fases nuevas agregadas al catálogo desde la última corrida) y ofrecé tratarlas ahora. Mostralas agrupadas por dominio, incluyendo si caen en un dominio que el proyecto todavía no usa (esa carpeta se crea recién al materializar el primer ADR). Esta es la forma de que los temas agregados al catálogo lleguen a proyectos viejos.
@@ -524,7 +524,7 @@ Las decisiones están organizadas por **dominio**. Este índice te dice qué dom
    - **Agregar una decisión nueva** no cubierta → crear ADR en su dominio + fila en el índice de ese dominio (y en el raíz si el dominio es nuevo en el proyecto).
    - **Cambiar un `Not Applicable` a `Pending`/`Accepted`** → el contexto del proyecto cambió (ej: el script chico creció a app multiusuario y ahora sí hay auth). Actualizar Status, llenar contenido.
    - **Agregar/cambiar/quitar una tecnología** → editar `tech/INDEX.md` y el archivo en `tech/<nombre>.md`. Si reemplazás, el viejo queda `Superseded` apuntando al nuevo.
-   - **Rehacer todo desde cero** → confirmación doble. Antes de sobrescribir, mover el directorio a `.claude/adr.old.<timestamp>/`.
+   - **Rehacer todo desde cero** → confirmación doble. Antes de sobrescribir, mover el directorio a `.matecito-ai/adr.old.<timestamp>/`.
 6. Para actualizar/agregar, recorré solo las fases relevantes — no rehagas todo el cuestionario.
 7. **Después de cualquier cambio, mantené los índices coherentes:** actualizá el índice del dominio afectado y, si agregaste o vaciaste un dominio, el índice raíz.
 
@@ -556,7 +556,7 @@ Desde ese momento, todo bootstrap futuro lo considera, y el modo update lo ofrec
 - ❌ Asumir el stack en lugar de detectarlo en pre-flight → leer manifests primero.
 - ❌ Leer todo el catálogo `concerns/` de una → leer `INDEX.md` (raíz) para seleccionar, y cada `concerns/<dominio>/<slug>.md` solo cuando se trata esa fase.
 - ❌ Inventar un dominio nuevo en un repo → la taxonomía es fija e impuesta por el motor; un dominio nuevo es decisión de catálogo, no de proyecto.
-- ❌ Replicar los 17 dominios en la salida → en `.claude/adr/` solo se crean las carpetas de dominios con al menos un ADR.
+- ❌ Replicar los 17 dominios en la salida → en `.matecito-ai/adr/` solo se crean las carpetas de dominios con al menos un ADR.
 - ❌ Dejar índices desincronizados tras un cambio → actualizá el índice del dominio afectado y el raíz si corresponde.
 - ❌ Dejar el catálogo `tech/` vacío hasta el final → registrar intercalado, mientras la justificación está fresca.
 - ❌ Agregar una dependencia en sesiones futuras sin consultar `tech/INDEX.md` → revisar primero si ya hay algo elegido.

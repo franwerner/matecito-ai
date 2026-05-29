@@ -4,11 +4,11 @@ Lista central de chequeos que aplica `project-decisions-validate`. Es **ratchet-
 
 ## Cómo la lee el validador
 
-Cada chequeo tiene: **severidad** (CRITICAL / WARNING / SUGGESTION), una **condición** evaluada sobre los ADRs, el/los **dominio(s)** donde viven los ADRs involucrados (para localizar los archivos), y un **mensaje** (qué/por qué/sugerencia). El validador evalúa las condiciones contra `.claude/adr/<dominio>/` y reporta las que se cumplen.
+Cada chequeo tiene: **severidad** (CRITICAL / WARNING / SUGGESTION), una **condición** evaluada sobre los ADRs, el/los **dominio(s)** donde viven los ADRs involucrados (para localizar los archivos), y un **mensaje** (qué/por qué/sugerencia). El validador evalúa las condiciones contra `.matecito-ai/adr/<dominio>/` y reporta las que se cumplen.
 
 ## Mapa slug → dominio
 
-Para localizar el archivo de cada ADR nombrado abajo. Un ADR vive en `.claude/adr/<dominio>/<slug>.md`. (El campo `Dominio:` del encabezado del ADR es la fuente de verdad si hay duda.)
+Para localizar el archivo de cada ADR nombrado abajo. Un ADR vive en `.matecito-ai/adr/<dominio>/<slug>.md`. (El campo `Dominio:` del encabezado del ADR es la fuente de verdad si hay duda.)
 
 | Slug | Dominio |
 |---|---|
@@ -47,9 +47,9 @@ Dominios reservados (aparecen solo si el proyecto los pobló vía ratchet): `lif
 
 ### Integridad de la taxonomía
 
-- **[CRITICAL]** Existe una carpeta bajo `.claude/adr/` que no es un dominio canónico ni `tech/`. La taxonomía es cerrada; un dominio nuevo es decisión de catálogo, no de proyecto.
+- **[CRITICAL]** Existe una carpeta bajo `.matecito-ai/adr/` que no es un dominio canónico ni `tech/`. La taxonomía es cerrada; un dominio nuevo es decisión de catálogo, no de proyecto.
 - **[WARNING]** El campo `Dominio:` del encabezado de un ADR no coincide con la carpeta en la que está el archivo. Mover el ADR a su carpeta correcta o corregir el campo.
-- **[WARNING]** Un ADR está listado en el índice raíz (`.claude/adr/INDEX.md`) pero su dominio no tiene `INDEX.md`, o viceversa (índice de dominio sin entrada en el raíz). Índices desincronizados.
+- **[WARNING]** Un ADR está listado en el índice raíz (`.matecito-ai/adr/INDEX.md`) pero su dominio no tiene `INDEX.md`, o viceversa (índice de dominio sin entrada en el raíz). Índices desincronizados.
 - **[SUGGESTION]** Un dominio tiene `INDEX.md` pero ningún ADR (carpeta de dominio vacía en la salida). Limpiar la carpeta o el índice.
 
 ### Coherencia del campo `tipo`

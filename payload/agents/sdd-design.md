@@ -19,7 +19,7 @@ Also read shared conventions at `~/.claude/skills/_shared/sdd-phase-common.md`.
 Execute all steps from the skill directly in this context window:
 1. Read proposal artifact (required): `mem_search("sdd/{change-name}/proposal")` → `mem_get_observation`
 <!-- matecito-ai: read project ADRs before designing -->
-1b. Read project ADRs (if `.claude/adr/` exists): root `INDEX.md` + the ADRs of the domains this change touches. Accepted ADRs are binding constraints.
+1b. Read project ADRs (if `.matecito-ai/adr/` exists): root `INDEX.md` + the ADRs of the domains this change touches. Accepted ADRs are binding constraints.
 2. Choose the architecture approach (pattern, layering, boundaries)
 3. Map components, data flow, integration points
 4. Capture ADR-style decisions with rationale and rejected alternatives

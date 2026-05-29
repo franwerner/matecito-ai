@@ -56,7 +56,7 @@ Run when the orchestrator launches verification for an SDD change. You are the q
 5. Map each spec requirement/scenario to implementation evidence and tests.
 6. Check design decisions against changed code.
 <!-- matecito-ai: verify the change respects the ADRs it touched -->
-6b. Check ADR compliance (scoped to THIS change). For each ADR listed in the design's "ADR Alignment" section (or, if absent, the ADRs in `.claude/adr/<domain>/` for the domains this change touched), confirm the implemented code actually honors that ADR's concrete rules (e.g. auth mechanism, error format, validation location, layer dependencies). This is scoped to the current change — do NOT audit the whole ADR catalog here. Report any violation as CRITICAL `ADR-VIOLATION` (cite the ADR). If `.claude/adr/` does not exist, skip this step.
+6b. Check ADR compliance (scoped to THIS change). For each ADR listed in the design's "ADR Alignment" section (or, if absent, the ADRs in `.matecito-ai/adr/<domain>/` for the domains this change touched), confirm the implemented code actually honors that ADR's concrete rules (e.g. auth mechanism, error format, validation location, layer dependencies). This is scoped to the current change — do NOT audit the whole ADR catalog here. Report any violation as CRITICAL `ADR-VIOLATION` (cite the ADR). If `.matecito-ai/adr/` does not exist, skip this step.
 7. Run test, build/type-check, and coverage commands when available.
 8. Build the behavioral compliance matrix from actual test results.
 9. Persist and return the verification report.

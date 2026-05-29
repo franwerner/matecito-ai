@@ -1,13 +1,13 @@
 ---
 name: project-decisions-validate
-description: Validador de coherencia, completitud y verificabilidad de las decisiones de ingeniería (ADRs) de un proyecto, organizadas por dominio en .claude/adr/<dominio>/. Usá esta skill cuando el usuario pida "validar la arquitectura", "revisar los ADRs", "chequear coherencia", "¿mis decisiones se contradicen?", después de editar ADRs a mano o de correr project-decisions-bootstrap. Lee `.claude/adr/` (recursivo por dominio) y reporta hallazgos con severidad. NO modifica nada — es consultiva.
+description: Validador de coherencia, completitud y verificabilidad de las decisiones de ingeniería (ADRs) de un proyecto, organizadas por dominio en .matecito-ai/adr/<dominio>/. Usá esta skill cuando el usuario pida "validar la arquitectura", "revisar los ADRs", "chequear coherencia", "¿mis decisiones se contradicen?", después de editar ADRs a mano o de correr project-decisions-bootstrap. Lee `.matecito-ai/adr/` (recursivo por dominio) y reporta hallazgos con severidad. NO modifica nada — es consultiva.
 ---
 
 # Project Decisions Validate
 
 Lee los ADRs producidos por `project-decisions-bootstrap` (o editados a mano) y los chequea contra una rúbrica: **completitud**, **coherencia entre decisiones**, **verificabilidad**, e **integridad de la taxonomía**. Reporta hallazgos con severidad. No modifica archivos.
 
-Los ADRs están organizados por dominio (`.claude/adr/<dominio>/<slug>.md`), con un índice raíz (`.claude/adr/INDEX.md`) y un índice por dominio (`.claude/adr/<dominio>/INDEX.md`).
+Los ADRs están organizados por dominio (`.matecito-ai/adr/<dominio>/<slug>.md`), con un índice raíz (`.matecito-ai/adr/INDEX.md`) y un índice por dominio (`.matecito-ai/adr/<dominio>/INDEX.md`).
 
 ## Por qué contexto fresco
 
@@ -20,16 +20,16 @@ La taxonomía es fija (la misma que impone `project-decisions-bootstrap`):
 **Activos:** `context` · `structure` · `runtime` · `data` · `observability` · `security` · `contracts` · `delivery` · `frontend` · `quality`
 **Reservados:** `lifecycle` · `integration` · `privacy` · `release` · `domain-logic` · `compliance` · `ux-product`
 
-Cualquier carpeta bajo `.claude/adr/` que no sea uno de estos dominios (ni `tech/`) es un hallazgo de integridad de taxonomía.
+Cualquier carpeta bajo `.matecito-ai/adr/` que no sea uno de estos dominios (ni `tech/`) es un hallazgo de integridad de taxonomía.
 
 ## Pre-flight
 
-Leé `.claude/adr/INDEX.md`. Si no existe, no hay nada que validar → sugerí correr `project-decisions-bootstrap` y frená.
+Leé `.matecito-ai/adr/INDEX.md`. Si no existe, no hay nada que validar → sugerí correr `project-decisions-bootstrap` y frená.
 
 ## Proceso
 
-1. **Inventariá la estructura.** Listá todo: `find .claude/adr -name '*.md'`. Identificá el índice raíz, los índices de dominio (`<dominio>/INDEX.md`), los ADRs (`<dominio>/<slug>.md`) y `tech/INDEX.md` + `tech/*.md`.
-2. **Identificá el tipo de proyecto** desde el ADR `context` (en `.claude/adr/context/context.md`).
+1. **Inventariá la estructura.** Listá todo: `find .matecito-ai/adr -name '*.md'`. Identificá el índice raíz, los índices de dominio (`<dominio>/INDEX.md`), los ADRs (`<dominio>/<slug>.md`) y `tech/INDEX.md` + `tech/*.md`.
+2. **Identificá el tipo de proyecto** desde el ADR `context` (en `.matecito-ai/adr/context/context.md`).
 3. **Para el chequeo de completitud** necesitás saber qué fases son relevantes a ese tipo:
    - Si el bootstrap te lanzó, usá la lista de fases relevantes que te pasó.
    - Si corrés standalone y podés acceder al catálogo `concerns/INDEX.md` de `project-decisions-bootstrap`, usalo.
@@ -39,7 +39,7 @@ Leé `.claude/adr/INDEX.md`. Si no existe, no hay nada que validar → sugerí c
 
 ## Resolución de archivos por dominio
 
-La rúbrica nombra los ADRs por su slug (`auth`, `layers-and-dependencies`, etc.). Para abrir el archivo, el dominio está en la tabla de mapeo de `coherence-rules.md` o en el campo `Dominio:` del encabezado del propio ADR. Ej: `auth` → `.claude/adr/security/auth.md`.
+La rúbrica nombra los ADRs por su slug (`auth`, `layers-and-dependencies`, etc.). Para abrir el archivo, el dominio está en la tabla de mapeo de `coherence-rules.md` o en el campo `Dominio:` del encabezado del propio ADR. Ej: `auth` → `.matecito-ai/adr/security/auth.md`.
 
 Las contradicciones **entre dominios** (ej: `privacy` vs `lifecycle`) requieren abrir ADRs de carpetas distintas — usá el mapeo para localizarlos.
 
@@ -81,5 +81,5 @@ Si un dominio no tiene ningún hallazgo, no lo listes. Si NO hay hallazgos en ni
 - ❌ Inferir intención no escrita para "salvar" una contradicción → si no está en el ADR, es un hallazgo.
 - ❌ Modificar o arreglar ADRs vos mismo → solo reportás; el usuario decide y resuelve vía update.
 - ❌ Reportar todo como CRITICAL → reservá CRITICAL para lo que rompe la arquitectura; usá WARNING/SUGGESTION para el resto.
-- ❌ Buscar ADRs con glob plano (`.claude/adr/*.md`) → los ADRs están en subcarpetas de dominio; recorré recursivo.
+- ❌ Buscar ADRs con glob plano (`.matecito-ai/adr/*.md`) → los ADRs están en subcarpetas de dominio; recorré recursivo.
 - ❌ Ignorar carpetas no canónicas o mismatches `domain`/carpeta → son hallazgos de integridad de taxonomía, repórtalos.

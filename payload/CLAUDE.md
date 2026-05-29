@@ -47,7 +47,7 @@ Conceptual question: 3-5 lines max. Concrete technical question: the minimum to 
 ### Ecosystem (matecito-ai)
 This project runs inside the matecito-ai ecosystem. Apply these defaults:
 - **Substantial changes go through the SDD flow** (`sdd-intake → explore → ... → archive`), not ad-hoc edits. Trivial fixes can go direct (intake triages this).
-- **Architectural decisions are ADRs** in `.claude/adr/` (via `project-decisions-bootstrap`). Respect Accepted ADRs; surface conflicts instead of overriding them.
+- **Architectural decisions are ADRs** in `.matecito-ai/adr/` (via `project-decisions-bootstrap`). Respect Accepted ADRs; surface conflicts instead of overriding them.
 - **Session memory lives in Engram** (discoveries, fixes, context) — persistent across sessions. Architectural decisions go to ADRs, not Engram; don't duplicate.
 - **Code exploration prefers CodeGraph** when `.codegraph/` exists (structural questions); grep for literal text or non-indexed files.
 - **Design patterns canonical catalog lives in `~/.claude/references/design-patterns/`** (consultable reference, not a skill). When an ADR declares `Patrón aplicado: X`, the canonical definition is at `~/.claude/references/design-patterns/patterns/<x>.md`. Consult it before implementing to know the pattern's contract; if you deviate from the canonical definition, justify it in the ADR.

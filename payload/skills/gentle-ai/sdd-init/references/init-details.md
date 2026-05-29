@@ -9,9 +9,9 @@
 
 ## Skill Loading (matecito-ai)
 
-<!-- matecito-ai: el escaneo y construcción del skill-registry fue removido. sdd-init ya no arma .atl/skill-registry.md. Las fases cargan su propia SKILL.md y leen las convenciones del proyecto directamente desde .claude/adr/, CLAUDE.md y config.yaml. -->
+<!-- matecito-ai: el escaneo y construcción del skill-registry fue removido. sdd-init ya no arma .atl/skill-registry.md. Las fases cargan su propia SKILL.md y leen las convenciones del proyecto directamente desde .matecito-ai/adr/, CLAUDE.md y config.yaml. -->
 
-sdd-init no construye ningún registry. Cada fase SDD carga su propia `SKILL.md`. Las convenciones del proyecto se leen directamente de sus archivos: `.claude/adr/` (decisiones de arquitectura), `CLAUDE.md`, y `config.yaml`.
+sdd-init no construye ningún registry. Cada fase SDD carga su propia `SKILL.md`. Las convenciones del proyecto se leen directamente de sus archivos: `.matecito-ai/adr/` (decisiones de arquitectura), `CLAUDE.md`, y `config.yaml`.
 - For index files such as `AGENTS.md`, extract referenced file paths and include both the index and referenced files in the registry.
 
 ## LLM-First Skill Criteria

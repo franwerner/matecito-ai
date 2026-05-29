@@ -71,7 +71,7 @@ Be honest about size. Routing a trivial fix through 8 phases wastes effort; rout
 
 ### Step 5: Early Guard — ADR conflicts and undecided questions
 
-Read `.claude/adr/INDEX.md` (if it exists) and the indexes of the domains this request touches.
+Read `.matecito-ai/adr/INDEX.md` (if it exists) and the indexes of the domains this request touches.
 This is a **shallow** check — you are looking for early blockers, not doing design:
 
 - **Conflict:** does the request contradict an `Accepted` ADR? (e.g. "endpoint público sin login" vs an auth ADR that requires protection.) → set `status: blocked`, name the ADR, and recommend resolving via `project-decisions-bootstrap` (update) or adjusting the request. Do NOT proceed to recommend the flow.

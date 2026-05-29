@@ -22,7 +22,7 @@ Execute all steps from the skill directly in this context window:
 4. Run the test suite appropriate to the stack (use terminal/MCP as needed)
 5. Check each spec requirement against implementation — flag CRITICAL / WARNING / SUGGESTION
 <!-- matecito-ai: verify changed code respects the ADRs it touched (scoped to this change) -->
-5b. Check ADR compliance scoped to this change: for the ADRs listed in the design's ADR Alignment (or `.claude/adr/<domain>/` for touched domains), confirm the code honors their concrete rules. Any violation → CRITICAL `ADR-VIOLATION` (cite the ADR). Skip if `.claude/adr/` doesn't exist.
+5b. Check ADR compliance scoped to this change: for the ADRs listed in the design's ADR Alignment (or `.matecito-ai/adr/<domain>/` for touched domains), confirm the code honors their concrete rules. Any violation → CRITICAL `ADR-VIOLATION` (cite the ADR). Skip if `.matecito-ai/adr/` doesn't exist.
 6. Confirm tasks are marked complete and match code state
 7. Persist verify report to active backend
 

@@ -22,7 +22,7 @@ Qué se documenta, dónde vive cada tipo de doc, y qué convenciones se siguen. 
 Elegí qué tipos de doc aplican al proyecto (podés combinar):
 
 - **`README.md` en raíz** — *default para todos; describe qué es el proyecto, cómo levantarlo, cómo correr tests, cómo contribuir.*
-- **ADRs en `.claude/adr/`** — decisiones arquitectónicas; ya cubierto por esta skill.
+- **ADRs en `.matecito-ai/adr/`** — decisiones arquitectónicas; ya cubierto por esta skill.
 - **Docs de API** — *recomendado si hay API pública o consumida por terceros*; formato: OpenAPI / Swagger, GraphQL schema, doc generada desde código.
 - **Docs de módulos / librerías** — docstrings / JSDoc con generador (Sphinx, TypeDoc, Javadoc, etc.); solo si es una librería pública o con múltiples consumidores.
 - **Runbooks / docs operacionales** — cómo deployar, cómo hacer rollback, cómo resolver alertas comunes.

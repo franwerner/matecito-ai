@@ -22,7 +22,7 @@ Execute all steps from the skill directly in this context window:
 2. Read spec artifact (required): `mem_search("sdd/{change-name}/spec")` → `mem_get_observation`
 3. Read design artifact (required): `mem_search("sdd/{change-name}/design")` → `mem_get_observation`
 <!-- matecito-ai: read applicable ADRs (from design's ADR Alignment) and use context7/codegraph_impact while coding -->
-3a. Read the applicable ADRs in `.claude/adr/` (listed in the design's ADR Alignment). Treat their concrete rules as hard constraints. If the design flagged an ADR conflict/uncaptured decision as blocker → return `blocked`. Use context7 for library docs and `codegraph_impact` before changing existing symbols.
+3a. Read the applicable ADRs in `.matecito-ai/adr/` (listed in the design's ADR Alignment). Treat their concrete rules as hard constraints. If the design flagged an ADR conflict/uncaptured decision as blocker → return `blocked`. Use context7 for library docs and `codegraph_impact` before changing existing symbols.
 3b. Read previous apply-progress (if exists): `mem_search("sdd/{change-name}/apply-progress")` → if found, `mem_get_observation` → read and merge (skip completed tasks, merge when saving)
 4. Detect TDD mode from config or existing test patterns
 5. Implement assigned tasks: in TDD mode follow RED → GREEN → REFACTOR; in standard mode write code then verify

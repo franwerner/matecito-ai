@@ -109,9 +109,9 @@ For SDD artifacts, `capture_prompt: false` is explicit and mandatory when the En
 
 ## Skill Loading
 
-<!-- matecito-ai: el registry/inyección fue removido. Las fases cargan su propia skill directamente y leen las convenciones del proyecto desde sus archivos (.claude/adr/, CLAUDE.md, config.yaml). -->
+<!-- matecito-ai: el registry/inyección fue removido. Las fases cargan su propia skill directamente y leen las convenciones del proyecto desde sus archivos (.matecito-ai/adr/, CLAUDE.md, config.yaml). -->
 
-Each SDD phase loads its own `SKILL.md` (plus any module it explicitly references). Project conventions are read directly from the project's files — `.claude/adr/` for architecture decisions, `CLAUDE.md`, and `config.yaml`. There is no skill registry or pre-injected `Project Standards` block in matecito-ai. See Section A of `sdd-phase-common.md`.
+Each SDD phase loads its own `SKILL.md` (plus any module it explicitly references). Project conventions are read directly from the project's files — `.matecito-ai/adr/` for architecture decisions, `CLAUDE.md`, and `config.yaml`. There is no skill registry or pre-injected `Project Standards` block in matecito-ai. See Section A of `sdd-phase-common.md`.
 
 ## Detail Level
 
