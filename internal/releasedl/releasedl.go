@@ -86,13 +86,24 @@ func LatestRelease(repo Repo, p Platform) (Release, error) {
 		return rel, err
 	}
 	req.Header.Set("Accept", "application/vnd.github+json")
+	token := githubToken()
+	if token != "" {
+		req.Header.Set("Authorization", "Bearer "+token)
+	}
 	resp, err := client.Do(req)
 	if err != nil {
 		return rel, fmt.Errorf("consultando GitHub API: %w", err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return rel, fmt.Errorf("GitHub API devolvió status %d", resp.StatusCode)
+		if resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusTooManyRequests {
+			hint := "esperá unos minutos o seteá GITHUB_TOKEN/GH_TOKEN para subir el límite (60 → 5000 req/h)"
+			if token != "" {
+				hint = "ya hay un token seteado; puede ser un secondary rate limit, esperá unos minutos"
+			}
+			return rel, fmt.Errorf("rate limit de GitHub API (status %d) consultando releases de %s/%s — %s", resp.StatusCode, repo.Owner, repo.Name, hint)
+		}
+		return rel, fmt.Errorf("GitHub API devolvió status %d consultando releases de %s/%s", resp.StatusCode, repo.Owner, repo.Name)
 	}
 
 	var payload struct {
@@ -119,13 +130,30 @@ func LatestRelease(repo Repo, p Platform) (Release, error) {
 			rel.SumsURL = a.URL
 		}
 	}
+	releasesURL := fmt.Sprintf("https://github.com/%s/%s/releases", repo.Owner, repo.Name)
 	if rel.AssetURL == "" {
-		return rel, fmt.Errorf("asset no encontrado para %s/%s en release %s", p.OS, p.Arch, payload.TagName)
+		available := make([]string, 0, len(payload.Assets))
+		for _, a := range payload.Assets {
+			available = append(available, a.Name)
+		}
+		return rel, fmt.Errorf(
+			"no se encontró el asset %q en la última release (%s) de %s/%s — el esquema de nombres del release pudo haber cambiado.\nAssets disponibles: %s\nDescargá manualmente desde %s",
+			assetName, payload.TagName, repo.Owner, repo.Name,
+			strings.Join(available, ", "), releasesURL)
 	}
 	if rel.SumsURL == "" {
-		return rel, fmt.Errorf("checksums.txt no encontrado en release %s", payload.TagName)
+		return rel, fmt.Errorf(
+			"no se encontró checksums.txt en la última release (%s) de %s/%s.\nDescargá manualmente desde %s",
+			payload.TagName, repo.Owner, repo.Name, releasesURL)
 	}
 	return rel, nil
+}
+
+func githubToken() string {
+	if t := strings.TrimSpace(os.Getenv("GITHUB_TOKEN")); t != "" {
+		return t
+	}
+	return strings.TrimSpace(os.Getenv("GH_TOKEN"))
 }
 
 // Download baja el asset, verifica SHA256 contra checksums.txt, extrae el
