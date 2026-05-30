@@ -327,6 +327,26 @@ func InstallEngram(opts Options) error {
 	return err
 }
 
+func InstallCodegraph(opts Options) error {
+	if _, err := exec.LookPath("npm"); err != nil {
+		return errors.New("npm no está instalado")
+	}
+	if err := ensureUserNpmPrefix(opts); err != nil {
+		return err
+	}
+	return runIO(opts, "npm", "install", "-g", "@colbymchenry/codegraph")
+}
+
+func UpdateEngramPlugin(opts Options) error {
+	if _, err := exec.LookPath("claude"); err != nil {
+		return errors.New("claude no está en PATH")
+	}
+	if err := runIO(opts, "claude", "plugin", "marketplace", "update", "engram"); err != nil {
+		return err
+	}
+	return runIO(opts, "claude", "plugin", "update", "engram")
+}
+
 func codegraphBinaryStep(opts Options) Step {
 	return Step{
 		Name: "CodeGraph (binario)",
@@ -336,13 +356,7 @@ func codegraphBinaryStep(opts Options) Step {
 			return err != nil
 		},
 		Run: func() error {
-			if _, err := exec.LookPath("npm"); err != nil {
-				return errors.New("npm no está instalado")
-			}
-			if err := ensureUserNpmPrefix(opts); err != nil {
-				return err
-			}
-			return runIO(opts, "npm", "install", "-g", "@colbymchenry/codegraph")
+			return InstallCodegraph(opts)
 		},
 	}
 }

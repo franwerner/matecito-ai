@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -10,24 +11,15 @@ import (
 )
 
 func NewUpdateCmd() *cobra.Command {
-	var only string
-
-	cmd := &cobra.Command{
+	return &cobra.Command{
 		Use:     "update",
 		GroupID: "setup",
-		Short:   "Actualiza matecito-ai y Engram a sus últimas releases de GitHub",
-		Long: `update descarga las últimas releases de matecito-ai y Engram desde GitHub,
-verifica el SHA256 de cada asset y reemplaza los binarios existentes.
-
-Por default actualiza ambos. Usá --only para acotar a uno.`,
-		Example: `  # Actualizar matecito-ai y Engram
-  matecito-ai update
-
-  # Solo el binario de matecito-ai
-  matecito-ai update --only=self
-
-  # Solo Engram
-  matecito-ai update --only=engram`,
+		Short:   "Actualiza todas las deps del ecosistema a sus últimas versiones",
+		Long: `update actualiza todas las dependencias del ecosistema a su última versión:
+matecito-ai, el binario de Engram, el plugin de Engram y CodeGraph.
+context7 corre con npx @latest en cada sesión, así que no requiere actualización.`,
+		Example: `  # Actualizar todo
+  matecito-ai update`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts := install.Options{
 				Stdin:  os.Stdin,
@@ -35,31 +27,32 @@ Por default actualiza ambos. Usá --only para acotar a uno.`,
 				Stderr: os.Stderr,
 			}
 
-			doSelf := only == "" || only == "self"
-			doEngram := only == "" || only == "engram"
-
-			if !doSelf && !doEngram {
-				return fmt.Errorf("--only debe ser 'self' o 'engram' (recibí %q)", only)
+			tasks := []struct {
+				name string
+				fn   func(install.Options) error
+			}{
+				{"matecito-ai", install.InstallSelf},
+				{"engram (binario)", install.InstallEngram},
+				{"engram (plugin)", install.UpdateEngramPlugin},
+				{"codegraph", install.InstallCodegraph},
 			}
 
-			if doEngram {
-				fmt.Fprintln(opts.Stdout, "Actualizando Engram…")
-				if err := install.InstallEngram(opts); err != nil {
-					return err
+			var failed []string
+			for _, t := range tasks {
+				fmt.Fprintf(opts.Stdout, "Actualizando %s…\n", t.name)
+				if err := t.fn(opts); err != nil {
+					fmt.Fprintf(opts.Stderr, "  ✗ %s: %v\n", t.name, err)
+					failed = append(failed, t.name)
 				}
 			}
-			if doSelf {
-				fmt.Fprintln(opts.Stdout, "Actualizando matecito-ai…")
-				if err := install.InstallSelf(opts); err != nil {
-					return err
-				}
-			}
 
+			fmt.Fprintln(opts.Stdout, "context7 corre con npx @latest en cada sesión — nada que actualizar.")
+
+			if len(failed) > 0 {
+				return fmt.Errorf("falló la actualización de: %s", strings.Join(failed, ", "))
+			}
 			fmt.Fprintln(opts.Stdout, "Listo.")
 			return nil
 		},
 	}
-
-	cmd.Flags().StringVar(&only, "only", "", "Actualizar solo un target: self | engram")
-	return cmd
 }
