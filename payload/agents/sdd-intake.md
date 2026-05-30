@@ -26,12 +26,15 @@ Execute all steps from the skill directly in this context window:
 2. Ask 2-4 targeted intake questions to lock down what is ambiguous (the discovery form)
 3. Classify the change: type (feature/bug/refactor/chore), domains touched, rough size
 4. Triage: does this warrant the full SDD flow, or is it trivial enough to go direct?
-5. Early guard: check `.matecito-ai/adr/` for conflicts or undecided questions this request raises
+5. Early guard (ADR activation gate): if `.matecito-ai/adr/` is absent or empty, ADRs are inactive — skip this step silently (`status: done`, no ADR mention in the brief). Only when it exists with content, check it for conflicts or undecided questions this request raises
 6. Produce the structured brief artifact and return it
 
 Do NOT explore the codebase in depth (that is sdd-explore). Do NOT design or implement.
 Your job is to turn a vague chat request into a clear, structured brief — and to stop early
-if there is an ADR conflict or an undecided architectural question.
+if there is an ADR conflict or an undecided architectural question **when ADRs are active**.
+When `.matecito-ai/adr/` is absent or empty, never emit `blocked`/`needs-decision` for ADR
+reasons and never mention ADRs — treat such questions as ordinary design decisions for later
+phases (sdd-explore/sdd-design).
 
 ## Engram Save (mandatory when tied to a named change)
 

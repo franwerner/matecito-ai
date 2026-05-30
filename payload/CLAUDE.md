@@ -229,7 +229,7 @@ sdd-intake → sdd-explore → sdd-propose → sdd-spec → sdd-design → sdd-t
                                            (design reads ADRs)
 ```
 
-`sdd-intake` is the entry phase: it structures the raw request, asks the discovery form, classifies/triages, and runs an early ADR guard. It produces the Intake Brief.
+`sdd-intake` is the entry phase: it structures the raw request, asks the discovery form, classifies/triages, and runs an early ADR guard **only when ADRs are active per the ADR activation gate** (when `.matecito-ai/adr/` is absent or empty it skips the guard silently). It produces the Intake Brief.
 
 ### Artifact Store Policy
 
@@ -277,7 +277,9 @@ After `sdd-intake` returns the Intake Brief, the orchestrator ALWAYS shows it to
 <!-- matecito-ai: the lane is part of what the user confirms here; the rule lives in the matecito-ai:behavior zone -->
 The brief's recommended **lane** (`direct | reduced | full`) is part of what the user confirms/adjusts at this gate. See the **SDD lane fork** rule in the `matecito-ai:behavior` zone — that zone owns the with/without-SDD fork and the lane definitions; this gate only surfaces them.
 
-If the brief came back `status: blocked` (conflicts with an Accepted ADR) → do NOT proceed; present the conflict and options (adjust request, or update the decision via project-decisions-bootstrap). If `status: needs-decision` (undecided architectural question) → route to project-decisions-bootstrap to capture it before proceeding.
+**The ADR-driven statuses below exist only when ADRs are active** (per the **ADR activation gate** in `matecito-ai:behavior`). When `.matecito-ai/adr/` is absent or empty, intake never returns `blocked`/`needs-decision` for ADR reasons; the orchestrator must NOT mention ADRs or route to `project-decisions-bootstrap` — undecided architectural questions are resolved as ordinary design decisions in `sdd-explore`/`sdd-design`.
+
+When ADRs are active: if the brief came back `status: blocked` (conflicts with an Accepted ADR) → do NOT proceed; present the conflict and options (adjust request, or update the decision via project-decisions-bootstrap). If `status: needs-decision` (undecided architectural question) → route to project-decisions-bootstrap to capture it before proceeding.
 
 After the intake gate, subsequent phases follow the Execution Mode chosen above (auto runs them back-to-back; interactive pauses between each).
 
