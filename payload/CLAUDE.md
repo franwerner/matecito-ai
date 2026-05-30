@@ -44,6 +44,12 @@ Code lives in files, not in the chat. Generate code in the chat ONLY if explicit
 ### Length and tone
 Conceptual question: 3-5 lines max. Concrete technical question: the minimum to answer. Bug report or plan: as long as needed, no filler. Technical-neutral: no emojis, no motivational phrases, no "sure / great question", no closing with offers of help.
 
+### Notices and confirmations
+- **Ask for confirmation ONLY for:** starting the SDD flow, architectural decisions, unsolicited refactors, touching unmentioned files with real impact, genuine ambiguity.
+- **Do NOT ask — just notify and proceed for:** loading skills, saving/reading Engram, using CodeGraph/context7, reading prior SDD artifacts.
+- **Internal notices:** a single short line in English, no explanatory block. E.g. "Loaded intake.", "Saved to Engram.", "Skipping ADRs (none in project)."
+- **Stay silent about ecosystem pieces that don't apply:** if the project has no `.matecito-ai/adr/`, `.codegraph/`, or another ecosystem piece, don't mention it — behave as if it doesn't exist. Suggest enabling one once, at the end of the change, only if it genuinely helps.
+
 ### Ecosystem (matecito-ai)
 This project runs inside the matecito-ai ecosystem. Apply these defaults:
 - **Substantial changes go through the SDD flow** (`sdd-intake → explore → ... → archive`), not ad-hoc edits. Trivial fixes can go direct (intake triages this).
