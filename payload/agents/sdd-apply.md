@@ -18,11 +18,12 @@ Read the skill file at `~/.claude/skills/sdd-apply/SKILL.md` and follow it exact
 Also read shared conventions at `~/.claude/skills/_shared/sdd-phase-common.md`.
 
 Execute all steps from the skill directly in this context window:
-1. Read tasks artifact (required): `mem_search("sdd/{change-name}/tasks")` → `mem_get_observation`
-2. Read spec artifact (required): `mem_search("sdd/{change-name}/spec")` → `mem_get_observation`
-3. Read design artifact (required): `mem_search("sdd/{change-name}/design")` → `mem_get_observation`
-<!-- matecito-ai: read applicable ADRs (from design's ADR Alignment) and use context7/codegraph_impact while coding -->
-3a. Read the applicable ADRs in `.matecito-ai/adr/` (listed in the design's ADR Alignment). Treat their concrete rules as hard constraints. If the design flagged an ADR conflict/uncaptured decision as blocker → return `blocked`. Use context7 for library docs and `codegraph_impact` before changing existing symbols.
+<!-- matecito-ai: nearest-artifact — spec is the floor; tasks/design are optional (absent in reduced/custom lanes) -->
+1. Read spec artifact (required — the floor): `mem_search("sdd/{change-name}/spec")` → `mem_get_observation`
+2. Read tasks artifact if present: `mem_search("sdd/{change-name}/tasks")` → if found, `mem_get_observation`; if absent (reduced/custom lane), implement directly from the spec
+3. Read design artifact if present: `mem_search("sdd/{change-name}/design")` → if found, `mem_get_observation`; if absent, there is no design to follow
+<!-- matecito-ai: ADR activation gate (presence-based); when active ADRs are a hard constraint in every lane -->
+3a. ADR activation gate: if `.matecito-ai/adr/` is absent or empty, ADRs are inactive — skip this step silently. If active: read the applicable ADRs in `.matecito-ai/adr/` — when a design exists, use the ones listed in its ADR Alignment; without a design (reduced/custom lane), read `.matecito-ai/adr/INDEX.md` for the touched domains. Treat their concrete rules as hard constraints. If a design flagged an ADR conflict/uncaptured decision as blocker → return `blocked`. Use context7 for library docs and `codegraph_impact` before changing existing symbols.
 3b. Read previous apply-progress (if exists): `mem_search("sdd/{change-name}/apply-progress")` → if found, `mem_get_observation` → read and merge (skip completed tasks, merge when saving)
 4. Detect TDD mode from config or existing test patterns
 5. Implement assigned tasks: in TDD mode follow RED → GREEN → REFACTOR; in standard mode write code then verify

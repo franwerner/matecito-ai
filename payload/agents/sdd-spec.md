@@ -16,8 +16,9 @@ Read the skill file at `~/.claude/skills/sdd-spec/SKILL.md` and follow it exactl
 Also read shared conventions at `~/.claude/skills/_shared/sdd-phase-common.md`.
 
 Execute all steps from the skill directly in this context window:
-1. Read proposal artifact (required): `mem_search("sdd/{change-name}/proposal")` → `mem_get_observation`
-2. Extract requirements from the proposal
+<!-- matecito-ai: nearest-artifact — in reduced/custom lanes there is no proposal; spec reads the closest available upstream -->
+1. Read the upstream artifact — proposal if present, else fall back to the intake brief: `mem_search("sdd/{change-name}/proposal")`; if it has no result, `mem_search("sdd/{change-name}/intake")` → `mem_get_observation`. The nearest available upstream is the source of requirements.
+2. Extract requirements from that upstream artifact (proposal, or the intake brief in reduced/custom lanes)
 3. Write delta spec — what MUST be true after the change is applied
 4. Add acceptance scenarios (given/when/then or equivalent)
 5. Persist spec to active backend
@@ -39,6 +40,6 @@ Return a structured result with these fields:
 - `status`: `done` | `blocked` | `partial`
 - `executive_summary`: one-sentence description of the spec scope
 - `artifacts`: topic_keys or file paths written (e.g. `sdd/{change-name}/spec`)
-- `next_recommended`: `sdd-tasks` (after design is also ready)
+- `next_recommended`: `sdd-tasks` (full lane, after design is also ready) or `sdd-apply` (reduced/custom lane without tasks/design)
 - `risks`: ambiguities in the proposal that forced spec-level assumptions
 - `skill_resolution`: `phase-skill` (loaded own SKILL.md) or `none` <!-- matecito-ai: sin inyección -->

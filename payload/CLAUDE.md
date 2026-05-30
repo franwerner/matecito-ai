@@ -54,9 +54,29 @@ Conceptual question: 3-5 lines max. Concrete technical question: the minimum to 
 This project runs inside the matecito-ai ecosystem. Apply these defaults:
 - **Substantial changes go through the SDD flow** (`sdd-intake → explore → ... → archive`), not ad-hoc edits. Trivial fixes can go direct (intake triages this).
 - **Architectural decisions are ADRs** in `.matecito-ai/adr/` (via `project-decisions-bootstrap`). Respect Accepted ADRs; surface conflicts instead of overriding them.
+- **ADR activation gate (presence-based) — single source of truth.** ADRs are **active only when `.matecito-ai/adr/` exists and has content** (an `INDEX.md` or at least one ADR). Absent or empty → ADRs are **inactive**: every SDD phase skips them **silently** — no early guard, no ADR alignment, no mention at all. Phases check this gate; they do not re-decide it.
 - **Session memory lives in Engram** (discoveries, fixes, context) — persistent across sessions. Architectural decisions go to ADRs, not Engram; don't duplicate.
 - **Code exploration prefers CodeGraph** when `.codegraph/` exists (structural questions); grep for literal text or non-indexed files.
 - **Design patterns canonical catalog lives in `~/.claude/references/design-patterns/`** (consultable reference, not a skill). When an ADR declares `Patrón aplicado: X`, the canonical definition is at `~/.claude/references/design-patterns/patterns/<x>.md`. Consult it before implementing to know the pattern's contract; if you deviate from the canonical definition, justify it in the ADR.
+
+### SDD lane fork
+When you infer a request is **substantial** (intake-worthy), do NOT silently start the full flow. Surface the choice **once, up front**, and let the user decide — you recommend, the user picks:
+- Ask whether to handle it **with or without the SDD flow** — *without* → direct implementation; *with* → enter the flow.
+- If *with*, intake recommends a lane (base ± add-ons); the user confirms or adjusts it at the intake gate. Never apply a lane unilaterally.
+- Offer the fork **once, at the start of the request** — not repeated per phase.
+- **Trivial/obvious changes skip the question** and go direct.
+
+The SDD path is one mechanism: an **immutable base** plus **opt-in add-ons**.
+- **Base (always runs):** `intake → spec → apply → verify → archive`. This is the floor; `sdd-spec` starts from the intake brief when no proposal exists.
+- **Add-ons (toggle on as needed):** `explore`, `propose`, `design`, `tasks`. The user picks *which*, not the order — the orchestrator inserts each at its canonical position (see the add-on insertion map in the orchestrator zone).
+
+Presets are shorthands over this same mechanism:
+- **direct** (no SDD) → `direct-implementation`. Outside the base+add-ons scheme.
+- **reduced** → base, 0 add-ons. Small/medium with no architectural unknown.
+- **full** → base + all 4 add-ons. Large, or touching architecture/multiple domains.
+- **custom** → base + any subset of add-ons. The in-between combos (e.g. reduced + `design` for a small change with one architectural decision).
+
+The lane recommendation is produced by `sdd-intake` (Step 4); the orchestrator's INTAKE GATE surfaces it for confirm/adjust/cancel.
 
 ### Feature discovery (general behavior, outside the SDD flow)
 Max 3 questions per message, grouped, one round. Only what can't be inferred. If the request already has enough detail, start directly. Large feature → brief plan before coding.
@@ -250,9 +270,12 @@ In Interactive mode, between phases: show what the phase produced, list what's n
 <!-- matecito-ai: the scope gate ALWAYS applies, even in Automatic mode -->
 After `sdd-intake` returns the Intake Brief, the orchestrator ALWAYS shows it to the user and waits for **confirm / adjust / cancel** before launching `sdd-explore` — **even in Automatic mode**. Automatic mode does NOT skip this gate; the scope is always confirmed first.
 
-- **confirm** → proceed per the brief's `next` (sdd-explore | direct-implementation | project-decisions-bootstrap).
+- **confirm** → proceed per the brief's `next` (sdd-explore | sdd-spec | direct-implementation | project-decisions-bootstrap).
 - **adjust** → update the brief with the user's corrections, re-show, wait again.
 - **cancel** → discard the change.
+
+<!-- matecito-ai: the lane is part of what the user confirms here; the rule lives in the matecito-ai:behavior zone -->
+The brief's recommended **lane** (`direct | reduced | full`) is part of what the user confirms/adjusts at this gate. See the **SDD lane fork** rule in the `matecito-ai:behavior` zone — that zone owns the with/without-SDD fork and the lane definitions; this gate only surfaces them.
 
 If the brief came back `status: blocked` (conflicts with an Accepted ADR) → do NOT proceed; present the conflict and options (adjust request, or update the decision via project-decisions-bootstrap). If `status: needs-decision` (undecided architectural question) → route to project-decisions-bootstrap to capture it before proceeding.
 
@@ -270,6 +293,23 @@ intake -> explore -> proposal -> specs --> tasks -> apply -> verify -> archive
                                     |
                                   design
 ```
+
+<!-- matecito-ai: add-on insertion map for the lane fork (base + opt-in add-ons) -->
+#### Lane add-on insertion map
+
+A lane is the immutable base plus the add-ons the user enabled. The user picks *which* add-ons, never the order — insert each enabled add-on at its canonical slot:
+
+```
+intake -> [explore] -> [propose] -> spec -> [design] -> [tasks] -> apply -> verify -> archive
+```
+
+- **base (always):** intake, spec, apply, verify, archive.
+- **explore** → between intake and spec (before propose).
+- **propose** → between explore and spec.
+- **design** → between spec and apply (before tasks).
+- **tasks** → between design and apply.
+
+`reduced` = no brackets; `full` = all brackets; `custom` = any subset. When an enabled add-on's ideal upstream is absent (e.g. `design` enabled without `propose`), it reads the nearest available upstream per the fallback note above.
 
 ### Result Contract
 
@@ -303,6 +343,9 @@ No skill registry, no compact-rule injection: skills are loaded via the native `
 | `sdd-verify` | spec + tasks + apply-progress + **ADRs touched** | `verify-report` |
 | `sdd-archive` | all artifacts | `archive-report` |
 
+<!-- matecito-ai: nearest-artifact fallback for reduced/custom lanes -->
+The "Reads" column lists the **full-lane** ideal. In `reduced`/`custom` lanes some upstream phases don't run, so each phase reads the **nearest available upstream**: `sdd-spec` falls back to the intake brief when there is no proposal; `sdd-apply` treats `spec` as the floor and skips `tasks`/`design` when absent. ADRs are a hard constraint in every lane **when active** per the **ADR activation gate** (`matecito-ai:behavior`); when inactive (no `.matecito-ai/adr/`) phases skip them silently. See also the **SDD lane fork** rule.
+
 #### Strict TDD Forwarding (MANDATORY)
 
 When launching `sdd-apply`/`sdd-verify`: search `mem_search("sdd-init/{project}")`. If `strict_tdd: true` → add to prompt: "STRICT TDD MODE IS ACTIVE. Test runner: {test_command}. Follow strict-tdd.md." Resolve once per session, cache.
@@ -331,38 +374,3 @@ Strict TDD Mode: enabled
 
 
 <!-- matecito-ai: Gentleman CodeGraph section, kept (codegraph is used). VERIFY the tool names (codegraph_search, codegraph_trace, codegraph_impact, etc.) match your real MCP registration — the SDD fork assumes the mcp__codegraph__* prefix. -->
-<!-- CODEGRAPH_START -->
-## CodeGraph
-
-This project has a CodeGraph MCP server (`codegraph_*` tools) configured. CodeGraph is a tree-sitter-parsed knowledge graph of every symbol, edge, and file. Reads are sub-millisecond and return structural information grep cannot.
-
-### When to prefer codegraph over native search
-
-Use codegraph for **structural** questions — what calls what, what would break, where is X defined, what is X's signature. Use native grep/read only for **literal text** queries (string contents, comments, log messages) or after you already have a specific file open.
-
-| Question | Tool |
-|---|---|
-| "Where is X defined?" / "Find symbol named X" | `codegraph_search` |
-| "What calls function Y?" | `codegraph_callers` |
-| "What does Y call?" | `codegraph_callees` |
-| "How does X reach/become Y? / trace the flow from X to Y" | `codegraph_trace` (one call = the whole path, incl. callback/React/JSX dynamic hops) |
-| "What would break if I changed Z?" | `codegraph_impact` |
-| "Show me Y's signature / source / docstring" | `codegraph_node` |
-| "Give me focused context for a task/area" | `codegraph_context` |
-| "See several related symbols' source at once" | `codegraph_explore` |
-| "What files exist under path/" | `codegraph_files` |
-| "Is the index healthy?" | `codegraph_status` |
-
-### Rules of thumb
-
-- **Answer directly — don't delegate exploration.** For "how does X work" / architecture questions, answer with 2-3 codegraph calls: `codegraph_context` first, then ONE `codegraph_explore` for the source of the symbols it surfaces. For a specific **flow** ("how does X reach Y") start with `codegraph_trace` from→to — one call returns the whole path with dynamic hops bridged — then ONE `codegraph_explore` for the bodies; don't rebuild the path with `codegraph_search` + `codegraph_callers`. Codegraph IS the pre-built index, so spawning a separate file-reading sub-task/agent — or running a grep + read loop — repeats work codegraph already did and costs more for the same answer.
-- **Trust codegraph results.** They come from a full AST parse. Do NOT re-verify them with grep — that's slower, less accurate, and wastes context.
-- **Don't grep first** when looking up a symbol by name. `codegraph_search` is faster and returns kind + location + signature in one call.
-- **Don't chain `codegraph_search` + `codegraph_node`** when you just want context — `codegraph_context` is one call.
-- **Don't loop `codegraph_node` over many symbols** — one `codegraph_explore` call returns several symbols' source grouped in a single capped call, while each separate node/Read call re-reads the whole context and costs far more.
-- **Index lag — check the staleness banner, don't guess a wait.** When a codegraph response starts with "⚠️ Some files referenced below were edited since the last index sync…", the listed files are pending re-index — Read those specific files for accurate content. Files NOT in that banner are fresh and codegraph is authoritative for them. `codegraph_status` also lists pending files under "Pending sync".
-
-### If `.codegraph/` doesn't exist
-
-The MCP server returns "not initialized." Ask the user: *"I notice this project doesn't have CodeGraph initialized. Want me to run `codegraph init -i` to build the index?"*
-<!-- CODEGRAPH_END -->

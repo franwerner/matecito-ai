@@ -61,17 +61,24 @@ From the request + answers, classify:
 - **Domains touched:** map to the canonical ADR domains (e.g. an export endpoint touches `contracts`, `security`, `runtime`, maybe `data`). This is a rough mapping to help routing — NOT a deep analysis.
 - **Rough size:** `trivial` | `small` | `medium` | `large`.
 
-### Step 4: Triage — does this need the full SDD flow?
+### Step 4: Triage — recommend a lane
 
-Decide the routing:
-- **`trivial` / `small` with no architectural impact** → recommend `direct-implementation`. The full 8-phase SDD flow is overkill for a one-line fix or an obvious change. Say so.
-- **`medium` / `large`, or anything touching architecture/multiple domains** → recommend `sdd-explore` (the full flow).
+Recommend a lane. You only **recommend**; the orchestrator surfaces it and the user confirms or adjusts — never apply a lane unilaterally.
 
-Be honest about size. Routing a trivial fix through 8 phases wastes effort; routing a large change direct skips the rigor it needs.
+`direct` (no SDD) is for `trivial` / `small` changes with no architectural impact — say so and route to `direct-implementation`.
+
+For anything heavier, the lane is the **base** (`intake → spec → apply → verify → archive`, always; `sdd-spec` starts from THIS brief when no proposal exists) plus the **add-ons** you recommend toggling on — `explore`, `propose`, `design`, `tasks`:
+- **`reduced`** = base, no add-ons. `small` / `medium` with no architectural unknown.
+- **`full`** = base + all add-ons. `medium` / `large`, or anything touching architecture/multiple domains.
+- **`custom`** = base + only the add-ons this change needs. Recommend each by what the change actually requires: `design` when there's an architectural decision, `tasks` when the work has many pieces, `explore` when the codebase area is unclear, `propose` when scope/approach needs sign-off.
+
+Emit the lane as the base plus the list of enabled add-ons. Be honest about size: over-routing wastes effort, under-routing skips rigor.
 
 ### Step 5: Early Guard — ADR conflicts and undecided questions
 
-Read `.matecito-ai/adr/INDEX.md` (if it exists) and the indexes of the domains this request touches.
+First apply the **ADR activation gate** (single source of truth in `matecito-ai:behavior`): if `.matecito-ai/adr/` is absent or empty, ADRs are inactive — **skip this entire step silently** (`status: done`, no mention of ADRs in the brief). Only when active, continue.
+
+Read `.matecito-ai/adr/INDEX.md` and the indexes of the domains this request touches.
 This is a **shallow** check — you are looking for early blockers, not doing design:
 
 - **Conflict:** does the request contradict an `Accepted` ADR? (e.g. "endpoint público sin login" vs an auth ADR that requires protection.) → set `status: blocked`, name the ADR, and recommend resolving via `project-decisions-bootstrap` (update) or adjusting the request. Do NOT proceed to recommend the flow.
@@ -107,7 +114,7 @@ Return EXACTLY this format (and persist the same content):
 - ...
 
 ### Triage
-{direct-implementation | full SDD flow} — {one line why}
+Lane: {direct | reduced | full | custom} — add-ons: [{explore? propose? design? tasks?} or none] — {one line why}
 
 ### Early guard (ADRs)
 {One of:
@@ -116,10 +123,10 @@ Return EXACTLY this format (and persist the same content):
 - "🟡 NEEDS DECISION: `<domain>` has no ADR for {what}. Capture via project-decisions-bootstrap first."}
 
 ### Next
-{sdd-explore | direct-implementation | project-decisions-bootstrap}
+{direct-implementation | project-decisions-bootstrap | the first phase the chosen lane runs — `sdd-explore` if `explore` is on, else `sdd-propose` if `propose` is on, else `sdd-spec`}
 ```
 
-This brief is the entry artifact for the flow. `sdd-explore` reads it as its starting point — it tells explore *what* to investigate, already structured, so explore doesn't start from a vague one-liner.
+This brief is the entry artifact for the flow. The next phase reads it as its starting point — `sdd-explore` in the full lane, `sdd-spec` in the reduced lane — so the flow doesn't start from a vague one-liner.
 
 <!-- matecito-ai: GATE de confirmación -->
 **Confirmation gate (handled by the orchestrator):** after you return this brief, the orchestrator MUST show it to the user and wait for **confirm / adjust / cancel** before launching any next phase — always, even for `trivial` changes. Do NOT assume the flow proceeds automatically. If the user adjusts the scope, the brief is updated and re-shown. See `~/.claude/skills/_shared/orchestration.md` (GATE de confirmación del alcance).

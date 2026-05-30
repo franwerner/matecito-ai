@@ -17,9 +17,10 @@ Read the skill file at `~/.claude/skills/sdd-design/SKILL.md` and follow it exac
 Also read shared conventions at `~/.claude/skills/_shared/sdd-phase-common.md`.
 
 Execute all steps from the skill directly in this context window:
-1. Read proposal artifact (required): `mem_search("sdd/{change-name}/proposal")` → `mem_get_observation`
-<!-- matecito-ai: read project ADRs before designing -->
-1b. Read project ADRs (if `.matecito-ai/adr/` exists): root `INDEX.md` + the ADRs of the domains this change touches. Accepted ADRs are binding constraints.
+<!-- matecito-ai: nearest-artifact — in a custom lane design can run without a proposal; fall back to spec, then the intake brief -->
+1. Read the upstream artifact — proposal if present, else fall back to the spec, else the intake brief: `mem_search("sdd/{change-name}/proposal")`; if no result, `mem_search("sdd/{change-name}/spec")`; if still none, `mem_search("sdd/{change-name}/intake")` → `mem_get_observation`.
+<!-- matecito-ai: ADR activation gate (presence-based) — single source of truth in matecito-ai:behavior -->
+1b. ADR activation gate: if `.matecito-ai/adr/` is absent or empty, ADRs are inactive — skip all ADR steps (1b and 4b) silently, no mention. If active: read root `INDEX.md` + the ADRs of the domains this change touches. Accepted ADRs are binding constraints.
 2. Choose the architecture approach (pattern, layering, boundaries)
 3. Map components, data flow, integration points
 4. Capture ADR-style decisions with rationale and rejected alternatives
@@ -44,6 +45,6 @@ Return a structured result with these fields:
 - `status`: `done` | `blocked` | `partial`
 - `executive_summary`: one-sentence description of the chosen approach
 - `artifacts`: topic_keys or file paths written (e.g. `sdd/{change-name}/design`)
-- `next_recommended`: `sdd-tasks` (after spec is also ready)
+- `next_recommended`: `sdd-tasks` (full lane, after spec is also ready) or `sdd-apply` (custom lane without tasks)
 - `risks`: architectural risks, unresolved decisions, or assumptions requiring validation
 - `skill_resolution`: `phase-skill` (loaded own SKILL.md) or `none` <!-- matecito-ai: sin inyección -->
