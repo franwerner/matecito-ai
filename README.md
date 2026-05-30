@@ -61,7 +61,7 @@ Requisitos:
 - **Node.js `≥ 18`** con `npm` y `npx` — CodeGraph se instala una vez con `npm install -g`; context7 se invoca runtime en cada sesión con `npx -y @upstash/context7-mcp@latest`
 - **git `≥ 2.23`** — el workflow SDD asume historial git para versionar ADRs y commits; la skill de git usa `git restore` (introducido en 2.23)
 
-Engram se descarga como binario precompilado desde sus [GitHub Releases](https://github.com/Gentleman-Programming/engram/releases) y se verifica por SHA256; no requiere Go.
+Engram se descarga como binario precompilado desde sus [GitHub Releases](https://github.com/Gentleman-Programming/engram/releases); no requiere Go.
 
 ### Instalación rápida (Linux y macOS)
 
@@ -69,7 +69,7 @@ Engram se descarga como binario precompilado desde sus [GitHub Releases](https:/
 curl -fsSL https://raw.githubusercontent.com/franwerner/matecito-ai/master/scripts/install.sh | bash
 ```
 
-El script detecta tu OS/arch, baja el binario apropiado desde la última release, verifica el SHA256 contra `checksums.txt`, y lo instala en `~/.local/bin/matecito-ai`.
+El script detecta tu OS/arch, baja el binario apropiado desde la última release, y lo instala en `~/.local/bin/matecito-ai`.
 
 Variables de entorno opcionales:
 - `INSTALL_DIR=/usr/local/bin` para cambiar el destino (puede requerir `sudo`).
@@ -84,8 +84,7 @@ Variables de entorno opcionales:
    - `matecito-ai_<version>_darwin_arm64.tar.gz` (macOS Apple Silicon)
    - `matecito-ai_<version>_windows_amd64.zip`
    - `matecito-ai_<version>_windows_arm64.zip`
-2. (Opcional pero recomendado) Descargá `checksums.txt` y verificá el SHA256 del archivo bajado.
-3. Extraé el archivo y mové el binario `matecito-ai` (o `matecito-ai.exe` en Windows) a una carpeta que esté en tu `PATH`.
+2. Extraé el archivo y mové el binario `matecito-ai` (o `matecito-ai.exe` en Windows) a una carpeta que esté en tu `PATH`.
 
 ### Build desde fuente
 
