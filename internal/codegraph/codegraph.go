@@ -1,9 +1,6 @@
 package codegraph
 
 import (
-	"os"
-	"path/filepath"
-
 	"github.com/franwerner/matecito-ai/internal/check"
 	"github.com/franwerner/matecito-ai/internal/mcp"
 )
@@ -12,7 +9,6 @@ func All() []check.Result {
 	return []check.Result{
 		detectBinary(),
 		detectMCP(),
-		detectProjectInit(),
 	}
 }
 
@@ -34,29 +30,5 @@ func detectMCP() check.Result {
 	}
 	r.Status = check.StatusMissing
 	r.Detail = "no registrado"
-	return r
-}
-
-func detectProjectInit() check.Result {
-	r := check.Result{
-		Name:     ".codegraph/",
-		Required: false,
-		FixHint:  "Inicializá en este proyecto: matecito-ai init (o `codegraph init -i`)",
-	}
-	cwd, err := os.Getwd()
-	if err != nil {
-		r.Status = check.StatusMissing
-		r.Detail = "no se pudo resolver cwd"
-		return r
-	}
-	p := filepath.Join(cwd, ".codegraph")
-	fi, err := os.Stat(p)
-	if err != nil || !fi.IsDir() {
-		r.Status = check.StatusMissing
-		r.Detail = "no existe en cwd"
-		return r
-	}
-	r.Status = check.StatusOK
-	r.Detail = "presente en cwd"
 	return r
 }
