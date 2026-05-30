@@ -2,6 +2,7 @@ package install
 
 import (
 	"bufio"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -16,6 +17,7 @@ import (
 	"github.com/franwerner/matecito-ai/internal/mcp"
 	"github.com/franwerner/matecito-ai/internal/platform"
 	"github.com/franwerner/matecito-ai/internal/releasedl"
+	"github.com/franwerner/matecito-ai/internal/settings"
 )
 
 type Step struct {
@@ -128,7 +130,61 @@ func AllSteps(opts Options) []Step {
 		context7MCPStep(opts),
 		deployStep(opts),
 		claudeMdReferenceStep(opts),
+		mcpPermissionsStep(opts),
 	}
+}
+
+func mcpPermissionsStep(opts Options) Step {
+	return Step{
+		Name: "Auto-aprobación de tools MCP (settings.json)",
+		Plan: "agregar patrones MCP del ecosistema a permissions.allow en ~/.claude/settings.json (no toca defaultMode ni Bash/Write/Edit)",
+		Check: func() bool {
+			doc, err := settings.Load()
+			if err != nil {
+				return false
+			}
+			return len(settings.MissingPatterns(settings.AllowList(doc))) > 0
+		},
+		Run: func() error {
+			path, err := settings.Path()
+			if err != nil {
+				return err
+			}
+			doc, err := settings.Load()
+			if err != nil {
+				return err
+			}
+			if !settings.Merge(doc) {
+				return nil
+			}
+			if err := backupSettings(path, opts.BackupDir); err != nil {
+				return err
+			}
+			out, err := json.MarshalIndent(doc, "", "  ")
+			if err != nil {
+				return err
+			}
+			out = append(out, '\n')
+			if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+				return err
+			}
+			return os.WriteFile(path, out, 0o644)
+		},
+	}
+}
+
+func backupSettings(settingsPath, backupDir string) error {
+	data, err := os.ReadFile(settingsPath)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(backupDir, 0o755); err != nil {
+		return err
+	}
+	return os.WriteFile(filepath.Join(backupDir, "settings.json"), data, 0o644)
 }
 
 func deployStep(opts Options) Step {

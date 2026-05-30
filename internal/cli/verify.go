@@ -11,6 +11,7 @@ import (
 	"github.com/franwerner/matecito-ai/internal/codegraph"
 	"github.com/franwerner/matecito-ai/internal/context7"
 	"github.com/franwerner/matecito-ai/internal/engram"
+	"github.com/franwerner/matecito-ai/internal/permissions"
 	"github.com/franwerner/matecito-ai/internal/prereqs"
 	"github.com/franwerner/matecito-ai/internal/render"
 	"github.com/franwerner/matecito-ai/internal/sdd"
@@ -35,6 +36,7 @@ func NewVerifyCmd() *cobra.Command {
 			cg := codegraph.All()
 			c7 := context7.All()
 			integ := claudemd.All()
+			perm := permissions.All()
 			sx := sdd.CrossCheck(sddDir)
 
 			render.Section(os.Stdout, "Prerequisites", pre)
@@ -42,14 +44,16 @@ func NewVerifyCmd() *cobra.Command {
 			render.Section(os.Stdout, "CodeGraph", cg)
 			render.Section(os.Stdout, "context7", c7)
 			render.Section(os.Stdout, "Integración con Claude Code", integ)
+			render.Section(os.Stdout, "Auto-aprobación MCP (settings.json)", perm)
 			render.Section(os.Stdout, "Cross-check SDD ↔ MCP ("+sddDir+")", sx)
 
-			all := make([]check.Result, 0, len(pre)+len(eng)+len(cg)+len(c7)+len(integ)+len(sx))
+			all := make([]check.Result, 0, len(pre)+len(eng)+len(cg)+len(c7)+len(integ)+len(perm)+len(sx))
 			all = append(all, pre...)
 			all = append(all, eng...)
 			all = append(all, cg...)
 			all = append(all, c7...)
 			all = append(all, integ...)
+			all = append(all, perm...)
 			all = append(all, sx...)
 
 			if code := render.Summary(os.Stdout, all); code != 0 {
