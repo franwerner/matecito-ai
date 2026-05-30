@@ -44,7 +44,7 @@ func NewVerifyCmd() *cobra.Command {
 			render.Section(os.Stdout, "CodeGraph", cg)
 			render.Section(os.Stdout, "context7", c7)
 			render.Section(os.Stdout, "Integración con Claude Code", integ)
-			render.Section(os.Stdout, "Auto-aprobación MCP (settings.json)", perm)
+			render.Section(os.Stdout, "Auto-aprobación de tools (settings.json)", perm)
 			render.Section(os.Stdout, "Cross-check SDD ↔ MCP ("+sddDir+")", sx)
 
 			all := make([]check.Result, 0, len(pre)+len(eng)+len(cg)+len(c7)+len(integ)+len(perm)+len(sx))

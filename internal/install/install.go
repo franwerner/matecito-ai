@@ -136,8 +136,8 @@ func AllSteps(opts Options) []Step {
 
 func mcpPermissionsStep(opts Options) Step {
 	return Step{
-		Name: "Auto-aprobación de tools MCP (settings.json)",
-		Plan: "agregar patrones MCP del ecosistema a permissions.allow en ~/.claude/settings.json (no toca defaultMode ni Bash/Write/Edit)",
+		Name: "Auto-aprobación de tools del ecosistema (settings.json)",
+		Plan: "agregar patrones del ecosistema (MCP + Skill) a permissions.allow en ~/.claude/settings.json (no toca defaultMode ni Bash/Write/Edit)",
 		Check: func() bool {
 			doc, err := settings.Load()
 			if err != nil {

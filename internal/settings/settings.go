@@ -12,6 +12,7 @@ var EcosystemPatterns = []string{
 	"mcp__plugin_engram_engram__*",
 	"mcp__codegraph__*",
 	"mcp__context7__*",
+	"Skill",
 }
 
 func Path() (string, error) {
