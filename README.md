@@ -107,13 +107,19 @@ matecito-ai verify
 matecito-ai install --dry-run
 matecito-ai install
 
-# Actualizar Engram a la última release de GitHub (correr cuando Engram saque versión nueva)
+# Actualizar todo el ecosistema a sus últimas versiones (matecito-ai, Engram, CodeGraph)
 matecito-ai update
-
-# Inicializar lo por-proyecto en el repo actual (ej: codegraph)
-matecito-ai init
 ```
 
 ## Documentación
 
 - [PRD](docs/PRD.md) — documento de producto del ecosistema.
+
+## Créditos
+
+matecito-ai es una capa de integración sobre proyectos de terceros. El crédito del trabajo pesado es de ellos:
+
+- **[gentle-ai](https://github.com/Gentleman-Programming/gentle-ai)** — el motor de Spec-Driven Development y TDD que matecito-ai forkea y adapta.
+- **[engram](https://github.com/Gentleman-Programming/engram)** — memoria persistente entre sesiones.
+- **[codegraph](https://github.com/colbymchenry/codegraph)** — grafo de conocimiento del código vía tree-sitter, expuesto como MCP.
+- **[context7](https://github.com/upstash/context7)** — documentación de librerías en vivo, expuesta como MCP.
