@@ -66,7 +66,7 @@ Estas reglas son la diferencia entre una skill que la gente usa y una que abando
 
 **Adaptate al contexto.** Si la descripción del proyecto o el pre-flight ya respondieron algo, no lo vuelvas a preguntar. Saltá lo que no aplique, pero **nunca omitas en silencio** (ver siguiente regla).
 
-**Nunca omitas en silencio.** Si una fase se salta — por elección del usuario, por atajo, o porque "no aplica" — generá igualmente el ADR con `Status` apropiado (`Not Applicable`, `Pending`, `Deferred`) y una **razón breve de 1-2 líneas**. Una omisión sin justificación es una decisión perdida. Ver "Cómo manejar fases omitidas".
+**Nunca omitas en silencio.** Si una fase se salta — por elección del usuario, por atajo, o porque "no aplica" — queda igualmente registrada con una **razón breve de 1-2 líneas**. Una omisión sin justificación es una decisión perdida. El registro depende del status: `Not Applicable` se anota como fila en el INDEX de su dominio (no genera archivo); `Pending` y `Deferred` se materializan como ADR-archivo (llevan trigger/condición y el modo update los rellena). Ver "Cómo manejar fases omitidas".
 
 **Permití aplazar explícitamente.** Cualquier fase puede quedar `Pending` con la razón ("lo definimos cuando llegue el feature de pagos"). Mejor un ADR honesto con "pendiente + por qué" que una decisión inventada.
 
@@ -134,7 +134,7 @@ Leé `concerns/INDEX.md` UNA vez. Armá el set: **Requerido(token) + Recomendado
 
 > ¿Querés sacar alguna de estas, o agregar otras del catálogo?
 
-Mostrá qué más hay disponible para sumar (las fases del catálogo no incluidas). Permití también **fase custom** (ver "Fase custom"). Lo que el usuario saque del set recomendado se materializa igual como ADR `Not Applicable`/`Pending` con razón — nunca hueco silencioso.
+Mostrá qué más hay disponible para sumar (las fases del catálogo no incluidas). Permití también **fase custom** (ver "Fase custom"). Lo que el usuario saque del set recomendado queda igual registrado — `Not Applicable` como fila en el INDEX del dominio, `Pending`/`Deferred` como ADR-archivo con razón — nunca hueco silencioso.
 
 ### 4. Recorrido de fases
 
@@ -163,15 +163,17 @@ Este es el procedimiento genérico del motor. Vale para cualquier fase, sea del 
 6b. **Si la decisión corresponde a un patrón canónico** del catálogo en `~/.claude/references/design-patterns/` (típicamente fases de los dominios `structure`, `runtime`, `data`), preguntá UNA vez cuál patrón aplica y registralo en el ADR como `**Patrón aplicado:** <Nombre> — <1 línea de por qué>`. No fuerces: si la decisión no es un patrón (ej. una convención de naming, una política de rate limiting), omití este paso. El catálogo se consulta por nombre, sin link en el ADR — el pointer a la ubicación está en el `CLAUDE.md` del proyecto.
 7. **Materializá el ADR** en `.matecito-ai/adr/<dominio>/<adr-output>.md`, con el `tipo` del frontmatter en su encabezado, según la sección "Qué materializar" del archivo.
 
-Si la fase estaba recomendada pero el usuario la sacó, o no aplica: no la trates, pero generá igual su ADR (en la carpeta de su dominio) con `Status: Not Applicable`/`Pending` + razón.
+Si la fase estaba recomendada pero el usuario la sacó, o no aplica: no la trates, pero dejá su registro — `Not Applicable` como fila en el INDEX del dominio; `Pending`/`Deferred` como ADR-archivo con su razón. Ver "Cómo manejar fases omitidas".
 
 ---
 
 ## Cómo manejar fases omitidas
 
-Cuando el usuario saca una fase, dice "no aplica" o "lo decidimos después": **NO te saltes el archivo, solo cambiá el status y registrá el motivo.**
+Cuando el usuario saca una fase, dice "no aplica" o "lo decidimos después": **no la trates, pero dejá registrado el motivo.** Dónde queda el registro depende del status (ver "Dónde se registra cada status").
 
-Hacé una pregunta corta para clasificar el motivo:
+No preguntes por concern. Juntá todas las fases del set recomendado que quedaron afuera y clasificá los motivos **en una sola pasada, en bloque**: para las que salen por tipo de proyecto proponé la razón templada ("no aplica a un {tipo}") y confirmá en conjunto; abrí pregunta puntual solo por las que el usuario saca contra la recomendación de la matriz. Los concerns que la matriz nunca recomendó para este tipo no se enumeran uno por uno — su "no aplica" ya está implícito en la matriz.
+
+Clasificá el motivo:
 
 1. **No aplica al tipo de proyecto** → `Not Applicable`. Ej: "Es un script CLI sin red, no necesita auth."
 2. **Lo decidimos después** → `Pending` (con trigger esperado opcional). Ej: "Definimos auth cuando llegue el milestone de usuarios públicos."
@@ -187,6 +189,12 @@ Conjunto cerrado, así el INDEX y las revisiones futuras son consistentes:
 - **`Not Applicable`** — Decisión consciente de que este tema no aplica. Lleva razón obligatoria.
 - **`Deferred`** — Postergado deliberadamente con fecha o condición de revisión.
 - **`Superseded`** — Reemplazado por otro ADR. Lleva referencia al que lo sustituye.
+
+### Dónde se registra cada status
+
+- **`Not Applicable`** → fila en el INDEX del dominio (`.matecito-ai/adr/<dominio>/INDEX.md`, sección "No aplican"). **No genera archivo propio.** Si el dominio entero queda sin ningún ADR-archivo (`Accepted`/`Pending`/`Deferred`), no se crea carpeta: el dominio se lista en el INDEX raíz, sección "Dominios sin uso" (ver Materialización).
+- **`Pending` / `Deferred`** → ADR-archivo individual en la carpeta del dominio, con su trigger o condición de revisión. El modo update los resuelve rellenando contenido y pasándolos a `Accepted`.
+- **`Accepted`** → ADR-archivo individual con contenido completo.
 
 ---
 
@@ -355,9 +363,15 @@ Los ADRs de salida son **slug-based** (sin prefijos numéricos) y van **agrupado
 
 Reglas de la estructura:
 
-- **Solo se crean carpetas de dominios que tienen al menos un ADR.** No repliques los 17 dominios en cada proyecto — la salida refleja lo que el proyecto realmente definió. (El catálogo interno sí tiene los 17; la salida solo los usados.)
-- **Todas** las fases del set final se materializan en la carpeta de su dominio: las tratadas con `Status: Accepted` y contenido completo; las sacadas/omitidas con `Status: Not Applicable`/`Pending`/`Deferred` y razón. El nombre de archivo es el `adr-output` del concern (por default, el slug); el dominio es el campo `domain` del frontmatter.
-- **Dos niveles de índice:** el raíz (`adr/INDEX.md`) enruta por dominio; cada dominio (`adr/<dominio>/INDEX.md`) lista sus propios ADRs. Más `tech/INDEX.md` para tecnologías.
+- **Solo se crean carpetas de dominios que tienen al menos un ADR-archivo** (`Accepted`, `Pending` o `Deferred`). No repliques los 17 dominios en cada proyecto — la salida refleja lo que el proyecto realmente definió. (El catálogo interno sí tiene los 17; la salida solo los usados.)
+- **Qué genera archivo y qué no:**
+  - `Accepted` → ADR-archivo con contenido completo.
+  - `Pending` / `Deferred` → ADR-archivo con su trigger/condición (el modo update los rellena).
+  - `Not Applicable` → **fila en el INDEX del dominio** (sección "No aplican"), sin archivo propio.
+  - El nombre de archivo es el `adr-output` del concern (por default, el slug); el dominio es el campo `domain` del frontmatter.
+- **Dominio sin ningún ADR-archivo:** si todas sus fases quedaron `Not Applicable`, no se crea carpeta; el dominio se lista en el INDEX raíz (sección "Dominios sin uso") con una razón de 1 línea.
+- **Qué se lista como N/A:** solo las fases que la matriz daba como Requerido/Recomendado para el tipo y se sacaron. Los concerns que la matriz nunca recomendó para este tipo no se enumeran — su "no aplica" ya está en la matriz.
+- **Dos niveles de índice:** el raíz (`adr/INDEX.md`) enruta por dominio y lista los dominios sin uso; cada dominio (`adr/<dominio>/INDEX.md`) lista sus ADRs y sus N/A. Más `tech/INDEX.md` para tecnologías.
 
 ### Paso 3: Templates
 
@@ -398,7 +412,7 @@ Las decisiones están organizadas por **dominio**. Este índice te dice qué dom
 
 ## Dominios de este proyecto
 
-(Solo se listan los dominios que tienen al menos un ADR.)
+(Solo se listan los dominios que tienen al menos un ADR-archivo.)
 
 | Dominio | Qué agrupa | Índice |
 |---|---|---|
@@ -408,7 +422,16 @@ Las decisiones están organizadas por **dominio**. Este índice te dice qué dom
 
 **Leyenda de status:** `Accepted` = vigente · `Pending` = decidir más adelante · `Not Applicable` = decidido que no aplica · `Deferred` = postergado con condición · `Superseded` = reemplazado por otro ADR.
 
-> Para ADRs con status distinto de `Accepted`, leé la sección "Razón de omisión / aplazamiento" del archivo. **No asumas que la falta de decisión es un olvido** — está documentada.
+> Para ADRs `Pending`/`Deferred`, leé la sección "Razón de omisión / aplazamiento" del archivo; para los `Not Applicable`, la razón está en la sección "No aplican" del INDEX del dominio (o "Dominios sin uso" del raíz). **No asumas que la falta de decisión es un olvido** — está documentada.
+
+## Dominios sin uso en este proyecto
+
+(Dominios cuyas fases quedaron todas `Not Applicable` — no tienen carpeta. Se listan acá para dejar constancia de que se consideraron.)
+
+| Dominio | Razón |
+|---|---|
+| `<dominio>` | <1 línea: por qué no aplica al proyecto> |
+| ... | |
 
 ## Estado y mantenimiento
 
@@ -432,6 +455,15 @@ Las decisiones están organizadas por **dominio**. Este índice te dice qué dom
 | [<slug>.md](<slug>.md) | <status> | <decisión\|convención\|política> | <gatillo concreto> |
 | ... | | | |
 
+## No aplican en este dominio
+
+(Fases recomendadas para este tipo de proyecto que se descartaron. No generan ADR-archivo; su razón queda acá.)
+
+| Concern | Razón |
+|---|---|
+| <slug> | <1 línea: por qué no aplica> |
+| ... | |
+
 **Leyenda de status:** `Accepted` · `Pending` · `Not Applicable` · `Deferred` · `Superseded`.
 ```
 
@@ -442,7 +474,7 @@ Las decisiones están organizadas por **dominio**. Este índice te dice qué dom
 ```markdown
 # ADR — <título>
 
-- **Status:** <Accepted | Pending | Not Applicable | Deferred | Superseded>
+- **Status:** <Accepted | Pending | Deferred | Superseded>
 - **Dominio:** <dominio canónico>
 - **Tipo:** <decisión | convención | política>
 - **Fecha de creación:** <YYYY-MM-DD>
@@ -459,16 +491,16 @@ Las decisiones están organizadas por **dominio**. Este índice te dice qué dom
 
 <lo decidido, en imperativo. Ej: "Usamos JWT con refresh tokens y rotación; access token de 15min, refresh de 7d.">
 
-<!-- Si Status NO es Accepted, REEMPLAZAR "Decisión" por:
+<!-- Si Status es Pending o Deferred, REEMPLAZAR "Decisión" por:
 
 ## Razón de omisión / aplazamiento
 
-**Status:** <Pending | Not Applicable | Deferred>
+**Status:** <Pending | Deferred>
 
 <1-2 líneas con el motivo, honesto y concreto.
 - Pending: indicá el trigger esperado ("cuando llegue X").
-- Not Applicable: por qué no aplica al proyecto.
 - Deferred: fecha o condición de revisión.>
+(Los `Not Applicable` no usan este template — viven como fila en el INDEX del dominio.)
 -->
 
 <!-- Si Status es Superseded, agregar:
@@ -495,15 +527,16 @@ Las decisiones están organizadas por **dominio**. Este índice te dice qué dom
 
 ### Paso 4: Escribir y reportar
 
-1. Para cada dominio con al menos un ADR: `mkdir -p .matecito-ai/adr/<dominio>`. Además `mkdir -p .matecito-ai/adr/tech`.
+1. Para cada dominio con al menos un ADR-archivo (`Accepted`/`Pending`/`Deferred`): `mkdir -p .matecito-ai/adr/<dominio>`. Además `mkdir -p .matecito-ai/adr/tech`.
 2. Escribir `CLAUDE.md` (si no existe; si existe, **NO sobrescribir** — preguntar al usuario qué hacer)
-3. Escribir `.matecito-ai/adr/INDEX.md` (índice raíz) listando solo los dominios con ADRs.
-4. Escribir `.matecito-ai/adr/<dominio>/INDEX.md` para cada dominio usado, con la columna Status/Tipo reflejando el estado real.
-5. Escribir **todos** los ADRs de las fases del set, cada uno en la carpeta de su dominio (Accepted con contenido completo; omitidos con su status + razón).
+3. Escribir `.matecito-ai/adr/INDEX.md` (índice raíz) listando los dominios con ADR-archivo y, en su sección "Dominios sin uso", los dominios cuyas fases quedaron todas `Not Applicable`.
+4. Escribir `.matecito-ai/adr/<dominio>/INDEX.md` para cada dominio usado: la tabla de ADRs (Accepted/Pending/Deferred) y la sección "No aplican" con las fases `Not Applicable` del dominio y su razón.
+5. Escribir los ADR-archivo de las fases con contenido: `Accepted` completo; `Pending`/`Deferred` con su trigger/condición. Los `Not Applicable` no generan archivo — quedan como fila en el INDEX del dominio (o del raíz si el dominio quedó sin uso).
 6. Escribir `tech/INDEX.md` (los archivos individuales de tech ya se fueron creando intercalados).
 7. Reportar al usuario:
    - Lista de archivos creados (path completo), **agrupada por dominio**
-   - Resumen de 1 línea por ADR, con su status entre corchetes (`[Accepted]`, `[Pending]`, `[N/A]`) y su tipo
+   - Resumen de 1 línea por ADR-archivo, con su status entre corchetes (`[Accepted]`, `[Pending]`, `[Deferred]`) y su tipo
+   - Conteo de `Not Applicable` por dominio (viven en los INDEX), no uno por uno
    - Tecnologías registradas en `tech/`
    - **Lista separada de ADRs `Pending`/`Deferred` con su trigger**, así sabe qué quedó por decidir
    - Sugerencia de commitear estos archivos al repo
@@ -522,7 +555,7 @@ Las decisiones están organizadas por **dominio**. Este índice te dice qué dom
    - **Actualizar una decisión (cambio menor)** → editar el ADR. Git lleva el historial.
    - **Cambiar una decisión (cambio de fondo)** → crear ADR nuevo en el mismo dominio, marcar el viejo `Superseded` con link al nuevo. No editar la decisión vieja en el lugar.
    - **Agregar una decisión nueva** no cubierta → crear ADR en su dominio + fila en el índice de ese dominio (y en el raíz si el dominio es nuevo en el proyecto).
-   - **Cambiar un `Not Applicable` a `Pending`/`Accepted`** → el contexto del proyecto cambió (ej: el script chico creció a app multiusuario y ahora sí hay auth). Actualizar Status, llenar contenido.
+   - **Cambiar un `Not Applicable` a `Pending`/`Accepted`** → el contexto del proyecto cambió (ej: el script chico creció a app multiusuario y ahora sí hay auth). Sacá la fila de la sección "No aplican" del INDEX del dominio (o "Dominios sin uso" del raíz) y creá el ADR-archivo con el nuevo status y contenido; creá la carpeta del dominio si no existía.
    - **Agregar/cambiar/quitar una tecnología** → editar `tech/INDEX.md` y el archivo en `tech/<nombre>.md`. Si reemplazás, el viejo queda `Superseded` apuntando al nuevo.
    - **Rehacer todo desde cero** → confirmación doble. Antes de sobrescribir, mover el directorio a `.matecito-ai/adr.old.<timestamp>/`.
 6. Para actualizar/agregar, recorré solo las fases relevantes — no rehagas todo el cuestionario.
@@ -546,7 +579,9 @@ Desde ese momento, todo bootstrap futuro lo considera, y el modo update lo ofrec
 
 - ❌ Tirar todas las preguntas en un solo turno → la gente abandona.
 - ❌ Forzar Clean Architecture en un script de 200 líneas → adaptar el set de fases al tipo de proyecto.
-- ❌ Saltar una fase sin documentar el motivo → siempre crear el ADR con `Not Applicable`/`Pending`/`Deferred` + razón.
+- ❌ Saltar una fase sin documentar el motivo → siempre dejar registro: `Not Applicable` como fila en el INDEX del dominio; `Pending`/`Deferred` como ADR-archivo + razón.
+- ❌ Crear un ADR-archivo por cada `Not Applicable` → los N/A viven como fila en el INDEX del dominio, no como archivo; solo se justifican las desviaciones de la matriz.
+- ❌ Preguntar el motivo de cada N/A por separado → clasificar en bloque, una sola pasada, con razón templada por tipo de proyecto.
 - ❌ Confundir "no decidido aún" (`Pending`) con "decidido que no aplica" (`Not Applicable`) → son status distintos.
 - ❌ Editar una decisión de fondo en el lugar → para cambios de decisión, supersede (ADR nuevo + viejo `Superseded`). Cambios menores sí se editan; git lleva el historial.
 - ❌ Mantener una tabla `Historial` manual → es redundante con git y se pudre.
@@ -556,7 +591,7 @@ Desde ese momento, todo bootstrap futuro lo considera, y el modo update lo ofrec
 - ❌ Asumir el stack en lugar de detectarlo en pre-flight → leer manifests primero.
 - ❌ Leer todo el catálogo `concerns/` de una → leer `INDEX.md` (raíz) para seleccionar, y cada `concerns/<dominio>/<slug>.md` solo cuando se trata esa fase.
 - ❌ Inventar un dominio nuevo en un repo → la taxonomía es fija e impuesta por el motor; un dominio nuevo es decisión de catálogo, no de proyecto.
-- ❌ Replicar los 17 dominios en la salida → en `.matecito-ai/adr/` solo se crean las carpetas de dominios con al menos un ADR.
+- ❌ Replicar los 17 dominios en la salida → en `.matecito-ai/adr/` solo se crean las carpetas de dominios con al menos un ADR-archivo (`Accepted`/`Pending`/`Deferred`); los dominios solo-N/A se listan en el INDEX raíz.
 - ❌ Dejar índices desincronizados tras un cambio → actualizá el índice del dominio afectado y el raíz si corresponde.
 - ❌ Dejar el catálogo `tech/` vacío hasta el final → registrar intercalado, mientras la justificación está fresca.
 - ❌ Agregar una dependencia en sesiones futuras sin consultar `tech/INDEX.md` → revisar primero si ya hay algo elegido.
