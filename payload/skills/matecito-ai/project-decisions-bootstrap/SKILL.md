@@ -205,10 +205,7 @@ Si el usuario quiere un tema que no está en el catálogo:
 1. Tratalo con el procedimiento genérico, haciéndole 2-3 preguntas para extraer qué decide, opciones y qué materializar.
 2. **Asignale un dominio canónico.** Mirá el "criterio de pertenencia" en cada `concerns/<dominio>/INDEX.md` para decidir dónde encaja (incluí los reservados: `lifecycle`, `integration`, `privacy`, `release`, `domain-logic`, `compliance`, `ux-product`). No inventés un dominio nuevo. Si genuinamente no encaja en ninguno, es señal de que falta un dominio en la taxonomía — eso es una decisión de catálogo, avisале al usuario, no lo resuelvas en el repo.
 3. **Asignale un `tipo`** (`decisión` / `convención` / `política`).
-4. Antes de guardarlo, preguntá: **"¿La guardo en el catálogo para reusar en futuros proyectos, o solo para este proyecto?"**
-   - **Reusable** → creá `concerns/<dominio>/<slug>.md` con el formato estándar (ver `concerns/runtime/error-handling.md` como referencia), sumá la fila al `concerns/<dominio>/INDEX.md` y a la matriz de `concerns/INDEX.md`. Si el dominio era reservado, pasalo a activo. Esto es el ratchet: un tema olvidado queda cubierto para siempre.
-   - **Solo este proyecto** → no toques el catálogo; generá únicamente el ADR de salida.
-5. En ambos casos, materializá el ADR en `.matecito-ai/adr/<dominio>/<slug>.md`.
+4. Materializá el ADR en `.matecito-ai/adr/<dominio>/<slug>.md`. Una fase custom es **siempre solo para este proyecto**: no toques el catálogo `concerns/` (es read-only, se deploya desde el repo matecito-ai). Si el concern merece sumarse al catálogo para todos los proyectos, eso se hace editando `payload/skills/.../concerns/` en el repo matecito-ai (ver "Ratchet"), no desde acá.
 
 ---
 
