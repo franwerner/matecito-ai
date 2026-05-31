@@ -350,7 +350,24 @@ The "Reads" column lists the **full-lane** ideal. In `reduced`/`custom` lanes so
 
 #### Strict TDD Forwarding (MANDATORY)
 
-When launching `sdd-apply`/`sdd-verify`: search `mem_search("sdd-init/{project}")`. If `strict_tdd: true` → add to prompt: "STRICT TDD MODE IS ACTIVE. Test runner: {test_command}. Follow strict-tdd.md." Resolve once per session, cache.
+When launching `sdd-apply`/`sdd-verify`, resolve Strict TDD from the **config files** — these are the source of truth (the `matecito-ai` TUI writes them); Engram is only a mirror. Read `<repo>/.matecito-ai/config.json` and `~/.matecito-ai/config.json`. Effective `strictTdd` = the per-project file's `strictTdd` if it sets one, else the global file's `strictTdd`, else `false` (the `ResolveTdd` precedence: per-project → global → default). If true → add to prompt: "STRICT TDD MODE IS ACTIVE. Test runner: {test_command}. Follow strict-tdd.md." The `{test_command}` still comes from `sdd/{project}/testing-capabilities` in Engram. Resolve once per session, cache.
+
+#### Model Forwarding (MANDATORY)
+
+When launching each SDD sub-agent, resolve that agent's model from config files — not from
+Engram and not from the current conversation model. Resolution order:
+(1) Per-project `<repo>/.matecito-ai/config.json` → `models[<agent>]` if the file exists and
+    is valid JSON and the key is present.
+(2) Global `~/.matecito-ai/config.json` → `models[<agent>]` if the file exists and is valid
+    JSON and the key is present.
+(3) If neither (1) nor (2) yields a value (file absent, corrupt, or key not set), OMIT the
+    per-invocation `model` parameter entirely — the agent's curated frontmatter default applies
+    (e.g. sdd-design → opus, sdd-archive → haiku). Do NOT substitute the main conversation model.
+
+Pass the resolved model as the per-invocation `model` parameter when dispatching the sub-agent
+via the Task tool. Resolve once per session for each agent, cache the result.
+If a config file is absent or corrupt, skip it and fall through to the next level — never error
+out; always reach level (3) as the final fallback.
 
 #### Apply-Progress Continuity (MANDATORY)
 
