@@ -13,7 +13,6 @@ var items = []struct {
 	quit   bool
 }{
 	{"Instalar", nav.ScreenInstall, false},
-	{"Actualizar", nav.ScreenUpdate, false},
 	{"Verificar", nav.ScreenVerify, false},
 	{"Configuración", nav.ScreenConfig, false},
 	{"Salir", nav.ScreenMenu, true},

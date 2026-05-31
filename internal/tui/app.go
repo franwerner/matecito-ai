@@ -6,23 +6,31 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 
 	"github.com/franwerner/matecito-ai/internal/agentmodel"
-	"github.com/franwerner/matecito-ai/internal/setup/releasedl"
+	pkgsync "github.com/franwerner/matecito-ai/internal/setup/sync"
 	"github.com/franwerner/matecito-ai/internal/tui/header"
 	"github.com/franwerner/matecito-ai/internal/tui/screens/config"
 	"github.com/franwerner/matecito-ai/internal/tui/screens/install"
 	"github.com/franwerner/matecito-ai/internal/tui/screens/menu"
 	"github.com/franwerner/matecito-ai/internal/tui/screens/sddmodel"
+	tuisync "github.com/franwerner/matecito-ai/internal/tui/screens/sync"
 	"github.com/franwerner/matecito-ai/internal/tui/screens/tdd"
-	"github.com/franwerner/matecito-ai/internal/tui/screens/update"
 	"github.com/franwerner/matecito-ai/internal/tui/screens/verify"
 )
 
-const releaseCheckTimeout = 5 * time.Second
+const (
+	releaseCheckTimeout = 5 * time.Second
+	syncCheckInterval   = 24 * time.Hour
+)
 
-// releaseCheckMsg carries the result of the async GitHub release check.
-type releaseCheckMsg struct {
-	tag string
-	err error
+// syncCheckMsg carries the result of the startup sync-detect + plan step.
+// Se emite solo cuando ShouldCheck fue true; matecitoTag alimenta el badge del
+// header y actions determina si navegar a ScreenSync. states se pasa a SyncModel
+// vía PreDetected para evitar un segundo Detect() al ejecutar.
+type syncCheckMsg struct {
+	matecitoTag string // tag latest de matecito-ai para el badge (vacío si offline)
+	states      []pkgsync.ComponentState
+	actions     []pkgsync.SyncAction
+	err         error
 }
 
 // AppModel is the top-level bubbletea model. It owns the screen router,
@@ -34,7 +42,8 @@ type AppModel struct {
 	ctx              ProjectContext
 	globalConfigPath string
 	// scope is the active config scope; resets to ScopeGlobal on each TUI open.
-	scope agentmodel.Scope
+	scope    agentmodel.Scope
+	syncOpts pkgsync.Options
 }
 
 // NewAppModel builds the initial AppModel on the menu screen.
@@ -48,28 +57,64 @@ func NewAppModel(version, globalConfigPath string, ctx ProjectContext) AppModel 
 		ctx:              ctx,
 		globalConfigPath: globalConfigPath,
 		scope:            agentmodel.ScopeGlobal,
+		syncOpts:         pkgsync.Options{SelfVersion: version, Timeout: releaseCheckTimeout},
 	}
 }
 
-// Init starts the menu child and fires the async release check in parallel.
+// Init inicia el child del menú y dispara el chequeo de versiones/sync según
+// el throttle. Si el throttle indica que no es momento (< 24h desde el último
+// check), solo arranca el menú sin tráfico de red. Si es momento, lanza UN
+// cmd unificado que obtiene el tag de matecito-ai (para el badge) y el plan
+// de sync (para decidir si navegar a ScreenSync).
 func (m AppModel) Init() tea.Cmd {
-	return tea.Batch(m.child.Init(), releaseCheckCmd(m.hdr.Version))
+	statePath, err := pkgsync.SyncStatePath()
+	if err != nil {
+		// si no se puede obtener la ruta, salteamos el check esta vez
+		return m.child.Init()
+	}
+
+	lastCheck, _ := pkgsync.LoadSyncState(statePath)
+	if !pkgsync.ShouldCheck(time.Now(), lastCheck, syncCheckInterval) {
+		// throttle activo: arrancar directo al menú sin red
+		return m.child.Init()
+	}
+
+	// throttle vencido: lanzar chequeo unificado (badge + plan de sync)
+	return tea.Batch(m.child.Init(), unifiedCheckCmd(m.syncOpts, statePath))
 }
 
-// releaseCheckCmd returns a tea.Cmd that queries the latest GitHub release
-// with a short timeout. On any error it returns an empty tag so the header
-// badge stays hidden (R7.5/R7.7 — never blocks TUI startup).
-func releaseCheckCmd(currentVersion string) tea.Cmd {
+// unifiedCheckCmd obtiene en paralelo el tag latest de matecito-ai (para el
+// badge del header) y el plan de sync (para decidir si navegar a ScreenSync).
+// Al finalizar persiste el timestamp del check en statePath.
+// Cualquier error de red → tag vacío + plan vacío; nunca bloquea el arranque.
+func unifiedCheckCmd(opts pkgsync.Options, statePath string) tea.Cmd {
 	return func() tea.Msg {
-		p, err := releasedl.Detect()
-		if err != nil {
-			return releaseCheckMsg{err: err}
+		// Detect hace las tres llamadas de red (self, engram, codegraph) y
+		// el diff de deploy; cada fuente falla de forma independiente.
+		states, _ := pkgsync.Detect(opts)
+		actions := pkgsync.PlanSync(states)
+
+		// Persistir el timestamp del check independientemente del resultado.
+		_ = pkgsync.SaveSyncState(statePath, time.Now())
+
+		// Extraer el tag latest de matecito-ai para alimentar el badge del header.
+		var matecitoTag string
+		for _, s := range states {
+			if s.Name == "matecito-ai" && !s.Unknown {
+				matecitoTag = s.LatestVersion
+				break
+			}
 		}
-		rel, err := releasedl.LatestReleaseWithTimeout(releasedl.MatecitoRepo, p, releaseCheckTimeout)
-		if err != nil {
-			return releaseCheckMsg{err: err}
+
+		// Filtrar solo las acciones no-skip para decidir si hace falta sync.
+		active := make([]pkgsync.SyncAction, 0, len(actions))
+		for _, a := range actions {
+			if a.Kind != pkgsync.ActionSkip {
+				active = append(active, a)
+			}
 		}
-		return releaseCheckMsg{tag: rel.Tag}
+
+		return syncCheckMsg{matecitoTag: matecitoTag, states: states, actions: active}
 	}
 }
 
@@ -77,11 +122,22 @@ func releaseCheckCmd(currentVersion string) tea.Cmd {
 func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
-	case releaseCheckMsg:
-		if msg.err == nil {
-			m.hdr.LatestTag = agentmodel.NormalizeVersion(msg.tag)
+	case syncCheckMsg:
+		// alimentar el badge con el tag latest de matecito-ai (design D5)
+		if msg.matecitoTag != "" {
+			m.hdr.LatestTag = agentmodel.NormalizeVersion(msg.matecitoTag)
 		}
-		return m, nil
+		if msg.err != nil || len(msg.actions) == 0 {
+			// sin acciones pendientes o error de red: quedar en el menú
+			return m, nil
+		}
+		// inyectar los estados ya detectados para que SyncModel no llame a Detect de nuevo
+		m.syncOpts.PreDetected = msg.states
+		// hay componentes que instalar o actualizar: navegar a la pantalla de sync
+		child, cmd := m.buildChild(ScreenSync)
+		m.screen = ScreenSync
+		m.child = child
+		return m, tea.Batch(child.Init(), cmd)
 
 	case NavigateMsg:
 		child, cmd := m.buildChild(msg.To)
@@ -142,8 +198,8 @@ func (m AppModel) buildChild(s Screen) (ChildModel, tea.Cmd) {
 	switch s {
 	case ScreenInstall:
 		return install.New(), nil
-	case ScreenUpdate:
-		return update.New(), nil
+	case ScreenSync:
+		return tuisync.New(m.syncOpts), nil
 	case ScreenVerify:
 		return verify.New(), nil
 	case ScreenConfig:

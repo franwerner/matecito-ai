@@ -11,7 +11,7 @@ type Screen = nav.Screen
 const (
 	ScreenMenu     = nav.ScreenMenu
 	ScreenInstall  = nav.ScreenInstall
-	ScreenUpdate   = nav.ScreenUpdate
+	ScreenSync     = nav.ScreenSync
 	ScreenVerify   = nav.ScreenVerify
 	ScreenConfig   = nav.ScreenConfig
 	ScreenSddModel = nav.ScreenSddModel

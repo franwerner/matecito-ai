@@ -36,6 +36,11 @@ type Options struct {
 	// la corrida de install modifique. La setea Run una sola vez para
 	// que todas las funciones de backup compartan el mismo timestamp.
 	BackupDir string
+
+	// SelfVersion es la versión actual del binario matecito-ai. Se pasa a
+	// sync.Options para que el planificador detecte si el binario está desactualizado
+	// sin necesitar importar el paquete cli (evita ciclo de importación).
+	SelfVersion string
 }
 
 func Run(opts Options) error {
@@ -65,7 +70,7 @@ func Run(opts Options) error {
 	}
 
 	if len(plan) == 0 {
-		fmt.Fprintln(opts.Stdout, "Nada para hacer — todo está instalado y registrado.")
+		fmt.Fprintln(opts.Stdout, "Nada para hacer — todo está instalado y actualizado.")
 		return nil
 	}
 
@@ -119,16 +124,26 @@ func hasBackup(backupDir string) bool {
 	return err == nil && info.IsDir()
 }
 
+// AllSteps devuelve los pasos de registro y configuración que install.Run gestiona.
+// Los pasos de binarios (engram, codegraph, matecito-ai) y deploy son responsabilidad
+// de sync.Sync; AllSteps solo cubre los pasos de MCP y configuración de ~/.claude/.
 func AllSteps(opts Options) []Step {
 	return []Step{
-		engramBinaryStep(opts),
-		codegraphBinaryStep(opts),
 		engramMCPStep(opts),
 		codegraphMCPStep(opts),
 		context7MCPStep(opts),
-		deployStep(opts),
 		claudeMdReferenceStep(opts),
 		mcpPermissionsStep(opts),
+	}
+}
+
+// AllBinarySteps devuelve los pasos de binarios para usos que no pasen por sync.Sync.
+// No se usa en el flujo normal del comando install, pero se conserva para compatibilidad.
+func AllBinarySteps(opts Options) []Step {
+	return []Step{
+		engramBinaryStep(opts),
+		codegraphBinaryStep(opts),
+		deployStep(opts),
 	}
 }
 
@@ -294,7 +309,7 @@ func InstallSelf(opts Options) error {
 
 // InstallEngram descarga la última release de Engram desde GitHub, verifica
 // el checksum SHA256, instala el binario y asegura que la carpeta destino
-// esté en PATH. Es reutilizada por el comando `matecito-ai update`.
+// esté en PATH. Usada por sync.Sync en el flujo unificado de install/sync.
 func InstallEngram(opts Options) error {
 	plat, err := releasedl.Detect()
 	if err != nil {

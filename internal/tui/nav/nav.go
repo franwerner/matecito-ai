@@ -12,7 +12,7 @@ type Screen int
 const (
 	ScreenMenu Screen = iota
 	ScreenInstall
-	ScreenUpdate
+	ScreenSync
 	ScreenVerify
 	ScreenConfig
 	ScreenSddModel
