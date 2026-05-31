@@ -32,7 +32,7 @@ Sobre eso corre un **flujo de desarrollo guiado (SDD)** que lleva cada cambio de
 |-------------|--------------------------------|--------------------------------------------------------------------------------------|
 | **Skills**     | `project-decisions-bootstrap`  | Entrevista por fases que captura decisiones de ingeniería y las materializa como ADRs por dominio. |
 | **Skills**     | `project-decisions-validate`   | Validador consultivo: coherencia, completitud y verificabilidad de los ADRs.         |
-| **Skills**     | `SDD` *(fork del Gentleman)*   | Flujo de fases: intake → explore → propose → spec → design → tasks → apply → verify → archive. |
+| **Skills**     | `SDD` *(fork del Gentleman)*   | Flujo de fases: intake → explore → propose → spec → design → tasks → apply → verify → archive. Modelo por agente y Strict TDD configurables. |
 | **Referencia** | `design-patterns`              | Catálogo canónico de patrones de diseño consultable. Los ADRs lo citan por nombre; `sdd-design` lo respeta cuando un ADR declara `Patrón aplicado`. |
 | **MCP**        | `codegraph`                    | Grafo de código pre-indexado (tree-sitter + SQLite) para explorar por estructura.    |
 | **MCP**        | `context7`                     | Documentación de librerías al día, contra APIs no alucinadas.                        |
@@ -53,6 +53,9 @@ intake → explore → propose → spec → design → tasks → apply → verif
 - **design** y **apply** leen los ADRs vigentes; **explore** usa codegraph; **apply** usa context7.
 - Cuando un ADR declara `Patrón aplicado: X`, **design** consulta el catálogo `design-patterns` y respeta la definición canónica del patrón.
 - **verify** confirma que el cambio no viole los ADRs que tocó.
+- Cada fase corre con su **modelo configurable por agente** y, si está activo el **Strict TDD**, **apply** y **verify** siguen el ciclo test-first. Ambos se ajustan desde la TUI (ver [Configuración](#configuración)).
+
+No todo cambio recorre las nueve fases: el flujo es una **base inmutable** (`intake → spec → apply → verify → archive`) más **add-ons opcionales** (`explore`, `propose`, `design`, `tasks`) que se activan según el tamaño del cambio. Un fix trivial va directo; un cambio grande activa todas.
 
 ## Instalación
 
@@ -98,18 +101,35 @@ go build -o matecito-ai ./cmd/matecito-ai
 
 El CLI verifica, inicia e instala las dependencias del ecosistema (Engram, codegraph, context7) sobre Claude Code, y deploya el fork del SDD a `~/.claude/`. Una vez instalado, cada herramienta se usa con su propio binario; matecito-ai se ocupa del setup y la salud del entorno.
 
+Sin subcomando, y en una terminal interactiva, abre una **TUI** desde donde ves el estado, instalás y configurás el flujo SDD. Con subcomando corre en modo directo.
+
 ```bash
+# TUI interactiva (estado, instalación y configuración de modelos/scope/Strict TDD)
+matecito-ai
+
 # Reportar estado del entorno (qué está instalado / registrado)
 matecito-ai verify
 
-
-# Instalar lo que falte (con backup de la config y confirmación)
-matecito-ai install --dry-run
-matecito-ai install
-
-# Actualizar todo el ecosistema a sus últimas versiones (matecito-ai, Engram, CodeGraph)
-matecito-ai update
+# Instalar/actualizar lo que falte (binarios, MCPs, fork) con backup de la config
+matecito-ai install --dry-run   # solo muestra el plan, no ejecuta nada
+matecito-ai install             # aplica los cambios
+matecito-ai install --yes       # sin confirmación interactiva (CI)
 ```
+
+`install` es la única ruta de instalación y actualización: detecta qué falta o está desactualizado (matecito-ai, Engram, CodeGraph, MCPs, fork del SDD) y lo deja al día en un solo paso.
+
+## Configuración
+
+Los ajustes del flujo SDD viven en archivos `config.json`, resueltos **por-proyecto → global → default**:
+
+- `<repo>/.matecito-ai/config.json` — config específica del proyecto (no se versiona).
+- `~/.matecito-ai/config.json` — config global, fallback cuando el proyecto no la define.
+
+Se editan desde la TUI (`matecito-ai`) y controlan:
+
+- **Modelo por agente** — qué modelo usa cada fase del SDD (`sdd-intake`, `sdd-spec`, `sdd-design`, …). Sin valor configurado, cada agente usa su default curado.
+- **Strict TDD** — si está activo, `apply` y `verify` siguen el ciclo test-first.
+- **Scope** — si los cambios de configuración aplican al proyecto actual o globalmente.
 
 ## Documentación
 
