@@ -82,6 +82,25 @@ The lane recommendation is produced by `sdd-intake` (Step 4); the orchestrator's
 Max 3 questions per message, grouped, one round. Only what can't be inferred. If the request already has enough detail, start directly. Large feature → brief plan before coding.
 
 > Note: when the SDD flow is active, structured discovery is handled by the **sdd-intake** phase (2-4 questions). This custom rule applies to general behavior *outside* the SDD flow. The two are intentionally separate: intake (2-4) for the flow, this rule (max 3) for quick ad-hoc work.
+
+### SDD agent launch — model & Strict TDD forwarding (single source of truth)
+This rule is the **canonical** model/Strict-TDD resolution for every `sdd-*` sub-agent. It lives here (a `matecito-ai` zone that survives gentle-ai updates), not in the orchestrator zone. The orchestrator's "Model Forwarding" / "Strict TDD Forwarding" notes defer to this block.
+
+**Trigger — by act, not by flow.** Apply this BEFORE dispatching ANY `sdd-*` agent via the Task tool, **whether the launch is part of the orchestrated SDD flow OR a standalone/ad-hoc launch** (e.g. the user says "explorá X" and you dispatch `sdd-explore` directly). A launch outside the flow does NOT skip this gate.
+
+**Model resolution (precedence, resolve per agent, cache per session):**
+1. Per-project `<repo>/.matecito-ai/config.json` → `models[<agent>]` if the file exists, is valid JSON, and the key is present.
+2. Global `~/.matecito-ai/config.json` → `models[<agent>]` if present.
+3. If neither yields a value (file absent, corrupt, or key unset) → **OMIT** the per-invocation `model` parameter entirely so the agent's frontmatter default applies (e.g. `sdd-design → opus`). Do **NOT** substitute the current conversation model.
+
+Pass the resolved value as the Task tool's `model` parameter. If a config file is absent or corrupt, skip it and fall through — never error out; always reach step 3 as the final fallback.
+
+**Strict TDD resolution (only relevant for `sdd-apply` / `sdd-verify`):** same precedence — per-project `strictTdd` → global `strictTdd` → `false`. If effective `strictTdd` is true, add to the agent prompt: "STRICT TDD MODE IS ACTIVE. Test runner: {test_command}. Follow strict-tdd.md." The `{test_command}` comes from `sdd/{project}/testing-capabilities` in Engram.
+
+**Pre-flight checklist (MANDATORY before every `sdd-*` dispatch):**
+- [ ] Read both config files (per-project, then global).
+- [ ] Resolve `model` by the precedence above; omit the param if unresolved.
+- [ ] For `sdd-apply`/`sdd-verify`: resolve `strictTdd` and inject the prompt line if true.
 <!-- /matecito-ai:behavior -->
 
 
@@ -350,24 +369,11 @@ The "Reads" column lists the **full-lane** ideal. In `reduced`/`custom` lanes so
 
 #### Strict TDD Forwarding (MANDATORY)
 
-When launching `sdd-apply`/`sdd-verify`, resolve Strict TDD from the **config files** — these are the source of truth (the `matecito-ai` TUI writes them); Engram is only a mirror. Read `<repo>/.matecito-ai/config.json` and `~/.matecito-ai/config.json`. Effective `strictTdd` = the per-project file's `strictTdd` if it sets one, else the global file's `strictTdd`, else `false` (the `ResolveTdd` precedence: per-project → global → default). If true → add to prompt: "STRICT TDD MODE IS ACTIVE. Test runner: {test_command}. Follow strict-tdd.md." The `{test_command}` still comes from `sdd/{project}/testing-capabilities` in Engram. Resolve once per session, cache.
+Resolved by the **canonical "SDD agent launch — model & Strict TDD forwarding" rule** in the `matecito-ai:behavior` zone (single source of truth, survives gentle-ai updates). That rule applies to BOTH orchestrated and ad-hoc `sdd-*` launches. Summary for the in-flow case: read `<repo>/.matecito-ai/config.json` then `~/.matecito-ai/config.json`; effective `strictTdd` = per-project → global → `false`; if true add to the `sdd-apply`/`sdd-verify` prompt "STRICT TDD MODE IS ACTIVE. Test runner: {test_command}. Follow strict-tdd.md." with `{test_command}` from `sdd/{project}/testing-capabilities` in Engram. Resolve once per session, cache.
 
 #### Model Forwarding (MANDATORY)
 
-When launching each SDD sub-agent, resolve that agent's model from config files — not from
-Engram and not from the current conversation model. Resolution order:
-(1) Per-project `<repo>/.matecito-ai/config.json` → `models[<agent>]` if the file exists and
-    is valid JSON and the key is present.
-(2) Global `~/.matecito-ai/config.json` → `models[<agent>]` if the file exists and is valid
-    JSON and the key is present.
-(3) If neither (1) nor (2) yields a value (file absent, corrupt, or key not set), OMIT the
-    per-invocation `model` parameter entirely — the agent's curated frontmatter default applies
-    (e.g. sdd-design → opus, sdd-archive → haiku). Do NOT substitute the main conversation model.
-
-Pass the resolved model as the per-invocation `model` parameter when dispatching the sub-agent
-via the Task tool. Resolve once per session for each agent, cache the result.
-If a config file is absent or corrupt, skip it and fall through to the next level — never error
-out; always reach level (3) as the final fallback.
+Resolved by the **canonical "SDD agent launch — model & Strict TDD forwarding" rule** in the `matecito-ai:behavior` zone (single source of truth, survives gentle-ai updates). That rule applies to BOTH orchestrated and ad-hoc `sdd-*` launches — do not duplicate or diverge from it here. Summary: resolve each agent's model per-project `models[<agent>]` → global `models[<agent>]` → omit the `model` param so the frontmatter default applies (never the conversation model); pass it as the Task tool `model` parameter; resolve once per session, cache.
 
 #### Apply-Progress Continuity (MANDATORY)
 
