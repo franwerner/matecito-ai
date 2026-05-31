@@ -1,7 +1,6 @@
 package agentmodel_test
 
 import (
-	"bytes"
 	"testing"
 
 	"github.com/franwerner/matecito-ai/internal/agentmodel"
@@ -59,74 +58,6 @@ func TestReadModel(t *testing.T) {
 			}
 		})
 	}
-}
-
-// --- ApplyModelOverride ---
-
-func TestApplyModelOverride(t *testing.T) {
-	// S4.5: replaces existing value; other bytes byte-identical
-	t.Run("replace_existing", func(t *testing.T) {
-		input := []byte("---\nname: sdd-spec\nmodel: haiku\n---\nbody\n")
-		got, err := agentmodel.ApplyModelOverride(input, "sonnet")
-		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
-		}
-		want := []byte("---\nname: sdd-spec\nmodel: sonnet\n---\nbody\n")
-		if !bytes.Equal(got, want) {
-			t.Errorf("got %q, want %q", got, want)
-		}
-		// original must not be modified
-		if !bytes.Equal(input, []byte("---\nname: sdd-spec\nmodel: haiku\n---\nbody\n")) {
-			t.Error("input bytes were modified")
-		}
-	})
-
-	// S4.6: trailing newline state preserved
-	t.Run("trailing_newline_present", func(t *testing.T) {
-		input := []byte("---\nmodel: haiku\n---\nbody\n")
-		got, err := agentmodel.ApplyModelOverride(input, "opus")
-		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
-		}
-		if len(got) == 0 || got[len(got)-1] != '\n' {
-			t.Error("trailing newline should be preserved")
-		}
-	})
-
-	t.Run("trailing_newline_absent", func(t *testing.T) {
-		input := []byte("---\nmodel: haiku\n---\nbody")
-		got, err := agentmodel.ApplyModelOverride(input, "opus")
-		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
-		}
-		if len(got) > 0 && got[len(got)-1] == '\n' {
-			t.Error("trailing newline should not be added")
-		}
-	})
-
-	// S4.7: invalid model returns error; no modification
-	t.Run("invalid_model", func(t *testing.T) {
-		input := []byte("---\nmodel: haiku\n---\n")
-		got, err := agentmodel.ApplyModelOverride(input, "gpt-4")
-		if err == nil {
-			t.Fatal("expected error for invalid model")
-		}
-		if got != nil {
-			t.Error("expected nil bytes on error")
-		}
-	})
-
-	// S4.8: no model line → no-op, return original bytes unchanged
-	t.Run("no_model_line_noop", func(t *testing.T) {
-		input := []byte("---\nname: sdd-spec\n---\nbody\n")
-		got, err := agentmodel.ApplyModelOverride(input, "opus")
-		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
-		}
-		if !bytes.Equal(got, input) {
-			t.Errorf("expected original bytes unchanged, got %q", got)
-		}
-	})
 }
 
 // --- IsValidModel / IsValidAgent ---

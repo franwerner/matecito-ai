@@ -7,7 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/franwerner/matecito-ai/internal/install"
+	"github.com/franwerner/matecito-ai/internal/setup/install"
 )
 
 func NewUpdateCmd() *cobra.Command {

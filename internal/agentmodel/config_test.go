@@ -275,6 +275,60 @@ func TestProjectConfigPath(t *testing.T) {
 	}
 }
 
+// --- ConfigPathForScope ---
+
+func TestConfigPathForScope(t *testing.T) {
+	tests := []struct {
+		name       string
+		scope      agentmodel.Scope
+		repoRoot   string
+		homeEnv    string
+		wantSuffix string
+		wantExact  string
+		wantErr    bool
+	}{
+		{
+			// Domain 4: scope=Global → ~/.matecito-ai/config.json
+			name:      "global_scope",
+			scope:     agentmodel.ScopeGlobal,
+			repoRoot:  "",
+			homeEnv:   "/fakehome",
+			wantExact: "/fakehome/.matecito-ai/config.json",
+		},
+		{
+			// Domain 4: scope=Project → <repoRoot>/.matecito-ai/config.json
+			name:      "project_scope",
+			scope:     agentmodel.ScopeProject,
+			repoRoot:  "/path/to/repo",
+			wantExact: "/path/to/repo/.matecito-ai/config.json",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.homeEnv != "" {
+				t.Setenv("HOME", tc.homeEnv)
+			}
+			got, err := agentmodel.ConfigPathForScope(tc.scope, tc.repoRoot)
+			if tc.wantErr {
+				if err == nil {
+					t.Fatal("expected error, got nil")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if tc.wantExact != "" && got != tc.wantExact {
+				t.Errorf("ConfigPathForScope() = %q, want %q", got, tc.wantExact)
+			}
+			if tc.wantSuffix != "" && !strings.HasSuffix(got, tc.wantSuffix) {
+				t.Errorf("ConfigPathForScope() = %q, want suffix %q", got, tc.wantSuffix)
+			}
+		})
+	}
+}
+
 // --- helper ---
 
 func writeJSON(t *testing.T, path string, v interface{}) {

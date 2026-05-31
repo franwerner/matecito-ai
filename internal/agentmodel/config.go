@@ -17,6 +17,24 @@ const (
 	legacyModelsFileName = "models.json"
 )
 
+// Scope identifies the active configuration scope in the TUI.
+type Scope int
+
+const (
+	ScopeGlobal Scope = iota
+	ScopeProject
+)
+
+// ConfigPathForScope returns the config.json path for the given scope.
+// ScopeGlobal: ~/.matecito-ai/config.json (may error if HOME unavailable).
+// ScopeProject: <repoRoot>/.matecito-ai/config.json (no error possible).
+func ConfigPathForScope(scope Scope, repoRoot string) (string, error) {
+	if scope == ScopeProject {
+		return filepath.Join(repoRoot, ConfigRelPath), nil
+	}
+	return ConfigPath()
+}
+
 // Config holds the persisted configuration for matecito-ai.
 // StrictTdd uses a pointer so that key-absent (nil) is distinct from false
 // — necessary for the per-project-vs-global precedence resolution (spec R5.6/S8.5).

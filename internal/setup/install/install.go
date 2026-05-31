@@ -6,18 +6,16 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 
-	matecitoai "github.com/franwerner/matecito-ai"
-	"github.com/franwerner/matecito-ai/internal/deploy"
 	"github.com/franwerner/matecito-ai/internal/mcp"
 	"github.com/franwerner/matecito-ai/internal/platform"
-	"github.com/franwerner/matecito-ai/internal/releasedl"
-	"github.com/franwerner/matecito-ai/internal/settings"
+	"github.com/franwerner/matecito-ai/internal/setup/deploy"
+	"github.com/franwerner/matecito-ai/internal/setup/releasedl"
+	"github.com/franwerner/matecito-ai/internal/setup/settings"
 )
 
 type Step struct {
@@ -187,6 +185,42 @@ func backupSettings(settingsPath, backupDir string) error {
 	return os.WriteFile(filepath.Join(backupDir, "settings.json"), data, 0o644)
 }
 
+type deployPrep struct {
+	source    string
+	ops       []deploy.FileOp
+	summary   string
+	shouldRun bool
+	err       error
+}
+
+func prepareDeploy() deployPrep {
+	var p deployPrep
+	payloadFS, source, err := deploy.ResolvePayloadFS()
+	if err != nil {
+		p.summary = "no se pudo resolver payload: " + err.Error()
+		p.err = err
+		return p
+	}
+	p.source = source
+
+	claudeHome, err := deploy.ClaudeHome()
+	if err != nil {
+		p.err = err
+		return p
+	}
+	p.ops, err = deploy.Plan(payloadFS, claudeHome)
+	if err != nil {
+		p.err = err
+		p.summary = "error planeando deploy: " + err.Error()
+		return p
+	}
+	s := deploy.Summarize(p.ops)
+	p.summary = fmt.Sprintf("desde %s: %d nuevos, %d cambiados (%d sin cambio)",
+		source, s.New, s.Changed, s.Same)
+	p.shouldRun = s.New+s.Changed > 0
+	return p
+}
+
 func deployStep(opts Options) Step {
 	prep := prepareDeploy()
 
@@ -198,11 +232,19 @@ func deployStep(opts Options) Step {
 			if prep.err != nil {
 				return prep.err
 			}
+
+			// re-resolver payload para el Run (el fs.FS de prepareDeploy es
+			// un valor de interface no almacenado en el struct)
+			payloadFS, _, err := deploy.ResolvePayloadFS()
+			if err != nil {
+				return fmt.Errorf("no se pudo resolver payload: %w", err)
+			}
+
 			claudeHome, err := deploy.ClaudeHome()
 			if err != nil {
 				return err
 			}
-			_, err = deploy.Apply(prep.payloadFS, prep.ops, claudeHome, opts.BackupDir)
+			_, err = deploy.Apply(payloadFS, prep.ops, claudeHome, opts.BackupDir)
 			if err != nil {
 				return err
 			}
@@ -211,60 +253,6 @@ func deployStep(opts Options) Step {
 			return nil
 		},
 	}
-}
-
-type deployPrep struct {
-	payloadFS fs.FS
-	source    string
-	ops       []deploy.FileOp
-	summary   string
-	shouldRun bool
-	err       error
-}
-
-// resolvePayloadFS prefiere un payload/ local (modo dev/source) si existe en
-// el cwd o algún directorio padre. Si no, cae al payload embebido en el
-// binario via go:embed.
-func resolvePayloadFS() (payloadFS fs.FS, source string, err error) {
-	if cwd, cwdErr := os.Getwd(); cwdErr == nil {
-		if local, findErr := deploy.FindPayloadDir(cwd); findErr == nil {
-			return os.DirFS(local), local, nil
-		}
-	}
-	sub, err := fs.Sub(matecitoai.PayloadFS, "payload")
-	if err != nil {
-		return nil, "", err
-	}
-	return sub, "embedded", nil
-}
-
-func prepareDeploy() deployPrep {
-	var p deployPrep
-	payloadFS, source, err := resolvePayloadFS()
-	if err != nil {
-		p.summary = "no se pudo resolver payload: " + err.Error()
-		p.err = err
-		return p
-	}
-	p.payloadFS = payloadFS
-	p.source = source
-
-	claudeHome, err := deploy.ClaudeHome()
-	if err != nil {
-		p.err = err
-		return p
-	}
-	p.ops, err = deploy.Plan(p.payloadFS, claudeHome)
-	if err != nil {
-		p.err = err
-		p.summary = "error planeando deploy: " + err.Error()
-		return p
-	}
-	s := deploy.Summarize(p.ops)
-	p.summary = fmt.Sprintf("desde %s: %d nuevos, %d cambiados (%d sin cambio)",
-		source, s.New, s.Changed, s.Same)
-	p.shouldRun = s.New+s.Changed > 0
-	return p
 }
 
 func engramBinaryStep(opts Options) Step {

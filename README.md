@@ -88,7 +88,7 @@ Variables de entorno opcionales:
 
 ### Build desde fuente
 
-Requiere **Go `≥ 1.22`**:
+Requiere **Go `≥ 1.24`**:
 
 ```bash
 go build -o matecito-ai ./cmd/matecito-ai

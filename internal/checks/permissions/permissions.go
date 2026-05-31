@@ -2,7 +2,7 @@ package permissions
 
 import (
 	"github.com/franwerner/matecito-ai/internal/check"
-	"github.com/franwerner/matecito-ai/internal/settings"
+	"github.com/franwerner/matecito-ai/internal/setup/settings"
 )
 
 func All() []check.Result {

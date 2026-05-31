@@ -77,10 +77,26 @@ func Detect() (Platform, error) {
 
 // LatestRelease consulta la GitHub API de repo y devuelve la URL del asset
 // que corresponde a la plataforma indicada y la URL del checksums.txt.
+// Usa el timeout predeterminado de 60s.
 func LatestRelease(repo Repo, p Platform) (Release, error) {
+	return LatestReleaseWithTimeout(repo, p, httpTimeout)
+}
+
+// LatestReleaseWithTimeout es idéntica a LatestRelease pero acepta un timeout
+// configurable; permite a la TUI usar un timeout corto (~5s) sin afectar
+// las rutas de install/update que necesitan más tiempo.
+// El parámetro variadic apiBaseURL existe solo para tests (httptest.Server);
+// en producción se omite y se usa la API real de GitHub.
+func LatestReleaseWithTimeout(repo Repo, p Platform, timeout time.Duration, apiBaseURL ...string) (Release, error) {
 	var rel Release
-	apiURL := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", repo.Owner, repo.Name)
-	client := &http.Client{Timeout: httpTimeout}
+
+	base := "https://api.github.com"
+	if len(apiBaseURL) > 0 && apiBaseURL[0] != "" {
+		base = apiBaseURL[0]
+	}
+	apiURL := fmt.Sprintf("%s/repos/%s/%s/releases/latest", base, repo.Owner, repo.Name)
+
+	client := &http.Client{Timeout: timeout}
 	req, err := http.NewRequest("GET", apiURL, nil)
 	if err != nil {
 		return rel, err

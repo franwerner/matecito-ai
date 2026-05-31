@@ -2,7 +2,6 @@ package agentmodel
 
 import (
 	"bytes"
-	"fmt"
 	"strings"
 )
 
@@ -70,72 +69,4 @@ func ReadModel(content []byte) (string, error) {
 		}
 	}
 	return "", nil
-}
-
-// ApplyModelOverride performs a line-targeted replacement of the `model:` line inside
-// the first frontmatter block. All other bytes are left byte-identical.
-// Returns an error when model is not a ValidModel. Returns original bytes unchanged
-// when no `model:` line is found (no-op). Preserves the trailing-newline state of content.
-func ApplyModelOverride(content []byte, model string) ([]byte, error) {
-	if !IsValidModel(model) {
-		return nil, fmt.Errorf("agentmodel: invalid model %q (valid: %v)", model, ValidModels)
-	}
-
-	// split while keeping track of EOL style per line
-	// We work line-by-line preserving the raw line endings.
-	trailingNewline := len(content) > 0 && content[len(content)-1] == '\n'
-
-	// split on '\n' to get lines; each element excludes the '\n'
-	rawLines := bytes.Split(content, []byte("\n"))
-	// bytes.Split on "\n" adds an empty element at the end when content ends with '\n'
-
-	if len(rawLines) == 0 || string(rawLines[0]) != "---" {
-		// no frontmatter; no-op
-		out := make([]byte, len(content))
-		copy(out, content)
-		return out, nil
-	}
-
-	inFrontmatter := true
-	replaced := false
-
-	for i := 1; i < len(rawLines); i++ {
-		if !inFrontmatter {
-			break
-		}
-		line := rawLines[i]
-		if string(line) == "---" {
-			inFrontmatter = false
-			break
-		}
-		// only non-indented lines are valid keys
-		if len(line) > 0 && (line[0] == ' ' || line[0] == '\t') {
-			continue
-		}
-		s := string(line)
-		if strings.HasPrefix(s, "model:") {
-			rawLines[i] = []byte("model: " + model)
-			replaced = true
-			break
-		}
-	}
-
-	if !replaced {
-		// no model line found; return original bytes unchanged
-		out := make([]byte, len(content))
-		copy(out, content)
-		return out, nil
-	}
-
-	result := bytes.Join(rawLines, []byte("\n"))
-
-	// restore trailing newline state
-	hasNewline := len(result) > 0 && result[len(result)-1] == '\n'
-	if trailingNewline && !hasNewline {
-		result = append(result, '\n')
-	} else if !trailingNewline && hasNewline {
-		result = result[:len(result)-1]
-	}
-
-	return result, nil
 }

@@ -10,6 +10,8 @@ import (
 	"path"
 	"path/filepath"
 	"time"
+
+	matecitoai "github.com/franwerner/matecito-ai"
 )
 
 type Mode int
@@ -228,20 +230,40 @@ func Summarize(ops []FileOp) Summary {
 	return s
 }
 
+// ResolvePayloadFS prefiere un payload/ local (modo dev/source) si existe en
+// el cwd o algún directorio padre. Si no, cae al payload embebido en el
+// binario via go:embed.
+func ResolvePayloadFS() (payloadFS fs.FS, source string, err error) {
+	if cwd, cwdErr := os.Getwd(); cwdErr == nil {
+		if local, findErr := FindPayloadDir(cwd); findErr == nil {
+			return os.DirFS(local), local, nil
+		}
+	}
+	sub, err := fs.Sub(matecitoai.PayloadFS, "payload")
+	if err != nil {
+		return nil, "", err
+	}
+	return sub, "embedded", nil
+}
+
 // Apply ejecuta las copias en disco. Lee de payloadFS y escribe en
 // claudeHome. Si hay cambios sobre archivos existentes, los respalda en
 // backupDir/<rel-path>. backupDir es la carpeta concreta de esta corrida
 // (típicamente de deploy.BackupDir()) — Apply lo crea on-demand solo si
 // llega a haber al menos un archivo cambiado.
+// Los archivos de payload se copian byte a byte sin ninguna transformación.
 func Apply(payloadFS fs.FS, ops []FileOp, claudeHome, backupDir string) (bool, error) {
 	backupCreated := false
 	for _, op := range ops {
 		if op.Status == StatusSame {
 			continue
 		}
+
 		if err := os.MkdirAll(filepath.Dir(op.Target), 0o755); err != nil {
 			return backupCreated, err
 		}
+
+		// backup solo para archivos que ya existían y cambiaron
 		if op.Status == StatusChanged {
 			rel, err := filepath.Rel(claudeHome, op.Target)
 			if err != nil {
@@ -256,6 +278,7 @@ func Apply(payloadFS fs.FS, ops []FileOp, claudeHome, backupDir string) (bool, e
 			}
 			backupCreated = true
 		}
+
 		if err := copyFromFS(payloadFS, op.Source, op.Target); err != nil {
 			return backupCreated, err
 		}

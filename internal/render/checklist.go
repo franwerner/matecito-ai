@@ -17,7 +17,7 @@ const (
 )
 
 func Section(w io.Writer, title string, results []check.Result) {
-	useColor := isTTY(w)
+	useColor := IsTTY(w)
 	fmt.Fprintln(w, paint(title, colorBold, useColor))
 	for _, r := range results {
 		fmt.Fprintln(w, renderLine(r, useColor))
@@ -26,7 +26,7 @@ func Section(w io.Writer, title string, results []check.Result) {
 }
 
 func Summary(w io.Writer, results []check.Result) int {
-	useColor := isTTY(w)
+	useColor := IsTTY(w)
 	missing := 0
 	for _, r := range results {
 		if r.Required && r.Status != check.StatusOK {
@@ -100,7 +100,7 @@ func paint(s, color string, useColor bool) string {
 	return color + s + colorReset
 }
 
-func isTTY(w io.Writer) bool {
+func IsTTY(w io.Writer) bool {
 	f, ok := w.(*os.File)
 	if !ok {
 		return false

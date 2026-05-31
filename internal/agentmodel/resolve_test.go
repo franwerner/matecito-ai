@@ -6,6 +6,89 @@ import (
 	"github.com/franwerner/matecito-ai/internal/agentmodel"
 )
 
+// --- ResolveModel ---
+
+func TestResolveModel(t *testing.T) {
+	tests := []struct {
+		name       string
+		global     *agentmodel.Config
+		project    *agentmodel.Config
+		agent      string
+		wantModel  string
+		wantSource string
+	}{
+		{
+			// Domain 2: per-project override wins over global
+			name: "project_wins",
+			global: &agentmodel.Config{
+				Models: map[string]string{"sdd-design": "sonnet"},
+			},
+			project: &agentmodel.Config{
+				Models: map[string]string{"sdd-design": "haiku"},
+			},
+			agent:      "sdd-design",
+			wantModel:  "haiku",
+			wantSource: "project",
+		},
+		{
+			// Domain 2: global fallback when project nil
+			name: "global_fallback",
+			global: &agentmodel.Config{
+				Models: map[string]string{"sdd-design": "sonnet"},
+			},
+			project:    nil,
+			agent:      "sdd-design",
+			wantModel:  "sonnet",
+			wantSource: "global",
+		},
+		{
+			// Domain 2: default when neither config sets the agent
+			name: "default_when_neither",
+			global: &agentmodel.Config{
+				Models: map[string]string{},
+			},
+			project:    nil,
+			agent:      "sdd-spec",
+			wantModel:  "",
+			wantSource: "default",
+		},
+		{
+			// Domain 2: unknown agent returns ("", "default")
+			name: "unknown_agent",
+			global: &agentmodel.Config{
+				Models: map[string]string{"sdd-design": "sonnet"},
+			},
+			project: &agentmodel.Config{
+				Models: map[string]string{"sdd-design": "haiku"},
+			},
+			agent:      "nonexistent-agent",
+			wantModel:  "",
+			wantSource: "default",
+		},
+		{
+			// both configs nil → default
+			name:       "both_nil",
+			global:     nil,
+			project:    nil,
+			agent:      "sdd-apply",
+			wantModel:  "",
+			wantSource: "default",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			gotModel, gotSource := agentmodel.ResolveModel(tc.global, tc.project, tc.agent)
+			if gotModel != tc.wantModel {
+				t.Errorf("ResolveModel() model = %q, want %q", gotModel, tc.wantModel)
+			}
+			if gotSource != tc.wantSource {
+				t.Errorf("ResolveModel() source = %q, want %q", gotSource, tc.wantSource)
+			}
+		})
+	}
+}
+
 // --- ResolveTdd ---
 
 func TestResolveTdd(t *testing.T) {

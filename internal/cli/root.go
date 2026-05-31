@@ -2,9 +2,13 @@ package cli
 
 import (
 	"fmt"
+	"os"
 	"runtime/debug"
 
 	"github.com/spf13/cobra"
+
+	"github.com/franwerner/matecito-ai/internal/render"
+	"github.com/franwerner/matecito-ai/internal/tui"
 )
 
 var (
@@ -42,12 +46,19 @@ func NewRootCmd() *cobra.Command {
 		Version:       fmt.Sprintf("%s (commit %s, built %s)", version, commit, date),
 		SilenceUsage:  true,
 		SilenceErrors: true,
+		Args:          cobra.NoArgs,
 		Example: `  # Reportar estado del entorno
   matecito-ai verify
 
   # Instalar todo lo que falte (prereqs detectados auto)
   matecito-ai install --dry-run
   matecito-ai install`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if !render.IsTTY(os.Stdout) {
+				return cmd.Help()
+			}
+			return tui.Run(tui.RunOpts{Version: version})
+		},
 	}
 
 	root.CompletionOptions.DisableDefaultCmd = true

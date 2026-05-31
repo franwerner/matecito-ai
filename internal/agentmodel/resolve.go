@@ -5,6 +5,24 @@ import (
 	"strings"
 )
 
+// ResolveModel returns the effective model for agent given two configs.
+// source is one of "project", "global", "default".
+// ("", "default") means neither config sets the agent; caller omits the param.
+// project == nil means no per-project config file was found.
+// Unknown agents (not in Agents) always return ("", "default").
+func ResolveModel(global *Config, project *Config, agent string) (model string, source string) {
+	if !IsValidAgent(agent) {
+		return "", "default"
+	}
+	if project != nil && project.Models[agent] != "" {
+		return project.Models[agent], "project"
+	}
+	if global != nil && global.Models[agent] != "" {
+		return global.Models[agent], "global"
+	}
+	return "", "default"
+}
+
 // ResolveTdd determines the effective strict-TDD mode given the global and per-project configs.
 // Precedence: per-project (file present AND strictTdd key set) → global (key set) → false.
 // project == nil means no per-project config file was found.

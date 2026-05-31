@@ -7,14 +7,14 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/franwerner/matecito-ai/internal/check"
-	"github.com/franwerner/matecito-ai/internal/claudemd"
-	"github.com/franwerner/matecito-ai/internal/codegraph"
-	"github.com/franwerner/matecito-ai/internal/context7"
-	"github.com/franwerner/matecito-ai/internal/engram"
-	"github.com/franwerner/matecito-ai/internal/permissions"
-	"github.com/franwerner/matecito-ai/internal/prereqs"
+	"github.com/franwerner/matecito-ai/internal/checks/claudemd"
+	"github.com/franwerner/matecito-ai/internal/checks/codegraph"
+	"github.com/franwerner/matecito-ai/internal/checks/context7"
+	"github.com/franwerner/matecito-ai/internal/checks/engram"
+	"github.com/franwerner/matecito-ai/internal/checks/permissions"
+	"github.com/franwerner/matecito-ai/internal/checks/prereqs"
+	"github.com/franwerner/matecito-ai/internal/checks/sdd"
 	"github.com/franwerner/matecito-ai/internal/render"
-	"github.com/franwerner/matecito-ai/internal/sdd"
 )
 
 func NewVerifyCmd() *cobra.Command {
