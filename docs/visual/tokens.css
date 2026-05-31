@@ -1,0 +1,95 @@
+/* ============================================================================
+   matecito-ai — Design Tokens
+   Sistema visual propuesto · Ronda 1
+   ----------------------------------------------------------------------------
+   Mascota: mate kawaii con carita. IA = acento, nunca domina.
+   Tono: cálido, argentino sin cliché, tech sin frialdad.
+   ========================================================================== */
+
+:root {
+  /* ── Marca · Calabash (cuerpo del mate) ──────────────────────────────── */
+  --mate-calabash:         #B26A3C;  /* color primario de marca            */
+  --mate-calabash-shadow:  #8B4E27;  /* contornos / sombra del cuerpo      */
+  --mate-calabash-hi:      #C98A5E;  /* brillo / highlight del cuerpo      */
+
+  /* ── Yerba (verde) ───────────────────────────────────────────────────── */
+  --mate-yerba:            #6B8E4E;  /* yerba, fondos de app icon          */
+  --mate-yerba-shadow:     #536F3A;  /* speckle oscuro                     */
+  --mate-yerba-hi:         #88A964;  /* speckle claro / gradiente icon     */
+
+  /* ── Bombilla (plata) ────────────────────────────────────────────────── */
+  --mate-bombilla:         #C7CAD0;  /* cuerpo de la bombilla              */
+  --mate-bombilla-shadow:  #8D9099;  /* sombra                             */
+  --mate-bombilla-tip:     #5B5E66;  /* boquilla / contactos               */
+
+  /* ── Acento · IA (violeta suave) ─────────────────────────────────────── */
+  --mate-accent:           #8B7BFF;  /* grafo, nodos, sufijo "-ai"         */
+  --mate-accent-soft:      #C9C2FF;  /* brillo dentro de nodos             */
+
+  /* ── Neutros · superficie y texto ────────────────────────────────────── */
+  --mate-cream:            #FBF6EE;  /* fondo de marca                     */
+  --mate-surface:          #FFFDF7;  /* superficie de tarjetas             */
+  --mate-surface-warm:     #FFF6E0;  /* nota / callout cálido              */
+  --mate-border:           #E8DCC8;  /* bordes / divisores                 */
+  --mate-ink:              #3A2A1F;  /* texto principal / monocromo        */
+  --mate-ink-mute:         #6F5A4A;  /* texto secundario                   */
+
+  /* ── Carita kawaii ───────────────────────────────────────────────────── */
+  --mate-face:             #2B1B12;  /* ojos / boca                        */
+  --mate-cheek:            #F2A6B0;  /* cachetitos                         */
+  --mate-spark:            #FFFFFF;  /* brillo de los ojos                 */
+
+  /* ── Tipografía ──────────────────────────────────────────────────────── */
+  --mate-font-display:     "Fredoka", system-ui, sans-serif;  /* wordmark / títulos */
+  --mate-font-body:        "Nunito", system-ui, sans-serif;   /* soporte / body     */
+
+  --mate-weight-display:   600;
+  --mate-weight-body:      400;
+  --mate-weight-body-bold: 700;
+
+  /* tracking del display: más apretado a mayor tamaño */
+  --mate-tracking-tight:   -2px;     /* wordmark grande (≈92px)            */
+  --mate-tracking-snug:    -0.4px;   /* títulos de tarjeta (≈22px)         */
+
+  /* ── Radios ──────────────────────────────────────────────────────────── */
+  --mate-radius-card:      14px;
+  --mate-radius-appicon:   21%;      /* ≈46px sobre lienzo de 220px         */
+  --mate-radius-pill:      999px;
+
+  /* ── Constantes de construcción del mark ─────────────────────────────── */
+  --mate-bombilla-angle:   20deg;    /* bombilla angulada a la derecha      */
+}
+
+/* ============================================================================
+   Reglas de marca (no son tokens, pero viven con ellos):
+   • Bombilla angulada 20° a la derecha en TODOS los marks (consistencia).
+   • Carita kawaii fija: ojos con brillo + cachetitos rosados + sonrisita en U.
+   • Un solo guiño de IA por mark (no apilar vapor + pin + nodo).
+   • El sufijo "-ai" siempre en --mate-accent.
+   ========================================================================== */
+
+/* ── Helpers opcionales ─────────────────────────────────────────────────── */
+
+.mate-wordmark {
+  font-family: var(--mate-font-display);
+  font-weight: var(--mate-weight-display);
+  letter-spacing: var(--mate-tracking-tight);
+  color: var(--mate-ink);
+  text-transform: lowercase;
+}
+
+.mate-wordmark .suffix-ai {
+  color: var(--mate-accent);
+}
+
+.mate-title {
+  font-family: var(--mate-font-display);
+  font-weight: var(--mate-weight-display);
+  letter-spacing: var(--mate-tracking-snug);
+  color: var(--mate-ink);
+}
+
+.mate-body {
+  font-family: var(--mate-font-body);
+  color: var(--mate-ink);
+}
