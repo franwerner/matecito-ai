@@ -42,8 +42,9 @@ type AppModel struct {
 	ctx              ProjectContext
 	globalConfigPath string
 	// scope is the active config scope; resets to ScopeGlobal on each TUI open.
-	scope    agentmodel.Scope
-	syncOpts pkgsync.Options
+	scope           agentmodel.Scope
+	syncOpts        pkgsync.Options
+	updateAvailable bool
 }
 
 // NewAppModel builds the initial AppModel on the menu screen.
@@ -52,7 +53,7 @@ type AppModel struct {
 func NewAppModel(version, globalConfigPath string, ctx ProjectContext) AppModel {
 	return AppModel{
 		screen:           ScreenMenu,
-		child:            menu.New(),
+		child:            menu.New(false),
 		hdr:              header.Header{Version: version, ProjectName: ctx.Name, InProject: ctx.InProject},
 		ctx:              ctx,
 		globalConfigPath: globalConfigPath,
@@ -123,21 +124,20 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
 	case syncCheckMsg:
-		// alimentar el badge con el tag latest de matecito-ai (design D5)
+		// alimentar el badge con el tag latest de matecito-ai
 		if msg.matecitoTag != "" {
 			m.hdr.LatestTag = agentmodel.NormalizeVersion(msg.matecitoTag)
 		}
-		if msg.err != nil || len(msg.actions) == 0 {
-			// sin acciones pendientes o error de red: quedar en el menú
-			return m, nil
-		}
 		// inyectar los estados ya detectados para que SyncModel no llame a Detect de nuevo
+		// cuando el usuario entre a "Actualizar" manualmente.
 		m.syncOpts.PreDetected = msg.states
-		// hay componentes que instalar o actualizar: navegar a la pantalla de sync
-		child, cmd := m.buildChild(ScreenSync)
-		m.screen = ScreenSync
-		m.child = child
-		return m, tea.Batch(child.Init(), cmd)
+		m.updateAvailable = len(msg.actions) > 0
+		// Si hay acciones pendientes y seguimos en el menú, reconstruir el child
+		// para que la vista refleje el aviso de actualización disponible.
+		if m.screen == ScreenMenu {
+			m.child = menu.New(m.updateAvailable)
+		}
+		return m, nil
 
 	case NavigateMsg:
 		child, cmd := m.buildChild(msg.To)
@@ -147,7 +147,7 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case BackMsg:
 		m.screen = ScreenMenu
-		m.child = menu.New()
+		m.child = menu.New(m.updateAvailable)
 		return m, m.child.Init()
 
 	case QuitMsg:
@@ -219,6 +219,6 @@ func (m AppModel) buildChild(s Screen) (ChildModel, tea.Cmd) {
 		configPath, _ := agentmodel.ConfigPathForScope(m.scope, m.ctx.RepoRoot)
 		return tdd.New(configPath), nil
 	default:
-		return menu.New(), nil
+		return menu.New(m.updateAvailable), nil
 	}
 }

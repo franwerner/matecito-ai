@@ -13,6 +13,7 @@ var items = []struct {
 	quit   bool
 }{
 	{"Instalar", nav.ScreenInstall, false},
+	{"Actualizar", nav.ScreenSync, false},
 	{"Verificar", nav.ScreenVerify, false},
 	{"Configuración", nav.ScreenConfig, false},
 	{"Salir", nav.ScreenMenu, true},
@@ -20,10 +21,11 @@ var items = []struct {
 
 // MenuModel implementa el menú principal.
 type MenuModel struct {
-	cursor int
+	cursor          int
+	updateAvailable bool
 }
 
-func New() MenuModel { return MenuModel{} }
+func New(updateAvailable bool) MenuModel { return MenuModel{updateAvailable: updateAvailable} }
 
 func (m MenuModel) Init() tea.Cmd { return nil }
 
@@ -59,6 +61,9 @@ func (m MenuModel) View() string {
 			line = styles.Selected.Render("> " + item.label)
 		}
 		s += line + "\n"
+	}
+	if m.updateAvailable {
+		s += "\n" + styles.Warn.Render("  Hay una actualización disponible — entrá a Actualizar") + "\n"
 	}
 	s += "\n" + styles.Footer.Render("↑/↓ navegar  enter seleccionar  q salir")
 	return s
