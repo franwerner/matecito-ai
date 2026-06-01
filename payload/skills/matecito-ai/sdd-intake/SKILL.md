@@ -65,14 +65,16 @@ From the request + answers, classify:
 
 Recommend a lane. You only **recommend**; the orchestrator surfaces it and the user confirms or adjusts — never apply a lane unilaterally.
 
-`direct` (no SDD) is for `trivial` / `small` changes with no architectural impact — say so and route to `direct-implementation`.
+**Default bias — minimum viable lane.** Recommend the *lightest* lane that still covers the change. Escalate ONLY for a concrete, named trigger; absent a trigger, the recommendation is `reduced`, not `full`. Resolve top-down and stop at the first that fits:
 
-For anything heavier, the lane is the **base** (`intake → spec → apply → verify → archive`, always; `sdd-spec` starts from THIS brief when no proposal exists) plus the **add-ons** you recommend toggling on — `explore`, `propose`, `design`, `tasks`:
-- **`reduced`** = base, no add-ons. `small` / `medium` with no architectural unknown.
-- **`full`** = base + all add-ons. `medium` / `large`, or anything touching architecture/multiple domains.
-- **`custom`** = base + only the add-ons this change needs. Recommend each by what the change actually requires: `design` when there's an architectural decision, `tasks` when the work has many pieces, `explore` when the codebase area is unclear, `propose` when scope/approach needs sign-off.
+1. **`direct`** (no SDD) — `trivial` / `small` change with no architectural impact. Route to `direct-implementation`.
+2. **`reduced`** = base, no add-ons (`intake → spec → apply → verify → archive`, always; `sdd-spec` starts from THIS brief when no proposal exists). **This is the default for substantial work** — any `small` / `medium` change with no escalation trigger lands here. Expect to recommend this most of the time; it is the norm, not an edge case.
+3. **`custom`** = base + only the add-ons a trigger requires. Use this for the common middle ground instead of jumping to `full`. Add each add-on only for its trigger: `design` when there's an architectural decision, `tasks` when the work has many pieces, `explore` when the codebase area is unclear, `propose` when scope/approach needs sign-off.
+4. **`full`** = base + all add-ons. Reserved for `large` changes, or work touching architecture across **multiple** domains. Requires a named trigger — do NOT recommend it as the generic "this is important" choice; that's what `custom` is for.
 
-Emit the lane as the base plus the list of enabled add-ons. Be honest about size: over-routing wastes effort, under-routing skips rigor.
+Escalation triggers (the ONLY reasons to go above `reduced`): an architectural decision is needed, multiple domains are touched, the surface is `large`, or the codebase area is unclear. One isolated trigger → `custom` with the matching add-on; several triggers or `large` size → `full`.
+
+Emit the lane as the base plus the list of enabled add-ons. Be honest about size: over-routing to `full` wastes effort and is the more common failure mode — under-routing skips rigor, but the default is to trust `reduced` until a trigger says otherwise.
 
 ### Step 5: Early Guard — ADR conflicts and undecided questions
 

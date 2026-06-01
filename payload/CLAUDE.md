@@ -61,8 +61,9 @@ This project runs inside the matecito-ai ecosystem. Apply these defaults:
 
 ### SDD lane fork
 When you infer a request is **substantial** (intake-worthy), do NOT silently start the full flow. Surface the choice **once, up front**, and let the user decide — you recommend, the user picks:
-- Ask whether to handle it **with or without the SDD flow** — *without* → direct implementation; *with* → enter the flow.
-- If *with*, intake recommends a lane (base ± add-ons); the user confirms or adjusts it at the intake gate. Never apply a lane unilaterally.
+- Present the choice as **four lanes**, not a binary with/without question: `direct | reduced | full | custom`. Recommend ONE and let the user confirm or adjust at the intake gate. Never apply a lane unilaterally.
+- **Default bias — minimum viable lane.** Recommend the *lightest* lane that still covers the change, and escalate only for a **concrete, named reason** (an architectural decision, multiple domains touched, a large surface, or an unclear codebase area). Absent such a reason, `reduced` is the default for substantial work — NOT `full`. `full` is opt-in, justified by a specific trigger; it is *not* the synonym for "the SDD flow".
+- Decision order: trivial/obvious → `direct`; substantial with no escalation trigger → `reduced`; one isolated trigger → `custom` (base + just the add-on that trigger needs); large surface or several triggers → `full`.
 - Offer the fork **once, at the start of the request** — not repeated per phase.
 - **Trivial/obvious changes skip the question** and go direct.
 
@@ -70,11 +71,11 @@ The SDD path is one mechanism: an **immutable base** plus **opt-in add-ons**.
 - **Base (always runs):** `intake → spec → apply → verify → archive`. This is the floor; `sdd-spec` starts from the intake brief when no proposal exists.
 - **Add-ons (toggle on as needed):** `explore`, `propose`, `design`, `tasks`. The user picks *which*, not the order — the orchestrator inserts each at its canonical position (see the add-on insertion map in the orchestrator zone).
 
-Presets are shorthands over this same mechanism:
-- **direct** (no SDD) → `direct-implementation`. Outside the base+add-ons scheme.
-- **reduced** → base, 0 add-ons. Small/medium with no architectural unknown.
-- **full** → base + all 4 add-ons. Large, or touching architecture/multiple domains.
-- **custom** → base + any subset of add-ons. The in-between combos (e.g. reduced + `design` for a small change with one architectural decision).
+Presets are shorthands over this same mechanism. Read them top-down and stop at the first that fits — this encodes the minimum-viable-lane bias:
+- **direct** (no SDD) → `direct-implementation`. Outside the base+add-ons scheme. Trivial change, no real risk.
+- **reduced** → base, 0 add-ons. **Default for substantial work**: any small/medium change with no escalation trigger. This is the expected recommendation for most intake-worthy requests, not an edge case.
+- **custom** → base + only the add-ons the change's triggers require (e.g. one architectural decision → reduced + `design`; unclear area → reduced + `explore`). Use this for the common middle ground instead of jumping to `full`.
+- **full** → base + all 4 add-ons. Reserved for `large` changes, or work touching architecture across multiple domains. Requires a named trigger; do not recommend by default.
 
 The lane recommendation is produced by `sdd-intake` (Step 4); the orchestrator's INTAKE GATE surfaces it for confirm/adjust/cancel.
 
@@ -294,7 +295,7 @@ After `sdd-intake` returns the Intake Brief, the orchestrator ALWAYS shows it to
 - **cancel** → discard the change.
 
 <!-- matecito-ai: the lane is part of what the user confirms here; the rule lives in the matecito-ai:behavior zone -->
-The brief's recommended **lane** (`direct | reduced | full`) is part of what the user confirms/adjusts at this gate. See the **SDD lane fork** rule in the `matecito-ai:behavior` zone — that zone owns the with/without-SDD fork and the lane definitions; this gate only surfaces them.
+The brief's recommended **lane** (`direct | reduced | full | custom`) is part of what the user confirms/adjusts at this gate. See the **SDD lane fork** rule in the `matecito-ai:behavior` zone — that zone owns the with/without-SDD fork and the lane definitions; this gate only surfaces them.
 
 **The ADR-driven statuses below exist only when ADRs are active** (per the **ADR activation gate** in `matecito-ai:behavior`). When `.matecito-ai/adr/` is absent or empty, intake never returns `blocked`/`needs-decision` for ADR reasons; the orchestrator must NOT mention ADRs or route to `project-decisions-bootstrap` — undecided architectural questions are resolved as ordinary design decisions in `sdd-explore`/`sdd-design`.
 
