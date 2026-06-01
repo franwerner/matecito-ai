@@ -111,9 +111,8 @@ Muestra el plan combinado antes de ejecutar. Se continúa ante errores de binari
 				syncOpts.Yes = true
 				syncOpts.PreDetected = states
 				syncResult := sync.Sync(syncOpts)
-				if syncResult.HasErrors() {
-					// los errores ya fueron impresos por Sync; continuar con MCPs.
-					_ = syncResult
+				if err := surfaceCodegraphError(syncResult); err != nil {
+					return err
 				}
 			}
 
@@ -132,6 +131,16 @@ Muestra el plan combinado antes de ejecutar. Se continúa ante errores de binari
 	cmd.Flags().BoolVar(&dryRun, "dry-run", false, "Muestra el plan sin ejecutar nada")
 	cmd.Flags().BoolVarP(&yes, "yes", "y", false, "No pedir confirmación interactiva")
 	return cmd
+}
+
+// surfaceCodegraphError returns a wrapped error when the sync result carries a
+// codegraph failure, or nil when codegraph succeeded. Keeping this as a named
+// function makes the decision directly testable without running the full command.
+func surfaceCodegraphError(result sync.Result) error {
+	if cgErr := result.Errors["codegraph"]; cgErr != nil {
+		return fmt.Errorf("codegraph: %w", cgErr)
+	}
+	return nil
 }
 
 func confirmInstall(in *os.File, out *os.File, prompt string) bool {

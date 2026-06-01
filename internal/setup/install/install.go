@@ -337,7 +337,13 @@ func InstallCodegraph(opts Options) error {
 	if err := ensureUserNpmPrefix(opts); err != nil {
 		return err
 	}
-	return runIO(opts, "npm", "install", "-g", "@colbymchenry/codegraph")
+	if err := runIO(opts, "npm", "install", "-g", "@colbymchenry/codegraph"); err != nil {
+		return err
+	}
+	if _, err := exec.LookPath("codegraph"); err != nil {
+		return errors.New("codegraph: npm install terminó pero el binario no quedó en PATH")
+	}
+	return nil
 }
 
 func UpdateEngramPlugin(opts Options) error {
@@ -430,6 +436,9 @@ func codegraphMCPStep(opts Options) Step {
 		Run: func() error {
 			if _, err := exec.LookPath("claude"); err != nil {
 				return errors.New("claude no está en PATH")
+			}
+			if _, err := exec.LookPath("codegraph"); err != nil {
+				return errors.New("codegraph: binario no encontrado en PATH; instalá codegraph antes de registrar el MCP")
 			}
 			return runIO(opts, "claude", "mcp", "add", "--scope", "user", "codegraph", "--", "codegraph", "serve", "--mcp")
 		},
