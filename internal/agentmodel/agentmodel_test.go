@@ -90,7 +90,7 @@ func TestIsValidAgent(t *testing.T) {
 
 func TestAgentsSlice(t *testing.T) {
 	want := []string{
-		"sdd-intake", "sdd-explore", "sdd-propose", "sdd-spec",
+		"sdd-init", "sdd-intake", "sdd-explore", "sdd-propose", "sdd-spec",
 		"sdd-design", "sdd-tasks", "sdd-apply", "sdd-verify", "sdd-archive",
 	}
 	if len(agentmodel.Agents) != len(want) {

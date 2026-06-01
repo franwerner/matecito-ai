@@ -18,7 +18,7 @@ import (
 const GlobalSentinel = "(global)"
 
 // AgentModelModel permite seleccionar el modelo (opus/sonnet/haiku) para cada
-// uno de los 9 agentes SDD. En Project scope ofrece además el estado "(global)"
+// uno de los 10 agentes SDD. En Project scope ofrece además el estado "(global)"
 // que elimina el override per-proyecto al guardar.
 // q/Esc → guarda y vuelve. Ctrl+C → descarta sin guardar.
 type AgentModelModel struct {

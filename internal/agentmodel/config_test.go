@@ -209,14 +209,14 @@ func TestSave_Atomic(t *testing.T) {
 // --- Defaults ---
 
 func TestDefaults(t *testing.T) {
-	// S4.9: fstest.MapFS with 9 agent files each with a model: line → 9 entries
+	// S4.9: fstest.MapFS with 10 agent files each with a model: line → 10 entries
 	mapFS := fstest.MapFS{}
 	agents := []string{
-		"sdd-intake", "sdd-explore", "sdd-propose", "sdd-spec",
+		"sdd-init", "sdd-intake", "sdd-explore", "sdd-propose", "sdd-spec",
 		"sdd-design", "sdd-tasks", "sdd-apply", "sdd-verify", "sdd-archive",
 	}
 	models := []string{
-		"opus", "sonnet", "haiku", "opus",
+		"sonnet", "opus", "sonnet", "haiku", "opus",
 		"sonnet", "haiku", "sonnet", "haiku", "opus",
 	}
 	for i, a := range agents {
@@ -228,8 +228,8 @@ func TestDefaults(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Defaults() error: %v", err)
 	}
-	if len(defaults) != 9 {
-		t.Errorf("expected 9 entries, got %d", len(defaults))
+	if len(defaults) != 10 {
+		t.Errorf("expected 10 entries, got %d", len(defaults))
 	}
 	for i, a := range agents {
 		if v, ok := defaults[a]; !ok {

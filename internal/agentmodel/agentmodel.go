@@ -8,8 +8,10 @@ import (
 // ValidModels lists the model identifiers the tool supports.
 var ValidModels = []string{"opus", "sonnet", "haiku"}
 
-// Agents is the canonical 9-agent list in declaration order, matching payload/agents/ filenames.
+// Agents is the canonical 10-agent list in declaration order, matching payload/agents/ filenames.
+// sdd-init leads: it is the setup phase that bootstraps a project before the flow phases run.
 var Agents = []string{
+	"sdd-init",
 	"sdd-intake",
 	"sdd-explore",
 	"sdd-propose",
@@ -31,7 +33,7 @@ func IsValidModel(m string) bool {
 	return false
 }
 
-// IsValidAgent reports whether name is one of the canonical 9 agents.
+// IsValidAgent reports whether name is one of the canonical 10 agents.
 func IsValidAgent(name string) bool {
 	for _, a := range Agents {
 		if a == name {
