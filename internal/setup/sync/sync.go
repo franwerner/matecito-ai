@@ -122,8 +122,14 @@ type ComponentState struct {
 	CurrentVersion string
 	LatestVersion  string
 	PayloadChanged bool // solo relevante para KindDeploy
+	Pending        bool // reconciliación pendiente sin semántica de versión (config ecosistema)
 	Unknown        bool // true cuando latest no pudo obtenerse (offline / error)
 }
+
+// configComponent es el componente coarse-grained que reconcilia la config del
+// ecosistema (registro de MCPs + permissions.allow + referencia @matecito-ai.md),
+// modelado igual que deploy para que el update lo muestre en el plan y lo aplique.
+const configComponent = "config ecosistema"
 
 // ActionKind is the action PlanSync assigns to a component.
 type ActionKind int
@@ -231,6 +237,18 @@ func Detect(opts Options) ([]ComponentState, error) {
 	}
 	// deploy no tiene semántica de versión; Unknown queda false (se evalúa solo por PayloadChanged)
 	states = append(states, deployState)
+
+	// --- Config del ecosistema (MCPs + permisos + referencia CLAUDE.md) ---
+	// Reconcilia los pasos de install.AllSteps. Va último para que los binarios y
+	// el deploy ya estén aplicados cuando se registren los MCPs y se ajusten los
+	// permisos. Esto hace que `update` deje el entorno consistente al sumar un MCP
+	// nuevo (p.ej. drawio), no solo `install`.
+	configState := ComponentState{
+		Name:    configComponent,
+		Present: true,
+		Pending: install.ConfigStepsPending(install.Options{}),
+	}
+	states = append(states, configState)
 
 	return states, nil
 }
@@ -344,6 +362,12 @@ func Sync(opts Options) Result {
 				break
 			}
 			_, runErr = deploy.Apply(payloadFS, ops, claudeHome, backupDir)
+		case configComponent:
+			runErr = install.ApplyConfigSteps(install.Options{
+				Stdout:    out,
+				Stderr:    errOut,
+				BackupDir: backupDir,
+			})
 		}
 
 		if runErr != nil {
@@ -404,6 +428,9 @@ func decide(s ComponentState) ActionKind {
 		return ActionInstall
 	}
 	if s.PayloadChanged {
+		return ActionUpdate
+	}
+	if s.Pending {
 		return ActionUpdate
 	}
 	if s.LatestVersion == "" {

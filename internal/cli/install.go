@@ -9,7 +9,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/franwerner/matecito-ai/internal/setup/deploy"
-	"github.com/franwerner/matecito-ai/internal/setup/install"
 	"github.com/franwerner/matecito-ai/internal/setup/sync"
 )
 
@@ -43,16 +42,7 @@ Muestra el plan combinado antes de ejecutar. Se continúa ante errores de binari
 				BackupDir:   backupDir,
 			}
 
-			installOpts := install.Options{
-				DryRun:    dryRun,
-				Yes:       yes,
-				Stdin:     os.Stdin,
-				Stdout:    os.Stdout,
-				Stderr:    os.Stderr,
-				BackupDir: backupDir,
-			}
-
-			// Detectar el estado de binarios + deploy una sola vez.
+			// Detectar el estado de binarios + deploy + config una sola vez.
 			states, _ := sync.Detect(syncOpts)
 			syncActions := sync.PlanSync(states)
 
@@ -63,17 +53,8 @@ Muestra el plan combinado antes de ejecutar. Se continúa ante errores de binari
 				}
 			}
 
-			// Evaluar cuáles pasos de MCP/config necesitan ejecutarse.
-			allInstallSteps := install.AllSteps(installOpts)
-			activeInstallSteps := make([]install.Step, 0, len(allInstallSteps))
-			for _, s := range allInstallSteps {
-				if s.Check() {
-					activeInstallSteps = append(activeInstallSteps, s)
-				}
-			}
-
-			// Nada para hacer: ambas fases están al día.
-			if len(activeSyncActions) == 0 && len(activeInstallSteps) == 0 {
+			// Nada para hacer.
+			if len(activeSyncActions) == 0 {
 				fmt.Fprintln(os.Stdout, "Nada para hacer — todo está instalado y actualizado.")
 				return nil
 			}
@@ -89,10 +70,6 @@ Muestra el plan combinado antes de ejecutar. Se continúa ante errores de binari
 				fmt.Fprintf(os.Stdout, "  %d. %s — %s\n", n, a.Component, verb)
 				n++
 			}
-			for _, s := range activeInstallSteps {
-				fmt.Fprintf(os.Stdout, "  %d. %s\n     %s\n", n, s.Name, s.Plan)
-				n++
-			}
 
 			if dryRun {
 				fmt.Fprintln(os.Stdout, "\n(dry-run) no se ejecutó nada.")
@@ -106,22 +83,12 @@ Muestra el plan combinado antes de ejecutar. Se continúa ante errores de binari
 				}
 			}
 
-			// Ejecutar fase 1 (binarios + deploy) sin prompt interior.
-			if len(activeSyncActions) > 0 {
-				syncOpts.Yes = true
-				syncOpts.PreDetected = states
-				syncResult := sync.Sync(syncOpts)
-				if err := surfaceCodegraphError(syncResult); err != nil {
-					return err
-				}
-			}
-
-			// Ejecutar fase 2 (MCPs y configuración) sin prompt interior.
-			if len(activeInstallSteps) > 0 {
-				installOpts.Yes = true
-				if err := install.Run(installOpts); err != nil {
-					return err
-				}
+			// Ejecutar binarios + deploy + config (sin prompt interior; ya confirmamos).
+			syncOpts.Yes = true
+			syncOpts.PreDetected = states
+			syncResult := sync.Sync(syncOpts)
+			if err := surfaceCodegraphError(syncResult); err != nil {
+				return err
 			}
 
 			return nil

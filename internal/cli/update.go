@@ -17,10 +17,11 @@ func NewUpdateCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "update",
 		GroupID: "setup",
-		Short:   "Actualiza los componentes del ecosistema (binarios y payload)",
-		Long: `update detecta qué binarios están desactualizados o faltan y actualiza
-el payload de ~/.claude/. No registra MCPs (usá install para eso).
-Muestra el plan antes de ejecutar. Se continúa ante errores por componente.`,
+		Short:   "Actualiza los componentes del ecosistema (binarios, payload y config de MCPs)",
+		Long: `update detecta qué binarios están desactualizados o faltan, actualiza el
+payload de ~/.claude/ y reconcilia la config del ecosistema (registro de MCPs +
+permissions.allow + referencia @matecito-ai.md). Muestra el plan antes de
+ejecutar. Se continúa ante errores por componente.`,
 		Example: `  # Preview del plan, no ejecuta nada
   matecito-ai update --dry-run
 

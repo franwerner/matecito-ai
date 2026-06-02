@@ -148,6 +148,49 @@ func AllBinarySteps(opts Options) []Step {
 	}
 }
 
+// ConfigStepsPending reporta si algún paso de config del ecosistema (registro de
+// MCPs, permissions.allow, referencia @matecito-ai.md) todavía tiene trabajo
+// pendiente. Lo usa sync para decidir si el componente "config ecosistema" del
+// update necesita reconciliarse.
+func ConfigStepsPending(opts Options) bool {
+	for _, s := range AllSteps(opts) {
+		if s.Check() {
+			return true
+		}
+	}
+	return false
+}
+
+// ApplyConfigSteps corre los pasos de config del ecosistema que tengan trabajo
+// pendiente (gateados por su Check), respaldando ~/.claude.json antes. Es la vía
+// por la que sync.Sync reconcilia la config en el flujo de update, igual que lo
+// hace install — sin reimprimir plan ni pedir confirmación (sync ya lo hizo).
+func ApplyConfigSteps(opts Options) error {
+	if opts.Stdout == nil {
+		opts.Stdout = os.Stdout
+	}
+	if opts.BackupDir == "" {
+		bd, err := deploy.BackupDir()
+		if err != nil {
+			return err
+		}
+		opts.BackupDir = bd
+	}
+	if err := backupClaudeJSON(opts.BackupDir); err != nil {
+		return err
+	}
+	for _, s := range AllSteps(opts) {
+		if !s.Check() {
+			continue
+		}
+		fmt.Fprintf(opts.Stdout, "  %s\n", s.Name)
+		if err := s.Run(); err != nil {
+			return fmt.Errorf("%s: %w", s.Name, err)
+		}
+	}
+	return nil
+}
+
 func mcpPermissionsStep(opts Options) Step {
 	return Step{
 		Name: "Auto-aprobación de tools del ecosistema (settings.json)",
