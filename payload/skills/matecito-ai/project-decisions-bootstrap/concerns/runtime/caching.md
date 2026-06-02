@@ -2,8 +2,7 @@
 name: caching
 depth: light
 domain: runtime
-tipo: decisión
-adr-output: caching
+type: decision
 source: checklists de production-readiness / SRE
 ---
 
@@ -45,4 +44,12 @@ Si se elige Redis / Memcached u otra herramienta, registrala en el catálogo `te
 
 ## Qué materializar
 
-ADR `caching` con: qué se cachea y qué no, la capa elegida, la estrategia de invalidación, y TTLs concretos si se definieron.
+ADR `caching` materializado según el template `../../templates/adr.md`. La **Decisión** captura: qué se cachea y qué no, la capa elegida (in-memory / distribuido / CDN-HTTP), la estrategia de invalidación (TTL fijo / por evento / mix) y los TTLs concretos si se definieron.
+
+**Reglas verificables** (cada una con su mecanismo al inicio):
+
+- **[manual]** solo se cachea lo enumerado en la Decisión; cachear datos fuera de esa lista requiere actualizar el ADR.
+- **[manual]** cada entrada cacheada tiene un TTL explícito o una regla de purga por evento; ninguna entrada queda sin política de expiración.
+- **[manual]** en escrituras críticas la entrada correspondiente se purga o se reescribe en el mismo flujo, para no servir datos viejos.
+
+Si se eligió "Ninguno por ahora", el ADR va con `Status: Pending` y la razón concreta ("sin problema de performance medido todavía"); en ese caso no lleva Reglas verificables.

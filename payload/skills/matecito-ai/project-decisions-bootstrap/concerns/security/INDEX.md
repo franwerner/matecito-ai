@@ -8,12 +8,12 @@ Un concern nuevo va en `security` si trata sobre *proteger* el sistema o sus dat
 
 ## Concerns en este dominio
 
-| Concern | Prof. | Tipo | Qué decide |
+| Concern | Prof. | Type | Qué decide |
 |---|---|---|---|
-| [auth](auth.md) | deep | decisión | El mecanismo de autenticación, el modelo de permisos, dónde se valida, y la política de tokens/sesiones. Es una de las decisiones más difíciles de cambiar de... |
-| [authorization](authorization.md) | light | decisión | Qué modelo de permisos rige el acceso a recursos o acciones, y dónde se evalúa esa lógica en el sistema. |
-| [cors](cors.md) | light | política | Qué orígenes pueden hacer requests cross-origin a la API y si se permiten credenciales (cookies, Authorization header). |
-| [dependency-scanning](dependency-scanning.md) | light | política | Qué herramienta detecta vulnerabilidades conocidas en dependencias y si ese escaneo corre de forma automática en el pipeline de CI. |
-| [input-validation](input-validation.md) | light | política | Dónde y cómo se valida y sanitiza el input externo antes de que entre al sistema, y qué se hace cuando falla la validación. |
-| [rate-limiting](rate-limiting.md) | light | decisión | Si se limita la cantidad de requests, con qué granularidad (IP / usuario / API key) y dónde se aplica el límite. |
-| [secrets-management](secrets-management.md) | light | política | Dónde se almacenan los secretos del sistema (credenciales, tokens, claves), cómo se rotan, y qué está explícitamente prohibido commitear o loggear. |
+| [auth](auth.md) | deep | decision | El mecanismo de autenticación, el modelo de permisos, dónde se valida, y la política de tokens/sesiones. Es una de las decisiones más difíciles de cambiar de... |
+| [authorization](authorization.md) | light | decision | Qué modelo de permisos rige el acceso a recursos o acciones, y dónde se evalúa esa lógica en el sistema. |
+| [cors](cors.md) | light | policy | Qué orígenes pueden hacer requests cross-origin a la API y si se permiten credenciales (cookies, Authorization header). |
+| [dependency-scanning](dependency-scanning.md) | light | policy | Qué herramienta detecta vulnerabilidades conocidas en dependencias y si ese escaneo corre de forma automática en el pipeline de CI. |
+| [input-validation](input-validation.md) | light | policy | Dónde y cómo se valida y sanitiza el input externo antes de que entre al sistema, y qué se hace cuando falla la validación. |
+| [rate-limiting](rate-limiting.md) | light | decision | Si se limita la cantidad de requests, con qué granularidad (IP / usuario / API key) y dónde se aplica el límite. |
+| [secrets-management](secrets-management.md) | light | policy | Dónde se almacenan los secretos del sistema (credenciales, tokens, claves), cómo se rotan, y qué está explícitamente prohibido commitear o loggear. |

@@ -2,8 +2,7 @@
 name: data-access
 depth: deep
 domain: data
-tipo: decisión
-adr-output: data-access
+type: decision
 source: práctica clásica de patrones de acceso a datos · arc42 §8 (conceptos transversales)
 ---
 
@@ -61,4 +60,13 @@ Motor de DB (`postgresql.md`, `mongodb.md`, `mysql.md`, `sqlite.md`), ORM o quer
 
 ## Qué materializar
 
-ADR `data-access` con: nivel de abstracción elegido (ORM / query builder / raw / mix), si hay Repository y para qué entidades, herramienta de migraciones, y dónde se inician las transacciones. Si hay mix (ej: ORM para CRUD + raw para reportes), documentar el criterio para elegir cuándo usar cada uno — esa es la regla verificable que evita inconsistencias.
+ADR `data-access` materializado según el template `../../templates/adr.md`. La **Decisión** captura: nivel de abstracción sobre la DB (ORM / query builder / raw SQL / mix), si hay patrón Repository y para qué entidades, la herramienta de migraciones, y dónde se inician las transacciones. Si hay mix (ej: ORM para CRUD + raw para reportes), documentar el criterio concreto para elegir cuándo usar cada uno. Registrar como tech el motor de DB, el ORM/query builder y la herramienta de migraciones si es separada.
+
+**Reglas verificables** (cada una con su mecanismo al inicio):
+
+- **[manual]** si se eligió Repository: el acceso a datos de las entidades cubiertas pasa por su Repository; los servicios/casos de uso no llaman al ORM ni a la DB directamente.
+- **[manual]** las transacciones se inician en la capa decidida (ej: caso de uso / application service); las capas inferiores solo ejecutan dentro de la unidad de trabajo.
+- **[manual]** en un esquema mix, el criterio documentado decide ORM vs raw; no hay raw SQL en rutas que el criterio asigna al ORM (y viceversa).
+- **[manual]** todo cambio de esquema pasa por la herramienta de migraciones; no hay DDL aplicado a mano fuera de migraciones versionadas.
+
+**Relacionados:** vincular con `data-modeling` (las migraciones materializan las convenciones de IDs, timestamps y borrado) y con un eventual ADR de capas/dependencias si el Repository es parte de la arquitectura.

@@ -49,7 +49,7 @@ Before writing ANY code:
 4. Check the project's coding conventions from `config.yaml`
 
 <!-- matecito-ai: ADRs + context7 + codegraph before implementing — START -->
-5. **Read the applicable ADRs.** If `.matecito-ai/adr/` exists, the design's "ADR Alignment" section already lists the relevant ADRs. Read their **Reglas concretas** and treat them as hard constraints on your implementation (e.g. token TTLs, error format, validation location, layer dependencies). If the design flagged an ADR conflict or an uncaptured decision as a blocker, STOP and report — do not implement around it.
+5. **Read the applicable ADRs.** If `.matecito-ai/adr/` exists, the design's "ADR Alignment" section already lists the relevant ADRs. Read their **Reglas verificables** and treat them as hard constraints on your implementation (e.g. token TTLs, error format, validation location, layer dependencies). If the design flagged an ADR conflict or an uncaptured decision as a blocker, STOP and report — do not implement around it.
 6. **Use the available MCP tools while implementing:**
    - **context7** — when you need current, accurate docs/APIs of a library or framework you're using, query context7 instead of guessing from memory (avoids outdated or hallucinated APIs).
    - **codegraph** (only if `.codegraph/` exists) — before changing an existing symbol (function/class/method), run `codegraph_impact` on it to see what else depends on it, so you don't break callers. Use `codegraph_callers`/`codegraph_callees` to confirm call sites. For literal-text or non-indexed files, use grep as usual.

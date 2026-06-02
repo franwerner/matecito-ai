@@ -2,8 +2,7 @@
 name: scalability
 depth: light
 domain: quality
-tipo: decisión
-adr-output: scalability
+type: decision
 source: ISO/IEC 25010 (característica: performance efficiency — capacity)
 ---
 
@@ -38,4 +37,14 @@ El modelo de escalado esperado (vertical u horizontal) y si la arquitectura lo s
 
 ## Qué materializar
 
-ADR `scalability` con: modelo de escalado elegido, si el proceso es stateless o no, dónde vive el estado si hay múltiples instancias, y la condición que dispararía una revisión de esta decisión (umbral de carga, crecimiento de equipo, etc.).
+ADR `scalability` materializado según el template `../../templates/adr.md`.
+
+- **Contexto:** modelo de escalado esperado (vertical, horizontal, sin escalado) y qué condicionantes lo justifican; si escala horizontal, por qué el proceso debe ser stateless.
+- **Decisión:** modelo de escalado elegido, si el proceso es stateless o stateful, dónde vive el estado cuando hay múltiples instancias, y la condición de revisión de esta decisión.
+- **Reglas verificables:** reformulá los compromisos como aserciones chequeables con su mecanismo. Ejemplos (solo los que apliquen al modelo elegido):
+  - **[manual]** ningún estado de sesión o request vive en memoria del proceso; todo estado compartido reside en store externo (DB, cache distribuido, storage de sesión).
+  - **[manual]** el proceso puede reiniciarse o reemplazarse sin pérdida de datos (requisito base de escala horizontal, 12-factor VI).
+  - **[manual]** la condición de revisión está fijada con un umbral concreto (ej: "revisar si se supera `___` usuarios / `___` req/s").
+
+  Si se eligió "vertical por ahora" o "sin escalado previsto", el ADR registra el modelo y la condición de revisión sin imponer la regla de statelessness.
+- `Relacionados`: `relacionado-con` → `caching` y `deployment-topology` cuando el modelo horizontal externaliza sesión/cache o asume múltiples instancias.

@@ -8,9 +8,9 @@ Un concern nuevo va en `contracts` si define el contrato de *lo que este sistema
 
 ## Concerns en este dominio
 
-| Concern | Prof. | Tipo | Qué decide |
+| Concern | Prof. | Type | Qué decide |
 |---|---|---|---|
-| [api-contract](api-contract.md) | light | decisión | Cómo se versiona la API, cómo se pagina, el formato de respuesta estándar, e idempotencia de operaciones de escritura. |
-| [cli-contract](cli-contract.md) | light | decisión | Cómo se parsean los argumentos, qué exit codes se usan, qué va a stdout vs stderr, y el formato de output. |
-| [event-contract](event-contract.md) | light | decisión | Cómo se estructuran y versionan los eventos publicados, la convención de naming, e idempotencia del lado del consumidor. |
-| [library-contract](library-contract.md) | light | decisión | Qué expone la librería como superficie pública, cómo se versiona, y cuál es la política de backward compatibility y deprecación. |
+| [api-contract](api-contract.md) | light | decision | Cómo se versiona la API, cómo se pagina, el formato de respuesta estándar, e idempotencia de operaciones de escritura. |
+| [cli-contract](cli-contract.md) | light | decision | Cómo se parsean los argumentos, qué exit codes se usan, qué va a stdout vs stderr, y el formato de output. |
+| [event-contract](event-contract.md) | light | decision | Cómo se estructuran y versionan los eventos publicados, la convención de naming, e idempotencia del lado del consumidor. |
+| [library-contract](library-contract.md) | light | decision | Qué expone la librería como superficie pública, cómo se versiona, y cuál es la política de backward compatibility y deprecación. |

@@ -2,8 +2,7 @@
 name: accessibility
 depth: light
 domain: frontend
-tipo: decisión
-adr-output: accessibility
+type: decision
 source: WCAG 2.2 (W3C Web Content Accessibility Guidelines)
 ---
 
@@ -41,4 +40,13 @@ Si se elige un linter o librería de testing de a11y (ej: `eslint-plugin-jsx-a11
 
 ## Qué materializar
 
-ADR `accessibility` con: nivel WCAG objetivo, mecanismo de verificación elegido, y las reglas concretas (ej: "todo componente interactivo debe tener `aria-label` o texto visible; el linter falla el build si no").
+ADR `accessibility` materializado según el template `../../templates/adr.md`.
+
+- **Contexto:** por qué importa la accesibilidad en este proyecto (obligación legal aplicable, tipo de usuarios) y el nivel WCAG objetivo elegido (2.2 A | AA | AAA, o "sin objetivo formal por ahora").
+- **Decisión:** nivel de conformidad objetivo y el mecanismo de verificación elegido (linter estático, testing con axe-core, ambos, revisión manual).
+- **Reglas verificables:** reformulá la exigencia de a11y como aserciones chequeables, cada una con su mecanismo según lo elegido. Ejemplos:
+  - **[tool: eslint-plugin-jsx-a11y]** todo elemento interactivo expone nombre accesible (`aria-label` o texto visible); el lint falla el build si falta.
+  - **[tool: axe-core]** la suite de tests no reporta violaciones de nivel ≥ al objetivo (A/AA) en las vistas cubiertas.
+  - **[manual]** navegación completa por teclado y verificación con lector de pantalla en los flujos críticos.
+
+  Si se eligió "sin verificación formal por ahora", marcar la regla mínima como `[manual]` y materializar el ADR con `Status: Pending` indicando el trigger esperado.

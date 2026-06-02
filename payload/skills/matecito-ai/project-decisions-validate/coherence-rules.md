@@ -52,11 +52,17 @@ Dominios reservados (aparecen solo si el proyecto los pobló vía ratchet): `lif
 - **[WARNING]** Un ADR está listado en el índice raíz (`.matecito-ai/adr/INDEX.md`) pero su dominio no tiene `INDEX.md`, o viceversa (índice de dominio sin entrada en el raíz). Índices desincronizados.
 - **[SUGGESTION]** Un dominio tiene `INDEX.md` pero ningún ADR (carpeta de dominio vacía en la salida). Limpiar la carpeta o el índice.
 
-### Coherencia del campo `tipo`
+### Coherencia del campo `type`
 
-- **[SUGGESTION]** Un ADR marcado `tipo: convención` o `tipo: política` tiene una sección "Alternativas consideradas" sustanciosa → quizá es en realidad una `decisión`; revisar el tipo.
-- **[SUGGESTION]** Un ADR marcado `tipo: decisión` y `Accepted` sin "Alternativas consideradas" ni "Consecuencias" → una decisión sin trade-offs documentados es sospechosa; o falta contenido o es en realidad una convención.
-- **[WARNING]** Un ADR `tipo: política` `Accepted` sin "Reglas concretas" verificables → una política sin reglas accionables no se puede cumplir ni chequear.
+- **[SUGGESTION]** Un ADR marcado `type: convention` o `type: policy` tiene una sección "Alternativas consideradas" sustanciosa → quizá es en realidad una `decision`; revisar el type.
+- **[SUGGESTION]** Un ADR marcado `type: decision` y `Accepted` sin "Alternativas consideradas" ni "Consecuencias" → una decisión sin trade-offs documentados es sospechosa; o falta contenido o es en realidad una convention.
+- **[WARNING]** Un ADR `type: policy` `Accepted` sin "Reglas verificables" accionables → una política sin reglas accionables no se puede cumplir ni chequear.
+
+### Trazabilidad a código (sección `Alcance`)
+
+- **[WARNING]** Un ADR con sección `Alcance` cuyos globs no matchean ningún archivo del repo → drift: el código se movió o la decisión quedó obsoleta. *(Requiere acceso al árbol de archivos del proyecto; si no está disponible, marcar como "no verificable".)*
+- **[SUGGESTION]** Un ADR estructural (`structure` / `folder-structure` / `layers-and-dependencies`) `Accepted` sin sección `Alcance` → una decisión espacial sin globs de alcance no es verificable; considerar agregarlos.
+- **[SUGGESTION]** Una regla bajo "Reglas verificables" sin marca de mecanismo (`[tool: ...]` o `[manual]`) → no queda claro cómo se chequea; agregar el mecanismo.
 
 ---
 

@@ -2,8 +2,7 @@
 name: authorization
 depth: light
 domain: security
-tipo: decisión
-adr-output: authorization
+type: decision
 source: OWASP ASVS v4 §4 (Access Control)
 ---
 
@@ -40,4 +39,13 @@ Qué modelo de permisos rige el acceso a recursos o acciones, y dónde se evalú
 
 ## Qué materializar
 
-ADR `authorization` con: modelo elegido, descripción de los roles o atributos relevantes (si aplica), punto de evaluación, y regla verificable sobre qué ocurre cuando el check falla (403 vs 404 vs redirección).
+ADR `authorization` materializado según `../../templates/adr.md`. Debe contener:
+
+- **Contexto**: cuántos roles o niveles de acceso existen y por qué se centraliza la evaluación de permisos.
+- **Decisión**: modelo elegido (boolean simple, RBAC o ABAC), descripción de los roles o atributos relevantes si aplica, y punto de evaluación (middleware/guard global, use case/service de dominio, o mix).
+- **Reglas verificables** (cada una con su mecanismo):
+  - `[manual]` cuando el check de permisos falla, el sistema responde con el status decidido (ej. 403 vs 404 vs redirección) de forma consistente en todos los endpoints.
+  - `[manual]` la evaluación de permisos ocurre en el punto único elegido; ningún handler reimplementa la lógica de acceso.
+- **Alternativas consideradas**: los otros modelos evaluados y, si se eligió ABAC, por qué se asumió su mayor complejidad.
+- **Consecuencias**: costo de mantenimiento del modelo elegido y trade-off de granularidad vs complejidad.
+- **Relacionados** (si aplica): `relacionado-con` → `auth.md` cuando el mecanismo de autenticación se decide allí.

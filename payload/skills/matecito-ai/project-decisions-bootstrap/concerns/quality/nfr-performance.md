@@ -2,8 +2,7 @@
 name: nfr-performance
 depth: light
 domain: quality
-tipo: decisión
-adr-output: nfr-performance
+type: decision
 source: ISO/IEC 25010 (característica: performance efficiency — time behaviour)
 ---
 
@@ -42,4 +41,16 @@ Definí al menos uno de estos (dejá en blanco los que no apliquen):
 
 ## Qué materializar
 
-ADR `nfr-performance` con: los objetivos cuantitativos acordados (latencia P50/P99, throughput), el endpoint o flujo de referencia para medirlos, y cómo se detecta una regresión (alerta, test de carga, revisión manual).
+ADR `nfr-performance` materializado según el template `../../templates/adr.md`.
+
+- **Contexto:** por qué se fijan objetivos de performance (expectativa de carga, criticidad del flujo) y bajo qué condiciones de medición se entienden.
+- **Decisión:** los objetivos cuantitativos acordados, el endpoint o flujo de referencia para medirlos, y el mecanismo de detección de regresión elegido.
+- **Reglas verificables:** cada objetivo se reformula como una aserción con valor concreto y su mecanismo. Ejemplos:
+  - **[tool: test de carga]** la latencia P99 del endpoint `<ref>` se mantiene ≤ `___` ms bajo `___` req/s.
+  - **[tool: test de carga]** la latencia P50 (mediana) del flujo `<ref>` se mantiene ≤ `___` ms.
+  - **[tool: test de carga]** el throughput sostenido es ≥ `___` req/s en carga normal.
+  - **[tool: alertas/métricas]** se dispara alerta cuando P99 supera el umbral (depende de `metrics`).
+  - **[manual]** revisión periódica de las métricas (mensual / por release) cuando no hay alerta automática.
+
+  Si se eligió "sin objetivos formales por ahora", materializar con `Status: Pending` y el motivo/trigger esperado, sin inventar números ni reglas.
+- `Relacionados`: `depende-de` → `metrics` si la detección de regresión requiere instrumentación de métricas.

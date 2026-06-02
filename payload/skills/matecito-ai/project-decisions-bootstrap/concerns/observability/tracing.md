@@ -2,8 +2,7 @@
 name: tracing
 depth: light
 domain: observability
-tipo: decisión
-adr-output: tracing
+type: decision
 source: SRE · OpenTelemetry
 ---
 
@@ -45,4 +44,14 @@ SDK de tracing si se elige uno concreto (ej: `opentelemetry-sdk.md`, `jaeger.md`
 
 ## Qué materializar
 
-ADR `tracing` con: nivel de tracing elegido, protocolo de propagación de contexto (W3C TraceContext si OTel), SDK, backend de almacenamiento, y regla de sampling si se definió (ej: "100% en desarrollo, 10% en producción salvo errores").
+ADR `tracing` materializado según el template `../../templates/adr.md`. La **Decisión** captura: nivel de tracing elegido (sin tracing / en proceso / distribuido con propagación), el protocolo de propagación de contexto (W3C TraceContext si OTel), el SDK, el backend de almacenamiento, y la regla de sampling si se definió.
+
+**Reglas verificables** (cada una con su mecanismo al inicio):
+
+- **[manual]** si hay tracing distribuido: el contexto se propaga entre servicios con el protocolo decidido (ej: W3C TraceContext), sin tramos donde se pierda el `trace-id`.
+- **[manual]** el sampling sigue la regla decidida (ej: 100% en desarrollo, 10% en producción salvo errores, que siempre se muestrean).
+- **[manual]** la instrumentación usa el SDK decidido (ej: OpenTelemetry), no SDKs mezclados que dificulten cambiar de backend.
+
+Si se eligió "Sin tracing por ahora", el ADR va con `Status: Pending` y la razón concreta ("monolito sin dependencias cross-service todavía; revisar si el sistema crece"); en ese caso no lleva Reglas verificables.
+
+**Relacionados:** vincular con `logging` (la correlación de logs puede reusar el `trace-id`) y con `metrics` cuando comparten el SDK OTLP.

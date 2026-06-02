@@ -8,10 +8,10 @@ Un concern nuevo va en `runtime` si trata sobre lo que pasa durante la ejecució
 
 ## Concerns en este dominio
 
-| Concern | Prof. | Tipo | Qué decide |
+| Concern | Prof. | Type | Qué decide |
 |---|---|---|---|
-| [background-jobs](background-jobs.md) | light | decisión | Si el proyecto necesita procesar trabajo fuera del ciclo request/response, y con qué mecanismo: cola, scheduler, o ninguno. |
-| [caching](caching.md) | light | decisión | Qué se cachea, dónde, y cómo se invalida. Mal hecho sirve datos viejos; bien hecho define latencia y costo. |
-| [concurrency-async](concurrency-async.md) | light | decisión | Cómo el proyecto maneja operaciones que no son estrictamente secuenciales: async nativo del lenguaje, threads, workers de proceso, o simplemente síncrono dir... |
-| [error-handling](error-handling.md) | deep | decisión | Cómo se representan, propagan y responden los errores en todo el sistema. Es de las decisiones más transversales: toca dominio, infraestructura y bordes. |
-| [resilience](resilience.md) | light | decisión | Cómo el sistema se comporta cuando una dependencia externa (DB, API tercera, cola) es lenta o falla. Sin política explícita, el default es "esperar indefinid... |
+| [background-jobs](background-jobs.md) | light | decision | Si el proyecto necesita procesar trabajo fuera del ciclo request/response, y con qué mecanismo: cola, scheduler, o ninguno. |
+| [caching](caching.md) | light | decision | Qué se cachea, dónde, y cómo se invalida. Mal hecho sirve datos viejos; bien hecho define latencia y costo. |
+| [concurrency-async](concurrency-async.md) | light | decision | Cómo el proyecto maneja operaciones que no son estrictamente secuenciales: async nativo del lenguaje, threads, workers de proceso, o simplemente síncrono dir... |
+| [error-handling](error-handling.md) | deep | decision | Cómo se representan, propagan y responden los errores en todo el sistema. Es de las decisiones más transversales: toca dominio, infraestructura y bordes. |
+| [resilience](resilience.md) | light | decision | Cómo el sistema se comporta cuando una dependencia externa (DB, API tercera, cola) es lenta o falla. Sin política explícita, el default es "esperar indefinid... |

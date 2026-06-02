@@ -2,8 +2,7 @@
 name: event-contract
 depth: light
 domain: contracts
-tipo: decisión
-adr-output: event-contract
+type: decision
 source: arc42 §8 (cross-cutting concepts) · CloudEvents spec v1.0
 ---
 
@@ -42,4 +41,14 @@ Si se elige un schema registry (Confluent Schema Registry, AWS Glue, etc.) o un 
 
 ## Qué materializar
 
-ADR `event-contract` con: formato de schema y herramienta de validación, convención de naming de tipos de evento, estrategia de versionado (versión en el tipo vs campo de versión en el payload), política de idempotencia del consumidor, y política de backward compatibility (campos nuevos opcionales, campos eliminados solo en versión major).
+ADR `event-contract` materializado según `../../templates/adr.md`. Debe contener:
+
+- **Contexto**: por qué un evento sin schema versionado es un contrato implícito que rompe consumidores sin aviso, y qué aporta un envelope estándar (CloudEvents) para routing, logging y tracing.
+- **Decisión**: formato de schema y herramienta de validación (JSON Schema, Avro, Protobuf, CloudEvents), convención de naming de tipos de evento (ej. `order.created.v1`), estrategia de versionado (versión en el tipo vs campo de versión en el payload), política de idempotencia del consumidor (deduplicación por `eventId`, operaciones naturalmente idempotentes, o exactly-once del broker), y política de backward compatibility.
+- **Reglas verificables** (cada una con su mecanismo):
+  - `[tool: schema-validation]` todo evento publicado valida contra su schema registrado.
+  - `[manual]` los tipos de evento siguen la convención de naming decidida, con la versión incluida.
+  - `[manual]` un evento duplicado no produce efectos dobles, según la estrategia de idempotencia elegida.
+  - `[manual]` los cambios solo agregan campos opcionales; los campos eliminados o renombrados solo ocurren en una versión major.
+- **Alternativas consideradas**: los otros formatos de schema y estrategias de idempotencia evaluados y por qué no se eligieron.
+- **Consecuencias**: dependencia de un schema registry si aplica y el contrato de compatibilidad que productores y consumidores deben respetar.

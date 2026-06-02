@@ -2,8 +2,7 @@
 name: health-checks
 depth: light
 domain: observability
-tipo: decisión
-adr-output: health-checks
+type: decision
 source: SRE · 12-factor (production-readiness)
 ---
 
@@ -45,4 +44,13 @@ Readiness chequea:
 
 ## Qué materializar
 
-ADR `health-checks` con: endpoints expuestos, qué chequea cada uno (con lista concreta de dependencias si se definió), timeouts de los checks, y cómo los consume el orquestador (Kubernetes probe config si aplica). Regla verificable: "liveness no llama a ninguna dependencia externa; readiness falla si la conexión a DB no está disponible".
+ADR `health-checks` materializado según el template `../../templates/adr.md`. La **Decisión** captura: endpoints expuestos (`/health/live` + `/health/ready` o solo `/health`), qué chequea cada uno con la lista concreta de dependencias si se definió, los timeouts de los checks, y cómo los consume el orquestador (config de probes de Kubernetes/ECS si aplica).
+
+**Reglas verificables** (cada una con su mecanismo al inicio):
+
+- **[manual]** liveness no llama a ninguna dependencia externa: responde solo si el proceso está vivo (HTTP 200).
+- **[manual]** readiness falla (no-200) cuando una dependencia crítica declarada (ej: conexión a DB) no está disponible, sacando la instancia del pool.
+- **[manual]** readiness no chequea servicios no críticos, para que un outage externo no saque instancias sanas.
+- **[tool: test]** existe un test que verifica que `/health/live` responde 200 sin tocar dependencias y que `/health/ready` refleja el estado de las dependencias críticas.
+
+Si el tipo de proyecto es `script`, `librería` o `cli`, la fase se salta con `Status: Not Applicable` (sin Reglas verificables).

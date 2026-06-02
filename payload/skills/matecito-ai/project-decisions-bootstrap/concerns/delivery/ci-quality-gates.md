@@ -2,8 +2,7 @@
 name: ci-quality-gates
 depth: light
 domain: delivery
-tipo: política
-adr-output: ci-quality-gates
+type: policy
 source: práctica de CI/CD / checklists de production-readiness
 ---
 
@@ -44,4 +43,8 @@ Si se usa `pre-commit` framework, registrarlo en `tech/`. Si se elige un linter 
 
 ## Qué materializar
 
-ADR `ci-quality-gates` con: lista de checks que bloquean el merge, herramientas para cada uno, si hay pre-commit y con qué herramienta, y la regla explícita "nada llega a main sin pasar X, Y, Z".
+ADR `ci-quality-gates` materializado según `../../templates/adr.md`. Debe contener:
+
+- **Contexto** y **Decisión**: lista de checks que bloquean el merge, herramienta concreta para cada uno (linter, formatter, type-check, tests, cobertura, arch-enforcement), y si hay pre-commit y con qué framework.
+- **Reglas verificables**: la política "nada llega a main sin pasar X, Y, Z" desagregada en una aserción por check, con la herramienta como mecanismo. Ej: `[tool: ESLint]` el merge se bloquea si el linter reporta errores; `[tool: Prettier]` el merge se bloquea si hay diff de formato; `[tool: tsc --noEmit]` el merge se bloquea ante errores de tipos; `[tool: pre-commit]` los mismos checks corren en local vía `.pre-commit-config.yaml`. Cada gate ausente NO se inventa: solo listá los acordados.
+- **Relacionados** (opcional): vinculá con `arch-enforcement`, `testing-strategy` (cobertura/tests) y `configuration` si los gates dependen de ellos.

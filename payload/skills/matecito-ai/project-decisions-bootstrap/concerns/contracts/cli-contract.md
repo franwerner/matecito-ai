@@ -2,8 +2,7 @@
 name: cli-contract
 depth: light
 domain: contracts
-tipo: decisión
-adr-output: cli-contract
+type: decision
 source: arc42 §8 (cross-cutting concepts) · POSIX utility conventions
 ---
 
@@ -37,4 +36,13 @@ Si se elige una librería de parsing, registrarla en el catálogo `tech/`.
 
 ## Qué materializar
 
-ADR `cli-contract` con: librería de parsing elegida, tabla de exit codes (0 = éxito, 1 = error genérico, y cualquier código semántico adicional), política de stdout vs stderr (datos vs diagnóstico/errores), y formato de output estándar.
+ADR `cli-contract` materializado según `../../templates/adr.md`. Debe contener:
+
+- **Contexto**: por qué un CLI sin exit codes correctos no se integra en scripts o pipelines, y por qué mezclar datos y errores en stdout rompe el parseo downstream.
+- **Decisión**: librería de parsing elegida (ej. cobra, click, commander, clap) o parsing manual, tabla de exit codes (0 = éxito, 1 = error genérico, y cualquier código semántico adicional), política de stdout vs stderr (datos vs diagnóstico/errores), y formato de output estándar (texto plano, JSON con `--json`, o mix).
+- **Reglas verificables** (cada una con su mecanismo):
+  - `[tool: test]` un comando exitoso retorna exit `0`; un error retorna el código de la tabla decidida.
+  - `[tool: test]` los datos van a stdout y el diagnóstico/errores a stderr, sin mezclarlos.
+  - `[manual]` con el flag de formato máquina (ej. `--json`), la salida es JSON parseable; sin él, texto plano legible.
+- **Alternativas consideradas**: parsing manual con `argv` y los formatos de output evaluados, con su trade-off de composabilidad.
+- **Consecuencias**: dependencia de la librería de parsing y disciplina para mantener la tabla de exit codes estable como contrato.

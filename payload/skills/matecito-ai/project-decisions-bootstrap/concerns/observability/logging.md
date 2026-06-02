@@ -2,8 +2,7 @@
 name: logging
 depth: light
 domain: observability
-tipo: política
-adr-output: logging
+type: policy
 source: 12-factor (XI: logs) · production-readiness
 ---
 
@@ -59,4 +58,14 @@ Librería de logging elegida (ej: `structlog.md`, `pino.md`, `zerolog.md`, `wins
 
 ## Qué materializar
 
-ADR `logging` con: formato elegido (JSON / texto / mixto), niveles disponibles, política de correlación (`request-id` o `trace-id`, dónde se genera y cómo se propaga), librería elegida, y reglas verificables ("nunca loggear passwords, tokens ni PII en ningún nivel", "todo log de error incluye stack trace completo", "nivel mínimo en producción: `info`").
+ADR `logging` materializado según el template `../../templates/adr.md`. La **Decisión** captura: formato elegido (JSON estructurado / texto / mixto por entorno), niveles disponibles, la política de correlación (`request-id` o `trace-id`, dónde se genera y cómo se propaga) y la librería elegida (registrada también como tech).
+
+**Reglas verificables** (cada una con su mecanismo al inicio):
+
+- **[manual]** nunca se loggean passwords, tokens ni PII en ningún nivel.
+- **[manual]** todo log de error incluye el stack trace completo.
+- **[manual]** el nivel mínimo en producción es `info` (sin `debug` en prod).
+- **[manual]** en producción los logs salen en el formato decidido (ej: JSON estructurado), no texto plano.
+- **[manual]** todo log emitido durante una request lleva el identificador de correlación (`request-id`/`trace-id`) propagado desde el borde.
+
+**Relacionados:** vincular con `tracing` si la correlación usa el `trace-id` de OpenTelemetry, y con `error-handling` (la política de qué/cómo se loggean los errores se decide allí).

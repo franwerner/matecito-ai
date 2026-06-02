@@ -2,8 +2,7 @@
 name: cors
 depth: light
 domain: security
-tipo: política
-adr-output: cors
+type: policy
 source: OWASP ASVS v4 §14.5 (HTTP Request Header Validation)
 ---
 
@@ -32,4 +31,13 @@ Qué orígenes pueden hacer requests cross-origin a la API y si se permiten cred
 
 ## Qué materializar
 
-ADR `cors` con: lista de orígenes permitidos (o criterio de allowlist dinámico), si se permiten credenciales, métodos y headers habilitados, y la regla de dónde se configura (middleware de la app vs config del reverse proxy).
+ADR `cors` materializado según `../../templates/adr.md`. Esta es una decisión de tipo `policy`; sus reglas deben quedar especialmente accionables. Debe contener:
+
+- **Contexto**: si la API es consumida por browsers, y por qué OWASP ASVS 14.5.3 exige validación explícita del origen.
+- **Decisión**: lista de orígenes permitidos (o el criterio de allowlist dinámico), si se permiten credenciales, métodos y headers habilitados, y dónde se configura (middleware de la app vs config del reverse proxy).
+- **Reglas verificables** (cada una con su mecanismo):
+  - `[manual]` el header `Access-Control-Allow-Origin` solo refleja orígenes presentes en la lista explícita (o en el allowlist validado en código); nunca `*` cuando se permiten credenciales.
+  - `[tool: test]` una request cross-origin desde un origen fuera del allowlist no recibe headers CORS permisivos.
+  - `[manual]` `Access-Control-Allow-Credentials: true` solo coexiste con orígenes explícitos, nunca con `*`.
+- **Alternativas consideradas**: origen dinámico reflejado, `*` sin credenciales, y por qué se descartaron o limitaron.
+- **Consecuencias**: orígenes que quedan habilitados y el riesgo de exposición si el allowlist crece sin control.

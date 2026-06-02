@@ -2,8 +2,7 @@
 name: rate-limiting
 depth: light
 domain: security
-tipo: decisión
-adr-output: rate-limiting
+type: decision
 source: OWASP ASVS v4 §13.1 (Generic Web Service Security)
 ---
 
@@ -37,4 +36,13 @@ Si se elige una librería en la app (ej: `express-rate-limit`, `slowapi`, `throt
 
 ## Qué materializar
 
-ADR `rate-limiting` con: granularidad elegida, punto de aplicación, límites concretos si se definieron (requests/minuto por tier), y respuesta al cliente al superar el límite (429 + `Retry-After`).
+ADR `rate-limiting` materializado según `../../templates/adr.md`. Esta es una decisión de tipo `policy`; sus reglas deben quedar especialmente accionables. Debe contener:
+
+- **Contexto**: por qué sin límite un cliente puede agotar recursos o forzar credenciales por fuerza bruta, y cómo el punto de aplicación determina si la protección llega antes o después del código de la app.
+- **Decisión**: granularidad elegida (IP, usuario autenticado, API key, o mix), punto de aplicación (API gateway/reverse proxy vs middleware de la app), y los límites concretos si se definieron.
+- **Reglas verificables** (cada una con su mecanismo):
+  - `[tool: test]` superado el límite decidido (ej. requests/minuto por tier), el sistema responde `429` con header `Retry-After`.
+  - `[manual]` el límite se aplica con la granularidad elegida en el punto de aplicación decidido.
+  - Para "Mix": `[manual]` los endpoints sensibles listados (login, reset de password) tienen el límite más estricto aplicado.
+- **Alternativas consideradas**: las otras granularidades y puntos de aplicación evaluados y por qué no se eligieron.
+- **Consecuencias**: lógica añadida en la app vs costo en el borde, y comportamiento esperado del cliente ante un `429`.

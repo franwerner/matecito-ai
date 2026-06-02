@@ -2,8 +2,7 @@
 name: data-modeling
 depth: light
 domain: data
-tipo: decisión
-adr-output: data-modeling
+type: decision
 source: práctica clásica de modelado de datos
 ---
 
@@ -53,4 +52,15 @@ Una o dos, según haga falta.
 
 ## Qué materializar
 
-ADR `data-modeling` con: tipo de ID elegido y justificación, política de borrado (físico vs soft delete con razón), convención de timestamps, y estrategia de multitenancy si aplica. Incluir reglas verificables ("toda tabla lleva `created_at` y `updated_at` NOT NULL", "soft delete: columna `deleted_at` nullable, queries por default excluyen `deleted_at IS NOT NULL`").
+ADR `data-modeling` materializado según el template `../../templates/adr.md`. La **Decisión** captura: tipo de ID elegido y su justificación (autoincrement / UUID v4 / UUID v7 / ULID-CUID2), la política de borrado (físico vs soft delete con razón), la convención de timestamps, y la estrategia de multitenancy si aplica.
+
+**Reglas verificables** (cada una con su mecanismo al inicio):
+
+- **[manual]** toda tabla usa el tipo de ID decidido como clave primaria; no se mezclan tipos de ID entre entidades sin justificación en el ADR.
+- **[manual]** si se eligieron timestamps estándar: toda tabla lleva `created_at` y `updated_at` NOT NULL.
+- **[manual]** si se eligió soft delete: las tablas afectadas tienen columna `deleted_at` nullable y las queries por default excluyen las filas con `deleted_at IS NOT NULL`.
+- **[manual]** si hay multitenancy por `tenant_id`: toda tabla multi-tenant incluye `tenant_id` y ninguna query cruza tenants sin filtrarlo.
+
+Si el proyecto es `script` o `librería`, la fase se salta con `Status: Not Applicable` (vive como fila en el INDEX del dominio, sin Reglas verificables).
+
+**Relacionados:** vincular con `data-access` (las migraciones materializan estas convenciones de esquema).

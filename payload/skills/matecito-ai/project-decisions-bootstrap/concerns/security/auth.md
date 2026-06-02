@@ -2,8 +2,7 @@
 name: auth
 depth: deep
 domain: security
-tipo: decisión
-adr-output: auth
+type: decision
 source: OWASP ASVS §2-3 (autenticación y gestión de sesiones) · arc42 §8 (conceptos transversales)
 ---
 
@@ -70,4 +69,15 @@ Librería de auth si se usa una específica (`passport.md`, `authlib.md`, `next-
 
 ## Qué materializar
 
-ADR `auth` con: mecanismo de autenticación, modelo de permisos con descripción de roles si aplica, dónde y cómo se valida (middleware, decorator, manual), política de tokens/sesiones con duraciones concretas y si hay rotación de refresh tokens. Las duraciones escritas como valores concretos, no como "corta duración" — esa es la regla verificable que puede ir a configuración de la librería.
+ADR `auth` materializado según `../../templates/adr.md`. Debe contener:
+
+- **Contexto**: tipo de clientes (web/API/integración), nivel de sensibilidad de los datos, y por qué este mecanismo es difícil de migrar una vez que hay usuarios en producción.
+- **Decisión**: mecanismo de autenticación elegido y sus valores; modelo de permisos con descripción de los roles si aplica; dónde y cómo se valida (middleware/guard centralizado, decorator por endpoint, o manual); política de tokens/sesiones con las duraciones escritas como valores concretos, no como "corta duración".
+- **Reglas verificables** (cada una con su mecanismo):
+  - `[tool: test]` el access token expira a la duración decidida (ej. 15 min).
+  - `[manual]` el refresh token rota en cada uso y caduca a la duración decidida (ej. 7 días).
+  - `[manual]` toda ruta está protegida por el punto de validación elegido salvo las excepciones declaradas explícitamente.
+  - Para API keys: `[manual]` las keys tienen fecha de expiración y un procedimiento de rotación documentado.
+- **Alternativas consideradas**: los otros mecanismos evaluados (sessions, OAuth/OIDC, mix) y por qué no se eligieron.
+- **Consecuencias**: dependencias externas introducidas (proveedor de identidad, almacén de sesiones) y trade-offs de seguridad/UX de las duraciones elegidas.
+- **Relacionados** (si aplica): `relacionado-con` → `authorization.md` cuando el modelo de permisos se detalla allí.

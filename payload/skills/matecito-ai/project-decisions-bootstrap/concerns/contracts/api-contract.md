@@ -2,8 +2,7 @@
 name: api-contract
 depth: light
 domain: contracts
-tipo: decisión
-adr-output: api-contract
+type: decision
 source: arc42 §8 (cross-cutting concepts) · Richardson Maturity Model
 ---
 
@@ -39,4 +38,14 @@ Cómo se versiona la API, cómo se pagina, el formato de respuesta estándar, e 
 
 ## Qué materializar
 
-ADR `api-contract` con: estrategia de versionado, formato de respuesta estándar (estructura de éxito y error), mecanismo de paginación, política de idempotencia, y si hay un schema publicado (URL o ubicación en el repo).
+ADR `api-contract` materializado según `../../templates/adr.md`. Debe contener:
+
+- **Contexto**: por qué sin estrategia de versionado cualquier cambio breaking rompe clientes sin aviso, y qué consumidores tiene la API.
+- **Decisión**: estrategia de versionado (URL, header, o sin versionado), enfoque schema-first vs code-first, formato de respuesta estándar (estructura de éxito y de error), mecanismo de paginación (cursor-based, offset/limit), política de idempotencia, y si hay un schema publicado (URL o ubicación en el repo).
+- **Reglas verificables** (cada una con su mecanismo):
+  - `[tool: schema-validation]` toda respuesta valida contra el schema publicado (estructura de éxito y de error).
+  - `[manual]` las operaciones de escritura (POST/PUT) aceptan idempotency key y reintentos seguros producen el mismo efecto.
+  - `[manual]` las listas se paginan con el mecanismo decidido de forma consistente entre endpoints.
+  - `[manual]` los cambios breaking incrementan la versión según la estrategia elegida.
+- **Alternativas consideradas**: los otros mecanismos de versionado y paginación evaluados y por qué no se eligieron.
+- **Consecuencias**: quién es la fuente de verdad del contrato (schema vs código) y el costo de mantener el versionado.

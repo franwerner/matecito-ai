@@ -8,6 +8,6 @@ Un concern nuevo va en `context` si responde *qué es y para quién es* el siste
 
 ## Concerns en este dominio
 
-| Concern | Prof. | Tipo | Qué decide |
+| Concern | Prof. | Type | Qué decide |
 |---|---|---|---|
-| [context](context.md) | deep | decisión | El tipo de sistema, stack principal, tamaño de equipo y punto de partida. Es la entrada de todas las fases siguientes: sin este contexto, los defaults de cad... |
+| [context](context.md) | deep | decision | El tipo de sistema, stack principal, tamaño de equipo y punto de partida. Es la entrada de todas las fases siguientes: sin este contexto, los defaults de cad... |

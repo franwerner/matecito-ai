@@ -2,8 +2,7 @@
 name: input-validation
 depth: light
 domain: security
-tipo: política
-adr-output: input-validation
+type: policy
 source: OWASP ASVS v4 §5 (Validation, Sanitization and Encoding)
 ---
 
@@ -38,4 +37,13 @@ Si se elige una librería de validación (Zod, Pydantic, Joi, class-validator, e
 
 ## Qué materializar
 
-ADR `input-validation` con: capa donde se valida, herramienta elegida, política de respuesta ante falla, y regla explícita sobre qué NUNCA se retorna al cliente (stack traces, mensajes de error internos, detalles de base de datos).
+ADR `input-validation` materializado según `../../templates/adr.md`. Esta es una decisión de tipo `policy`; sus reglas deben quedar especialmente accionables. Debe contener:
+
+- **Contexto**: por qué el input no confiable validado tarde o en múltiples lugares crea superficies de inyección, y por qué la defensa principal es validar en el borde (OWASP ASVS 5.1).
+- **Decisión**: capa donde se valida (borde con schema declarativo, manual por endpoint, o mix), herramienta elegida (ej. Zod, Pydantic, Joi, class-validator), y política de respuesta ante input inválido (400 con descripción del campo, o 422).
+- **Reglas verificables** (cada una con su mecanismo):
+  - `[tool: test]` el input inválido recibe el status decidido (400/422) con la descripción del campo que falló.
+  - `[tool: test]` la respuesta de error NUNCA incluye stack traces, mensajes de error internos ni detalles de base de datos.
+  - `[manual]` todo input externo pasa por el schema declarativo en la capa de borde antes de entrar al sistema.
+- **Alternativas consideradas**: validación manual por endpoint y el otro código de status, con su trade-off de consistencia/precisión semántica.
+- **Consecuencias**: dependencia de la librería de validación elegida y disciplina requerida para mantener los schemas en el borde.
