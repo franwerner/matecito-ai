@@ -2,7 +2,7 @@
 name: sdd-init
 description: >
   Initialize SDD context for a project: detect stack, conventions, and testing capabilities,
-  resolve Strict TDD from config, and bootstrap persistence. Use as the FIRST setup step before
+  and bootstrap persistence. Use as the FIRST setup step before
   any SDD phase runs in a project that has not been initialized yet.
 model: sonnet
 tools: Read, Grep, Glob, Bash, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save
@@ -24,10 +24,9 @@ Also read shared conventions at `~/.claude/skills/_shared/sdd-phase-common.md`.
 Execute all steps from the skill directly in this context window:
 1. Inspect project files (`go.mod`, `package.json`, `pyproject.toml`, CI, lint/test config) and summarize stack/conventions
 2. Detect test runner, test layers, coverage, linter, type checker, and formatter
-3. Resolve Strict TDD from the config files first (`<repo>/.matecito-ai/config.json` → `~/.matecito-ai/config.json`), then default to `false` — config files are the source of truth; record the resolved value in Engram only as a mirror
-4. Initialize persistence for the resolved artifact-store mode (`engram` | `none`)
-5. Persist testing capabilities and project context
-6. Return the structured initialization envelope
+3. Initialize persistence for the resolved artifact-store mode (`engram` | `none`)
+4. Persist testing capabilities and project context
+5. Return the structured initialization envelope
 
 Do NOT explore the change in depth (that is sdd-explore). Do NOT design or implement.
 Your job is to detect the project's ground truth and persist it so later phases can rely on it.
@@ -44,7 +43,7 @@ Use `capture_prompt: false` when the Engram tool schema supports it; if an older
 
 Return a structured result with these fields:
 - `status`: `done` | `blocked` | `partial`
-- `executive_summary`: one-sentence description of the detected project and persistence/Strict-TDD outcome
+- `executive_summary`: one-sentence description of the detected project and persistence outcome
 - `artifacts`: topic_keys written (e.g. `sdd-init/{project}`, `sdd/{project}/testing-capabilities`)
 - `next_recommended`: `sdd-intake` (entry phase of the matecito-ai flow) <!-- matecito-ai: entry phase is sdd-intake; upstream skill says /sdd-explore or /sdd-new -->
 - `risks`: anything missing or ambiguous (no test runner, unrecognized stack, absent config)

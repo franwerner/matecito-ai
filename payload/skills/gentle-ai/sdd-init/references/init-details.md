@@ -46,7 +46,6 @@ capture_prompt: false when available
 ```markdown
 ## Testing Capabilities
 
-**Strict TDD Mode**: {enabled/disabled}
 **Detected**: {date}
 
 ### Test Runner
@@ -78,4 +77,4 @@ capture_prompt: false when available
 
 ## Output Templates
 
-For each mode, include project, stack, persistence, Strict TDD Mode, Testing Capabilities table, artifacts created/saved, limitations where relevant, and next steps. Engram mode must mention local/non-shareable limitations; none mode must recommend enabling persistence.
+For each mode, include project, stack, persistence, Testing Capabilities table, artifacts created/saved, limitations where relevant, and next steps. Engram mode must mention local/non-shareable limitations; none mode must recommend enabling persistence.
