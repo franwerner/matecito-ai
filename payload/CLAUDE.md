@@ -57,7 +57,8 @@ This project runs inside the matecito-ai ecosystem. Apply these defaults:
 - **ADR activation gate (presence-based) — single source of truth.** ADRs are **active only when `.matecito-ai/adr/` exists and has content** (an `INDEX.md` or at least one ADR). Absent or empty → ADRs are **inactive**: every SDD phase skips them **silently** — no early guard, no ADR alignment, no mention at all. Phases check this gate; they do not re-decide it.
 - **Session memory lives in Engram** (discoveries, fixes, context) — persistent across sessions. Architectural decisions go to ADRs, not Engram; don't duplicate.
 - **Code exploration prefers CodeGraph** when `.codegraph/` exists (structural questions); grep for literal text or non-indexed files.
-- **Design patterns canonical catalog lives in `~/.claude/references/design-patterns/`** (consultable reference, not a skill). When an ADR declares `Patrón aplicado: X`, the canonical definition is at `~/.claude/references/design-patterns/patterns/<x>.md`. Consult it before implementing to know the pattern's contract; if you deviate from the canonical definition, justify it in the ADR.
+- **Design patterns canonical catalog lives in `~/.claude/references/design-patterns/`** (consultable reference, not a skill). When an ADR declares `Applied pattern: X`, the canonical definition is at `~/.claude/references/design-patterns/patterns/<x>.md`. Consult it before implementing to know the pattern's contract; if you deviate from the canonical definition, justify it in the ADR.
+- **Architecture diagrams via drawio (`mcp__drawio__*`) — single source of truth for when to draw.** Diagrams are generated **on demand, never automatically**, and only when the change has structural complexity worth visualizing. **Diagram inference test — generate when** the change introduces or rewires ≥3-4 components with relationships, data flow crosses boundaries (layers/services/new modules), there is a non-trivial process with branches or states, or the task is to understand existing code spread across many files (CodeGraph can feed the graph) — **plus** capturing the shape of an architectural decision (ADR). **Do NOT generate** for a bugfix, rename, config tweak, single-file/single-function change, or linear logic — there prose or a snippet is clearer. **Model — offer-and-confirm, never unilateral.** **Decide vs generate (timing):** the structure does not exist yet at intake, so `sdd-intake` only *decides* — it sets `diagram: needed | not-needed` in the brief per this test, and the user confirms it at the **INTAKE GATE** (that gate IS the confirmation for the in-flow case; no re-ask later). Generation happens where the structure exists: `sdd-design` exports a `.drawio` artifact when the flag is `needed` (headless — no live preview; open the file to view), or in a `direct` lane / outside the SDD flow the main thread offers-and-confirms and generates ad-hoc with live preview at `localhost:6002`. Outside the flow, apply this same test before offering.
 
 ### SDD lane fork
 When you infer a request is **substantial** (intake-worthy), do NOT silently start the full flow. Surface the choice **once, up front**, and let the user decide — you recommend, the user picks:
@@ -392,11 +393,6 @@ Shared conventions under the global skills dir or `_shared/`: `engram-convention
 
 `engram` → `mem_search(...)` → `mem_get_observation(...)`. `none` → state not persisted, explain to user.
 <!-- /gentle-ai:sdd-orchestrator -->
-
-
-<!-- gentle-ai:strict-tdd-mode -->
-Strict TDD Mode: enabled
-<!-- /gentle-ai:strict-tdd-mode -->
 
 
 <!-- matecito-ai: Gentleman CodeGraph section, kept (codegraph is used). VERIFY the tool names (codegraph_search, codegraph_trace, codegraph_impact, etc.) match your real MCP registration — the SDD fork assumes the mcp__codegraph__* prefix. -->

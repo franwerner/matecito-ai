@@ -26,6 +26,8 @@ Execute all steps from the skill directly in this context window:
 2. Ask 2-4 targeted intake questions to lock down what is ambiguous (the discovery form)
 3. Classify the change: type (feature/bug/refactor/chore), domains touched, rough size
 4. Triage: does this warrant the full SDD flow, or is it trivial enough to go direct?
+<!-- matecito-ai: diagram inference test — single source of truth in matecito-ai:behavior (Ecosystem) -->
+4b. Diagram decision: evaluate per the diagram inference test (CLAUDE.md Ecosystem zone) whether this change warrants an architecture diagram. Set `diagram: needed | not-needed` (with a one-line reason) in the brief. Do NOT generate — generation happens downstream (`sdd-design`, or the direct implementation). The user confirms this flag at the intake gate.
 5. Early guard (ADR activation gate): if `.matecito-ai/adr/` is absent or empty, ADRs are inactive — skip this step silently (`status: done`, no ADR mention in the brief). Only when it exists with content, check it for conflicts or undecided questions this request raises
 6. Produce the structured brief artifact and return it
 
@@ -52,6 +54,7 @@ Return a structured result with these fields:
 - `executive_summary`: one-sentence description of the structured request and the triage outcome
 - `artifacts`: topic_keys or file paths written (e.g. `sdd/{change-name}/intake`)
 - `next_recommended`: `sdd-explore` (full flow) | `direct-implementation` (trivial, SDD not needed) | `project-decisions-bootstrap` (an undecided architectural question must be captured first)
+- `diagram`: `needed | not-needed` — whether an architecture diagram is warranted per the diagram inference test (decided here, generated downstream)
 - `blockers`: ADR conflicts (`blocked`) or undecided decisions (`needs-decision`) found, with the ADR cited
 - `risks`: anything ambiguous or risky surfaced during intake
 - `skill_resolution`: `phase-skill` (loaded own SKILL.md) or `none`

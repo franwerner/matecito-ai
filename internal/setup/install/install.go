@@ -132,6 +132,7 @@ func AllSteps(opts Options) []Step {
 		engramMCPStep(opts),
 		codegraphMCPStep(opts),
 		context7MCPStep(opts),
+		drawioMCPStep(opts),
 		claudeMdReferenceStep(opts),
 		mcpPermissionsStep(opts),
 	}
@@ -458,6 +459,23 @@ func context7MCPStep(opts Options) Step {
 				return errors.New("claude no está en PATH")
 			}
 			return runIO(opts, "claude", "mcp", "add", "--scope", "user", "context7", "--", "npx", "-y", "@upstash/context7-mcp@latest")
+		},
+	}
+}
+
+func drawioMCPStep(opts Options) Step {
+	return Step{
+		Name: "draw.io MCP (next-ai-draw-io)",
+		Plan: "claude mcp add --scope user drawio -- npx -y @next-ai-drawio/mcp-server@latest",
+		Check: func() bool {
+			_, ok := mcp.Find("drawio")
+			return !ok
+		},
+		Run: func() error {
+			if _, err := exec.LookPath("claude"); err != nil {
+				return errors.New("claude no está en PATH")
+			}
+			return runIO(opts, "claude", "mcp", "add", "--scope", "user", "drawio", "--", "npx", "-y", "@next-ai-drawio/mcp-server@latest")
 		},
 	}
 }

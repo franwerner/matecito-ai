@@ -28,16 +28,17 @@ Sobre eso corre un **flujo de desarrollo guiado (SDD)** que lleva cada cambio de
 
 ## Componentes
 
-| Capa        | Pieza                          | Rol                                                                                  |
-|-------------|--------------------------------|--------------------------------------------------------------------------------------|
-| **Skills**     | `project-decisions-bootstrap`  | Entrevista por fases que captura decisiones de ingeniería y las materializa como ADRs por dominio. |
-| **Skills**     | `project-decisions-validate`   | Validador consultivo: coherencia, completitud y verificabilidad de los ADRs.         |
-| **Skills**     | `SDD` *(fork del Gentleman)*   | Flujo de fases: intake → explore → propose → spec → design → tasks → apply → verify → archive. Modelo por agente y Strict TDD configurables. |
-| **Referencia** | `design-patterns`              | Catálogo canónico de patrones de diseño consultable. Los ADRs lo citan por nombre; `sdd-design` lo respeta cuando un ADR declara `Patrón aplicado`. |
-| **MCP**        | `codegraph`                    | Grafo de código pre-indexado (tree-sitter + SQLite) para explorar por estructura.    |
-| **MCP**        | `context7`                     | Documentación de librerías al día, contra APIs no alucinadas.                        |
-| **Agentes**    | Sub-agentes del SDD            | Uno por fase, con contexto propio. Forkeados y modificados.                          |
-| **Engram**     | Memoria persistente            | SQLite standalone con descubrimientos, contexto y fixes entre sesiones.              |
+| Capa           | Pieza                         | Rol                                                                                                                                                 |
+| -------------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Skills**     | `project-decisions-bootstrap` | Entrevista por fases que captura decisiones de ingeniería y las materializa como ADRs por dominio.                                                  |
+| **Skills**     | `project-decisions-validate`  | Validador consultivo: coherencia, completitud y verificabilidad de los ADRs.                                                                        |
+| **Skills**     | `SDD` _(fork del Gentleman)_  | Flujo de fases: intake → explore → propose → spec → design → tasks → apply → verify → archive. Modelo por agente y Strict TDD configurables.        |
+| **Referencia** | `design-patterns`             | Catálogo canónico de patrones de diseño consultable. Los ADRs lo citan por nombre; `sdd-design` lo respeta cuando un ADR declara `Patrón aplicado`. |
+| **MCP**        | `codegraph`                   | Grafo de código pre-indexado (tree-sitter + SQLite) para explorar por estructura.                                                                   |
+| **MCP**        | `context7`                    | Documentación de librerías al día, contra APIs no alucinadas.                                                                                       |
+| **MCP**        | `drawio` _(next-ai-draw-io)_  | Diagramas de arquitectura (draw.io) on-demand: el flujo decide cuándo, `design` los genera y exporta como `.drawio`.                                |
+| **Agentes**    | Sub-agentes del SDD           | Uno por fase, con contexto propio. Forkeados y modificados.                                                                                         |
+| **Engram**     | Memoria persistente           | SQLite standalone con descubrimientos, contexto y fixes entre sesiones.                                                                             |
 
 ## El flujo SDD
 
@@ -51,6 +52,7 @@ intake → explore → propose → spec → design → tasks → apply → verif
 
 - **intake** es la fase de entrada: hace 2-4 preguntas para estructurar el pedido, lo clasifica, y produce un brief. El orquestador **siempre muestra ese brief y espera tu confirmación** antes de seguir.
 - **design** y **apply** leen los ADRs vigentes; **explore** usa codegraph; **apply** usa context7.
+- **intake** decide si el cambio amerita un **diagrama de arquitectura** según su complejidad estructural (varios componentes, flujo de datos cruzando límites, etc.) y lo marca en el brief; cuando lo amerita, **design** lo genera con `drawio` y lo exporta como `.drawio`. Nunca automático: se decide una vez y se confirma en el gate.
 - Cuando un ADR declara `Patrón aplicado: X`, **design** consulta el catálogo `design-patterns` y respeta la definición canónica del patrón.
 - **verify** confirma que el cambio no viole los ADRs que tocó.
 - Cada fase corre con su **modelo configurable por agente** y, si está activo el **Strict TDD**, **apply** y **verify** siguen el ciclo test-first. Ambos se ajustan desde la TUI (ver [Configuración](#configuración)).
@@ -60,9 +62,9 @@ No todo cambio recorre las nueve fases: el flujo es una **base inmutable** (`int
 ## Instalación
 
 Requisitos:
+
 - **[Claude Code](https://claude.com/claude-code)** instalado y autenticado
-- **Node.js `≥ 18`** con `npm` y `npx` — CodeGraph se instala una vez con `npm install -g`; context7 se invoca runtime en cada sesión con `npx -y @upstash/context7-mcp@latest`
-- **git `≥ 2.23`** — el workflow SDD asume historial git para versionar ADRs y commits; la skill de git usa `git restore` (introducido en 2.23)
+- **Node.js `≥ 18`** con `npm` y `npx` — CodeGraph se instala una vez con `npm install -g`; context7 se invoca runtime en cada sesión con `npx -y @upstash/context7-mcp@latest`, y drawio igual con `npx -y @next-ai-drawio/mcp-server@latest` (este último abre un preview en el navegador en `localhost:6002`)
 
 Engram se descarga como binario precompilado desde sus [GitHub Releases](https://github.com/Gentleman-Programming/engram/releases); no requiere Go.
 
@@ -75,6 +77,7 @@ curl -fsSL https://raw.githubusercontent.com/franwerner/matecito-ai/master/scrip
 El script detecta tu OS/arch, baja el binario apropiado desde la última release, y lo instala en `~/.local/bin/matecito-ai`.
 
 Variables de entorno opcionales:
+
 - `INSTALL_DIR=/usr/local/bin` para cambiar el destino (puede requerir `sudo`).
 - `VERSION=v0.1.0` para pinear una versión específica en vez de `latest`.
 
@@ -99,7 +102,7 @@ go build -o matecito-ai ./cmd/matecito-ai
 
 ## Uso
 
-El CLI verifica, inicia e instala las dependencias del ecosistema (Engram, codegraph, context7) sobre Claude Code, y deploya el fork del SDD a `~/.claude/`. Una vez instalado, cada herramienta se usa con su propio binario; matecito-ai se ocupa del setup y la salud del entorno.
+El CLI verifica, inicia e instala las dependencias del ecosistema (Engram, codegraph, context7, drawio) sobre Claude Code, y deploya el fork del SDD a `~/.claude/`. Una vez instalado, cada herramienta se usa con su propio binario; matecito-ai se ocupa del setup y la salud del entorno.
 
 Sin subcomando, y en una terminal interactiva, abre una **TUI** desde donde ves el estado, instalás y configurás el flujo SDD. Con subcomando corre en modo directo.
 
@@ -143,3 +146,4 @@ matecito-ai es una capa de integración sobre proyectos de terceros. El crédito
 - **[engram](https://github.com/Gentleman-Programming/engram)** — memoria persistente entre sesiones.
 - **[codegraph](https://github.com/colbymchenry/codegraph)** — grafo de conocimiento del código vía tree-sitter, expuesto como MCP.
 - **[context7](https://github.com/upstash/context7)** — documentación de librerías en vivo, expuesta como MCP.
+- **[next-ai-draw-io](https://github.com/DayuanJiang/next-ai-draw-io)** — generación de diagramas draw.io desde lenguaje natural, expuesta como MCP.
