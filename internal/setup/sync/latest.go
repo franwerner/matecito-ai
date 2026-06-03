@@ -14,6 +14,10 @@ import (
 // Debe coincidir con el argumento que usa InstallCodegraph en install.go.
 const npmPackageCodeGraph = "@colbymchenry/codegraph"
 
+// npmPackageProofshot es el paquete npm que instala el CLI de ProofShot.
+// Debe coincidir con el argumento que usa InstallProofshot en install.go.
+const npmPackageProofshot = "proofshot"
+
 // fetchLatestMatecito obtiene la versión más reciente de matecito-ai desde GitHub.
 // Devuelve la versión sin prefijo "v" (ej: "1.2.3").
 // En caso de error retorna ("", err); el caller marca Unknown=true.
@@ -42,6 +46,36 @@ func fetchLatestEngram(timeout time.Duration) (string, error) {
 		return "", err
 	}
 	return strings.TrimPrefix(rel.Tag, "v"), nil
+}
+
+// fetchLatestProofshot obtiene la versión más reciente del paquete npm de ProofShot
+// consultando el registry de npm directamente (HTTP GET, sin invocar el CLI de npm).
+// Devuelve la versión semver (ej: "1.6.0").
+// En caso de error retorna ("", err); el caller marca Unknown=true.
+func fetchLatestProofshot(timeout time.Duration) (string, error) {
+	url := fmt.Sprintf("https://registry.npmjs.org/%s/latest", npmPackageProofshot)
+
+	client := &http.Client{Timeout: timeout}
+	resp, err := client.Get(url)
+	if err != nil {
+		return "", fmt.Errorf("consultando npm registry: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("npm registry devolvió status %d para %s", resp.StatusCode, npmPackageProofshot)
+	}
+
+	var payload struct {
+		Version string `json:"version"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&payload); err != nil {
+		return "", fmt.Errorf("parseando respuesta de npm registry: %w", err)
+	}
+	if payload.Version == "" {
+		return "", fmt.Errorf("npm registry no devolvió versión para %s", npmPackageProofshot)
+	}
+	return payload.Version, nil
 }
 
 // fetchLatestCodeGraph obtiene la versión más reciente del paquete npm de CodeGraph

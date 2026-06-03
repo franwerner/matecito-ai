@@ -221,6 +221,21 @@ func Detect(opts Options) ([]ComponentState, error) {
 	}
 	states = append(states, cgState)
 
+	// --- ProofShot ---
+	psResult := check.RunVersion("proofshot", "proofshot", []string{"--version"}, false, "")
+	psState := ComponentState{
+		Name:           "proofshot",
+		Present:        psResult.Status != check.StatusMissing,
+		CurrentVersion: psResult.Version,
+	}
+	latestPS, err := fetchLatestProofshot(t)
+	if err != nil {
+		psState.Unknown = true
+	} else {
+		psState.LatestVersion = latestPS
+	}
+	states = append(states, psState)
+
 	// --- Deploy (payload) ---
 	deployState := ComponentState{Name: "deploy"}
 	payloadFS, _, deployErr := deploy.ResolvePayloadFS()
@@ -345,6 +360,8 @@ func Sync(opts Options) Result {
 			}
 		case "codegraph":
 			runErr = install.InstallCodegraph(installOpts)
+		case "proofshot":
+			runErr = install.InstallProofshot(installOpts)
 		case "deploy":
 			payloadFS, _, fsErr := deploy.ResolvePayloadFS()
 			if fsErr != nil {

@@ -2,6 +2,7 @@ package install
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/franwerner/matecito-ai/internal/mcp"
 	"github.com/franwerner/matecito-ai/internal/platform"
@@ -390,6 +392,48 @@ func InstallCodegraph(opts Options) error {
 	return nil
 }
 
+// proofShotPostStepTimeout es el tiempo máximo para el post-step `proofshot install`.
+// El post-step descarga un browser; con este cap evitamos bloqueos en modo no-atendido.
+const proofShotPostStepTimeout = 5 * time.Minute
+
+// InstallProofshot instala el paquete npm proofshot de forma global y ejecuta
+// el post-step `proofshot install` (descarga browser) de manera no-interactiva.
+//
+// El post-step es best-effort: si falla o se supera proofShotPostStepTimeout,
+// se imprime una instrucción manual y se retorna nil (el binario ya quedó instalado).
+// Esto refleja la política "se continúa ante errores de binarios" del instalador.
+func InstallProofshot(opts Options) error {
+	if _, err := exec.LookPath("npm"); err != nil {
+		return errors.New("npm no está instalado")
+	}
+	if err := ensureUserNpmPrefix(opts); err != nil {
+		return err
+	}
+	if err := runIO(opts, "npm", "install", "-g", "proofshot"); err != nil {
+		return err
+	}
+	if _, err := exec.LookPath("proofshot"); err != nil {
+		return errors.New("proofshot: npm install terminó pero el binario no quedó en PATH")
+	}
+
+	// Post-step: proofshot install descarga el browser del agente. Se ejecuta
+	// con stdin cerrado y un timeout acotado para no bloquear en modo --yes.
+	ctx, cancel := context.WithTimeout(context.Background(), proofShotPostStepTimeout)
+	defer cancel()
+
+	postCmd := exec.CommandContext(ctx, "proofshot", "install")
+	postCmd.Stdin = strings.NewReader("") // stdin cerrado → ningún prompt interactivo bloquea
+	postCmd.Stdout = opts.Stdout
+	postCmd.Stderr = opts.Stderr
+
+	if err := postCmd.Run(); err != nil {
+		// El post-step falló o expiró; continuar y avisar para instalación manual.
+		fmt.Fprintf(opts.Stdout,
+			"proofshot instalado; corré `proofshot install` manualmente para completar el setup del browser\n")
+	}
+	return nil
+}
+
 func UpdateEngramPlugin(opts Options) error {
 	if _, err := exec.LookPath("claude"); err != nil {
 		return errors.New("claude no está en PATH")
@@ -428,22 +472,28 @@ func ensureUserNpmPrefix(opts Options) error {
 		return err
 	}
 	prefix := strings.TrimSpace(string(out))
-	if !isSystemPath(prefix) {
-		return nil
+
+	if isSystemPath(prefix) {
+		// El prefix apunta a una ruta del sistema; reconfiguramos a ~/.npm-global
+		// para que `npm install -g` no requiera sudo.
+		fmt.Fprintf(opts.Stdout, "  npm prefix actual = %q (system-owned) → reconfigurando a ~/.npm-global\n", prefix)
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return err
+		}
+		prefix = filepath.Join(home, ".npm-global")
+		if err := os.MkdirAll(prefix, 0o755); err != nil {
+			return err
+		}
+		if err := runIO(opts, "npm", "config", "set", "prefix", prefix); err != nil {
+			return err
+		}
 	}
-	fmt.Fprintf(opts.Stdout, "  npm prefix actual = %q (system-owned) → reconfigurando a ~/.npm-global\n", prefix)
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return err
-	}
-	userPrefix := filepath.Join(home, ".npm-global")
-	if err := os.MkdirAll(userPrefix, 0o755); err != nil {
-		return err
-	}
-	if err := runIO(opts, "npm", "config", "set", "prefix", userPrefix); err != nil {
-		return err
-	}
-	binDir := filepath.Join(userPrefix, "bin")
+
+	// Siempre aseguramos que el bin dir del prefix (sea el original user-local o el
+	// recién configurado ~/.npm-global) esté en PATH. EnsurePathInShell es idempotente:
+	// no agrega entradas duplicadas si el dir ya está en el shell RC.
+	binDir := filepath.Join(prefix, "bin")
 	os.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
 	_, err = platform.Detect().EnsurePathInShell(binDir, opts.Stdout)
 	return err
