@@ -27,6 +27,10 @@ type BackMsg = nav.BackMsg
 // QuitMsg terminates the bubbletea program.
 type QuitMsg = nav.QuitMsg
 
+// ReExecMsg asks the program to quit so the binary can be re-exec'd after the
+// terminal is restored.
+type ReExecMsg = nav.ReExecMsg
+
 // ToggleScopeMsg asks AppModel to flip the active config scope (Global ↔ Project).
 type ToggleScopeMsg = nav.ToggleScopeMsg
 

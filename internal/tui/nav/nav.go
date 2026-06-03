@@ -28,6 +28,13 @@ type BackMsg struct{}
 // QuitMsg terminates the bubbletea program.
 type QuitMsg struct{}
 
+// ReExecMsg pide salir del programa bubbletea para re-ejecutar el binario.
+// El re-exec NO se hace inline: corre después de p.Run() en tui.Run, una vez
+// que bubbletea restauró la terminal (raw mode, alt screen, bracketed paste).
+// Hacerlo inline dejaría la terminal rota porque syscall.Exec reemplaza el
+// proceso antes de que bubbletea pueda restaurarla.
+type ReExecMsg struct{}
+
 // ToggleScopeMsg asks AppModel to flip the active config scope (Global ↔ Project).
 // AppModel ignores it when InProject is false — scope is locked to Global outside a repo.
 type ToggleScopeMsg struct{}

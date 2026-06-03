@@ -127,10 +127,10 @@ func (m SyncModel) Update(msg tea.Msg) (nav.ChildModel, tea.Cmd) {
 		m.err = msg.err
 		if msg.result.SelfReplaced {
 			m.selfReplaced = true
-			// En Unix syscall.Exec reemplaza el proceso; si llega acá fue un error.
-			// En Windows ReExec() devuelve nil sin hacer exec → aviso en View.
-			_ = pkgsync.ReExec()
-			return m, nil
+			// No re-ejecutar inline: syscall.Exec reemplazaría el proceso ahora,
+			// antes de que bubbletea restaure la terminal, dejándola rota. Pedir
+			// salir vía ReExecMsg; tui.Run hace el ReExec después de p.Run().
+			return m, func() tea.Msg { return nav.ReExecMsg{} }
 		}
 		// Sin self-update: volver al menú automáticamente.
 		return m, func() tea.Msg { return nav.BackMsg{} }
