@@ -37,6 +37,7 @@ Sobre eso corre un **flujo de desarrollo guiado (SDD)** que lleva cada cambio de
 | **MCP**        | `codegraph`                   | Grafo de código pre-indexado (tree-sitter + SQLite) para explorar por estructura.                                                                   |
 | **MCP**        | `context7`                    | Documentación de librerías al día, contra APIs no alucinadas.                                                                                       |
 | **MCP**        | `drawio` _(next-ai-draw-io)_  | Diagramas de arquitectura (draw.io) on-demand: el flujo decide cuándo, `design` los genera y exporta como `.drawio`.                                |
+| **CLI**        | `proofshot` _(AmElmo/proofshot)_ | Verificación visual de UI: graba el browser y valida los scenarios. `sdd-verify` la corre cuando el cambio toca UI y proofshot está disponible.   |
 | **Agentes**    | Sub-agentes del SDD           | Uno por fase, con contexto propio. Forkeados y modificados.                                                                                         |
 | **Engram**     | Memoria persistente           | SQLite standalone con descubrimientos, contexto y fixes entre sesiones.                                                                             |
 
@@ -54,6 +55,7 @@ intake → explore → propose → spec → design → tasks → apply → verif
 - **design** y **apply** leen los ADRs vigentes; **explore** usa codegraph; **apply** usa context7.
 - **intake** decide si el cambio amerita un **diagrama de arquitectura** según su complejidad estructural (varios componentes, flujo de datos cruzando límites, etc.) y lo marca en el brief; cuando lo amerita, **design** lo genera con `drawio` y lo exporta como `.drawio`. Nunca automático: se decide una vez y se confirma en el gate.
 - Cuando un ADR declara `Patrón aplicado: X`, **design** consulta el catálogo `design-patterns` y respeta la definición canónica del patrón.
+- **intake** también decide si el cambio amerita **verificación visual de UI** (`ui-test`) según los scenarios; cuando aplica y proofshot está disponible, **verify** conduce el browser según los scenarios del spec, valida el estado en vivo y chequea errores de consola/servidor. Capability-gated: si proofshot o el dev-server no están, se saltea en silencio.
 - **verify** confirma que el cambio no viole los ADRs que tocó.
 - Cada fase corre con su **modelo configurable por agente** y, si está activo el **Strict TDD**, **apply** y **verify** siguen el ciclo test-first. Ambos se ajustan desde la TUI (ver [Configuración](#configuración)).
 
@@ -64,7 +66,7 @@ No todo cambio recorre las nueve fases: el flujo es una **base inmutable** (`int
 Requisitos:
 
 - **[Claude Code](https://claude.com/claude-code)** instalado y autenticado
-- **Node.js `≥ 18`** con `npm` y `npx` — CodeGraph se instala una vez con `npm install -g`; context7 se invoca runtime en cada sesión con `npx -y @upstash/context7-mcp@latest`, y drawio igual con `npx -y @next-ai-drawio/mcp-server@latest` (este último abre un preview en el navegador en `localhost:6002`)
+- **Node.js `≥ 18`** con `npm` y `npx` — CodeGraph y proofshot se instalan una vez con `npm install -g`; context7 se invoca runtime en cada sesión con `npx -y @upstash/context7-mcp@latest`, y drawio igual con `npx -y @next-ai-drawio/mcp-server@latest` (este último abre un preview en el navegador en `localhost:6002`)
 
 Engram se descarga como binario precompilado desde sus [GitHub Releases](https://github.com/Gentleman-Programming/engram/releases); no requiere Go.
 
@@ -102,7 +104,7 @@ go build -o matecito-ai ./cmd/matecito-ai
 
 ## Uso
 
-El CLI verifica, inicia e instala las dependencias del ecosistema (Engram, codegraph, context7, drawio) sobre Claude Code, y deploya el fork del SDD a `~/.claude/`. Una vez instalado, cada herramienta se usa con su propio binario; matecito-ai se ocupa del setup y la salud del entorno.
+El CLI verifica, inicia e instala las dependencias del ecosistema (Engram, codegraph, context7, drawio, proofshot) sobre Claude Code, y deploya el fork del SDD a `~/.claude/`. Una vez instalado, cada herramienta se usa con su propio binario; matecito-ai se ocupa del setup y la salud del entorno.
 
 Sin subcomando, y en una terminal interactiva, abre una **TUI** desde donde ves el estado, instalás y configurás el flujo SDD. Con subcomando corre en modo directo.
 
@@ -119,7 +121,7 @@ matecito-ai install             # aplica los cambios
 matecito-ai install --yes       # sin confirmación interactiva (CI)
 ```
 
-`install` es la única ruta de instalación y actualización: detecta qué falta o está desactualizado (matecito-ai, Engram, CodeGraph, MCPs, fork del SDD) y lo deja al día en un solo paso.
+`install` es la única ruta de instalación y actualización: detecta qué falta o está desactualizado (matecito-ai, Engram, CodeGraph, proofshot, MCPs, fork del SDD) y lo deja al día en un solo paso.
 
 ## Configuración
 
@@ -147,3 +149,4 @@ matecito-ai es una capa de integración sobre proyectos de terceros. El crédito
 - **[codegraph](https://github.com/colbymchenry/codegraph)** — grafo de conocimiento del código vía tree-sitter, expuesto como MCP.
 - **[context7](https://github.com/upstash/context7)** — documentación de librerías en vivo, expuesta como MCP.
 - **[next-ai-draw-io](https://github.com/DayuanJiang/next-ai-draw-io)** — generación de diagramas draw.io desde lenguaje natural, expuesta como MCP.
+- **[proofshot](https://github.com/AmElmo/proofshot)** — verificación visual de UI grabando sesiones de browser, integrada como CLI.
