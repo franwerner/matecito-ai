@@ -31,6 +31,7 @@ Run when the orchestrator launches verification for an SDD change. You are the q
 - Do not fix issues; report them for the orchestrator/user.
 - Persist `verify-report` to Engram (engram mode) or inline-only (none mode). <!-- matecito-ai: engram-only -->
 - If Strict TDD is active, load `strict-tdd-verify.md` from this skill directory; if inactive, never load it.
+- When `ui-test == needed` and `uiTest.available = ✅`, run the ProofShot UI step (one session per run); otherwise skip silently.
 - Return the Section D envelope from `../_shared/sdd-phase-common.md`.
 
 ## Decision Gates
@@ -46,12 +47,21 @@ Run when the orchestrator launches verification for an SDD change. You are the q
 | Design deviation exists | WARNING unless it breaks a spec. |
 <!-- matecito-ai: ADR violation in the changed code is CRITICAL -->
 | Changed code violates an ADR it touched | CRITICAL `ADR-VIOLATION` (cite the ADR). |
+| `ui-test != needed` OR `uiTest.available` absent or ❌ | Skip UI step silently — no mention, no UI Verdict section. |
+| Scenario step target matches `@e\d+` | CRITICAL — reject authored runtime ref; scenario FAILS static validation. |
+| Any per-scenario STATE assertion FAIL | CRITICAL — blocks archive. |
+| Session-level error gate FAIL (consoleErrorCount or serverErrorCount > 0) | CRITICAL — blocks archive. |
 
 ## Execution Steps
 
 1. Load relevant skills via shared SDD Section A.
 2. Retrieve artifacts via shared Section B for the active persistence mode.
 3. Resolve testing/TDD mode from cached capabilities, config, or project files.
+3b. UI-test gate: read `ui-test` from the spec artifact and `uiTest.available` from `sdd/{project}/testing-capabilities`. If `ui-test != needed` OR `uiTest.available = ❌` OR either is absent → silently skip all UI steps (3c–3e, 3f). No mention, no UI Verdict section.
+3c. Static validation (gate passed): for every scenario in `ui-scenarios`, reject any step target matching `@e\d+`. A matched target is CRITICAL — fail that scenario immediately.
+3d. ProofShot session (gate and static validation passed): generate a collision-safe `outputDir` (`proofshot-artifacts/{change}-{timestamp}-{random}/`); `proofshot start --run "{devServer.command}" --port {port} --output {outputDir}`; for EACH scenario drive its steps then take a LIVE agent-browser `snapshot` and evaluate `visible`/`text_contains` STATE assertions against it; after ALL scenarios `proofshot stop`; read `SUMMARY.md` aggregates `consoleErrorCount`/`serverErrorCount` for the session-level ERROR GATE; delete `{outputDir}/session.webm` by default (retain only with explicit `retain-video` flag).
+3e. SPLIT verdict: `ui-verdict = (all STATE assertions PASS) AND (error gate PASS)`; any FAIL → CRITICAL → blocks archive.
+3f. Append `## UI Verdict` to the report: per-scenario STATE table (`Scenario | STATE | Failure Reason`), session-level ERROR GATE row (`consoleErrorCount`, `serverErrorCount`, PASS/FAIL), artifact path `proofshot-artifacts/{outputDir}/`.
 4. Count completed and incomplete tasks.
 5. Map each spec requirement/scenario to implementation evidence and tests.
 6. Check design decisions against changed code.
@@ -68,5 +78,6 @@ Return `## Verification Report` with change, mode, completeness table, build/tes
 ## References
 
 - [references/report-format.md](references/report-format.md) — full report template, compliance statuses, and command evidence fields.
+- [references/ui-scenarios-schema.md](references/ui-scenarios-schema.md) — `ui-scenarios` block schema: field definitions, step primitives, target rules, `wait` primitive, assertion classes, validation rules.
 - [strict-tdd-verify.md](strict-tdd-verify.md) — load only when Strict TDD is active.
 - `../_shared/sdd-phase-common.md` — skill loading, retrieval, persistence, and return envelope.

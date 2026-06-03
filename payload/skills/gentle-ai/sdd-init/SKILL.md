@@ -37,10 +37,13 @@ Run this phase when the orchestrator/user asks to initialize SDD in a project. Y
 ## Execution Steps
 
 1. Inspect project files (`package.json`, `go.mod`, `pyproject.toml`, CI, lint/test config) and summarize stack/conventions.
-2. Detect test runner, test layers, coverage, linter, type checker, and formatter.
+2. Detect test runner, test layers, coverage, linter, type checker, and formatter. Also detect UI test capability:
+   a. Check if `proofshot` is on PATH (equivalent to `exec.LookPath("proofshot")`). Record ✅ or ❌. Note: proofshot installed but not on PATH at init time → detected as ❌.
+   b. Detect dev-server command from `package.json` scripts (`dev`, `start`, `serve` in priority order) or framework config (`vite.config.*`, `next.config.*`). Record resolved command or ❌.
+   c. Derive `uiTest.available` = proofshot ✅ AND devServer ✅.
 3. Initialize persistence for the resolved mode.
 <!-- matecito-ai: paso de construir el registry removido -->
-4. Persist testing capabilities and project context.
+4. Persist testing capabilities and project context, including the `uiTest` block (proofshot, devServer, available) per the `### UI Test` section in `references/init-details.md`.
 5. Return the structured initialization envelope.
 
 ## Output Contract

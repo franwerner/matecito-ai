@@ -23,9 +23,12 @@ Also read shared conventions at `~/.claude/skills/_shared/sdd-phase-common.md`.
 
 Execute all steps from the skill directly in this context window:
 1. Inspect project files (`go.mod`, `package.json`, `pyproject.toml`, CI, lint/test config) and summarize stack/conventions
-2. Detect test runner, test layers, coverage, linter, type checker, and formatter
+2. Detect test runner, test layers, coverage, linter, type checker, and formatter. Also detect UI test capability:
+   a. Check if `proofshot` is on PATH (equivalent to `exec.LookPath("proofshot")`). Record ✅ or ❌. Limitation: if proofshot is installed but not on PATH at init time, it is detected as ❌.
+   b. Detect dev-server command: inspect `package.json` scripts for `dev`, `start`, or `serve` keys (in that priority order); fall back to framework config (`vite.config.*`, `next.config.*`). Record the resolved command or ❌ if none found.
+   c. Derive `uiTest.available` = proofshot ✅ AND devServer ✅.
 3. Initialize persistence for the resolved artifact-store mode (`engram` | `none`)
-4. Persist testing capabilities and project context
+4. Persist testing capabilities and project context. Include the `uiTest` block (proofshot, devServer, available) as defined in `payload/skills/gentle-ai/sdd-init/references/init-details.md` under `### UI Test`.
 5. Return the structured initialization envelope
 
 Do NOT explore the change in depth (that is sdd-explore). Do NOT design or implement.

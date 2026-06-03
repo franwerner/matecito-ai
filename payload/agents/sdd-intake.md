@@ -28,6 +28,7 @@ Execute all steps from the skill directly in this context window:
 4. Triage: does this warrant the full SDD flow, or is it trivial enough to go direct?
 <!-- matecito-ai: diagram inference test — single source of truth in matecito-ai:behavior (Ecosystem) -->
 4b. Diagram decision: evaluate per the diagram inference test (CLAUDE.md Ecosystem zone) whether this change warrants an architecture diagram. Set `diagram: needed | not-needed` (with a one-line reason) in the brief. Do NOT generate — generation happens downstream (`sdd-design`, or the direct implementation). The user confirms this flag at the intake gate.
+4c. UI-test decision: infer `ui-test: needed | not-needed` (with a one-line reason) in the brief. Inference rule: scan the request's scenarios and description for any of these keywords — `browser`, `page`, `form`, `screen`, `visual`, `click`, `render` — and set `needed` if any are present. An explicit author override (`ui-test: needed` or `ui-test: not-needed` written in the request) takes precedence over keyword inference; default is `not-needed` when no keywords match and no override is present. Surface the flag at the INTAKE GATE beside `diagram` so the user can confirm or adjust both together. Do NOT run proofshot — decision only; execution happens in sdd-verify.
 5. Early guard (ADR activation gate): if `.matecito-ai/adr/` is absent or empty, ADRs are inactive — skip this step silently (`status: done`, no ADR mention in the brief). Only when it exists with content, check it for conflicts or undecided questions this request raises
 6. Produce the structured brief artifact and return it
 
@@ -55,6 +56,7 @@ Return a structured result with these fields:
 - `artifacts`: topic_keys or file paths written (e.g. `sdd/{change-name}/intake`)
 - `next_recommended`: `sdd-explore` (full flow) | `direct-implementation` (trivial, SDD not needed) | `project-decisions-bootstrap` (an undecided architectural question must be captured first)
 - `diagram`: `needed | not-needed` — whether an architecture diagram is warranted per the diagram inference test (decided here, generated downstream)
+- `ui-test`: `needed | not-needed` — whether UI verification via ProofShot is warranted (keyword-inferred or explicit override; confirmed at INTAKE GATE; execution deferred to sdd-verify)
 - `blockers`: ADR conflicts (`blocked`) or undecided decisions (`needs-decision`) found, with the ADR cited
 - `risks`: anything ambiguous or risky surfaced during intake
 - `skill_resolution`: `phase-skill` (loaded own SKILL.md) or `none`

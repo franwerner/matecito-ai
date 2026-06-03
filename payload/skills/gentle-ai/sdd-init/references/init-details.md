@@ -73,6 +73,19 @@ capture_prompt: false when available
 | Linter       | ✅ / ❌   | {command or —} |
 | Type checker | ✅ / ❌   | {command or —} |
 | Formatter    | ✅ / ❌   | {command or —} |
+
+### UI Test
+
+| Capability   | Available | Detail                                           |
+| ------------ | --------- | ------------------------------------------------ |
+| proofshot    | ✅ / ❌   | `proofshot` binary found on PATH / not found     |
+| devServer    | ✅ / ❌   | detected run command (e.g. `npm run dev`) / none |
+| **available**| ✅ / ❌   | proofshot AND devServer both ✅                  |
+
+Detection notes:
+- `proofshot`: check `proofshot` on PATH (equivalent to `exec.LookPath("proofshot")`). If not on PATH at init time, detected as ❌ even if installed elsewhere. Document the limitation: proofshot installed outside PATH → detected absent.
+- `devServer`: inspect `package.json` scripts for `dev`, `start`, or `serve` keys (in that priority order); fall back to framework config (e.g. `vite.config.*`, `next.config.*`). Record the resolved command string.
+- `available` = proofshot ✅ AND devServer ✅; both must be present for sdd-verify to run the UI step.
 ```
 
 ## Output Templates
