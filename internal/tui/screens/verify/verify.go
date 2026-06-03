@@ -15,6 +15,7 @@ import (
 	"github.com/franwerner/matecito-ai/internal/checks/engram"
 	"github.com/franwerner/matecito-ai/internal/checks/permissions"
 	"github.com/franwerner/matecito-ai/internal/checks/prereqs"
+	"github.com/franwerner/matecito-ai/internal/checks/proofshot"
 	"github.com/franwerner/matecito-ai/internal/checks/sdd"
 	"github.com/franwerner/matecito-ai/internal/tui/nav"
 	"github.com/franwerner/matecito-ai/internal/tui/styles"
@@ -110,6 +111,7 @@ func runChecks() tea.Msg {
 			{"Engram", engram.All()},
 			{"CodeGraph", codegraph.All()},
 			{"context7", context7.All()},
+			{"proofshot", proofshot.All()},
 			{"Integración con Claude Code", claudemd.All()},
 			{"Auto-aprobación de tools (settings.json)", permissions.All()},
 			{"Cross-check SDD ↔ MCP (" + sddDir + ")", sdd.CrossCheck(sddDir)},
