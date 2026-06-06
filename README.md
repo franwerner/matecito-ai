@@ -32,7 +32,9 @@ Sobre eso corre un **flujo de desarrollo guiado (SDD)** que lleva cada cambio de
 | -------------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Skills**     | `project-decisions-bootstrap` | Entrevista por fases que captura decisiones de ingeniería y las materializa como ADRs por dominio.                                                  |
 | **Skills**     | `project-decisions-validate`  | Validador consultivo: coherencia, completitud y verificabilidad de los ADRs.                                                                        |
+| **Skills**     | `project-decisions-mine`      | Mina decisiones desde el código de un repo existente y las propone como ADRs `Inferred` (borradores) para que un humano las ratifique vía bootstrap. |
 | **Skills**     | `SDD` _(fork del Gentleman)_  | Flujo de fases: intake → explore → propose → spec → design → tasks → apply → verify → archive. Modelo por agente y Strict TDD configurables.        |
+| **Referencia** | `adr`                         | Definición canónica de qué es (y qué no es) un ADR + las plantillas de estructura. Consultable y agnóstica de flujo: la usan bootstrap, mine y el flujo. |
 | **Referencia** | `design-patterns`             | Catálogo canónico de patrones de diseño consultable. Los ADRs lo citan por nombre; `sdd-design` lo respeta cuando un ADR declara `Patrón aplicado`. |
 | **MCP**        | `codegraph`                   | Grafo de código pre-indexado (tree-sitter + SQLite) para explorar por estructura.                                                                   |
 | **MCP**        | `context7`                    | Documentación de librerías al día, contra APIs no alucinadas.                                                                                       |
@@ -57,6 +59,7 @@ intake → explore → propose → spec → design → tasks → apply → verif
 - Cuando un ADR declara `Patrón aplicado: X`, **design** consulta el catálogo `design-patterns` y respeta la definición canónica del patrón.
 - **intake** también decide si el cambio amerita **verificación visual de UI** (`ui-test`) según los scenarios; cuando aplica y proofshot está disponible, **verify** conduce el browser según los scenarios del spec, valida el estado en vivo y chequea errores de consola/servidor. Capability-gated: si proofshot o el dev-server no están, se saltea en silencio.
 - **verify** confirma que el cambio no viole los ADRs que tocó.
+- Con **Auto-mine ADR** activo (opt-in, ver [Configuración](#configuración)): `tasks` marca las decisiones implementadas que aún no tienen ADR, `verify` confirma cuáles quedaron implementadas, y al cerrar el flujo se ofrece capturarlas como ADRs `Inferred` (borradores que después ratificás vía bootstrap). Off por default → el flujo se comporta igual que siempre.
 - Cada fase corre con su **modelo configurable por agente** y, si está activo el **Strict TDD**, **apply** y **verify** siguen el ciclo test-first. Ambos se ajustan desde la TUI (ver [Configuración](#configuración)).
 
 No todo cambio recorre las nueve fases: el flujo es una **base inmutable** (`intake → spec → apply → verify → archive`) más **add-ons opcionales** (`explore`, `propose`, `design`, `tasks`) que se activan según el tamaño del cambio. Un fix trivial va directo; un cambio grande activa todas.
@@ -134,6 +137,7 @@ Se editan desde la TUI (`matecito-ai`) y controlan:
 
 - **Modelo por agente** — qué modelo usa cada fase del SDD (`sdd-intake`, `sdd-spec`, `sdd-design`, …). Sin valor configurado, cada agente usa su default curado.
 - **Strict TDD** — si está activo, `apply` y `verify` siguen el ciclo test-first.
+- **Auto-mine ADR** (`flagDecisionGaps`) — opt-in, off por default. Activa la detección de decisiones implementadas sin ADR durante el flujo SDD; al cerrar, ofrece minarlas como ADRs `Inferred` (siempre con tu confirmación).
 - **Scope** — si los cambios de configuración aplican al proyecto actual o globalmente.
 
 ## Documentación
