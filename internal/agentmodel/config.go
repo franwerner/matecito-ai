@@ -36,11 +36,13 @@ func ConfigPathForScope(scope Scope, repoRoot string) (string, error) {
 }
 
 // Config holds the persisted configuration for matecito-ai.
-// StrictTdd uses a pointer so that key-absent (nil) is distinct from false
-// — necessary for the per-project-vs-global precedence resolution (spec R5.6/S8.5).
+// StrictTdd and FlagDecisionGaps use pointers so that key-absent (nil) is
+// distinct from false — necessary for the per-project-vs-global precedence
+// resolution (spec R5.6/S8.5).
 type Config struct {
-	Models    map[string]string `json:"models,omitempty"`
-	StrictTdd *bool             `json:"strictTdd,omitempty"`
+	Models           map[string]string `json:"models,omitempty"`
+	StrictTdd        *bool             `json:"strictTdd,omitempty"`
+	FlagDecisionGaps *bool             `json:"flagDecisionGaps,omitempty"`
 }
 
 // ConfigPath returns the global config file path: ~/.matecito-ai/config.json.

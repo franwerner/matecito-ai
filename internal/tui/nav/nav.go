@@ -17,6 +17,7 @@ const (
 	ScreenConfig
 	ScreenSddModel
 	ScreenTdd
+	ScreenDecisionGaps
 )
 
 // NavigateMsg asks the AppModel router to switch to the given screen.

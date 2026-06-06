@@ -14,8 +14,9 @@ const (
 	ScreenSync     = nav.ScreenSync
 	ScreenVerify   = nav.ScreenVerify
 	ScreenConfig   = nav.ScreenConfig
-	ScreenSddModel = nav.ScreenSddModel
-	ScreenTdd      = nav.ScreenTdd
+	ScreenSddModel     = nav.ScreenSddModel
+	ScreenTdd          = nav.ScreenTdd
+	ScreenDecisionGaps = nav.ScreenDecisionGaps
 )
 
 // NavigateMsg asks the AppModel router to switch to the given screen.

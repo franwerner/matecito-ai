@@ -33,12 +33,15 @@ func New(ctx ProjectContext, scope agentmodel.Scope) ConfigMenuModel {
 	// el label de TDD refleja el scope activo: en Global edita el config global,
 	// en Project el del repo. La ruta efectiva la resuelve AppModel con ConfigPathForScope.
 	tddLabel := "TDD (este proyecto)"
+	gapsLabel := "Auto-mine ADR (este proyecto)"
 	if scope == agentmodel.ScopeGlobal {
 		tddLabel = "TDD (global)"
+		gapsLabel = "Auto-mine ADR (global)"
 	}
 	entries := []menuEntry{
 		{"Modelos por agente (sdd-model)", nav.ScreenSddModel},
 		{tddLabel, nav.ScreenTdd},
+		{gapsLabel, nav.ScreenDecisionGaps},
 	}
 	return ConfigMenuModel{entries: entries}
 }

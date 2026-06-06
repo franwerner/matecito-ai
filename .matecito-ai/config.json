@@ -1,3 +1,4 @@
 {
-  "strictTdd": false
+  "strictTdd": false,
+  "flagDecisionGaps": false
 }

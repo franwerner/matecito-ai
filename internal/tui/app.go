@@ -9,6 +9,7 @@ import (
 	pkgsync "github.com/franwerner/matecito-ai/internal/setup/sync"
 	"github.com/franwerner/matecito-ai/internal/tui/header"
 	"github.com/franwerner/matecito-ai/internal/tui/screens/config"
+	"github.com/franwerner/matecito-ai/internal/tui/screens/decisiongaps"
 	"github.com/franwerner/matecito-ai/internal/tui/screens/install"
 	"github.com/franwerner/matecito-ai/internal/tui/screens/menu"
 	"github.com/franwerner/matecito-ai/internal/tui/screens/sddmodel"
@@ -173,7 +174,7 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.hdr.Scope = m.scope
 			// reconstruir la pantalla activa cuando es scope-aware
-			if m.screen == ScreenSddModel || m.screen == ScreenTdd || m.screen == ScreenConfig {
+			if m.screen == ScreenSddModel || m.screen == ScreenTdd || m.screen == ScreenConfig || m.screen == ScreenDecisionGaps {
 				child, cmd := m.buildChild(m.screen)
 				m.child = child
 				return m, tea.Batch(child.Init(), cmd)
@@ -228,6 +229,9 @@ func (m AppModel) buildChild(s Screen) (ChildModel, tea.Cmd) {
 	case ScreenTdd:
 		configPath, _ := agentmodel.ConfigPathForScope(m.scope, m.ctx.RepoRoot)
 		return tdd.New(configPath), nil
+	case ScreenDecisionGaps:
+		configPath, _ := agentmodel.ConfigPathForScope(m.scope, m.ctx.RepoRoot)
+		return decisiongaps.New(configPath), nil
 	default:
 		return menu.New(m.updateAvailable), nil
 	}
