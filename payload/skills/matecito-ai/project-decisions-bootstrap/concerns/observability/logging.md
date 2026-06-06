@@ -58,7 +58,7 @@ Librería de logging elegida (ej: `structlog.md`, `pino.md`, `zerolog.md`, `wins
 
 ## Qué materializar
 
-ADR `logging` materializado según el template `../../templates/adr.md`. La **Decisión** captura: formato elegido (JSON estructurado / texto / mixto por entorno), niveles disponibles, la política de correlación (`request-id` o `trace-id`, dónde se genera y cómo se propaga) y la librería elegida (registrada también como tech).
+ADR `logging` materializado según el template `~/.claude/references/adr/templates/adr.md`. La **Decisión** captura: formato elegido (JSON estructurado / texto / mixto por entorno), niveles disponibles, la política de correlación (`request-id` o `trace-id`, dónde se genera y cómo se propaga) y la librería elegida (registrada también como tech).
 
 **Reglas verificables** (cada una con su mecanismo al inicio):
 

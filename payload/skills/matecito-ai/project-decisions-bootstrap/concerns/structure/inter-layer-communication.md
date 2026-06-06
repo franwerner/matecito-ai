@@ -64,7 +64,7 @@ Si en la pregunta 4 se menciona una librería de validación concreta (pydantic,
 
 ## Qué materializar
 
-ADR `inter-layer-communication` materializado según `../../templates/adr.md`. Debe contener:
+ADR `inter-layer-communication` materializado según `~/.claude/references/adr/templates/adr.md`. Debe contener:
 
 - **Contexto** y **Decisión**: política de DTOs vs entidades en los bordes (con nombres concretos de las clases de mapeo si los hay), estilo de comunicación sync/async (y message bus si aplica), dónde se declaran las interfaces de repositorios y servicios externos (`domain/` vs `application/` vs dentro del feature), y la política de validación (qué valida cada capa, con qué herramienta).
 - **Reglas verificables**: traducí cada una de esas cuatro políticas a aserciones chequeables con su mecanismo al inicio, no como intenciones vagas. Ej: `[tool: dependency-cruiser]` las clases de `domain/**` no se exponen en firmas de controllers; `[tool: <linter>]` interfaces de repositorio declaradas solo en `application/**`; `[manual]` el borde valida formato/tipo con la librería elegida (pydantic/zod/joi) y el dominio valida reglas de negocio. Si se eligió una librería de validación concreta, nombrala en el `[tool: ...]`.

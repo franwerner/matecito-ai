@@ -37,7 +37,7 @@ El modelo de escalado esperado (vertical u horizontal) y si la arquitectura lo s
 
 ## Qué materializar
 
-ADR `scalability` materializado según el template `../../templates/adr.md`.
+ADR `scalability` materializado según el template `~/.claude/references/adr/templates/adr.md`.
 
 - **Contexto:** modelo de escalado esperado (vertical, horizontal, sin escalado) y qué condicionantes lo justifican; si escala horizontal, por qué el proceso debe ser stateless.
 - **Decisión:** modelo de escalado elegido, si el proceso es stateless o stateful, dónde vive el estado cuando hay múltiples instancias, y la condición de revisión de esta decisión.

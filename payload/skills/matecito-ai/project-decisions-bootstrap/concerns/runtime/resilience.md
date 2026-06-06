@@ -44,7 +44,7 @@ Si se elige una librería de resiliencia concreta, registrarla en el catálogo `
 
 ## Qué materializar
 
-ADR `resilience` materializado según el template `../../templates/adr.md`. La **Decisión** captura: política elegida (solo timeout / timeout+retry con backoff / timeout+retry+circuit breaker / sin política), los valores concretos si se definieron (timeout en ms, max retries, backoff base, umbral del circuit breaker) y la librería de resiliencia si aplica.
+ADR `resilience` materializado según el template `~/.claude/references/adr/templates/adr.md`. La **Decisión** captura: política elegida (solo timeout / timeout+retry con backoff / timeout+retry+circuit breaker / sin política), los valores concretos si se definieron (timeout en ms, max retries, backoff base, umbral del circuit breaker) y la librería de resiliencia si aplica.
 
 **Reglas verificables** (cada una con su mecanismo al inicio):
 

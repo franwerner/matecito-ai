@@ -37,7 +37,7 @@ Si se elige una librería de validación (Zod, Pydantic, Joi, class-validator, e
 
 ## Qué materializar
 
-ADR `input-validation` materializado según `../../templates/adr.md`. Esta es una decisión de tipo `policy`; sus reglas deben quedar especialmente accionables. Debe contener:
+ADR `input-validation` materializado según `~/.claude/references/adr/templates/adr.md`. Esta es una decisión de tipo `policy`; sus reglas deben quedar especialmente accionables. Debe contener:
 
 - **Contexto**: por qué el input no confiable validado tarde o en múltiples lugares crea superficies de inyección, y por qué la defensa principal es validar en el borde (OWASP ASVS 5.1).
 - **Decisión**: capa donde se valida (borde con schema declarativo, manual por endpoint, o mix), herramienta elegida (ej. Zod, Pydantic, Joi, class-validator), y política de respuesta ante input inválido (400 con descripción del campo, o 422).

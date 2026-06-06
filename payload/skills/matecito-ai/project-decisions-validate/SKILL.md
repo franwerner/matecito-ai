@@ -34,6 +34,7 @@ Leé `.matecito-ai/adr/INDEX.md`. Si no existe, no hay nada que validar → suge
    - Si el bootstrap te lanzó, usá la lista de fases relevantes que te pasó.
    - Si corrés standalone y podés acceder al catálogo `concerns/INDEX.md` de `project-decisions-bootstrap`, usalo.
    - Si no tenés ninguna de las dos, marcá completitud como "no verificable" y seguí con el resto (que solo necesita los ADRs).
+   - **ADRs con `Status: Inferred` NO son decisiones cerradas:** no los contés en el total de decisiones tomadas para el chequeo de completitud (no satisfacen la preocupación), y no reportes como defecto las secciones WHY/Consecuencias/Reglas vacías (se espera que estén vacías). Sí considerá `## Alcance` como ancla de drift (verificá que los globs sigan matcheando).
 4. **Leé `coherence-rules.md`** (en esta misma skill) y aplicá cada chequeo. Cada regla indica el/los dominio(s) donde viven los ADRs involucrados, así sabés qué archivos abrir.
 5. **Emití el reporte** agrupado por dominio y, dentro de cada dominio, por severidad.
 

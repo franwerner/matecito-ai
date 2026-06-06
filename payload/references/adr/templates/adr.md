@@ -2,7 +2,7 @@
 
 # ADR — <título>
 
-- **Status:** <Accepted | Pending | Deferred | Superseded>
+- **Status:** <Inferred | Accepted | Pending | Deferred | Superseded>
 - **Type:** <decision | convention | policy>
 - **Date:** <YYYY-MM-DD>
 - **Applied pattern:** <Opcional. Solo si la decisión mapea a un patrón del catálogo canónico en `~/.claude/references/design-patterns/`. Formato: `<Nombre> — <1 línea de por qué este patrón>`. Ej: `Repository — necesitamos swap SQLite↔Postgres en tests sin tocar dominio`. Si no aplica, omitir la línea completa.>
@@ -33,6 +33,17 @@
 ## Reemplazado por
 [<slug-del-nuevo>.md](<slug-del-nuevo>.md) — <1 línea de por qué cambió la decisión>
 (Si el ADR nuevo está en otro dominio, usar ruta relativa: [../<otro-dominio>/<slug>.md](../<otro-dominio>/<slug>.md))
+-->
+
+<!-- Si Status es Inferred (ADR minado por project-decisions-mine desde el código, NO decidido aún por un humano), agregar esta sección. Es TRANSITORIA: al promoverse a Accepted vía bootstrap, se elimina (git conserva la traza). El humano completa Contexto/Decisión/Consecuencias; mine NUNCA infiere el porqué — solo registra el qué observado.
+
+## Evidencia (inferida)
+
+- **kind:** <estructural | config | patrón | ausencia>
+- **observado:** <lo que se vio en el código — el QUÉ, sin el porqué>
+- **prevalencia:** <ej: 40/42 handlers. Omitir si el kind no aplica (config/ausencia).>
+
+El locator estructural NO va en esta sección: para kind `estructural`/`patrón` se llena `## Alcance` (los globs), que el validador ya usa como ancla de drift. Para `config` la evidencia es la entrada del manifest. Para `ausencia` no hay glob. Así la sección Evidencia queda acotada a la metadata de la inferencia.
 -->
 
 ## Alcance

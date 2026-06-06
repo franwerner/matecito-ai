@@ -25,6 +25,7 @@ Execute all steps from the skill directly in this context window:
    - `mem_search("sdd/{change-name}/verify-report")` → `mem_get_observation`
 <!-- matecito-ai: engram-only — pasos de merge/move de openspec removidos -->
 2. Write final archive report with all observation IDs for traceability
+<!-- matecito-ai: Inferred ADRs are NOT recorded here. ADRs (any status) live ONLY in their `.md` under `.matecito-ai/adr/`; never duplicated into Engram or the archive-report. -->
 3. Mark the change state as archived in Engram
 4. Persist archive report to active backend
 

@@ -47,7 +47,7 @@ Confirmar: ¿snake_case, camelCase o PascalCase por tipo? ¿Con sufijo obligator
 
 ## Qué materializar
 
-ADR `folder-structure` materializado según `../../templates/adr.md`. Debe contener:
+ADR `folder-structure` materializado según `~/.claude/references/adr/templates/adr.md`. Debe contener:
 
 - **Contexto** y **Decisión**: criterio de organización dentro de cada capa (por tipo técnico vs por feature vs híbrido), las convenciones de nombres por tipo de artefacto (clase y archivo), y si los sufijos son obligatorios o no. Conservá los ejemplos concretos de paths: `src/application/users/create_user.py`, `src/domain/user.py`, `src/infrastructure/db/user_repository.py`.
 - **Reglas verificables**: cada convención de nombres como aserción chequeable con su mecanismo al inicio. Ej: `[tool: <linter/naming check>]` sufijo `*.routes.ts` obligatorio en handlers HTTP; `[tool: <linter>]` casing por lenguaje (snake_case archivos Python, kebab-case archivos TS); `[manual]` si no hay check automático para una convención dada. Reformulá la tabla de naming como este conjunto de aserciones, sin perder los nombres concretos por artefacto.

@@ -60,7 +60,7 @@ Una por turno. Para cada una: línea de "por qué importa", opciones con default
 
 ## Qué materializar
 
-ADR `<name>` materializado según el template canónico [`templates/adr.md`](../../templates/adr.md). Especificá qué campos concretos y verificables debe contener:
+ADR `<name>` materializado según el template canónico [`templates/adr.md`](~/.claude/references/adr/templates/adr.md). Especificá qué campos concretos y verificables debe contener:
 - **Reglas verificables:** nombrá las reglas como valores concretos (no adjetivos vagos), cada una con su mecanismo de verificación al inicio: `[tool: <herramienta>]` o `[manual]`.
 - **Alcance** (solo concerns espaciales/estructurales): los globs a nivel convención —patrones estables, no archivos concretos— que la decisión gobierna.
 - **Relacionados** (si aplica): vínculos tipados esperados con otros ADRs.

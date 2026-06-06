@@ -81,27 +81,30 @@ Chain strategy: <stacked-to-main|feature-branch-chain|size-exception|pending>
 
 ## Phase 1: {Phase Name} (e.g., Infrastructure / Foundation)
 
+<!-- matecito-ai: each task carries an indented sub-line with `criteria:` (MANDATORY) and, only when ADRs are active and the task touches a decision, `· adr: <domain>/<slug>` (OPTIONAL). Do NOT touch the `- [ ]`: apply marks progress by flipping `- [ ]` → `- [x]` on the task line. The ADR ref is slug-based (`structure/layering`), never numeric. -->
 - [ ] 1.1 {Concrete action — what file, what change}
+      criteria: {observable check — input → result}  · adr: {<domain>/<slug> | omit}
 - [ ] 1.2 {Concrete action}
-- [ ] 1.3 {Concrete action}
+      criteria: {observable check}
 
 ## Phase 2: {Phase Name} (e.g., Core Implementation)
 
 - [ ] 2.1 {Concrete action}
+      criteria: {observable check}
 - [ ] 2.2 {Concrete action}
-- [ ] 2.3 {Concrete action}
-- [ ] 2.4 {Concrete action}
+      criteria: {observable check}  · adr: {<dominio>/<slug>}
 
 ## Phase 3: {Phase Name} (e.g., Testing / Verification)
 
 - [ ] 3.1 {Write tests for ...}
-- [ ] 3.2 {Write tests for ...}
-- [ ] 3.3 {Verify integration between ...}
+      criteria: {observable check}
+- [ ] 3.2 {Verify integration between ...}
+      criteria: {observable check}
 
 ## Phase 4: {Phase Name} (e.g., Cleanup / Documentation)
 
 - [ ] 4.1 {Update docs/comments}
-- [ ] 4.2 {Remove temporary code}
+      criteria: {observable check}
 ```
 
 ### Task Writing Rules
@@ -114,6 +117,16 @@ Each task MUST be:
 | **Actionable** | "Add `ValidateToken()` method to `AuthService`" | "Handle tokens" |
 | **Verifiable** | "Test: `POST /login` returns 401 without token" | "Make sure it works" |
 | **Small** | One file or one logical unit of work | "Implement the feature" |
+
+<!-- matecito-ai: per-task contract (criteria + adr)
+- `criteria:` is MANDATORY on every task: an observable, checkable condition (input → result), not a vague claim. It is what verify consumes later; a "works fine" is useless.
+- `· adr: <domain>/<slug>` is OPTIONAL: add it ONLY when the task implements or touches a registered decision. Mechanical tasks (add a field, move a file) carry NO adr — a false ref is worse than none.
+- What counts as a "decision" (and what does not) is canonical in `~/.claude/references/adr/README.md` — a task carries `· adr:` only if it touches an ADR in that sense, not for every change.
+- ADR activation gate (with `flagDecisionGaps` OFF, the default): if `.matecito-ai/adr/` does not exist or is empty, do NOT add the `adr` sub-part on any task and do not mention it. `criteria` is still required. matecito-ai NEVER requires an ADR. (With the flag ON the behavior changes — see the decision-gap hook below.) -->
+<!-- matecito-ai: decision-gap detection hook
+Active ONLY when flagDecisionGaps=true (does NOT depend on ADRs existing). When active: for EACH task that touches a decision, emit `· adr: <domain>/<slug>` mapped to a catalog concern, whether or not the ADR exists — this overrides the flag-off rule of "omit adr if there is no `.matecito-ai/adr/`". Then, for each `· adr:`, check whether `.matecito-ai/adr/<domain>/<slug>.md` exists: if NOT, the ref is a dangling decision gap — leave it as-is (do not modify or mark it). With zero ADRs, every decision is a gap (bootstrap the first ones). The dangling refs in the artifact are the gap list that sdd-verify consumes. When flag off: byte-identical behavior to before, no mention. -->
+- (Decision-gap detection — flag-gated) When `flagDecisionGaps=true` (regardless of ADR presence): emit a concern-mapped `· adr:` for each decision-touching task even if no ADR exists yet; a `· adr:` whose target file is absent under `.matecito-ai/adr/` is a decision gap — leave it verbatim (the dangling ref IS the signal; with zero ADRs every decision is a gap → bootstrap). Silent when flag off.
+
 
 ### Review Workload Forecast Rules
 
@@ -225,6 +238,7 @@ Return to the orchestrator:
 - Use hierarchical numbering: 1.1, 1.2, 2.1, 2.2, etc.
 - NEVER include vague tasks like "implement feature" or "add tests"
 - If the project uses TDD, integrate test-first tasks: RED task (write failing test) → GREEN task (make it pass) → REFACTOR task (clean up)
-- **Size budget**: Tasks artifact MUST be under 530 words. Each task: 1-2 lines max. Use checklist format, not paragraphs.
+<!-- matecito-ai: budget subido de 530 → 800 palabras para absorber la sub-línea `criteria:` (criteria + adr) por tarea. -->
+- **Size budget**: Tasks artifact MUST be under 800 words. Each task: the `- [ ]` line + one indented `criteria:` sub-line (max 2 lines total). Use checklist format, not paragraphs.
 - **Review workload guard**: ALWAYS include the Review Workload Forecast. If likely above 400 changed lines, recommend chained PRs and honor the received delivery strategy for whether a decision/exception is needed before apply.
 - Return envelope per **Section D** from `skills/_shared/sdd-phase-common.md`.

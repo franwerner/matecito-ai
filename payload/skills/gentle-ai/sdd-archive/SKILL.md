@@ -32,6 +32,7 @@ From the orchestrator:
 
 - **engram**: Read `sdd/{change-name}/proposal`, `sdd/{change-name}/spec`, `sdd/{change-name}/design`, `sdd/{change-name}/tasks`, `sdd/{change-name}/verify-report` (all required). Record all observation IDs in the archive report for traceability. Save as `sdd/{change-name}/archive-report`.
 - **none**: Return closure summary only. Do not perform archive file operations.
+<!-- matecito-ai: ADRs (any status, incl. Inferred) live ONLY in their `.md` under `.matecito-ai/adr/` — never in Engram or the archive-report. This step MUST NOT add an Inferred-ADR listing. Guard prevents regeneration from re-introducing an inclusion hook. -->
 
 ## What to Do
 

@@ -60,7 +60,7 @@ Motor de DB (`postgresql.md`, `mongodb.md`, `mysql.md`, `sqlite.md`), ORM o quer
 
 ## Qué materializar
 
-ADR `data-access` materializado según el template `../../templates/adr.md`. La **Decisión** captura: nivel de abstracción sobre la DB (ORM / query builder / raw SQL / mix), si hay patrón Repository y para qué entidades, la herramienta de migraciones, y dónde se inician las transacciones. Si hay mix (ej: ORM para CRUD + raw para reportes), documentar el criterio concreto para elegir cuándo usar cada uno. Registrar como tech el motor de DB, el ORM/query builder y la herramienta de migraciones si es separada.
+ADR `data-access` materializado según el template `~/.claude/references/adr/templates/adr.md`. La **Decisión** captura: nivel de abstracción sobre la DB (ORM / query builder / raw SQL / mix), si hay patrón Repository y para qué entidades, la herramienta de migraciones, y dónde se inician las transacciones. Si hay mix (ej: ORM para CRUD + raw para reportes), documentar el criterio concreto para elegir cuándo usar cada uno. Registrar como tech el motor de DB, el ORM/query builder y la herramienta de migraciones si es separada.
 
 **Reglas verificables** (cada una con su mecanismo al inicio):
 

@@ -52,7 +52,7 @@ Una o dos, según haga falta.
 
 ## Qué materializar
 
-ADR `data-modeling` materializado según el template `../../templates/adr.md`. La **Decisión** captura: tipo de ID elegido y su justificación (autoincrement / UUID v4 / UUID v7 / ULID-CUID2), la política de borrado (físico vs soft delete con razón), la convención de timestamps, y la estrategia de multitenancy si aplica.
+ADR `data-modeling` materializado según el template `~/.claude/references/adr/templates/adr.md`. La **Decisión** captura: tipo de ID elegido y su justificación (autoincrement / UUID v4 / UUID v7 / ULID-CUID2), la política de borrado (físico vs soft delete con razón), la convención de timestamps, y la estrategia de multitenancy si aplica.
 
 **Reglas verificables** (cada una con su mecanismo al inicio):
 

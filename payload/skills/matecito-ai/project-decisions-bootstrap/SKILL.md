@@ -13,6 +13,12 @@ El objetivo es que las decisiones queden **registradas y verificables**, no impl
 
 ---
 
+## Qué es (y qué no es) un ADR
+
+El concepto canónico —qué cuenta como ADR y qué no, y la diferencia entre un ADR en borrador (inferido) y uno aceptado— vive en `~/.claude/references/adr/README.md` (referencia consultable, agnóstica de cualquier flujo o skill). bootstrap **aplica** ese concepto; no lo redefine. La *estructura* concreta del archivo ADR está en `~/.claude/references/adr/templates/adr.md`.
+
+---
+
 ## Arquitectura de esta skill
 
 La skill está partida en **motor** y **datos**:
@@ -247,10 +253,10 @@ Naming: `<nombre-en-kebab-case>.md`, sin prefijos numéricos.
 
 ### Templates de tech
 
-Los templates canónicos viven en `templates/`, un archivo por artefacto:
+Los templates de estructura de ADR viven en la referencia canónica `~/.claude/references/adr/templates/`, un archivo por artefacto:
 
-- Mini-ADR de tecnología → [`templates/tech-adr.md`](templates/tech-adr.md)
-- INDEX del catálogo (`.matecito-ai/adr/tech/INDEX.md`) → [`templates/tech-index.md`](templates/tech-index.md)
+- Mini-ADR de tecnología → `~/.claude/references/adr/templates/tech-adr.md`
+- INDEX del catálogo (`.matecito-ai/adr/tech/INDEX.md`) → `~/.claude/references/adr/templates/tech-index.md`
 
 Las categorías sin filas en el INDEX se dejan vacías para que se vean los huecos.
 
@@ -296,18 +302,18 @@ Reglas de la estructura:
 
 ### Paso 3: Templates
 
-Los templates de salida son el **contrato canónico** y viven en [`templates/`](templates/), un archivo por artefacto (índice en [`templates/INDEX.md`](templates/INDEX.md)). No se duplican acá: antes de materializar, leé el template del artefacto que vas a escribir.
+Los templates de estructura de ADR son el **contrato canónico** y viven en la referencia `~/.claude/references/adr/templates/` (índice en `~/.claude/references/adr/templates/INDEX.md`). El template del `CLAUDE.md` raíz es propio de bootstrap y vive en `templates/claude-md.md`. No se duplican acá: antes de materializar, leé el template del artefacto que vas a escribir.
 
 | Artefacto | Template |
 |---|---|
-| ADR individual (`<dominio>/<slug>.md`) | [`templates/adr.md`](templates/adr.md) |
-| Índice raíz (`adr/INDEX.md`) | [`templates/index-root.md`](templates/index-root.md) |
-| Índice de dominio (`adr/<dominio>/INDEX.md`) | [`templates/index-domain.md`](templates/index-domain.md) |
-| Mini-ADR de tecnología (`adr/tech/<nombre>.md`) | [`templates/tech-adr.md`](templates/tech-adr.md) |
-| Índice de tech (`adr/tech/INDEX.md`) | [`templates/tech-index.md`](templates/tech-index.md) |
+| ADR individual (`<dominio>/<slug>.md`) | `~/.claude/references/adr/templates/adr.md` |
+| Índice raíz (`adr/INDEX.md`) | `~/.claude/references/adr/templates/index-root.md` |
+| Índice de dominio (`adr/<dominio>/INDEX.md`) | `~/.claude/references/adr/templates/index-domain.md` |
+| Mini-ADR de tecnología (`adr/tech/<nombre>.md`) | `~/.claude/references/adr/templates/tech-adr.md` |
+| Índice de tech (`adr/tech/INDEX.md`) | `~/.claude/references/adr/templates/tech-index.md` |
 | `CLAUDE.md` raíz | [`templates/claude-md.md`](templates/claude-md.md) |
 
-Notas del contrato del ADR (también en `templates/adr.md`): **no hay sección `Historial`** (lo lleva git; la evolución se ve en la cadena de `Superseded`); **links entre ADRs** — dentro del mismo dominio ruta corta (`<slug>.md`), entre dominios ruta relativa (`../<dominio>/<slug>.md`).
+Notas del contrato del ADR (también en `~/.claude/references/adr/templates/adr.md`): **no hay sección `Historial`** (lo lleva git; la evolución se ve en la cadena de `Superseded`); **links entre ADRs** — dentro del mismo dominio ruta corta (`<slug>.md`), entre dominios ruta relativa (`../<dominio>/<slug>.md`).
 
 ### Paso 4: Escribir y reportar
 
@@ -331,11 +337,13 @@ Notas del contrato del ADR (también en `templates/adr.md`): **no hay sección `
 ## Modo update (cuando `.matecito-ai/adr/INDEX.md` ya existe)
 
 1. **Leé el índice raíz, los índices de dominio y los ADRs** existentes (`find .matecito-ai/adr -name '*.md'`).
-2. **Mostrá un resumen agrupado por dominio y, dentro de cada uno, por status:** `Accepted`, `Pending` (con trigger), `Not Applicable` (con razón), `Deferred`.
+2. **Mostrá un resumen agrupado por dominio y, dentro de cada uno, por status:** `Accepted`, `Pending` (con trigger), `Deferred`, `Not Applicable` (con razón), `Inferred` (borrador minado del código, sin porqué).
 3. **Preguntá si algún `Pending` o `Deferred` ya está listo para resolverse.** Es lo más importante del modo update — sin esto, los "lo decidimos después" se pierden.
+3b. **Ratificá los `Inferred` (borradores minados del código).** Un `Inferred` tiene el QUÉ y la evidencia, pero el PORQUÉ vacío — es un candidato sin ratificar (ver `~/.claude/references/adr/README.md`). Por cada uno, ofrecé ratificarlo: entrevistá por el porqué (Contexto, Decisión razonada, Alternativas, Consecuencias), llená esas secciones, **descartá la sección `## Evidencia (inferida)`** (es transitoria), y cambiá `Status: Inferred → Accepted`. Si el usuario no quiere ratificarlo ahora, queda `Inferred` (no se pierde). NUNCA promuevas un `Inferred` sin la entrevista del porqué — eso es lo que lo convierte en decisión.
 4. **Ratchet — barré el catálogo:** leé `concerns/INDEX.md`, listá las fases relevantes al tipo de proyecto que **no tengan ADR todavía** (típicamente fases nuevas agregadas al catálogo desde la última corrida) y ofrecé tratarlas ahora. Mostralas agrupadas por dominio, incluyendo si caen en un dominio que el proyecto todavía no usa (esa carpeta se crea recién al materializar el primer ADR). Esta es la forma de que los temas agregados al catálogo lleguen a proyectos viejos.
 5. **Después preguntá qué más quiere hacer:**
    - **Resolver un Pending/Deferred** → recorrer las preguntas de esa fase, cambiar Status a `Accepted`, llenar contenido.
+   - **Ratificar un `Inferred`** → entrevistar por el porqué, llenar Contexto/Decisión/Alternativas/Consecuencias, descartar `## Evidencia (inferida)`, `Status → Accepted`.
    - **Actualizar una decisión (cambio menor)** → editar el ADR. Git lleva el historial.
    - **Cambiar una decisión (cambio de fondo)** → crear ADR nuevo en el mismo dominio, marcar el viejo `Superseded` con link al nuevo. No editar la decisión vieja en el lugar.
    - **Agregar una decisión nueva** no cubierta → crear ADR en su dominio + fila en el índice de ese dominio (y en el raíz si el dominio es nuevo en el proyecto).

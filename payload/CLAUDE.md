@@ -57,6 +57,7 @@ This project runs inside the matecito-ai ecosystem. Apply these defaults:
 - **ADR activation gate (presence-based) — single source of truth.** ADRs are **active only when `.matecito-ai/adr/` exists and has content** (an `INDEX.md` or at least one ADR). Absent or empty → ADRs are **inactive**: every SDD phase skips them **silently** — no early guard, no ADR alignment, no mention at all. Phases check this gate; they do not re-decide it.
 - **Session memory lives in Engram** (discoveries, fixes, context) — persistent across sessions. Architectural decisions go to ADRs, not Engram; don't duplicate.
 - **Code exploration prefers CodeGraph** when `.codegraph/` exists (structural questions); grep for literal text or non-indexed files.
+- **ADR concept canonical definition lives in `~/.claude/references/adr/README.md`** (consultable reference, not a skill, flow-agnostic). It defines what IS and what is NOT an ADR, and the draft(inferred)/accepted distinction. Any skill or agent that works with ADRs applies this concept; it does not redefine it. The ADR file *structure* lives separately in the ADR template.
 - **Design patterns canonical catalog lives in `~/.claude/references/design-patterns/`** (consultable reference, not a skill). When an ADR declares `Applied pattern: X`, the canonical definition is at `~/.claude/references/design-patterns/patterns/<x>.md`. Consult it before implementing to know the pattern's contract; if you deviate from the canonical definition, justify it in the ADR.
 - **Architecture diagrams via drawio (`mcp__drawio__*`) — single source of truth for when to draw.** Diagrams are generated **on demand, never automatically**, and only when the change has structural complexity worth visualizing. **Diagram inference test — generate when** the change introduces or rewires ≥3-4 components with relationships, data flow crosses boundaries (layers/services/new modules), there is a non-trivial process with branches or states, or the task is to understand existing code spread across many files (CodeGraph can feed the graph) — **plus** capturing the shape of an architectural decision (ADR). **Do NOT generate** for a bugfix, rename, config tweak, single-file/single-function change, or linear logic — there prose or a snippet is clearer. **Model — offer-and-confirm, never unilateral.** **Decide vs generate (timing):** the structure does not exist yet at intake, so `sdd-intake` only *decides* — it sets `diagram: needed | not-needed` in the brief per this test, and the user confirms it at the **INTAKE GATE** (that gate IS the confirmation for the in-flow case; no re-ask later). Generation happens where the structure exists: `sdd-design` exports a `.drawio` artifact when the flag is `needed` (headless — no live preview; open the file to view), or in a `direct` lane / outside the SDD flow the main thread offers-and-confirms and generates ad-hoc with live preview at `localhost:6002`. Outside the flow, apply this same test before offering.
 
@@ -99,10 +100,13 @@ Pass the resolved value as the Task tool's `model` parameter. If a config file i
 
 **Strict TDD resolution (only relevant for `sdd-apply` / `sdd-verify`):** same precedence — per-project `strictTdd` → global `strictTdd` → `false`. If effective `strictTdd` is true, add to the agent prompt: "STRICT TDD MODE IS ACTIVE. Test runner: {test_command}. Follow strict-tdd.md." The `{test_command}` comes from `sdd/{project}/testing-capabilities` in Engram.
 
+**`flagDecisionGaps` resolution (only relevant for `sdd-tasks` / `sdd-verify` / boundary dispatch):** same precedence — per-project `flagDecisionGaps` → global `flagDecisionGaps` → `false`. Resolve once per session, cache. The gate is INTENT (the flag), NOT ADR presence: when resolved `true`, `sdd-tasks` runs the decision-gap detection hook (dangling `· adr:` refs), `sdd-verify` runs the confirmation hook and emits `## Decision Gaps`, and the orchestrator evaluates the mine gate post-verify (see Decision-Gap Capture note below) — this works even when `.matecito-ai/adr/` does not exist yet (every decision-touching task is then a gap, and mine bootstraps the first ADRs through the confirm gate). When resolved `false`: all three hooks are silently skipped — no output, no mention, behavior identical to before this flag existed.
+
 **Pre-flight checklist (MANDATORY before every `sdd-*` dispatch):**
 - [ ] Read both config files (per-project, then global).
 - [ ] Resolve `model` by the precedence above; omit the param if unresolved.
 - [ ] For `sdd-apply`/`sdd-verify`: resolve `strictTdd` and inject the prompt line if true.
+- [ ] For `sdd-tasks`/`sdd-verify`: resolve `flagDecisionGaps`; cache for boundary dispatch evaluation.
 <!-- /matecito-ai:behavior -->
 
 
@@ -341,6 +345,23 @@ Each phase returns: `status`, `executive_summary`, `artifacts`, `next_recommende
 ### Review Workload Guard (MANDATORY)
 
 After `sdd-tasks` and before `sdd-apply`, inspect `Review Workload Forecast`. If chained PRs recommended / 400-line budget risk High / decision needed → apply cached `delivery_strategy` (`ask-on-risk` default: STOP and ask chained PRs vs `size:exception`). Automatic mode does not override this guard.
+
+<!-- matecito-ai: Decision-Gap Capture (mine gate) — conditional boundary dispatch after sdd-verify -->
+### Decision-Gap Capture (mine gate)
+
+After `sdd-verify` returns, evaluate this gate **before** dispatching `sdd-archive`:
+
+**Trigger condition:** `flagDecisionGaps` resolved `true` AND the verify-report contains a `## Decision Gaps` section with at least one row where `implemented? = yes`.
+
+**When triggered:** build the gap list — each item = `domain/slug` (from the `## Decision Gaps` rows where `implemented? = yes`) + the implementing task + any `## Alcance` hint from the tasks artifact + repo root — and pass it as the **scope** to the `project-decisions-mine` executor. The executor is **mode-agnostic** (`scope → candidates[]`): it does NOT read the flag and does NOT branch on a "mode" — being handed a gap-list scope IS the instruction. It mines the shipped code (strong evidence) and returns `candidates[]`.
+
+**Scale (many gaps):** if the gap list is large, split it into batches and dispatch **several executors in parallel**, each with a slice of the scope; then **merge their `candidates[]` and dedup by `domain/slug`** (parallel executors or distinct gaps may propose the same) before the gate.
+
+**Gate (main thread):** present candidates ordered by confidence, grouped by domain, with a summary first ("N high / M to review / K questions") and bulk actions (accept-all-high / per-domain / per-item); for many, present in rounds by domain. Nothing is written without explicit confirm (Automatic mode does NOT skip this gate). Confirmed candidates are materialized as `[Inferred]` `.md` ADRs — write the files and update `.matecito-ai/adr/INDEX.md` **once at the end**; the ADRs live ONLY as `.md`, never recorded in Engram. Then proceed to `sdd-archive`.
+
+**When NOT triggered** (flag off, or no implemented gaps): skip silently — proceed directly to `sdd-archive` with no mention of this gate. This gate NEVER blocks archive when the condition is not met. (ADR absence does NOT skip the gate: with no ADRs, every decision-touching task is a gap, and mine bootstraps the first ADRs through the confirm gate.)
+
+**Invariant:** the mine executor NEVER writes ADRs directly; the gate and materialize step require explicit user confirmation in the main thread. Automatic mode does NOT skip the candidate gate — it is always user-confirmed (same pattern as the INTAKE GATE).
 
 ### Sub-Agent Launch Pattern
 

@@ -31,7 +31,7 @@ Qué orígenes pueden hacer requests cross-origin a la API y si se permiten cred
 
 ## Qué materializar
 
-ADR `cors` materializado según `../../templates/adr.md`. Esta es una decisión de tipo `policy`; sus reglas deben quedar especialmente accionables. Debe contener:
+ADR `cors` materializado según `~/.claude/references/adr/templates/adr.md`. Esta es una decisión de tipo `policy`; sus reglas deben quedar especialmente accionables. Debe contener:
 
 - **Contexto**: si la API es consumida por browsers, y por qué OWASP ASVS 14.5.3 exige validación explícita del origen.
 - **Decisión**: lista de orígenes permitidos (o el criterio de allowlist dinámico), si se permiten credenciales, métodos y headers habilitados, y dónde se configura (middleware de la app vs config del reverse proxy).

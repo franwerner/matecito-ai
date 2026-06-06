@@ -78,7 +78,7 @@ Mostrá las reglas como lista en formato path/glob verificable y pedí confirmac
 
 ## Qué materializar
 
-ADR `layers-and-dependencies` materializado según `../../templates/adr.md`. Debe contener:
+ADR `layers-and-dependencies` materializado según `~/.claude/references/adr/templates/adr.md`. Debe contener:
 
 - **Contexto** y **Decisión**: lista de capas con nombre de carpeta y responsabilidad de cada una.
 - **Reglas verificables**: las reglas de dependencia escritas como paths/globs (qué puede importar qué, qué está explícitamente prohibido), cada una como aserción con su mecanismo al inicio según la herramienta de enforcement elegida o disponible. Ej: `[tool: dependency-cruiser]` ningún import desde `src/presentation/**` hacia `src/infrastructure/**`; `[tool: import-linter]` `src/domain/**` solo importa de `src/domain/**`; `[tool: ArchUnit]` para Java. Usá `[manual]` solo si no hay herramienta disponible todavía. Nombrá la herramienta concreta (`import-linter` / `dependency-cruiser` / `ArchUnit` / `deptrac`) en cada `[tool: ...]` para que en sesiones futuras se sepa cómo verificar las reglas.

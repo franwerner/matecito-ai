@@ -58,7 +58,7 @@ Si se eligió un container de DI externo: `dependency-injector.md`, `awilix.md`,
 
 ## Qué materializar
 
-ADR `dependency-injection` materializado según `../../templates/adr.md`. Debe contener:
+ADR `dependency-injection` materializado según `~/.claude/references/adr/templates/adr.md`. Debe contener:
 
 - **Contexto** y **Decisión**: mecanismo elegido (manual / container / framework), librería específica si aplica (`dependency-injector`, `awilix`, `tsyringe`, Spring IoC, etc.), scopes por tipo de componente (servicio, repository, unit of work), y — si es composition root manual — dónde vive y quién es responsable de armarlo.
 - **Reglas verificables**: las reglas de scope como aserciones con su mecanismo al inicio, no como intención vaga. Ej: `[manual]` todo `Service` se registra como singleton; `[manual]` todo `Repository` y unit of work es scoped al request; `[tool: <linter/test>]` si la convención de registro es chequeable por la librería de DI o un test de wiring. Conservá los valores concretos de scope por tipo de componente.

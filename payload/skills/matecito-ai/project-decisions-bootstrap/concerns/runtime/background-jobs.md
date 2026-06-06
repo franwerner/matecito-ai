@@ -44,7 +44,7 @@ Si se elige una librería o broker concreto (ej: `celery.md`, `bullmq.md`, `rabb
 
 ## Qué materializar
 
-ADR `background-jobs` materializado según el template `../../templates/adr.md`. La **Decisión** captura: mecanismo elegido (ninguno / cola de mensajes / queue in-process / scheduler), broker o librería concreta si aplica, estrategia de reintentos y dead-letter, y si los workers corren como procesos separados del proceso web (12-factor VIII/IX).
+ADR `background-jobs` materializado según el template `~/.claude/references/adr/templates/adr.md`. La **Decisión** captura: mecanismo elegido (ninguno / cola de mensajes / queue in-process / scheduler), broker o librería concreta si aplica, estrategia de reintentos y dead-letter, y si los workers corren como procesos separados del proceso web (12-factor VIII/IX).
 
 **Reglas verificables** (cada una con su mecanismo al inicio):
 

@@ -69,7 +69,7 @@ Librería de auth si se usa una específica (`passport.md`, `authlib.md`, `next-
 
 ## Qué materializar
 
-ADR `auth` materializado según `../../templates/adr.md`. Debe contener:
+ADR `auth` materializado según `~/.claude/references/adr/templates/adr.md`. Debe contener:
 
 - **Contexto**: tipo de clientes (web/API/integración), nivel de sensibilidad de los datos, y por qué este mecanismo es difícil de migrar una vez que hay usuarios en producción.
 - **Decisión**: mecanismo de autenticación elegido y sus valores; modelo de permisos con descripción de los roles si aplica; dónde y cómo se valida (middleware/guard centralizado, decorator por endpoint, o manual); política de tokens/sesiones con las duraciones escritas como valores concretos, no como "corta duración".

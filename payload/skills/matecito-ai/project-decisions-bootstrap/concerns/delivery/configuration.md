@@ -38,7 +38,7 @@ Si se elige una librería de config tipada (ej: `pydantic-settings` para Python,
 
 ## Qué materializar
 
-ADR `configuration` materializado según `../../templates/adr.md`. Debe contener:
+ADR `configuration` materializado según `~/.claude/references/adr/templates/adr.md`. Debe contener:
 
 - **Contexto** y **Decisión**: mecanismo de configuración elegido (env vars puras / `.env` + env vars / archivos por entorno), qué archivos se commitean y cuáles no, si hay validación al startup, y la librería de schema tipado si aplica (`pydantic-settings`, `zod` + `dotenv`, `viper`, etc.).
 - **Reglas verificables**: cada política como aserción con su mecanismo al inicio. Ej: `[tool: <gitignore/CI check>]` `.env` está en `.gitignore` y nunca se commitea; `[tool: <schema lib>]` la app valida y tipa la config al arranque y aborta con mensaje claro si falta una variable; `[manual]` las variables por entorno viven en env vars como fuente de verdad, `.env` solo para desarrollo local. Nombrá la librería elegida en el `[tool: ...]` de la validación.

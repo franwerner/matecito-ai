@@ -31,7 +31,7 @@ Qué expone la librería como superficie pública, cómo se versiona, y cuál es
 
 ## Qué materializar
 
-ADR `library-contract` materializado según `../../templates/adr.md`. Debe contener:
+ADR `library-contract` materializado según `~/.claude/references/adr/templates/adr.md`. Debe contener:
 
 - **Contexto**: por qué sin una API pública declarada cualquier cambio interno puede romper consumidores, y por qué semver sin disciplina pierde su significado como contrato.
 - **Decisión**: definición de la superficie pública (cómo se marca / dónde vive el index de exports), política de semver (qué cuenta como breaking change: major = breaking, minor = additive, patch = fix), ciclo de deprecación, y si existe changelog generado automáticamente (conventional commits + release tooling).

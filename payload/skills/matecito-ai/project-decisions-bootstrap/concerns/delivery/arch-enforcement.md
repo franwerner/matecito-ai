@@ -48,7 +48,7 @@ La herramienta elegida (ej: `import-linter.md`, `dependency-cruiser.md`, `archun
 
 > **Nota sobre el artefacto.** Esta fase es de las pocas cuyo output incluye un archivo de configuración ejecutable, no solo una decisión escrita. El ADR documenta *qué* se decidió; la **config concreta del linter la escribe el agente en el repo** al implementar, traduciendo las reglas reales del ADR `layers-and-dependencies` a la sintaxis de la herramienta elegida. El concern NO trae plantillas de config hardcodeadas — eso es trabajo de implementación, guiado por el ADR.
 
-ADR `arch-enforcement` materializado según `../../templates/adr.md`. Debe contener:
+ADR `arch-enforcement` materializado según `~/.claude/references/adr/templates/adr.md`. Debe contener:
 
 - **Contexto** y **Decisión**: la herramienta de enforcement elegida y por qué (normalmente el default del stack), si corre en CI bloqueando el merge / solo localmente / todavía no, y la referencia al ADR `layers-and-dependencies` como origen de las reglas que el linter traduce (no duplicar las reglas acá).
 - **Reglas verificables**: expresá las garantías que da esta decisión como aserciones con su mecanismo al inicio, nombrando la herramienta elegida. Ej: `[tool: dependency-cruiser]` el step de arch-lint corre en CI y bloquea el merge ante cualquier violación; `[tool: import-linter]` la config existe en su ubicación esperada y el comando definido la ejecuta. Usá `[manual]` solo si por ahora es convención documentada sin check.

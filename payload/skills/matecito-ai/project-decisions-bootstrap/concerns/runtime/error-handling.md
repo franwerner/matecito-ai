@@ -69,7 +69,7 @@ Si se elige una librería específica de Result/errores (ej: `returns` en Python
 
 ## Qué materializar
 
-ADR `error-handling` materializado según el template `../../templates/adr.md`. La **Decisión** captura: estilo de errores elegido (excepciones / Result-Either / mix pragmático), dónde se hace boundary handling (middleware global / por controller / mix), la jerarquía de errores de dominio con nombres concretos si aplica (`UserNotFoundError`, `InsufficientFundsError`), el formato de respuesta de error, y la tech registrada si se eligió una librería de Result.
+ADR `error-handling` materializado según el template `~/.claude/references/adr/templates/adr.md`. La **Decisión** captura: estilo de errores elegido (excepciones / Result-Either / mix pragmático), dónde se hace boundary handling (middleware global / por controller / mix), la jerarquía de errores de dominio con nombres concretos si aplica (`UserNotFoundError`, `InsufficientFundsError`), el formato de respuesta de error, y la tech registrada si se eligió una librería de Result.
 
 **Reglas verificables** (cada una con su mecanismo al inicio):
 

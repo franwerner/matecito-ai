@@ -32,6 +32,7 @@ Dominios reservados (aparecen solo si el proyecto los pobló vía ratchet): `lif
 ### Completitud
 
 - **[WARNING]** Una fase relevante para el tipo de proyecto no tiene ADR (ni siquiera `Not Applicable`). Hueco silencioso. *(Requiere la lista de fases relevantes o el catálogo `concerns/INDEX.md`; si no están disponibles, marcar como "no verificable".)*
+- **[NOTA — Inferred]** ADRs con `Status: Inferred` NO cierran la preocupación: no los contés como decisión tomada en el conteo de completitud; no reportes como defecto las secciones WHY/Consecuencias/Reglas vacías (esperadas en Inferred); sí verificá que `## Alcance` siga matcheando (ancla de drift). Un Inferred convive con un WARNING de completitud si la preocupación sigue sin una decisión `Accepted`.
 
 ### Higiene de status
 

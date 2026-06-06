@@ -46,7 +46,7 @@ Librería de instrumentación si se elige una concreta (ej: `prometheus-client.m
 
 ## Qué materializar
 
-ADR `metrics` materializado según el template `../../templates/adr.md`. La **Decisión** captura: modelo elegido (RED / USE / negocio / ninguno), formato de exposición (Prometheus pull / OTLP push / cloud-native), destino de almacenamiento, y las métricas concretas iniciales si se definieron (ej: `http_requests_total`, `http_request_duration_seconds`, `db_pool_connections_active`).
+ADR `metrics` materializado según el template `~/.claude/references/adr/templates/adr.md`. La **Decisión** captura: modelo elegido (RED / USE / negocio / ninguno), formato de exposición (Prometheus pull / OTLP push / cloud-native), destino de almacenamiento, y las métricas concretas iniciales si se definieron (ej: `http_requests_total`, `http_request_duration_seconds`, `db_pool_connections_active`).
 
 **Reglas verificables** (cada una con su mecanismo al inicio):
 

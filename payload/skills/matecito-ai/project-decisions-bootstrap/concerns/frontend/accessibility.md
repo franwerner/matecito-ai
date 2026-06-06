@@ -40,7 +40,7 @@ Si se elige un linter o librería de testing de a11y (ej: `eslint-plugin-jsx-a11
 
 ## Qué materializar
 
-ADR `accessibility` materializado según el template `../../templates/adr.md`.
+ADR `accessibility` materializado según el template `~/.claude/references/adr/templates/adr.md`.
 
 - **Contexto:** por qué importa la accesibilidad en este proyecto (obligación legal aplicable, tipo de usuarios) y el nivel WCAG objetivo elegido (2.2 A | AA | AAA, o "sin objetivo formal por ahora").
 - **Decisión:** nivel de conformidad objetivo y el mecanismo de verificación elegido (linter estático, testing con axe-core, ambos, revisión manual).

@@ -36,7 +36,7 @@ Si se elige una librería de parsing, registrarla en el catálogo `tech/`.
 
 ## Qué materializar
 
-ADR `cli-contract` materializado según `../../templates/adr.md`. Debe contener:
+ADR `cli-contract` materializado según `~/.claude/references/adr/templates/adr.md`. Debe contener:
 
 - **Contexto**: por qué un CLI sin exit codes correctos no se integra en scripts o pipelines, y por qué mezclar datos y errores en stdout rompe el parseo downstream.
 - **Decisión**: librería de parsing elegida (ej. cobra, click, commander, clap) o parsing manual, tabla de exit codes (0 = éxito, 1 = error genérico, y cualquier código semántico adicional), política de stdout vs stderr (datos vs diagnóstico/errores), y formato de output estándar (texto plano, JSON con `--json`, o mix).

@@ -44,7 +44,7 @@ Si se elige Redis / Memcached u otra herramienta, registrala en el catálogo `te
 
 ## Qué materializar
 
-ADR `caching` materializado según el template `../../templates/adr.md`. La **Decisión** captura: qué se cachea y qué no, la capa elegida (in-memory / distribuido / CDN-HTTP), la estrategia de invalidación (TTL fijo / por evento / mix) y los TTLs concretos si se definieron.
+ADR `caching` materializado según el template `~/.claude/references/adr/templates/adr.md`. La **Decisión** captura: qué se cachea y qué no, la capa elegida (in-memory / distribuido / CDN-HTTP), la estrategia de invalidación (TTL fijo / por evento / mix) y los TTLs concretos si se definieron.
 
 **Reglas verificables** (cada una con su mecanismo al inicio):
 

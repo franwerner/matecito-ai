@@ -21,6 +21,10 @@ Execute all steps from the skill directly in this context window:
 2. Read design artifact if present: `mem_search("sdd/{change-name}/design")` → if found, `mem_get_observation`; if absent (custom lane without design), decompose from the spec alone
 3. Decompose work into ordered tasks (small enough to ship in isolation)
 4. Link each task to the spec requirement it satisfies
+<!-- matecito-ai: each task declares a verifiable `criteria:` (mandatory, consumed by verify) and, only when ADRs are active and the task touches a decision, `· adr: <domain>/<slug>` (optional, slug-based). If `.matecito-ai/adr/` is absent or empty, omit the adr part; criteria is always required. matecito-ai never requires an ADR. Keep the `- [ ]` so apply marks progress. -->
+4b. Add a verifiable `criteria:` sub-line per task; add an optional `· adr:` ref only when the task touches an active decision
+<!-- matecito-ai: decision-gap detection — ONLY when flagDecisionGaps=true (does NOT depend on ADRs existing). With the flag ON, emit `· adr: <domain>/<slug>` (mapped to a concern) for each task that touches a decision, whether or not the ADR exists — overrides the flag-off rule of "omit adr if there is no .matecito-ai/adr/". Then, for each `· adr:`, check whether `.matecito-ai/adr/<domain>/<slug>.md` exists; if NOT, it is a decision gap: the dangling ref stays in the artifact as-is (do not delete or mark it). The set of dangling refs IS the gap list. With zero ADRs, every decision is a gap (bootstrap). When flag off: behavior exactly as today, no mention. -->
+4c. (Decision-gap detection) When `flagDecisionGaps=true` (regardless of ADR presence): emit a concern-mapped `· adr:` for each decision-touching task even with no ADRs yet; then for each `· adr:`, if `.matecito-ai/adr/<domain>/<slug>.md` does not exist it is a flagged decision gap — carry it verbatim. Silent when flag off.
 5. Mark which tasks can run in parallel vs sequential
 6. Persist tasks to active backend
 

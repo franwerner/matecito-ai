@@ -36,7 +36,7 @@ Dónde y cómo corre la aplicación en producción: unidad de ejecución, cantid
 
 ## Qué materializar
 
-ADR `deployment-topology` materializado según `../../templates/adr.md`. Debe contener:
+ADR `deployment-topology` materializado según `~/.claude/references/adr/templates/adr.md`. Debe contener:
 
 - **Contexto** y **Decisión**: unidad de ejecución elegida (container / serverless / VM / PaaS), cantidad de instancias prevista, si el proceso es stateless o no, y la consecuencia directa sobre cómo se guarda estado de sesión o cache.
 - **Reglas verificables**: las invariantes operacionales como aserciones con su mecanismo al inicio. Ej: `[manual]` el proceso no guarda estado de sesión en memoria; sesión y cache viven en un store externo; `[tool: <test/health check>]` el proceso arranca y queda listo sin dependencias de instancia local. Conservá los valores concretos (unidad, nº de instancias, stateless/stateful).

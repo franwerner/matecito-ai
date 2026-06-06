@@ -41,7 +41,7 @@ Si se elige un schema registry (Confluent Schema Registry, AWS Glue, etc.) o un 
 
 ## Qué materializar
 
-ADR `event-contract` materializado según `../../templates/adr.md`. Debe contener:
+ADR `event-contract` materializado según `~/.claude/references/adr/templates/adr.md`. Debe contener:
 
 - **Contexto**: por qué un evento sin schema versionado es un contrato implícito que rompe consumidores sin aviso, y qué aporta un envelope estándar (CloudEvents) para routing, logging y tracing.
 - **Decisión**: formato de schema y herramienta de validación (JSON Schema, Avro, Protobuf, CloudEvents), convención de naming de tipos de evento (ej. `order.created.v1`), estrategia de versionado (versión en el tipo vs campo de versión en el payload), política de idempotencia del consumidor (deduplicación por `eventId`, operaciones naturalmente idempotentes, o exactly-once del broker), y política de backward compatibility.

@@ -41,7 +41,7 @@ Definí al menos uno de estos (dejá en blanco los que no apliquen):
 
 ## Qué materializar
 
-ADR `nfr-performance` materializado según el template `../../templates/adr.md`.
+ADR `nfr-performance` materializado según el template `~/.claude/references/adr/templates/adr.md`.
 
 - **Contexto:** por qué se fijan objetivos de performance (expectativa de carga, criticidad del flujo) y bajo qué condiciones de medición se entienden.
 - **Decisión:** los objetivos cuantitativos acordados, el endpoint o flujo de referencia para medirlos, y el mecanismo de detección de regresión elegido.
