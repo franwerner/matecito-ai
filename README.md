@@ -38,7 +38,7 @@ Sobre eso corre un **flujo de desarrollo guiado (SDD)** que lleva cada cambio de
 | **Referencia** | `design-patterns`             | Catálogo canónico de patrones de diseño consultable. Los ADRs lo citan por nombre; `sdd-design` lo respeta cuando un ADR declara `Patrón aplicado`. |
 | **MCP**        | `codegraph`                   | Grafo de código pre-indexado (tree-sitter + SQLite) para explorar por estructura.                                                                   |
 | **MCP**        | `context7`                    | Documentación de librerías al día, contra APIs no alucinadas.                                                                                       |
-| **MCP**        | `drawio` _(next-ai-draw-io)_  | Diagramas de arquitectura (draw.io) on-demand: el flujo decide cuándo, `design` los genera y exporta como `.drawio`.                                |
+| **MCP**        | `drawio` _(next-ai-draw-io)_  | Diagramas de arquitectura on-demand y **efímeros**: el flujo decide cuándo y el thread principal los renderiza en vivo (`localhost:6002`). No se exporta ningún archivo al repo.                |
 | **CLI**        | `proofshot` _(AmElmo/proofshot)_ | Verificación visual de UI: graba el browser y valida los scenarios. `sdd-verify` la corre cuando el cambio toca UI y proofshot está disponible.   |
 | **Agentes**    | Sub-agentes del SDD           | Uno por fase, con contexto propio. Forkeados y modificados.                                                                                         |
 | **Engram**     | Memoria persistente           | SQLite standalone con descubrimientos, contexto y fixes entre sesiones.                                                                             |
@@ -55,7 +55,7 @@ intake → explore → propose → spec → design → tasks → apply → verif
 
 - **intake** es la fase de entrada: hace 2-4 preguntas para estructurar el pedido, lo clasifica, y produce un brief. El orquestador **siempre muestra ese brief y espera tu confirmación** antes de seguir.
 - **design** y **apply** leen los ADRs vigentes; **explore** usa codegraph; **apply** usa context7.
-- **intake** decide si el cambio amerita un **diagrama de arquitectura** según su complejidad estructural (varios componentes, flujo de datos cruzando límites, etc.) y lo marca en el brief; cuando lo amerita, **design** lo genera con `drawio` y lo exporta como `.drawio`. Nunca automático: se decide una vez y se confirma en el gate.
+- **intake** decide si el cambio amerita un **diagrama de arquitectura** según su complejidad estructural (varios componentes, flujo de datos cruzando límites, etc.) y lo marca en el brief; cuando lo amerita, el **thread principal** lo renderiza en vivo (efímero, sin archivo en el repo). Nunca automático: se decide una vez y se confirma en el gate.
 - Cuando un ADR declara `Patrón aplicado: X`, **design** consulta el catálogo `design-patterns` y respeta la definición canónica del patrón.
 - **intake** también decide si el cambio amerita **verificación visual de UI** (`ui-test`) según los scenarios; cuando aplica y proofshot está disponible, **verify** conduce el browser según los scenarios del spec, valida el estado en vivo y chequea errores de consola/servidor. Capability-gated: si proofshot o el dev-server no están, se saltea en silencio.
 - **verify** confirma que el cambio no viole los ADRs que tocó.
@@ -142,7 +142,9 @@ Se editan desde la TUI (`matecito-ai`) y controlan:
 
 ## Documentación
 
+- [Guía del flujo SDD](docs/guide/README.md) — cómo funciona todo de punta a punta: las fases, las herramientas, y la capa de decisiones (bootstrap / validate / mine).
 - [PRD](docs/PRD.md) — documento de producto del ecosistema.
+- [Guía: agregar una dependencia](docs/workflow-dependecy.md) — cómo integrar una pieza nueva al ecosistema.
 
 ## Créditos
 
