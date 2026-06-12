@@ -79,7 +79,7 @@ func (m DecisionGapsModel) View() string {
 	sb.WriteString(marker + "flagDecisionGaps — " + styles.Dimmed.Render(state) + "\n\n")
 
 	sb.WriteString(styles.Dimmed.Render("  Detecta huecos de decisión en el flujo SDD y ofrece minarlos como ADRs Inferred.") + "\n")
-	sb.WriteString(styles.Dimmed.Render("  Solo actúa si además existe .matecito-ai/adr/ con contenido.") + "\n\n")
+	sb.WriteString(styles.Dimmed.Render("  El gate es este flag, no la presencia de ADRs: funciona aunque .matecito-ai/adr/ no exista (mina los primeros).") + "\n\n")
 
 	if m.original == nil {
 		sb.WriteString(styles.Dimmed.Render("  (hereda del config global / default: false)") + "\n\n")
