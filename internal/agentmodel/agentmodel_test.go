@@ -63,7 +63,7 @@ func TestReadModel(t *testing.T) {
 // --- IsValidModel / IsValidAgent ---
 
 func TestIsValidModel(t *testing.T) {
-	for _, m := range []string{"opus", "sonnet", "haiku"} {
+	for _, m := range []string{"opus", "sonnet", "haiku", "fable"} {
 		if !agentmodel.IsValidModel(m) {
 			t.Errorf("IsValidModel(%q) = false, want true", m)
 		}

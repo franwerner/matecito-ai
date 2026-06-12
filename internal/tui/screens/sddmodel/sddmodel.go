@@ -17,7 +17,7 @@ import (
 // nunca se persiste en config.json.
 const GlobalSentinel = "(global)"
 
-// AgentModelModel permite seleccionar el modelo (opus/sonnet/haiku) para cada
+// AgentModelModel permite seleccionar el modelo (opus/sonnet/haiku/fable) para cada
 // uno de los 10 agentes SDD. En Project scope ofrece además el estado "(global)"
 // que elimina el override per-proyecto al guardar.
 // q/Esc → guarda y vuelve. Ctrl+C → descarta sin guardar.
@@ -82,7 +82,7 @@ func New(globalCfg *agentmodel.Config, projectCfg *agentmodel.Config, configPath
 			if scope == agentmodel.ScopeProject {
 				m.models[agent] = GlobalSentinel
 			} else {
-				m.models[agent] = agentmodel.ValidModels[1] // sonnet
+				m.models[agent] = agentmodel.ValidModels[2] // sonnet
 			}
 		}
 	}
@@ -108,18 +108,17 @@ func (m AgentModelModel) Update(msg tea.Msg) (nav.ChildModel, tea.Cmd) {
 				m.cursor++
 			}
 
-		// ciclar modelo hacia adelante
-		case "right", "l", "2":
+		// ciclar modelo
+		case "right", "l":
 			m.cycleModel(1)
-
-		// ciclar modelo hacia atrás
-		case "left", "h", "1":
+		case "left", "h":
 			m.cycleModel(-1)
 
-		// selección directa por índice de ValidModels
-		case "3":
-			agent := agentmodel.Agents[m.cursor]
-			m.models[agent] = agentmodel.ValidModels[2]
+		// selección directa por índice de ValidModels (1-based: 1=fable … 4=haiku)
+		case "1", "2", "3", "4":
+			if idx := int(msg.String()[0] - '1'); idx < len(agentmodel.ValidModels) {
+				m.models[agentmodel.Agents[m.cursor]] = agentmodel.ValidModels[idx]
+			}
 
 		case "q", "esc":
 			return m, m.saveAndBack()
@@ -184,7 +183,7 @@ func (m AgentModelModel) View() string {
 	}
 
 	sb.WriteString("\n" + styles.Footer.Render(
-		"↑/↓ agente  ←/→ modelo  q/esc guardar  ctrl+c descartar",
+		"↑/↓ agente  ←/→ modelo  1-4 directo  q/esc guardar  ctrl+c descartar",
 	))
 	return sb.String()
 }
