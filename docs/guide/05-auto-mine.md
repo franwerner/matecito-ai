@@ -2,6 +2,8 @@
 
 [← 04 Decisiones y ADRs](04-decisiones-adr.md) · [Índice](README.md) · Siguiente: [06 — Herramientas →](06-herramientas.md)
 
+> Esta página describe el auto-mine de **ADRs**, el decision record del dominio **development**. El mecanismo (detectar gaps in-flow, opt-in vía `flagDecisionGaps`, materializar `Inferred` con confirmación) es del núcleo; otro dominio lo aplica a su propio tipo de record (p. ej. auto-mine de DDR en design).
+
 `mine` tiene dos modos, un mismo motor:
 
 - **Mode A — scan brownfield**: lo invocás explícitamente sobre un repo. Escanea todo y propone ADRs `Inferred`.

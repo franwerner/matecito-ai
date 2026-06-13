@@ -2,7 +2,9 @@
 
 [← 01 Overview](01-overview.md) · [Índice](README.md) · Siguiente: [03 — Las fases →](03-fases.md)
 
-El SDD (Spec-Driven Development) es la capa de planificación estructurada para cambios sustanciales. Lleva un pedido en lenguaje natural hasta el código, por fases.
+El SDD (Spec-Driven Development) es el **flujo del dominio development**: la capa de planificación estructurada para cambios sustanciales sobre un repo de código. Lleva un pedido en lenguaje natural hasta el código, por fases.
+
+> **Qué es del núcleo y qué de development.** El *esqueleto* —base inmutable + add-ons opcionales, las lanes, el INTAKE GATE, el modelo configurable por agente— lo aporta el **núcleo** y es común a todos los dominios. SDD es cómo development **nombra y concreta** ese esqueleto: las fases `sdd-*`, el artefacto de alineación (`spec`), los ADRs y codegraph. Otro dominio (p. ej. design) reusa el mismo esqueleto con sus propios nombres de fase y herramientas.
 
 ## El pipeline
 

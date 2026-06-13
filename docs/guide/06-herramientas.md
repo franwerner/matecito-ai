@@ -4,15 +4,17 @@
 
 Las herramientas (MCP y CLI) se enganchan en las fases donde aportan. El CLI `matecito-ai` se ocupa de instalarlas y mantener el entorno sano; cada una se usa con su propio binario/servidor.
 
+> **Nada es global — todo lo declara el dominio.** No hay herramientas "base" que se instalen siempre: cada dominio lista en su `manifest.json` los `mcp` y `binaries` que usa, y solo eso se instala (la unión de los dominios activos). development declara **engram, context7, codegraph, drawio** como `mcp` y **engram, codegraph, proofshot** como `binaries`. **Engram** es el mecanismo de memoria del núcleo, pero —como todo— su instalación la declara el dominio. Otro dominio trae lo suyo (p. ej. **Figma** en design).
+
 ## Resumen
 
-| Herramienta | Tipo | Rol | Engancha en |
-|---|---|---|---|
-| **Engram** | binario standalone | memoria persistente: artefactos del SDD entre fases + descubrimientos/fixes entre sesiones | todas las fases (artifacts) |
-| **codegraph** | MCP | grafo de código pre-indexado (tree-sitter + SQLite) para explorar por estructura | `explore`, `apply`, `mine` |
-| **context7** | MCP | documentación de librerías al día (contra APIs alucinadas) | `apply` |
-| **drawio** | MCP | diagramas de arquitectura on-demand y **efímeros** (preview en vivo, sin archivo) | thread principal (en el paso de design) |
-| **proofshot** | CLI | verificación visual de UI (graba el browser, valida escenarios) | `verify` (si el cambio toca UI) |
+| Herramienta | Origen | Tipo | Rol | Engancha en |
+|---|---|---|---|---|
+| **Engram** | núcleo (memoria), declarado por dominio | binario standalone | memoria persistente: artefactos del SDD entre fases + descubrimientos/fixes entre sesiones | todas las fases (artifacts) |
+| **context7** | development | MCP | documentación de librerías al día (contra APIs alucinadas) | `apply` |
+| **drawio** | development | MCP | diagramas de arquitectura on-demand y **efímeros** (preview en vivo, sin archivo) | thread principal (en el paso de design) |
+| **codegraph** | development | MCP | grafo de código pre-indexado (tree-sitter + SQLite) para explorar por estructura | `explore`, `apply`, `mine` |
+| **proofshot** | development | CLI | verificación visual de UI (graba el browser, valida escenarios) | `verify` (si el cambio toca UI) |
 
 ## Engram — la memoria
 

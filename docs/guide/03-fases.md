@@ -4,6 +4,8 @@
 
 Cada fase es un **sub-agente de contexto fresco** que el orquestador despacha. Lee sus artefactos de Engram (por topic key), hace su trabajo, y escribe el suyo. Acá, fase por fase: qué hace, qué herramienta engancha, y qué deja para la siguiente.
 
+> Estas son las fases del dominio **development** (agentes `sdd-*`). La idea de "una fase = un sub-agente fresco con su artefacto" es del núcleo; los nombres y el trabajo concreto los define este dominio.
+
 ## intake _(base, entrada)_
 
 Estructura el pedido crudo. Hace 2-4 preguntas de descubrimiento, clasifica el cambio (tipo/tamaño), recomienda la **lane**, y decide si amerita **diagrama** y/o **verificación de UI**. Si los ADRs están activos, corre una **guardia temprana**: frena (`blocked`) si el pedido choca con un ADR `Accepted`, o deriva a `bootstrap` (`needs-decision`) si hay una pregunta arquitectónica sin decidir.

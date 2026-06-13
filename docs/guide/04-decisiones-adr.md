@@ -4,6 +4,8 @@
 
 La capa de decisiones es lo que hace que el agente respete las convenciones del proyecto en vez de reinventarlas. Se apoya en **ADRs** y en tres skills: `bootstrap`, `validate` y `mine`.
 
+> **Decision record por dominio.** "Capturar las decisiones una vez y respetarlas" es un mecanismo del **núcleo**; cada dominio define su *tipo* de decision record. En **development** es el **ADR** (Architecture Decision Record), que es lo que describe esta página. En otros dominios cambia el nombre y el catálogo (p. ej. **DDR** —Design Decision Record— en design), pero el ciclo de vida y la tríada productor/consumidor son los mismos.
+
 ## Qué es (y qué no es) un ADR
 
 Un **ADR** captura una **decisión** de ingeniería: una elección deliberada entre alternativas, con su razón. Tres rasgos lo definen:
