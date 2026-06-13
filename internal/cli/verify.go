@@ -16,7 +16,9 @@ import (
 	"github.com/franwerner/matecito-ai/internal/checks/prereqs"
 	"github.com/franwerner/matecito-ai/internal/checks/proofshot"
 	"github.com/franwerner/matecito-ai/internal/checks/sdd"
+	"github.com/franwerner/matecito-ai/internal/manifest"
 	"github.com/franwerner/matecito-ai/internal/render"
+	"github.com/franwerner/matecito-ai/internal/setup/install"
 )
 
 func NewVerifyCmd() *cobra.Command {
@@ -33,25 +35,68 @@ func NewVerifyCmd() *cobra.Command {
   # Cross-check contra el fork local antes de install
   matecito-ai verify --sdd-dir ./payload/agents`,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			// Gate domain-specific sections by the active domains. On any
+			// resolution error, default to showing them (legacy behavior).
+			activeMCP, mcpErr := manifest.ActiveMCPFromEnv()
+			engramActive := mcpErr != nil || containsString(activeMCP, "engram")
+			context7Active := mcpErr != nil || containsString(activeMCP, "context7")
+			codegraphActive := mcpErr != nil || containsString(activeMCP, "codegraph")
+			drawioActive := mcpErr != nil || containsString(activeMCP, "drawio")
+			activeBins, binErr := manifest.ActiveBinariesFromEnv()
+			proofshotActive := binErr != nil || containsString(activeBins, "proofshot")
+			activeIDs, _, idErr := manifest.ResolveFromEnv()
+			devActive := idErr != nil || containsString(activeIDs, "development")
+
 			pre := prereqs.All()
-			eng := engram.All()
-			cg := codegraph.All()
-			c7 := context7.All()
-			dr := drawio.All()
-			ps := proofshot.All()
 			integ := claudemd.All()
-			perm := permissions.All()
-			sx := sdd.CrossCheck(sddDir)
+			perm := permissions.All(install.ActiveMCPPatterns())
+
+			var eng []check.Result
+			if engramActive {
+				eng = engram.All()
+			}
+			var c7 []check.Result
+			if context7Active {
+				c7 = context7.All()
+			}
+			var ps []check.Result
+			if proofshotActive {
+				ps = proofshot.All()
+			}
+			var cg []check.Result
+			if codegraphActive {
+				cg = codegraph.All()
+			}
+			var dr []check.Result
+			if drawioActive {
+				dr = drawio.All()
+			}
+			var sx []check.Result
+			if devActive {
+				sx = sdd.CrossCheck(sddDir)
+			}
 
 			render.Section(os.Stdout, "Prerequisites", pre)
-			render.Section(os.Stdout, "Engram", eng)
-			render.Section(os.Stdout, "CodeGraph", cg)
-			render.Section(os.Stdout, "context7", c7)
-			render.Section(os.Stdout, "drawio", dr)
-			render.Section(os.Stdout, "proofshot", ps)
+			if engramActive {
+				render.Section(os.Stdout, "Engram", eng)
+			}
+			if codegraphActive {
+				render.Section(os.Stdout, "CodeGraph", cg)
+			}
+			if context7Active {
+				render.Section(os.Stdout, "context7", c7)
+			}
+			if drawioActive {
+				render.Section(os.Stdout, "drawio", dr)
+			}
+			if proofshotActive {
+				render.Section(os.Stdout, "proofshot", ps)
+			}
 			render.Section(os.Stdout, "Integración con Claude Code", integ)
 			render.Section(os.Stdout, "Auto-aprobación de tools (settings.json)", perm)
-			render.Section(os.Stdout, "Cross-check SDD ↔ MCP ("+sddDir+")", sx)
+			if devActive {
+				render.Section(os.Stdout, "Cross-check SDD ↔ MCP ("+sddDir+")", sx)
+			}
 
 			all := make([]check.Result, 0, len(pre)+len(eng)+len(cg)+len(c7)+len(dr)+len(ps)+len(integ)+len(perm)+len(sx))
 			all = append(all, pre...)
@@ -82,4 +127,13 @@ func defaultSDDDir() string {
 		return ".claude/agents"
 	}
 	return filepath.Join(home, ".claude", "agents")
+}
+
+func containsString(list []string, s string) bool {
+	for _, x := range list {
+		if x == s {
+			return true
+		}
+	}
+	return false
 }

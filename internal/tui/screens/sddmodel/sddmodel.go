@@ -24,6 +24,10 @@ const GlobalSentinel = "(global)"
 type AgentModelModel struct {
 	configPath string
 	scope      agentmodel.Scope
+	// domain is the area domain whose agents are being configured (M7); agents is
+	// that domain's agent list (the rows). Persisted under domainConfig[domain].
+	domain string
+	agents []string
 	// globalCfg y projectCfg son los configs cargados al construirse la pantalla;
 	// se usan para mostrar el modelo efectivo cuando el valor es GlobalSentinel.
 	globalCfg  *agentmodel.Config
@@ -41,10 +45,12 @@ type saveErrMsg struct{ err error }
 // New construye un AgentModelModel cargando el config del scope activo.
 // globalCfg y projectCfg son pre-cargados por AppModel.buildChild para
 // evitar I/O duplicado y para tener ambos disponibles en render.
-func New(globalCfg *agentmodel.Config, projectCfg *agentmodel.Config, configPath string, scope agentmodel.Scope) AgentModelModel {
+func New(globalCfg *agentmodel.Config, projectCfg *agentmodel.Config, configPath string, scope agentmodel.Scope, domain string, agents []string) AgentModelModel {
 	m := AgentModelModel{
 		configPath: configPath,
 		scope:      scope,
+		domain:     domain,
+		agents:     agents,
 		globalCfg:  globalCfg,
 		projectCfg: projectCfg,
 		models:     make(map[string]string),
@@ -58,15 +64,15 @@ func New(globalCfg *agentmodel.Config, projectCfg *agentmodel.Config, configPath
 		activeCfg = globalCfg
 	}
 
-	if activeCfg != nil && len(activeCfg.Models) > 0 {
-		for k, v := range activeCfg.Models {
+	if activeCfg != nil && len(activeCfg.DomainModels(domain)) > 0 {
+		for k, v := range activeCfg.DomainModels(domain) {
 			m.models[k] = v
 		}
 	} else if scope == agentmodel.ScopeGlobal {
 		// en scope global sin config, sembrar desde defaults del payload
 		payloadFS, _, fsErr := deploy.ResolvePayloadFS()
 		if fsErr == nil {
-			defaults, defErr := agentmodel.Defaults(payloadFS)
+			defaults, defErr := agentmodel.DefaultsForDomain(payloadFS, domain)
 			if defErr == nil {
 				for k, v := range defaults {
 					m.models[k] = v
@@ -77,7 +83,7 @@ func New(globalCfg *agentmodel.Config, projectCfg *agentmodel.Config, configPath
 
 	// en Project scope: agentes sin override → sentinel "(global)"
 	// en Global scope: agentes sin entrada → sonnet como fallback
-	for _, agent := range agentmodel.Agents {
+	for _, agent := range m.agents {
 		if _, ok := m.models[agent]; !ok {
 			if scope == agentmodel.ScopeProject {
 				m.models[agent] = GlobalSentinel
@@ -104,7 +110,7 @@ func (m AgentModelModel) Update(msg tea.Msg) (nav.ChildModel, tea.Cmd) {
 				m.cursor--
 			}
 		case "down", "j":
-			if m.cursor < len(agentmodel.Agents)-1 {
+			if m.cursor < len(m.agents)-1 {
 				m.cursor++
 			}
 
@@ -117,7 +123,7 @@ func (m AgentModelModel) Update(msg tea.Msg) (nav.ChildModel, tea.Cmd) {
 		// selección directa por índice de ValidModels (1-based: 1=fable … 4=haiku)
 		case "1", "2", "3", "4":
 			if idx := int(msg.String()[0] - '1'); idx < len(agentmodel.ValidModels) {
-				m.models[agentmodel.Agents[m.cursor]] = agentmodel.ValidModels[idx]
+				m.models[m.agents[m.cursor]] = agentmodel.ValidModels[idx]
 			}
 
 		case "q", "esc":
@@ -133,7 +139,7 @@ func (m AgentModelModel) Update(msg tea.Msg) (nav.ChildModel, tea.Cmd) {
 // cycleModel avanza o retrocede el modelo del agente actual.
 // En Project scope el ciclo incluye GlobalSentinel como primera opción.
 func (m *AgentModelModel) cycleModel(delta int) {
-	agent := agentmodel.Agents[m.cursor]
+	agent := m.agents[m.cursor]
 	current := m.models[agent]
 
 	options := m.cycleOptions()
@@ -161,13 +167,13 @@ func (m *AgentModelModel) cycleOptions() []string {
 func (m AgentModelModel) View() string {
 	var sb strings.Builder
 
-	title := "Modelos por agente (sdd-model)"
+	title := "Modelos por agente — " + m.domain
 	if m.scope == agentmodel.ScopeProject {
 		title += " — scope: proyecto"
 	}
 	sb.WriteString(styles.Title.Render(title) + "\n\n")
 
-	for i, agent := range agentmodel.Agents {
+	for i, agent := range m.agents {
 		model := m.models[agent]
 		modelStr := m.renderModelPills(agent, model)
 
@@ -192,7 +198,7 @@ func (m AgentModelModel) View() string {
 // Cuando el valor es GlobalSentinel, muestra el modelo efectivo resuelto como referencia.
 func (m AgentModelModel) renderModelPills(agent, active string) string {
 	if active == GlobalSentinel {
-		resolved, _ := agentmodel.ResolveModel(m.globalCfg, nil, agent)
+		resolved, _ := agentmodel.ResolveModel(m.globalCfg, nil, m.domain, agent)
 		ref := "(hereda global)"
 		if resolved != "" {
 			ref = fmt.Sprintf("(hereda: %s)", resolved)
@@ -220,17 +226,12 @@ func (m AgentModelModel) saveAndBack() tea.Cmd {
 			cfg = &agentmodel.Config{}
 		}
 
-		// garantizar que el mapa no sea nil antes de asignar
-		if cfg.Models == nil {
-			cfg.Models = make(map[string]string)
-		}
-
 		for agent, model := range m.models {
 			if model == GlobalSentinel {
 				// limpiar el override per-proyecto para este agente
-				delete(cfg.Models, agent)
+				cfg.SetDomainModelOverride(m.domain, agent, "")
 			} else {
-				cfg.Models[agent] = model
+				cfg.SetDomainModelOverride(m.domain, agent, model)
 			}
 		}
 

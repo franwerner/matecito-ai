@@ -9,11 +9,11 @@ import (
 // These are Claude Code aliases resolved at runtime by Claude Code itself; the
 // binary never probes which are available on the running install. "fable" is a
 // newer alias — a config that selects it on a Claude that lacks it degrades to
-// the agent's frontmatter default at the forwarding layer (see payload/CLAUDE.md
-// "Model resolution"), not here.
+// the agent's frontmatter default at the forwarding layer (see
+// payload/core/CLAUDE.md "Model resolution"), not here.
 var ValidModels = []string{"fable", "opus", "sonnet", "haiku"}
 
-// Agents is the canonical 10-agent list in declaration order, matching payload/agents/ filenames.
+// Agents is the canonical 10-agent list in declaration order, matching payload/domains/development/agents/ filenames.
 // sdd-init leads: it is the setup phase that bootstraps a project before the flow phases run.
 var Agents = []string{
 	"sdd-init",

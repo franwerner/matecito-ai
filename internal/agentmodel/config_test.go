@@ -60,8 +60,8 @@ func TestLoad_ConfigPresent_IgnoresModelsJSON(t *testing.T) {
 	if cfg == nil {
 		t.Fatal("expected non-nil Config")
 	}
-	if cfg.Models["sdd-apply"] != "haiku" {
-		t.Errorf("expected haiku from config.json, got %q", cfg.Models["sdd-apply"])
+	if cfg.DomainModels(agentmodel.DefaultDomain)["sdd-apply"] != "haiku" {
+		t.Errorf("expected haiku from config.json, got %q", cfg.DomainModels(agentmodel.DefaultDomain)["sdd-apply"])
 	}
 	// models.json should still exist (not deleted when config.json is present)
 	if _, err := os.Stat(modelsPath); os.IsNotExist(err) {
@@ -84,13 +84,13 @@ func TestLoad_Migration(t *testing.T) {
 	if cfg == nil {
 		t.Fatal("expected non-nil Config after migration")
 	}
-	if cfg.Models["sdd-apply"] != "sonnet" {
-		t.Errorf("expected sonnet, got %q", cfg.Models["sdd-apply"])
+	if cfg.DomainModels(agentmodel.DefaultDomain)["sdd-apply"] != "sonnet" {
+		t.Errorf("expected sonnet, got %q", cfg.DomainModels(agentmodel.DefaultDomain)["sdd-apply"])
 	}
 	// strictTdd should be written as explicit false (spec S5.7)
-	if cfg.StrictTdd == nil {
+	if st := cfg.DomainStrictTdd(agentmodel.DefaultDomain); st == nil {
 		t.Error("expected strictTdd to be non-nil (false) after migration")
-	} else if *cfg.StrictTdd {
+	} else if *st {
 		t.Error("expected strictTdd=false after migration")
 	}
 
@@ -108,8 +108,26 @@ func TestLoad_Migration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("second load error: %v", err)
 	}
-	if cfg2.Models["sdd-apply"] != "sonnet" {
-		t.Errorf("second load: expected sonnet, got %q", cfg2.Models["sdd-apply"])
+	if cfg2.DomainModels(agentmodel.DefaultDomain)["sdd-apply"] != "sonnet" {
+		t.Errorf("second load: expected sonnet, got %q", cfg2.DomainModels(agentmodel.DefaultDomain)["sdd-apply"])
+	}
+}
+
+func TestNormalize_FlagDecisionGapsMigrates(t *testing.T) {
+	// a legacy flat top-level flagDecisionGaps folds into development on load
+	dir := t.TempDir()
+	path := filepath.Join(dir, "config.json")
+	writeJSON(t, path, map[string]interface{}{"flagDecisionGaps": true})
+
+	cfg, err := agentmodel.Load(path)
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if p := cfg.DomainFlagDecisionGaps(agentmodel.DefaultDomain); p == nil || !*p {
+		t.Errorf("legacy flagDecisionGaps should migrate to development; got %v", p)
+	}
+	if cfg.FlagDecisionGaps != nil {
+		t.Error("legacy top-level flagDecisionGaps should be cleared after normalize")
 	}
 }
 
@@ -172,8 +190,9 @@ func TestSave_Atomic(t *testing.T) {
 
 	tru := true
 	cfg := &agentmodel.Config{
-		Models:    map[string]string{"sdd-apply": "sonnet"},
-		StrictTdd: &tru,
+		DomainConfig: map[string]*agentmodel.DomainConfig{
+			agentmodel.DefaultDomain: {Models: map[string]string{"sdd-apply": "sonnet"}, StrictTdd: &tru},
+		},
 	}
 
 	if err := agentmodel.Save(path, cfg); err != nil {
@@ -198,10 +217,11 @@ func TestSave_Atomic(t *testing.T) {
 	if got == nil {
 		t.Fatal("expected non-nil Config after round-trip")
 	}
-	if !reflect.DeepEqual(got.Models, cfg.Models) {
-		t.Errorf("Models mismatch: got %v, want %v", got.Models, cfg.Models)
+	want := map[string]string{"sdd-apply": "sonnet"}
+	if !reflect.DeepEqual(got.DomainModels(agentmodel.DefaultDomain), want) {
+		t.Errorf("Models mismatch: got %v, want %v", got.DomainModels(agentmodel.DefaultDomain), want)
 	}
-	if got.StrictTdd == nil || *got.StrictTdd != *cfg.StrictTdd {
+	if st := got.DomainStrictTdd(agentmodel.DefaultDomain); st == nil || !*st {
 		t.Error("StrictTdd mismatch after round-trip")
 	}
 }
@@ -221,7 +241,7 @@ func TestDefaults(t *testing.T) {
 	}
 	for i, a := range agents {
 		content := "---\nname: " + a + "\nmodel: " + models[i] + "\n---\nbody\n"
-		mapFS["agents/"+a+".md"] = &fstest.MapFile{Data: []byte(content)}
+		mapFS["domains/development/agents/"+a+".md"] = &fstest.MapFile{Data: []byte(content)}
 	}
 
 	defaults, err := agentmodel.Defaults(mapFS)

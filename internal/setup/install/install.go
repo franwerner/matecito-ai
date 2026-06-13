@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/franwerner/matecito-ai/internal/manifest"
 	"github.com/franwerner/matecito-ai/internal/mcp"
 	"github.com/franwerner/matecito-ai/internal/platform"
 	"github.com/franwerner/matecito-ai/internal/setup/deploy"
@@ -126,18 +127,81 @@ func hasBackup(backupDir string) bool {
 	return err == nil && info.IsDir()
 }
 
+// mcpDef is the single source of truth for one MCP server: how to register it
+// (step) and the permission tool pattern it needs auto-approved (toolPattern).
+// An empty toolPattern means "derive by convention" (mcp__<name>__*); only
+// servers that break the convention (engram, a Claude Code plugin) set it.
+type mcpDef struct {
+	step        func(Options) Step
+	toolPattern string
+}
+
+// mcpRegistry maps a manifest MCP name to its descriptor. Nothing is installed
+// or auto-approved unless an active domain's manifest (domains/<id>/manifest.json)
+// declares the name — there is no global/base MCP.
+var mcpRegistry = map[string]mcpDef{
+	"engram":    {step: engramMCPStep, toolPattern: "mcp__plugin_engram_engram__*"},
+	"context7":  {step: context7MCPStep},
+	"codegraph": {step: codegraphMCPStep},
+	"drawio":    {step: drawioMCPStep},
+	"figma":     {step: figmaMCPStep},
+	"canva":     {step: canvaMCPStep},
+}
+
+// defaultMCP is the development set, used only as a safety net when the active
+// MCP cannot be resolved from the environment.
+var defaultMCP = []string{"engram", "context7", "codegraph", "drawio"}
+
+// permissionPattern returns the auto-approve tool pattern for an MCP name: the
+// descriptor's override when set, otherwise the mcp__<name>__* convention.
+func permissionPattern(name string) string {
+	if def, ok := mcpRegistry[name]; ok && def.toolPattern != "" {
+		return def.toolPattern
+	}
+	return "mcp__" + name + "__*"
+}
+
 // AllSteps devuelve los pasos de registro y configuración que install.Run gestiona.
 // Los pasos de binarios (engram, codegraph, matecito-ai) y deploy son responsabilidad
 // de sync.Sync; AllSteps solo cubre los pasos de MCP y configuración de ~/.claude/.
+// Los MCP base son fijos; los MCP por dominio salen de los manifests activos.
 func AllSteps(opts Options) []Step {
-	return []Step{
-		engramMCPStep(opts),
-		codegraphMCPStep(opts),
-		context7MCPStep(opts),
-		drawioMCPStep(opts),
-		claudeMdReferenceStep(opts),
-		mcpPermissionsStep(opts),
+	steps := domainMCPSteps(opts)
+	steps = append(steps, claudeMdReferenceStep(opts), mcpPermissionsStep(opts))
+	return steps
+}
+
+// domainMCPSteps builds the MCP install steps contributed by the active domains'
+// manifests. On any resolution error it falls back to defaultMCP so a broken
+// config never silently drops MCP setup.
+func domainMCPSteps(opts Options) []Step {
+	names, err := manifest.ActiveMCPFromEnv()
+	if err != nil {
+		names = defaultMCP
 	}
+	steps := make([]Step, 0, len(names))
+	for _, name := range names {
+		if def, ok := mcpRegistry[name]; ok {
+			steps = append(steps, def.step(opts))
+		}
+	}
+	return steps
+}
+
+// ActiveMCPPatterns derives the permission patterns to auto-approve from the
+// active domains: one per declared MCP (via permissionPattern) plus the always-on
+// "Skill" pattern. It is the single place that turns the MCP registry into
+// permissions; settings.go stays MCP-agnostic.
+func ActiveMCPPatterns() []string {
+	names, err := manifest.ActiveMCPFromEnv()
+	if err != nil {
+		names = defaultMCP
+	}
+	patterns := make([]string, 0, len(names)+1)
+	for _, name := range names {
+		patterns = append(patterns, permissionPattern(name))
+	}
+	return append(patterns, "Skill")
 }
 
 // AllBinarySteps devuelve los pasos de binarios para usos que no pasen por sync.Sync.
@@ -202,7 +266,7 @@ func mcpPermissionsStep(opts Options) Step {
 			if err != nil {
 				return false
 			}
-			return len(settings.MissingPatterns(settings.AllowList(doc))) > 0
+			return len(settings.MissingPatterns(settings.AllowList(doc), ActiveMCPPatterns())) > 0
 		},
 		Run: func() error {
 			path, err := settings.Path()
@@ -213,7 +277,7 @@ func mcpPermissionsStep(opts Options) Step {
 			if err != nil {
 				return err
 			}
-			if !settings.Merge(doc) {
+			if !settings.Merge(doc, ActiveMCPPatterns()) {
 				return nil
 			}
 			if err := backupSettings(path, opts.BackupDir); err != nil {
@@ -269,7 +333,8 @@ func prepareDeploy() deployPrep {
 		p.err = err
 		return p
 	}
-	p.ops, err = deploy.Plan(payloadFS, claudeHome)
+	active, _ := manifest.ActiveIDsFromEnv()
+	p.ops, err = deploy.Plan(payloadFS, claudeHome, active)
 	if err != nil {
 		p.err = err
 		p.summary = "error planeando deploy: " + err.Error()
@@ -535,6 +600,46 @@ func codegraphMCPStep(opts Options) Step {
 				return errors.New("codegraph: binario no encontrado en PATH; instalá codegraph antes de registrar el MCP")
 			}
 			return runIO(opts, "claude", "mcp", "add", "--scope", "user", "codegraph", "--", "codegraph", "serve", "--mcp")
+		},
+	}
+}
+
+// figmaMCPStep registers the Figma remote MCP (http). Contributed by the design
+// domain manifest (mcp: ["figma"]).
+func figmaMCPStep(opts Options) Step {
+	return Step{
+		Name: "Figma MCP (remote)",
+		Plan: "claude mcp add --transport http figma https://mcp.figma.com/mcp",
+		Check: func() bool {
+			_, ok := mcp.Find("figma")
+			return !ok
+		},
+		Run: func() error {
+			if _, err := exec.LookPath("claude"); err != nil {
+				return errors.New("claude no está en PATH")
+			}
+			return runIO(opts, "claude", "mcp", "add", "--transport", "http", "figma", "https://mcp.figma.com/mcp")
+		},
+	}
+}
+
+// canvaMCPStep registers the Canva remote MCP (http). Contributed by the design
+// domain manifest (mcp: ["canva"]). Canva ships an official hosted MCP server at
+// mcp.canva.com/mcp (OAuth per user) — the same remote pattern as Figma. This is
+// NOT the @canva/cli MCP (which is for building Canva apps).
+func canvaMCPStep(opts Options) Step {
+	return Step{
+		Name: "Canva MCP (remote)",
+		Plan: "claude mcp add --transport http canva https://mcp.canva.com/mcp",
+		Check: func() bool {
+			_, ok := mcp.Find("canva")
+			return !ok
+		},
+		Run: func() error {
+			if _, err := exec.LookPath("claude"); err != nil {
+				return errors.New("claude no está en PATH")
+			}
+			return runIO(opts, "claude", "mcp", "add", "--transport", "http", "canva", "https://mcp.canva.com/mcp")
 		},
 	}
 }

@@ -8,14 +8,6 @@ import (
 	"strings"
 )
 
-var EcosystemPatterns = []string{
-	"mcp__plugin_engram_engram__*",
-	"mcp__codegraph__*",
-	"mcp__context7__*",
-	"mcp__drawio__*",
-	"Skill",
-}
-
 func Path() (string, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -67,13 +59,16 @@ func AllowList(doc map[string]any) []string {
 	return out
 }
 
-func MissingPatterns(allow []string) []string {
+// MissingPatterns returns the expected patterns not present in allow. The
+// caller supplies expected (derived from the active domains); this package
+// stays MCP-agnostic.
+func MissingPatterns(allow, expected []string) []string {
 	have := make(map[string]struct{}, len(allow))
 	for _, a := range allow {
 		have[a] = struct{}{}
 	}
 	var missing []string
-	for _, p := range EcosystemPatterns {
+	for _, p := range expected {
 		if _, ok := have[p]; !ok {
 			missing = append(missing, p)
 		}
@@ -81,8 +76,10 @@ func MissingPatterns(allow []string) []string {
 	return missing
 }
 
-func Merge(doc map[string]any) bool {
-	missing := MissingPatterns(AllowList(doc))
+// Merge adds the expected patterns missing from doc's permissions.allow. It only
+// adds; it never removes patterns already present.
+func Merge(doc map[string]any, expected []string) bool {
+	missing := MissingPatterns(AllowList(doc), expected)
 	if len(missing) == 0 {
 		return false
 	}

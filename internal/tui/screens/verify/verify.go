@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -17,6 +18,8 @@ import (
 	"github.com/franwerner/matecito-ai/internal/checks/prereqs"
 	"github.com/franwerner/matecito-ai/internal/checks/proofshot"
 	"github.com/franwerner/matecito-ai/internal/checks/sdd"
+	"github.com/franwerner/matecito-ai/internal/manifest"
+	"github.com/franwerner/matecito-ai/internal/setup/install"
 	"github.com/franwerner/matecito-ai/internal/tui/nav"
 	"github.com/franwerner/matecito-ai/internal/tui/styles"
 )
@@ -105,18 +108,38 @@ func statusIcon(s check.Status) string {
 // cluster order used by the verify CLI command.
 func runChecks() tea.Msg {
 	sddDir := defaultSDDDir()
-	return verifyDoneMsg{
-		clusters: []cluster{
-			{"Prerequisites", prereqs.All()},
-			{"Engram", engram.All()},
-			{"CodeGraph", codegraph.All()},
-			{"context7", context7.All()},
-			{"proofshot", proofshot.All()},
-			{"Integración con Claude Code", claudemd.All()},
-			{"Auto-aprobación de tools (settings.json)", permissions.All()},
-			{"Cross-check SDD ↔ MCP (" + sddDir + ")", sdd.CrossCheck(sddDir)},
-		},
+
+	// Gate each cluster by the active domains, mirroring the verify CLI command:
+	// a check only shows when some active domain declares its MCP/binary. On
+	// resolution error, default to showing it (legacy behavior).
+	activeMCP, mcpErr := manifest.ActiveMCPFromEnv()
+	mcpActive := func(name string) bool { return mcpErr != nil || slices.Contains(activeMCP, name) }
+	activeBins, binErr := manifest.ActiveBinariesFromEnv()
+	binActive := func(name string) bool { return binErr != nil || slices.Contains(activeBins, name) }
+	activeIDs, _, idErr := manifest.ResolveFromEnv()
+	devActive := idErr != nil || slices.Contains(activeIDs, "development")
+
+	clusters := []cluster{{"Prerequisites", prereqs.All()}}
+	if mcpActive("engram") {
+		clusters = append(clusters, cluster{"Engram", engram.All()})
 	}
+	if mcpActive("codegraph") {
+		clusters = append(clusters, cluster{"CodeGraph", codegraph.All()})
+	}
+	if mcpActive("context7") {
+		clusters = append(clusters, cluster{"context7", context7.All()})
+	}
+	if binActive("proofshot") {
+		clusters = append(clusters, cluster{"proofshot", proofshot.All()})
+	}
+	clusters = append(clusters,
+		cluster{"Integración con Claude Code", claudemd.All()},
+		cluster{"Auto-aprobación de tools (settings.json)", permissions.All(install.ActiveMCPPatterns())},
+	)
+	if devActive {
+		clusters = append(clusters, cluster{"Cross-check SDD ↔ MCP (" + sddDir + ")", sdd.CrossCheck(sddDir)})
+	}
+	return verifyDoneMsg{clusters: clusters}
 }
 
 func defaultSDDDir() string {

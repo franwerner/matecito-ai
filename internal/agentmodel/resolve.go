@@ -5,33 +5,37 @@ import (
 	"strings"
 )
 
-// ResolveModel returns the effective model for agent given two configs.
+// ResolveModel returns the effective model for agent in domain, given two configs.
 // source is one of "project", "global", "default".
 // ("", "default") means neither config sets the agent; caller omits the param.
 // project == nil means no per-project config file was found.
 // Unknown agents (not in Agents) always return ("", "default").
-func ResolveModel(global *Config, project *Config, agent string) (model string, source string) {
-	if !IsValidAgent(agent) {
-		return "", "default"
+func ResolveModel(global *Config, project *Config, domain, agent string) (model string, source string) {
+	if project != nil {
+		if m := project.DomainModels(domain); m[agent] != "" {
+			return m[agent], "project"
+		}
 	}
-	if project != nil && project.Models[agent] != "" {
-		return project.Models[agent], "project"
-	}
-	if global != nil && global.Models[agent] != "" {
-		return global.Models[agent], "global"
+	if global != nil {
+		if m := global.DomainModels(domain); m[agent] != "" {
+			return m[agent], "global"
+		}
 	}
 	return "", "default"
 }
 
-// ResolveTdd determines the effective strict-TDD mode given the global and per-project configs.
+// ResolveTdd determines the effective strict-TDD mode for domain given the global
+// and per-project configs.
 // Precedence: per-project (file present AND strictTdd key set) → global (key set) → false.
 // project == nil means no per-project config file was found.
-func ResolveTdd(global Config, project *Config) bool {
-	if project != nil && project.StrictTdd != nil {
-		return *project.StrictTdd
+func ResolveTdd(global Config, project *Config, domain string) bool {
+	if project != nil {
+		if v := project.DomainStrictTdd(domain); v != nil {
+			return *v
+		}
 	}
-	if global.StrictTdd != nil {
-		return *global.StrictTdd
+	if v := global.DomainStrictTdd(domain); v != nil {
+		return *v
 	}
 	return false
 }

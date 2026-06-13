@@ -16,12 +16,18 @@ const (
 	ScreenVerify
 	ScreenConfig
 	ScreenSddModel
-	ScreenTdd
-	ScreenDecisionGaps
+	ScreenDomains
 )
 
 // NavigateMsg asks the AppModel router to switch to the given screen.
 type NavigateMsg struct{ To Screen }
+
+// OpenDomainConfigMsg asks AppModel to open the generic per-domain config screen
+// (rendered from the domain's manifest config schema).
+type OpenDomainConfigMsg struct{ Domain string }
+
+// OpenModelsMsg asks AppModel to open the model-per-agent screen for a domain.
+type OpenModelsMsg struct{ Domain string }
 
 // BackMsg asks the router to return to the main menu.
 type BackMsg struct{}

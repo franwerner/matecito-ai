@@ -5,7 +5,10 @@ import (
 	"github.com/franwerner/matecito-ai/internal/setup/settings"
 )
 
-func All() []check.Result {
+// All reports, for each expected permission pattern, whether it is present in
+// permissions.allow. expected is supplied by the caller (derived from the active
+// domains), keeping this check MCP-agnostic.
+func All(expected []string) []check.Result {
 	doc, err := settings.Load()
 	if err != nil {
 		return []check.Result{{
@@ -23,8 +26,8 @@ func All() []check.Result {
 		have[a] = struct{}{}
 	}
 
-	results := make([]check.Result, 0, len(settings.EcosystemPatterns))
-	for _, p := range settings.EcosystemPatterns {
+	results := make([]check.Result, 0, len(expected))
+	for _, p := range expected {
 		r := check.Result{Name: p, Required: false}
 		if _, ok := have[p]; ok {
 			r.Status = check.StatusOK

@@ -6,6 +6,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 
 	"github.com/franwerner/matecito-ai/internal/agentmodel"
+	"github.com/franwerner/matecito-ai/internal/manifest"
 	"github.com/franwerner/matecito-ai/internal/tui/nav"
 	"github.com/franwerner/matecito-ai/internal/tui/styles"
 )
@@ -20,28 +21,33 @@ type ProjectContext struct {
 type menuEntry struct {
 	label  string
 	screen nav.Screen
+	// domain, when set, makes the entry open the per-domain config screen
+	// (rendered from that domain's manifest schema) instead of a fixed screen.
+	domain string
 }
 
-// ConfigMenuModel es el submenú de configuración.
-// "TDD (este proyecto)" sólo aparece cuando InProject==true (R6.4/S6.4-S6.5).
+// ConfigMenuModel es el submenú de configuración: lo compartido (General) más
+// una entrada por dominio activo (M7).
 type ConfigMenuModel struct {
 	entries []menuEntry
 	cursor  int
 }
 
 func New(ctx ProjectContext, scope agentmodel.Scope) ConfigMenuModel {
-	// el label de TDD refleja el scope activo: en Global edita el config global,
-	// en Project el del repo. La ruta efectiva la resuelve AppModel con ConfigPathForScope.
-	tddLabel := "TDD (este proyecto)"
-	gapsLabel := "Auto-mine ADR (este proyecto)"
-	if scope == agentmodel.ScopeGlobal {
-		tddLabel = "TDD (global)"
-		gapsLabel = "Auto-mine ADR (global)"
-	}
+	// Shared (cross-domain) entries. Auto-mine (flagDecisionGaps) is now per-domain
+	// (rendered inside each domain's config screen), not a top-level entry.
 	entries := []menuEntry{
-		{"Modelos por agente (sdd-model)", nav.ScreenSddModel},
-		{tddLabel, nav.ScreenTdd},
-		{gapsLabel, nav.ScreenDecisionGaps},
+		{label: "Dominios (global)", screen: nav.ScreenDomains},
+	}
+	// One entry per active domain → its generic config screen.
+	if ids, payloadFS, err := manifest.ResolveFromEnv(); err == nil {
+		for _, id := range ids {
+			label := id
+			if mf, e := manifest.Load(payloadFS, id); e == nil && mf.Label != "" {
+				label = mf.Label
+			}
+			entries = append(entries, menuEntry{label: label + " (config)", domain: id})
+		}
 	}
 	return ConfigMenuModel{entries: entries}
 }
@@ -62,7 +68,12 @@ func (m ConfigMenuModel) Update(msg tea.Msg) (nav.ChildModel, tea.Cmd) {
 			}
 		case "enter":
 			if len(m.entries) > 0 {
-				screen := m.entries[m.cursor].screen
+				e := m.entries[m.cursor]
+				if e.domain != "" {
+					domain := e.domain
+					return m, func() tea.Msg { return nav.OpenDomainConfigMsg{Domain: domain} }
+				}
+				screen := e.screen
 				return m, func() tea.Msg { return nav.NavigateMsg{To: screen} }
 			}
 		case "esc", "backspace", "b":

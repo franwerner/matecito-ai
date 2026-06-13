@@ -7,11 +7,13 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"slices"
 	"strings"
 	"time"
 
 	"github.com/franwerner/matecito-ai/internal/agentmodel"
 	"github.com/franwerner/matecito-ai/internal/check"
+	"github.com/franwerner/matecito-ai/internal/manifest"
 	"github.com/franwerner/matecito-ai/internal/render"
 	"github.com/franwerner/matecito-ai/internal/setup/deploy"
 	"github.com/franwerner/matecito-ai/internal/setup/install"
@@ -191,50 +193,65 @@ func Detect(opts Options) ([]ComponentState, error) {
 	}
 	states = append(states, selfState)
 
+	// Binaries are gated by the active domains' manifests: a binary is detected
+	// (and thus installed) only when some active domain declares it. On resolution
+	// error, fall back to detecting all (legacy behavior) so a broken config never
+	// silently drops a binary.
+	activeBins, binErr := manifest.ActiveBinariesFromEnv()
+	wantBinary := func(name string) bool {
+		return binErr != nil || slices.Contains(activeBins, name)
+	}
+
 	// --- Engram ---
-	engramResult := check.RunVersion("engram", "engram", []string{"version"}, false, "")
-	engramState := ComponentState{
-		Name:           "engram",
-		Present:        engramResult.Status != check.StatusMissing,
-		CurrentVersion: engramResult.Version,
+	if wantBinary("engram") {
+		engramResult := check.RunVersion("engram", "engram", []string{"version"}, false, "")
+		engramState := ComponentState{
+			Name:           "engram",
+			Present:        engramResult.Status != check.StatusMissing,
+			CurrentVersion: engramResult.Version,
+		}
+		latestEngram, err := fetchLatestEngram(t)
+		if err != nil {
+			engramState.Unknown = true
+		} else {
+			engramState.LatestVersion = latestEngram
+		}
+		states = append(states, engramState)
 	}
-	latestEngram, err := fetchLatestEngram(t)
-	if err != nil {
-		engramState.Unknown = true
-	} else {
-		engramState.LatestVersion = latestEngram
-	}
-	states = append(states, engramState)
 
 	// --- CodeGraph ---
-	cgResult := check.RunVersion("codegraph", "codegraph", []string{"--version"}, false, "")
-	cgState := ComponentState{
-		Name:           "codegraph",
-		Present:        cgResult.Status != check.StatusMissing,
-		CurrentVersion: cgResult.Version,
+	if wantBinary("codegraph") {
+		cgResult := check.RunVersion("codegraph", "codegraph", []string{"--version"}, false, "")
+		cgState := ComponentState{
+			Name:           "codegraph",
+			Present:        cgResult.Status != check.StatusMissing,
+			CurrentVersion: cgResult.Version,
+		}
+		latestCG, err := fetchLatestCodeGraph(t)
+		if err != nil {
+			cgState.Unknown = true
+		} else {
+			cgState.LatestVersion = latestCG
+		}
+		states = append(states, cgState)
 	}
-	latestCG, err := fetchLatestCodeGraph(t)
-	if err != nil {
-		cgState.Unknown = true
-	} else {
-		cgState.LatestVersion = latestCG
-	}
-	states = append(states, cgState)
 
 	// --- ProofShot ---
-	psResult := check.RunVersion("proofshot", "proofshot", []string{"--version"}, false, "")
-	psState := ComponentState{
-		Name:           "proofshot",
-		Present:        psResult.Status != check.StatusMissing,
-		CurrentVersion: psResult.Version,
+	if wantBinary("proofshot") {
+		psResult := check.RunVersion("proofshot", "proofshot", []string{"--version"}, false, "")
+		psState := ComponentState{
+			Name:           "proofshot",
+			Present:        psResult.Status != check.StatusMissing,
+			CurrentVersion: psResult.Version,
+		}
+		latestPS, err := fetchLatestProofshot(t)
+		if err != nil {
+			psState.Unknown = true
+		} else {
+			psState.LatestVersion = latestPS
+		}
+		states = append(states, psState)
 	}
-	latestPS, err := fetchLatestProofshot(t)
-	if err != nil {
-		psState.Unknown = true
-	} else {
-		psState.LatestVersion = latestPS
-	}
-	states = append(states, psState)
 
 	// --- Deploy (payload) ---
 	deployState := ComponentState{Name: "deploy"}
@@ -242,7 +259,8 @@ func Detect(opts Options) ([]ComponentState, error) {
 	if deployErr == nil {
 		claudeHome, homeErr := deploy.ClaudeHome()
 		if homeErr == nil {
-			ops, planErr := deploy.Plan(payloadFS, claudeHome)
+			active, _ := manifest.ActiveIDsFromEnv()
+			ops, planErr := deploy.Plan(payloadFS, claudeHome, active)
 			if planErr == nil {
 				s := deploy.Summarize(ops)
 				deployState.Present = true
@@ -373,7 +391,8 @@ func Sync(opts Options) Result {
 				runErr = homeErr
 				break
 			}
-			ops, planErr := deploy.Plan(payloadFS, claudeHome)
+			active, _ := manifest.ActiveIDsFromEnv()
+			ops, planErr := deploy.Plan(payloadFS, claudeHome, active)
 			if planErr != nil {
 				runErr = planErr
 				break

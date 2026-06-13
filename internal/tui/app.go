@@ -6,15 +6,16 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 
 	"github.com/franwerner/matecito-ai/internal/agentmodel"
+	"github.com/franwerner/matecito-ai/internal/manifest"
 	pkgsync "github.com/franwerner/matecito-ai/internal/setup/sync"
 	"github.com/franwerner/matecito-ai/internal/tui/header"
 	"github.com/franwerner/matecito-ai/internal/tui/screens/config"
-	"github.com/franwerner/matecito-ai/internal/tui/screens/decisiongaps"
+	"github.com/franwerner/matecito-ai/internal/tui/screens/domainconfig"
+	"github.com/franwerner/matecito-ai/internal/tui/screens/domains"
 	"github.com/franwerner/matecito-ai/internal/tui/screens/install"
 	"github.com/franwerner/matecito-ai/internal/tui/screens/menu"
 	"github.com/franwerner/matecito-ai/internal/tui/screens/sddmodel"
 	tuisync "github.com/franwerner/matecito-ai/internal/tui/screens/sync"
-	"github.com/franwerner/matecito-ai/internal/tui/screens/tdd"
 	"github.com/franwerner/matecito-ai/internal/tui/screens/verify"
 )
 
@@ -150,6 +151,16 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.child = child
 		return m, tea.Batch(child.Init(), cmd)
 
+	case OpenDomainConfigMsg:
+		child := m.buildDomainConfig(msg.Domain)
+		m.child = child
+		return m, child.Init()
+
+	case OpenModelsMsg:
+		child := m.buildModels(msg.Domain)
+		m.child = child
+		return m, child.Init()
+
 	case BackMsg:
 		m.screen = ScreenMenu
 		m.child = menu.New(m.updateAvailable)
@@ -174,7 +185,7 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.hdr.Scope = m.scope
 			// reconstruir la pantalla activa cuando es scope-aware
-			if m.screen == ScreenSddModel || m.screen == ScreenTdd || m.screen == ScreenConfig || m.screen == ScreenDecisionGaps {
+			if m.screen == ScreenSddModel || m.screen == ScreenConfig {
 				child, cmd := m.buildChild(m.screen)
 				m.child = child
 				return m, tea.Batch(child.Init(), cmd)
@@ -219,20 +230,50 @@ func (m AppModel) buildChild(s Screen) (ChildModel, tea.Cmd) {
 			RepoRoot:  m.ctx.RepoRoot,
 		}, m.scope), nil
 	case ScreenSddModel:
-		configPath, _ := agentmodel.ConfigPathForScope(m.scope, m.ctx.RepoRoot)
-		globalCfg, _ := agentmodel.Load(m.globalConfigPath)
-		var projectCfg *agentmodel.Config
-		if m.ctx.InProject {
-			projectCfg, _ = agentmodel.Load(agentmodel.ProjectConfigPath(m.ctx.RepoRoot))
-		}
-		return sddmodel.New(globalCfg, projectCfg, configPath, m.scope), nil
-	case ScreenTdd:
-		configPath, _ := agentmodel.ConfigPathForScope(m.scope, m.ctx.RepoRoot)
-		return tdd.New(configPath), nil
-	case ScreenDecisionGaps:
-		configPath, _ := agentmodel.ConfigPathForScope(m.scope, m.ctx.RepoRoot)
-		return decisiongaps.New(configPath), nil
+		return m.buildModels(agentmodel.DefaultDomain), nil
+	case ScreenDomains:
+		// domains are a per-user install concept → always the global config.
+		return domains.New(m.globalConfigPath), nil
 	default:
 		return menu.New(m.updateAvailable), nil
 	}
+}
+
+// buildDomainConfig constructs the generic per-domain config screen, rendered
+// from the domain's manifest config schema.
+func (m AppModel) buildDomainConfig(domain string) ChildModel {
+	label := domain
+	var fields []manifest.ConfigField
+	if _, payloadFS, err := manifest.ResolveFromEnv(); err == nil {
+		if mf, e := manifest.Load(payloadFS, domain); e == nil {
+			fields = mf.Config
+			if mf.Label != "" {
+				label = mf.Label
+			}
+		}
+	}
+	return domainconfig.New(domain, label, m.globalConfigPath, fields)
+}
+
+// buildModels constructs the model-per-agent screen scoped to a domain's agents.
+func (m AppModel) buildModels(domain string) ChildModel {
+	configPath, _ := agentmodel.ConfigPathForScope(m.scope, m.ctx.RepoRoot)
+	globalCfg, _ := agentmodel.Load(m.globalConfigPath)
+	var projectCfg *agentmodel.Config
+	if m.ctx.InProject {
+		projectCfg, _ = agentmodel.Load(agentmodel.ProjectConfigPath(m.ctx.RepoRoot))
+	}
+	return sddmodel.New(globalCfg, projectCfg, configPath, m.scope, domain, m.domainAgents(domain))
+}
+
+// domainAgents returns the agent list for a domain's model config: the canonical
+// development list, or the domain's discovered agents for other domains.
+func (m AppModel) domainAgents(domain string) []string {
+	if domain == agentmodel.DefaultDomain {
+		return agentmodel.Agents
+	}
+	if _, payloadFS, err := manifest.ResolveFromEnv(); err == nil {
+		return manifest.DomainAgents(payloadFS, domain)
+	}
+	return nil
 }

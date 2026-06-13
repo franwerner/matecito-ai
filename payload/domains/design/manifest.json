@@ -1,0 +1,18 @@
+{
+  "id": "design",
+  "label": "Design",
+  "summary": "Diseño visual full-spectrum (marca, UI/UX, prototipos, guías de marca); no toca código.",
+  "workspace": "folder",
+  "alignmentArtifact": "brief",
+  "decisionRecord": { "term": "DDR", "dir": ".matecito-ai/ddr" },
+  "canonicalCatalog": "design-principles",
+  "phases": ["intake", "explore", "propose", "brief", "system", "tasks", "produce", "verify", "archive"],
+  "guards": ["visual-accessibility", "brand-consistency"],
+  "explorationTool": "figma",
+  "mcp": ["engram", "figma", "canva"],
+  "binaries": ["engram"],
+  "config": [
+    { "key": "models", "type": "agent-models", "label": "Models per agent" },
+    { "key": "flagDecisionGaps", "type": "bool", "label": "Auto-mine DDR", "default": false }
+  ]
+}

@@ -14,13 +14,18 @@ const (
 	ScreenSync     = nav.ScreenSync
 	ScreenVerify   = nav.ScreenVerify
 	ScreenConfig   = nav.ScreenConfig
-	ScreenSddModel     = nav.ScreenSddModel
-	ScreenTdd          = nav.ScreenTdd
-	ScreenDecisionGaps = nav.ScreenDecisionGaps
+	ScreenSddModel = nav.ScreenSddModel
+	ScreenDomains  = nav.ScreenDomains
 )
 
 // NavigateMsg asks the AppModel router to switch to the given screen.
 type NavigateMsg = nav.NavigateMsg
+
+// OpenDomainConfigMsg asks AppModel to open the generic per-domain config screen.
+type OpenDomainConfigMsg = nav.OpenDomainConfigMsg
+
+// OpenModelsMsg asks AppModel to open the model-per-agent screen for a domain.
+type OpenModelsMsg = nav.OpenModelsMsg
 
 // BackMsg asks the router to return to the main menu.
 type BackMsg = nav.BackMsg
