@@ -35,7 +35,7 @@ con el id del dominio ante cualquier riesgo (p. ej. `design-audit` en vez de
 | Campo | Significado |
 | --- | --- |
 | `id` / `label` | id del dominio (coincide con la carpeta) / etiqueta humana |
-| `workspace` | dónde vive el estado del proyecto: `repository` \| `folder` \| `project` |
+| `workspace` | dónde vive el estado del proyecto: `repository` \| `folder` |
 | `alignmentArtifact` | el término del dominio para el spec/brief |
 | `decisionRecord` | `{ term, dir }` — tipo de decision-record y ruta del store |
 | `canonicalCatalog` | el catálogo que citan los decision records |
