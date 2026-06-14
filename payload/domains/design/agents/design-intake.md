@@ -35,7 +35,7 @@ Return a structured result with these fields:
 - `status`: `done` | `blocked` | `needs-decision`
 - `executive_summary`: one-sentence description of the structured request and the triage outcome
 - `artifacts`: topic_keys or file paths written (e.g. `design/{change-name}/intake`)
-- `next_recommended`: `design-explore` (full flow) | `direct-implementation` (trivial, design flow not needed) | `project-decisions-bootstrap` (an undecided brand decision must be captured first)
+- `next_recommended`: `design-explore` (full flow) | `direct-implementation` (trivial, design flow not needed) | `development-decisions-bootstrap` (an undecided brand decision must be captured first)
 - `blockers`: DDR conflicts (`blocked`) or undecided decisions (`needs-decision`) found, with the DDR cited
 - `risks`: anything ambiguous or risky surfaced during intake
 - `skill_resolution`: `capability-skills` (used the domain skills) or `none`

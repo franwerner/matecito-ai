@@ -82,6 +82,21 @@ explain-concept        # el motor mentor: explica el porqué de un concepto
 design-review          # revisión crítica de una pieza
 ```
 
+**De decisiones** (`matecito-ai/*`): el ciclo de vida de los DDRs.
+
+```
+design-decisions-bootstrap  # captura interactiva de decisiones de diseño → DDRs; modo update ratifica Inferred→Accepted
+design-decisions-mine       # mina decisiones desde el archivo Figma (styles/components) → DDRs Inferred
+design-decisions-validate   # auditor consultivo: coherencia, completitud y verificabilidad de los DDRs
+```
+
+**Setup y onboarding** (meta, no son fases del pipeline):
+
+```
+design-init      # setup inicial: detecta contexto de diseño (Figma/Canva/marca) y capabilities, bootstrapea persistencia
+design-onboard   # recorrido guiado del flujo de diseño de punta a punta, enseñando por hacer
+```
+
 ## Guards
 
 Gates de verificación que corren en `design-verify`.
@@ -106,7 +121,7 @@ Regla transversal a todas las fases y skills: explicar el **porqué** detrás de
 Lo que aparece en la pantalla de configuración del dominio (resuelto por-proyecto → global → default):
 
 - **Models per agent** (`models`) — qué modelo usa cada fase (`design-intake`, `design-brief`, `design-system`, …). Sin valor configurado, cada agente usa su default curado.
-- **Auto-mine DDR** (`flagDecisionGaps`, default `false`) — opt-in. Activa la detección de decisiones implementadas sin DDR durante el flujo; al cerrar, ofrece minarlas como DDRs `Inferred` (siempre con tu confirmación).
+- **Auto-mine DDR** (`flagDecisionGaps`, default `false`) — opt-in. Con el flag on: `design-tasks` marca cada decisión de marca como `· ddr: <surface>/<slug>` (exista o no el DDR), `design-verify` confirma cuáles se implementaron (sección `## Decision Gaps`), y al cerrar el orquestador dispara `design-decisions-mine` —que lee el archivo Figma vivo (styles/components)— y ofrece materializar las decisiones como DDRs `Inferred` (siempre con tu confirmación). Ratificás `Inferred → Accepted` con `design-decisions-bootstrap` en modo update. Aparte, `design-verify` compara los DDRs `Accepted` contra el estado real de Figma (drift): cualquier divergencia es un `DDR-VIOLATION`. Canva queda fuera (sin tokens legibles).
 
 ## Ver también
 

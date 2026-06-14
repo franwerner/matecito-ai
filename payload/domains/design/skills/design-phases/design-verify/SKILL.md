@@ -45,10 +45,21 @@ This phase ORCHESTRATES those skills; the technique lives in them — do not dup
    and the accepted DDRs — flag a piece that contradicts a decision record.
 7. Check each brief requirement against the produced work (`design-review`) — flag CRITICAL /
    WARNING / SUGGESTION.
-7b. DDR activation gate: if `.matecito-ai/ddr/` is absent or empty, DDRs are inactive — skip the
-    DDR-compliance check silently. If active: for the DDRs touched by this change (or
-    `.matecito-ai/ddr/<surface>/` for touched surfaces), confirm the produced work honors their
-    concrete rules. Any violation → CRITICAL `DDR-VIOLATION` (cite the DDR).
+7b. DDR activation gate + drift check: if `.matecito-ai/ddr/` is absent or empty, DDRs are inactive —
+    skip silently. If active: for the DDRs touched by this change (or `.matecito-ai/ddr/<surface>/`
+    for touched surfaces), run TWO checks against each DDR's `## Reglas verificables`:
+    (i) **Produced-work compliance** — the pieces produced in THIS change honor the DDR's concrete
+        rules.
+    (ii) **Live-Figma drift** — when a Figma file is connected, READ the real state
+        (`mcp__figma__get_styles`, `mcp__figma__get_components`) and compare rule-by-rule: color
+        styles vs palette, text styles vs type scale, tokens vs spacing, components vs the defined
+        set, measured contrast vs target.
+    Any divergence (produced work OR live Figma) → CRITICAL `DDR-VIOLATION`, citing the DDR and the
+    real value vs the expected. Canva is out of scope here (no readable tokens — at most a visual
+    check of a piece, never a structural one).
+<!-- matecito-ai: decision-gap confirmation hook
+Active ONLY when flagDecisionGaps=true (does NOT depend on DDRs existing). When active: read the tasks artifact; collect all `· ddr: <surface>/<slug>` whose file `.matecito-ai/ddr/<surface>/<slug>.md` does NOT exist — these are the decision gaps. For each gap: (a) check the task is `[x]` (the piece was produced); (b) check its `criteria:` passes in the produced work (Figma inspection or the produced asset). If (a) and (b) → `implemented: yes`; otherwise `implemented: no`. Add a `## Decision Gaps` section to the verify-report with the table `| surface/slug | task | implemented? |`. If the section has at least one `yes`, the orchestrator may trigger the mine gate post-verify (executor: design-decisions-mine). When flag off: do NOT add the section, do NOT mention anything — byte-identical behavior to before. -->
+7c. (Decision-gap confirmation — flag-gated) When `flagDecisionGaps=true` (regardless of DDR presence): from the tasks artifact collect all `· ddr: <surface>/<slug>` refs whose target file does NOT exist → these are decision gaps. For each: confirm task is `[x]` AND `criteria:` passes in the produced work → mark `implemented: yes/no`. Add `## Decision Gaps` to the verify-report: `| surface/slug | task | implemented? |`. Silent when flag off.
 8. Confirm tasks are marked complete and match the produced state.
 9. Persist the verify report to the active backend.
 

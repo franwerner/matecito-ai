@@ -20,6 +20,10 @@ This domain does NOT touch code — the design→code handoff belongs to the
 | Phase agents | `design-*` (`design-intake`, `design-explore`, …, `design-archive`) |
 | Alignment artifact | `brief` |
 | Decision record | `DDR` (Design Decision Record), stored in `.matecito-ai/ddr/` |
+| Decision-mining executor | `design-decisions-mine` (reads Figma, not codegraph) |
+| Decision-capture skill | `design-decisions-bootstrap` |
+| Decision-validate skill | `design-decisions-validate` (consultive audit of DDRs) |
+| Init / onboarding | `design-init` (detect design context + capabilities), `design-onboard` (guided walkthrough) |
 | Canonical catalog | `design-principles` at `~/.claude/references/design-principles/` |
 | Exploration index | Figma (`figma` MCP), active when a Figma file is connected |
 | Guards | `visual-accessibility`, `brand-consistency` |
@@ -84,6 +88,9 @@ because…") are captured once as DDRs under `.matecito-ai/ddr/`, then **respect
 and verified** by the `system` and `verify` phases. Same concept and gates as the
 kernel's decision records — only the term (DDR) and store differ from development's
 ADRs.
+
+## Decision-Gap Capture — design specifics
+The kernel owns the generic mine gate (it dispatches the active domain's mining executor post-verify, gates candidates with the user, and materializes them). In design the mining executor is `design-decisions-mine` (it reads the live Figma file, not code); confirmed candidates are materialized as `[Inferred]` `.md` DDRs under `.matecito-ai/ddr/<surface>/<slug>.md` and the `.matecito-ai/ddr/INDEX.md` is updated **once at the end**; the DDRs live ONLY as `.md`, never recorded in Engram. Ratifying `Inferred → Accepted` (interviewing the why) is done by `design-decisions-bootstrap` in update mode — never automatic.
 
 ## MCP
 

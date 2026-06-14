@@ -37,7 +37,7 @@ This phase ORCHESTRATES that skill; the technique lives in it — do not duplica
 4. Capture DDR-style decisions with rationale and rejected alternatives ("the palette is X because…").
 4b. Align decisions with existing DDRs (cite them). If the system contradicts an Accepted DDR →
     return `blocked`. If it needs a brand decision no DDR covers → flag it for capture via
-    project-decisions-bootstrap.
+    design-decisions-bootstrap.
 5. Persist the system (and any new / updated DDRs under `.matecito-ai/ddr/`) to the active backend.
 
 DDRs live ONLY as `.md` under `.matecito-ai/ddr/` (with an `INDEX.md`) — never duplicated into Engram.
