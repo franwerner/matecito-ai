@@ -117,7 +117,7 @@ go build -o matecito-ai ./cmd/matecito-ai
 
 ## Uso
 
-El CLI verifica, inicia e instala las dependencias del ecosistema —la **unión** de los `mcp` y `binaries` declarados por los **dominios activos** (en development: engram, context7, codegraph, drawio + binarios engram/codegraph/proofshot; en design: engram, figma)— sobre Claude Code, y deploya el núcleo + los dominios activos a `~/.claude/`. Nada se instala si su dominio no está activo. Una vez instalado, cada herramienta se usa con su propio binario; matecito-ai se ocupa del setup y la salud del entorno.
+El CLI verifica, inicia e instala las dependencias del ecosistema —la **unión** de los `mcp` y `binaries` declarados por los **dominios activos** (en development: engram, context7, codegraph, drawio + binarios engram/codegraph/proofshot; en design: engram, figma, canva)— sobre Claude Code, y deploya el núcleo + los dominios activos a `~/.claude/`. Nada se instala si su dominio no está activo. Una vez instalado, cada herramienta se usa con su propio binario; matecito-ai se ocupa del setup y la salud del entorno.
 
 Sin subcomando, y en una terminal interactiva, abre una **TUI** desde donde ves el estado, instalás, **elegís qué dominios tener activos** (_Configuración → Dominios_) y configurás cada dominio. Con subcomando corre en modo directo.
 
@@ -134,7 +134,7 @@ matecito-ai install             # aplica los cambios
 matecito-ai install --yes       # sin confirmación interactiva (CI)
 ```
 
-`install` es la única ruta de instalación y actualización: detecta qué falta o está desactualizado (matecito-ai, Engram, los MCP base y los de los dominios activos, el núcleo y los fragmentos de cada dominio) y lo deja al día en un solo paso.
+`install` es la única ruta de instalación y actualización: detecta qué falta o está desactualizado (matecito-ai, Engram, los MCP y binarios de los dominios activos, el núcleo y los fragmentos de cada dominio) y lo deja al día en un solo paso.
 
 ## Configuración
 
