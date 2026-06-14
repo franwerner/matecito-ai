@@ -253,23 +253,21 @@ func migrate(configPath, modelsPath string) (*Config, error) {
 	return cfg, nil
 }
 
-// Validate checks that all agent keys are in the canonical list and all model
-// values are in ValidModels. StrictTdd is unconstrained (any *bool is valid).
+// Validate checks that all model values are in ValidModels. Agent keys are NOT
+// constrained to a hardcoded roster: each domain's agents are discovered from the
+// payload (domains/<domain>/agents/*.md), so a config may name any agent the
+// active domains ship — validating names here would reject new/renamed agents.
+// StrictTdd is unconstrained (any *bool is valid).
 func Validate(cfg *Config) error {
 	if cfg == nil {
 		return nil
 	}
 	cfg.normalize()
-	for domain, dc := range cfg.DomainConfig {
+	for _, dc := range cfg.DomainConfig {
 		if dc == nil {
 			continue
 		}
 		for key, val := range dc.Models {
-			// Agent-key validity is per-domain (the canonical list is M7.2); for
-			// now enforce the known canonical list only for the default domain.
-			if domain == DefaultDomain && !IsValidAgent(key) {
-				return fmt.Errorf("agentmodel: unknown agent %q in config (domain %q)", key, domain)
-			}
 			if !IsValidModel(val) {
 				return fmt.Errorf("agentmodel: invalid model %q for agent %q (valid: %v)", val, key, ValidModels)
 			}
@@ -325,37 +323,6 @@ func DefaultsForDomain(payloadFS fs.FS, domain string) (map[string]string, error
 			continue
 		}
 		name := strings.TrimSuffix(filepath.Base(entry), ".md")
-		result[name] = model
-	}
-	return result, nil
-}
-
-// Defaults iterates domains/*/agents/sdd-*.md files from payloadFS, calls
-// ReadModel on each, and returns a map of agent-name → model. Files with no
-// model: line are skipped.
-func Defaults(payloadFS fs.FS) (map[string]string, error) {
-	result := make(map[string]string)
-
-	entries, err := fs.Glob(payloadFS, "domains/*/agents/sdd-*.md")
-	if err != nil {
-		return nil, fmt.Errorf("agentmodel: glob agents: %w", err)
-	}
-
-	for _, entry := range entries {
-		data, err := fs.ReadFile(payloadFS, entry)
-		if err != nil {
-			return nil, fmt.Errorf("agentmodel: read %s: %w", entry, err)
-		}
-		model, err := ReadModel(data)
-		if err != nil {
-			return nil, fmt.Errorf("agentmodel: ReadModel %s: %w", entry, err)
-		}
-		if model == "" {
-			continue
-		}
-		// derive agent name from filename: "agents/sdd-apply.md" → "sdd-apply"
-		base := filepath.Base(entry)
-		name := strings.TrimSuffix(base, ".md")
 		result[name] = model
 	}
 	return result, nil

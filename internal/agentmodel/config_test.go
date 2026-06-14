@@ -7,7 +7,6 @@ import (
 	"reflect"
 	"strings"
 	"testing"
-	"testing/fstest"
 
 	"github.com/franwerner/matecito-ai/internal/agentmodel"
 )
@@ -133,20 +132,6 @@ func TestNormalize_FlagDecisionGapsMigrates(t *testing.T) {
 
 // --- Validate ---
 
-func TestValidate_UnknownAgentKey(t *testing.T) {
-	// S5.3
-	cfg := &agentmodel.Config{
-		Models: map[string]string{"sdd-unknown": "sonnet"},
-	}
-	err := agentmodel.Validate(cfg)
-	if err == nil {
-		t.Fatal("expected error for unknown agent key")
-	}
-	if !strings.Contains(err.Error(), "sdd-unknown") {
-		t.Errorf("error should mention the bad key, got: %v", err)
-	}
-}
-
 func TestValidate_BadModelValue(t *testing.T) {
 	// S5.4
 	cfg := &agentmodel.Config{
@@ -223,51 +208,6 @@ func TestSave_Atomic(t *testing.T) {
 	}
 	if st := got.DomainStrictTdd(agentmodel.DefaultDomain); st == nil || !*st {
 		t.Error("StrictTdd mismatch after round-trip")
-	}
-}
-
-// --- Defaults ---
-
-func TestDefaults(t *testing.T) {
-	// S4.9: fstest.MapFS with 10 agent files each with a model: line → 10 entries
-	mapFS := fstest.MapFS{}
-	agents := []string{
-		"sdd-init", "sdd-intake", "sdd-explore", "sdd-propose", "sdd-spec",
-		"sdd-design", "sdd-tasks", "sdd-apply", "sdd-verify", "sdd-archive",
-	}
-	models := []string{
-		"sonnet", "opus", "sonnet", "haiku", "opus",
-		"sonnet", "haiku", "sonnet", "haiku", "opus",
-	}
-	for i, a := range agents {
-		content := "---\nname: " + a + "\nmodel: " + models[i] + "\n---\nbody\n"
-		mapFS["domains/development/agents/"+a+".md"] = &fstest.MapFile{Data: []byte(content)}
-	}
-
-	defaults, err := agentmodel.Defaults(mapFS)
-	if err != nil {
-		t.Fatalf("Defaults() error: %v", err)
-	}
-	if len(defaults) != 10 {
-		t.Errorf("expected 10 entries, got %d", len(defaults))
-	}
-	for i, a := range agents {
-		if v, ok := defaults[a]; !ok {
-			t.Errorf("missing key %q", a)
-		} else if v != models[i] {
-			t.Errorf("defaults[%q] = %q, want %q", a, v, models[i])
-		}
-	}
-}
-
-func TestDefaults_EmptyFS(t *testing.T) {
-	// empty FS → empty map, no error
-	defaults, err := agentmodel.Defaults(fstest.MapFS{})
-	if err != nil {
-		t.Fatalf("Defaults() on empty FS error: %v", err)
-	}
-	if len(defaults) != 0 {
-		t.Errorf("expected empty map, got %v", defaults)
 	}
 }
 

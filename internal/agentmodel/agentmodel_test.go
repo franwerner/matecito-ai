@@ -60,7 +60,7 @@ func TestReadModel(t *testing.T) {
 	}
 }
 
-// --- IsValidModel / IsValidAgent ---
+// --- IsValidModel ---
 
 func TestIsValidModel(t *testing.T) {
 	for _, m := range []string{"opus", "sonnet", "haiku", "fable"} {
@@ -71,34 +71,6 @@ func TestIsValidModel(t *testing.T) {
 	for _, m := range []string{"gpt-4", "", "OPUS", "claude"} {
 		if agentmodel.IsValidModel(m) {
 			t.Errorf("IsValidModel(%q) = true, want false", m)
-		}
-	}
-}
-
-func TestIsValidAgent(t *testing.T) {
-	for _, a := range agentmodel.Agents {
-		if !agentmodel.IsValidAgent(a) {
-			t.Errorf("IsValidAgent(%q) = false, want true", a)
-		}
-	}
-	for _, a := range []string{"sdd-unknown", "", "intake", "sdd-INTAKE"} {
-		if agentmodel.IsValidAgent(a) {
-			t.Errorf("IsValidAgent(%q) = true, want false", a)
-		}
-	}
-}
-
-func TestAgentsSlice(t *testing.T) {
-	want := []string{
-		"sdd-init", "sdd-intake", "sdd-explore", "sdd-propose", "sdd-spec",
-		"sdd-design", "sdd-tasks", "sdd-apply", "sdd-verify", "sdd-archive",
-	}
-	if len(agentmodel.Agents) != len(want) {
-		t.Fatalf("Agents length = %d, want %d", len(agentmodel.Agents), len(want))
-	}
-	for i, a := range want {
-		if agentmodel.Agents[i] != a {
-			t.Errorf("Agents[%d] = %q, want %q", i, agentmodel.Agents[i], a)
 		}
 	}
 }

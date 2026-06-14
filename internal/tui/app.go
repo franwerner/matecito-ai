@@ -266,12 +266,10 @@ func (m AppModel) buildModels(domain string) ChildModel {
 	return sddmodel.New(globalCfg, projectCfg, configPath, m.scope, domain, m.domainAgents(domain))
 }
 
-// domainAgents returns the agent list for a domain's model config: the canonical
-// development list, or the domain's discovered agents for other domains.
+// domainAgents returns a domain's agents for its model config, discovered from
+// the payload (every domains/<domain>/agents/*.md) — development included, so the
+// list stays in sync with the deployed agents without a hardcoded roster.
 func (m AppModel) domainAgents(domain string) []string {
-	if domain == agentmodel.DefaultDomain {
-		return agentmodel.Agents
-	}
 	if _, payloadFS, err := manifest.ResolveFromEnv(); err == nil {
 		return manifest.DomainAgents(payloadFS, domain)
 	}
