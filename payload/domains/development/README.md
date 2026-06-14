@@ -63,7 +63,7 @@ Las piezas específicas de desarrollo del ecosistema:
 | **MCP** | `engram` | Memoria persistente (mecanismo del núcleo): artefactos del SDD entre fases + descubrimientos/fixes entre sesiones. |
 | **MCP** | `context7` | Documentación de librerías al día (contra APIs alucinadas). Se engancha en `apply`. |
 | **MCP** | `codegraph` | Grafo de código pre-indexado (tree-sitter + SQLite) para explorar por estructura. |
-| **MCP** | `drawio` _(next-ai-draw-io)_ | Diagramas de arquitectura on-demand y **efímeros**: el thread principal los renderiza en vivo (`localhost:6002`) en el paso de `design`. No se exporta ningún archivo al repo. |
+| **MCP** | `drawio` _(next-ai-draw-io)_ | Render de diagramas de arquitectura on-demand y **efímeros**: el thread principal renderiza en vivo el `<mxGraphModel>` en el paso de `design` (preview en la URL que reporta `start_session`; el puerto es dinámico). El **vocabulario** (formas, iconos, estilos, layout) lo aporta la skill `drawio`. No se exporta ningún archivo al repo. |
 | **CLI** | `proofshot` | Verificación visual de UI: graba el browser y valida los scenarios. `sdd-verify` la corre cuando el cambio toca UI y proofshot está disponible. |
 | **Agentes** | `sdd-*` | Un sub-agente por fase, con contexto propio. |
 

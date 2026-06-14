@@ -28,7 +28,7 @@ Execute all steps from the skill directly in this context window:
 <!-- matecito-ai: align with ADRs; block on conflict; flag uncovered decisions -->
 4b. Align decisions with existing ADRs (cite them). If the design contradicts an Accepted ADR → return `blocked`. If it needs a decision no ADR covers → flag it for capture via development-decisions-bootstrap.
 <!-- matecito-ai: diagram inference test — single source of truth in matecito-ai:behavior (Ecosystem). Diagrams are EPHEMERAL: this headless phase does NOT generate or export any diagram file. -->
-4c. Architecture diagram: if the intake brief's `diagram` flag is `needed`, NOTE in your result (summary/`risks`) that a live diagram of the chosen architecture is recommended — the **main thread** renders it on demand with the `drawio` skill (vocabulary) + the `mcp__drawio__*` MCP (ephemeral preview at `localhost:6002`), nothing is written to the repo. This phase does NOT generate or export any diagram. If `not-needed` or absent, skip silently.
+4c. Architecture diagram: if the intake brief's `diagram` flag is `needed`, NOTE in your result (summary/`risks`) that a live diagram of the chosen architecture is recommended — the **main thread** renders it on demand with the `drawio` skill (vocabulary) + the `mcp__drawio__*` MCP (ephemeral live preview), nothing is written to the repo. This phase does NOT generate or export any diagram. If `not-needed` or absent, skip silently.
 5. Persist design to active backend
 
 Do NOT write tasks yet — design is the HOW at architectural level, tasks are the WHAT-to-do steps.

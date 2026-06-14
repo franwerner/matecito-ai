@@ -95,7 +95,7 @@ The edge style is built as:
 ### Rendering the sample
 
 1. Fill the template with the candidate preset's values and extract the bare `<mxGraphModel>...</mxGraphModel>` (drop the `<mxfile><diagram>` wrapper).
-2. Pass that `<mxGraphModel>` to `mcp__drawio__create_new_diagram(xml)` — the sample appears in the live preview at `localhost:6002`. (Call `mcp__drawio__start_session` once first if the preview isn't open yet.) Nothing is written to the working directory.
+2. Pass that `<mxGraphModel>` to `mcp__drawio__create_new_diagram(xml)` — the sample appears in the live preview. (Call `mcp__drawio__start_session` once first if the preview isn't open yet.) Nothing is written to the working directory.
 3. Inspect the result via `mcp__drawio__get_diagram` and/or the live preview to confirm the palette/shapes/fonts/edges read correctly.
 4. Show the user: preset summary table + live preview + provenance/confidence line.
 
