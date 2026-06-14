@@ -35,7 +35,7 @@
 (Si el ADR nuevo está en otro dominio, usar ruta relativa: [../<otro-dominio>/<slug>.md](../<otro-dominio>/<slug>.md))
 -->
 
-<!-- Si Status es Inferred (ADR minado por project-decisions-mine desde el código, NO decidido aún por un humano), agregar esta sección. Es TRANSITORIA: al promoverse a Accepted vía bootstrap, se elimina (git conserva la traza). El humano completa Contexto/Decisión/Consecuencias; mine NUNCA infiere el porqué — solo registra el qué observado.
+<!-- Si Status es Inferred (ADR minado por development-decisions-mine desde el código, NO decidido aún por un humano), agregar esta sección. Es TRANSITORIA: al promoverse a Accepted vía bootstrap, se elimina (git conserva la traza). El humano completa Contexto/Decisión/Consecuencias; mine NUNCA infiere el porqué — solo registra el qué observado.
 
 ## Evidencia (inferida)
 

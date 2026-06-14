@@ -1,11 +1,11 @@
 ---
-name: project-decisions-validate
-description: Validador de coherencia, completitud y verificabilidad de las decisiones de ingeniería (ADRs) de un proyecto, organizadas por dominio en .matecito-ai/adr/<dominio>/. Usá esta skill cuando el usuario pida "validar la arquitectura", "revisar los ADRs", "chequear coherencia", "¿mis decisiones se contradicen?", después de editar ADRs a mano o de correr project-decisions-bootstrap. Lee `.matecito-ai/adr/` (recursivo por dominio) y reporta hallazgos con severidad. NO modifica nada — es consultiva.
+name: development-decisions-validate
+description: Validador de coherencia, completitud y verificabilidad de las decisiones de ingeniería (ADRs) de un proyecto, organizadas por dominio en .matecito-ai/adr/<dominio>/. Usá esta skill cuando el usuario pida "validar la arquitectura", "revisar los ADRs", "chequear coherencia", "¿mis decisiones se contradicen?", después de editar ADRs a mano o de correr development-decisions-bootstrap. Lee `.matecito-ai/adr/` (recursivo por dominio) y reporta hallazgos con severidad. NO modifica nada — es consultiva.
 ---
 
-# Project Decisions Validate
+# Development Decisions Validate
 
-Lee los ADRs producidos por `project-decisions-bootstrap` (o editados a mano) y los chequea contra una rúbrica: **completitud**, **coherencia entre decisiones**, **verificabilidad**, e **integridad de la taxonomía**. Reporta hallazgos con severidad. No modifica archivos.
+Lee los ADRs producidos por `development-decisions-bootstrap` (o editados a mano) y los chequea contra una rúbrica: **completitud**, **coherencia entre decisiones**, **verificabilidad**, e **integridad de la taxonomía**. Reporta hallazgos con severidad. No modifica archivos.
 
 Los ADRs están organizados por dominio (`.matecito-ai/adr/<dominio>/<slug>.md`), con un índice raíz (`.matecito-ai/adr/INDEX.md`) y un índice por dominio (`.matecito-ai/adr/<dominio>/INDEX.md`).
 
@@ -15,7 +15,7 @@ Esta validación SOLO sirve si es adversarial: leé únicamente lo que está ESC
 
 ## Dominios canónicos
 
-La taxonomía es fija (la misma que impone `project-decisions-bootstrap`):
+La taxonomía es fija (la misma que impone `development-decisions-bootstrap`):
 
 **Activos:** `context` · `structure` · `runtime` · `data` · `observability` · `security` · `contracts` · `delivery` · `frontend` · `quality`
 **Reservados:** `lifecycle` · `integration` · `privacy` · `release` · `domain-logic` · `compliance` · `ux-product`
@@ -24,7 +24,7 @@ Cualquier carpeta bajo `.matecito-ai/adr/` que no sea uno de estos dominios (ni 
 
 ## Pre-flight
 
-Leé `.matecito-ai/adr/INDEX.md`. Si no existe, no hay nada que validar → sugerí correr `project-decisions-bootstrap` y frená.
+Leé `.matecito-ai/adr/INDEX.md`. Si no existe, no hay nada que validar → sugerí correr `development-decisions-bootstrap` y frená.
 
 ## Proceso
 
@@ -32,7 +32,7 @@ Leé `.matecito-ai/adr/INDEX.md`. Si no existe, no hay nada que validar → suge
 2. **Identificá el tipo de proyecto** desde el ADR `context` (en `.matecito-ai/adr/context/context.md`).
 3. **Para el chequeo de completitud** necesitás saber qué fases son relevantes a ese tipo:
    - Si el bootstrap te lanzó, usá la lista de fases relevantes que te pasó.
-   - Si corrés standalone y podés acceder al catálogo `concerns/INDEX.md` de `project-decisions-bootstrap`, usalo.
+   - Si corrés standalone y podés acceder al catálogo `concerns/INDEX.md` de `development-decisions-bootstrap`, usalo.
    - Si no tenés ninguna de las dos, marcá completitud como "no verificable" y seguí con el resto (que solo necesita los ADRs).
    - **ADRs con `Status: Inferred` NO son decisiones cerradas:** no los contés en el total de decisiones tomadas para el chequeo de completitud (no satisfacen la preocupación), y no reportes como defecto las secciones WHY/Consecuencias/Reglas vacías (se espera que estén vacías). Sí considerá `## Alcance` como ancla de drift (verificá que los globs sigan matcheando).
 4. **Leé `coherence-rules.md`** (en esta misma skill) y aplicá cada chequeo. Cada regla indica el/los dominio(s) donde viven los ADRs involucrados, así sabés qué archivos abrir.
@@ -74,7 +74,7 @@ Si un dominio no tiene ningún hallazgo, no lo listes. Si NO hay hallazgos en ni
 
 ## Después del reporte
 
-- **No modifiques ADRs.** Si el usuario quiere resolver un hallazgo, derivá a `project-decisions-bootstrap` en modo update para el ADR afectado.
+- **No modifiques ADRs.** Si el usuario quiere resolver un hallazgo, derivá a `development-decisions-bootstrap` en modo update para el ADR afectado.
 - **Ratchet:** si detectaste una contradicción real que NO está en `coherence-rules.md`, ofrecé agregarla a la rúbrica para que se atrape en el futuro (con su severidad, dominio(s) y mensaje qué/por qué/sugerencia).
 
 ## Anti-patterns

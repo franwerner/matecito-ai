@@ -1,13 +1,13 @@
 ---
-name: project-decisions-mine
+name: development-decisions-mine
 description: Minería de decisiones de ingeniería desde el código fuente de un repo existente. Produce candidatos a ADR con Status Inferred a partir de evidencia estructural, de configuración, de patrones o de ausencia. Dos modos — Mode A (scan brownfield invocado por la skill) y Mode B (in-flow, opt-in via flagDecisionGaps). Usá esta skill cuando el usuario pida "minear decisiones", "encontrar ADRs que faltan", "¿qué decisiones hay implícitas en el código?", o cuando el orchestrator dispare el boundary dispatch post-verify con gaps implementados.
 ---
 
-# Project Decisions Mine
+# Development Decisions Mine
 
 Minería consultativa de decisiones de ingeniería implícitas en el código: escanea el repo, construye candidatos a ADR con evidencia observable, y los presenta para confirmación humana antes de escribir cualquier cosa. Nunca escribe ADRs sin confirmación explícita.
 
-> **Arquitectura de esta skill — motor/datos igual que bootstrap.** `SKILL.md` (este archivo) es el motor: pipeline, modelo de evidencia, reglas de confianza, flujos Mode A y Mode B, invariantes. El catálogo de dominios y la taxonomía de concerns son de `project-decisions-bootstrap` (READ-ONLY); las plantillas de estructura de ADR (incl. `adr.md`) viven en la referencia `~/.claude/references/adr/templates/` (READ-ONLY). La salida son ADRs con `Status: Inferred` en `.matecito-ai/adr/<dominio>/<slug>.md`, misma taxonomía.
+> **Arquitectura de esta skill — motor/datos igual que bootstrap.** `SKILL.md` (este archivo) es el motor: pipeline, modelo de evidencia, reglas de confianza, flujos Mode A y Mode B, invariantes. El catálogo de dominios y la taxonomía de concerns son de `development-decisions-bootstrap` (READ-ONLY); las plantillas de estructura de ADR (incl. `adr.md`) viven en la referencia `~/.claude/references/adr/templates/` (READ-ONLY). La salida son ADRs con `Status: Inferred` en `.matecito-ai/adr/<dominio>/<slug>.md`, misma taxonomía.
 
 > **Concepto de ADR — referencia canónica.** Qué ES y qué NO ES un ADR, y la diferencia borrador(inferido)/aceptado, están en `~/.claude/references/adr/README.md` (referencia agnóstica de flujo/skill). mine NO redefine el concepto — lo aplica. Si dudás si un hallazgo "es un ADR", esa referencia es la regla.
 
@@ -18,7 +18,7 @@ Minería consultativa de decisiones de ingeniería implícitas en el código: es
 La skill está partida en **motor** y **executor**:
 
 - **`SKILL.md` (este archivo) = el motor.** Define el pipeline, el modelo de evidencia, las reglas de confianza (router + label), los flujos de Mode A y Mode B, y los invariantes. Es el contrato que el executor debe seguir.
-- **`payload/agents/project-decisions-mine.md` = el executor.** Agente de contexto fresco que hace el trabajo pesado de scan/discovery y RETORNA un bloque `candidates[]`. No escribe ADRs. El executor sirve tanto Mode A como Mode B.
+- **`payload/agents/development-decisions-mine.md` = el executor.** Agente de contexto fresco que hace el trabajo pesado de scan/discovery y RETORNA un bloque `candidates[]`. No escribe ADRs. El executor sirve tanto Mode A como Mode B.
 - **El thread principal = gate + materialize.** Recibe `candidates[]` del executor, renderiza la tabla de confirmación, y ejecuta la materialización solo después del confirm explícito del usuario.
 
 ---

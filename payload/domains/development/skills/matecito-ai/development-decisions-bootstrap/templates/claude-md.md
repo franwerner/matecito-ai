@@ -15,4 +15,4 @@ Las decisiones de ingeniería de este proyecto (arquitectura, convenciones y pol
 
 Si una decisión no está documentada o algo no queda claro, **preguntá al usuario antes de inventar una convención**. Las decisiones se registran como ADR, no se improvisan.
 
-Para crear, actualizar o revisar decisiones de ingeniería (incluyendo agregar/cambiar tecnologías del catálogo), usá la skill `project-decisions-bootstrap`.
+Para crear, actualizar o revisar decisiones de ingeniería (incluyendo agregar/cambiar tecnologías del catálogo), usá la skill `development-decisions-bootstrap`.

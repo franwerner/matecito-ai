@@ -55,9 +55,9 @@ Las piezas específicas de desarrollo del ecosistema:
 | Capa | Pieza | Rol |
 | --- | --- | --- |
 | **Flujo** | Fork SDD | Fases intake → … → archive, con base inmutable + add-ons opcionales. Modelo por agente y Strict TDD configurables. |
-| **Skill** | `project-decisions-bootstrap` | Entrevista por fases que captura decisiones de ingeniería y las materializa como ADRs por dominio. |
-| **Skill** | `project-decisions-validate` | Validador consultivo: coherencia, completitud y verificabilidad de los ADRs. |
-| **Skill** | `project-decisions-mine` | Mina decisiones desde el código de un repo existente y las propone como ADRs `Inferred` (borradores) para que un humano las ratifique vía bootstrap. |
+| **Skill** | `development-decisions-bootstrap` | Entrevista por fases que captura decisiones de ingeniería y las materializa como ADRs por dominio. |
+| **Skill** | `development-decisions-validate` | Validador consultivo: coherencia, completitud y verificabilidad de los ADRs. |
+| **Skill** | `development-decisions-mine` | Mina decisiones desde el código de un repo existente y las propone como ADRs `Inferred` (borradores) para que un humano las ratifique vía bootstrap. |
 | **Referencia** | `adr` | Definición canónica de qué es (y qué no es) un ADR + plantillas de estructura. Consultable y agnóstica de flujo. |
 | **Catálogo** | `design-patterns` | Catálogo canónico de patrones de diseño. Los ADRs lo citan por nombre; `sdd-design` respeta la definición cuando un ADR declara `Patrón aplicado`. |
 | **MCP** | `engram` | Memoria persistente (mecanismo del núcleo): artefactos del SDD entre fases + descubrimientos/fixes entre sesiones. |
@@ -82,9 +82,9 @@ sdd-init  sdd-onboard
 
 ```
 git                          # formato de commits (Conventional Commits), atomicidad, atribución
-project-decisions-bootstrap  # captura interactiva de decisiones → ADRs
-project-decisions-validate   # validación consultiva de ADRs
-project-decisions-mine       # minería de decisiones desde el código → ADRs Inferred
+development-decisions-bootstrap  # captura interactiva de decisiones → ADRs
+development-decisions-validate   # validación consultiva de ADRs
+development-decisions-mine       # minería de decisiones desde el código → ADRs Inferred
 sdd-intake                   # estructura el pedido crudo y produce el brief de entrada
 ```
 

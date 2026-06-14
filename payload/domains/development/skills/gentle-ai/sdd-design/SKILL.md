@@ -49,15 +49,15 @@ Before designing, read the actual code that will be affected:
 <!-- matecito-ai: read project ADRs before designing — START -->
 #### Step 2a: Read the project's architecture decisions (ADRs)
 
-If the project has `.matecito-ai/adr/` (decisions captured by `project-decisions-bootstrap`), you MUST consult it before proposing any architecture, because the design has to RESPECT decisions already made — not re-decide them.
+If the project has `.matecito-ai/adr/` (decisions captured by `development-decisions-bootstrap`), you MUST consult it before proposing any architecture, because the design has to RESPECT decisions already made — not re-decide them.
 
 1. Read `.matecito-ai/adr/INDEX.md` (root index) to see which domains exist.
 2. For each domain this change touches (e.g. a new endpoint touches `security`, `contracts`, `runtime`), read the relevant ADRs in `.matecito-ai/adr/<domain>/` — focus on their **Decisión**, **Reglas verificables**, AND **Applied pattern** (if present) sections.
 3. When writing the design:
    - **Respect every `Accepted` ADR that applies.** Your "Architecture Decisions" must align with them; cite the ADR (e.g. `security/auth.md`) when a decision is constrained by it.
    - **If an applicable ADR declares `Applied pattern: X`,** your design MUST implement X according to the canonical definition in `~/.claude/references/design-patterns/patterns/<x>.md` — read that file before designing. Cite the pattern by name in your Architecture Decisions. Do not propose a variant unless the ADR itself justifies the deviation.
-   - If the design would **contradict** an `Accepted` ADR → STOP. Do not silently override a standing decision. Report it as a blocker in your return summary so the user can either adjust the design or change the decision via `project-decisions-bootstrap` (update mode).
-   - If the change requires a decision **no ADR covers** (a genuinely new architectural choice) → flag it explicitly under "New decisions (not yet in ADRs)" in your design, and recommend capturing it via `project-decisions-bootstrap` before/with implementation. Document your proposed choice, but mark it as pending ADR capture. When your new decision IS a canonical pattern, name it (the catalog is available at `~/.claude/references/design-patterns/`) so the future ADR can record `Applied pattern: <Nombre>`.
+   - If the design would **contradict** an `Accepted` ADR → STOP. Do not silently override a standing decision. Report it as a blocker in your return summary so the user can either adjust the design or change the decision via `development-decisions-bootstrap` (update mode).
+   - If the change requires a decision **no ADR covers** (a genuinely new architectural choice) → flag it explicitly under "New decisions (not yet in ADRs)" in your design, and recommend capturing it via `development-decisions-bootstrap` before/with implementation. Document your proposed choice, but mark it as pending ADR capture. When your new decision IS a canonical pattern, name it (the catalog is available at `~/.claude/references/design-patterns/`) so the future ADR can record `Applied pattern: <Nombre>`.
 
 If `.matecito-ai/adr/` does NOT exist, proceed normally (note that the project has no captured decisions).
 <!-- matecito-ai: read project ADRs before designing — END -->
@@ -103,7 +103,7 @@ How does this map to the proposal's approach? Reference specs.}
 ## New Decisions (not yet in ADRs)
 
 {Architectural choices this change requires that NO existing ADR covers.
-For each: the proposed choice + a note to capture it via project-decisions-bootstrap.
+For each: the proposed choice + a note to capture it via development-decisions-bootstrap.
 If none, state "None — all decisions are covered by existing ADRs."}
 
 ## ADR Conflicts (BLOCKER if any)
@@ -188,7 +188,7 @@ Ready for tasks (sdd-tasks).
 ## Rules
 
 - ALWAYS read the actual codebase before designing — never guess
-<!-- matecito-ai: ADRs are binding — respect Accepted ADRs in .matecito-ai/adr/; never contradict one silently (report as blocker); flag uncovered decisions for capture via project-decisions-bootstrap (see Step 2a) -->
+<!-- matecito-ai: ADRs are binding — respect Accepted ADRs in .matecito-ai/adr/; never contradict one silently (report as blocker); flag uncovered decisions for capture via development-decisions-bootstrap (see Step 2a) -->
 - ALWAYS read `.matecito-ai/adr/` (if present) before designing; treat Accepted ADRs as binding constraints, surface conflicts as blockers, and flag new uncovered decisions
 - Every decision MUST have a rationale (the "why")
 - Include concrete file paths, not abstract descriptions

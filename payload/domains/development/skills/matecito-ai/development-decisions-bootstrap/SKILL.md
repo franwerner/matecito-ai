@@ -1,9 +1,9 @@
 ---
-name: project-decisions-bootstrap
+name: development-decisions-bootstrap
 description: Entrevista interactiva por fases para capturar las decisiones de ingeniería de un proyecto (arquitectura, convenciones y políticas) al iniciarlo y materializarlas como ADRs organizados por dominio en .matecito-ai/adr/<dominio>/. Usá esta skill SIEMPRE que el usuario inicie un proyecto nuevo, clone un repo vacío, mencione "arrancar un proyecto / empezar un proyecto / setup inicial", pida ayuda con la arquitectura inicial, hable de "definir capas, estructura, convenciones", quiera revisar o actualizar decisiones de arquitectura existentes, o cuando detectes un repo sin .matecito-ai/adr/ ni CLAUDE.md y el usuario esté por escribir código que toca estructura. También dispará si el usuario menciona "ADR", "decisión arquitectónica", "convenciones del proyecto", "manejo de errores", "capas", "acoplamiento", "estructura de carpetas".
 ---
 
-# Project Decisions Bootstrap
+# Development Decisions Bootstrap
 
 Entrevista al usuario para capturar las decisiones de ingeniería del proyecto —arquitectura, convenciones y políticas— y las materializa como ADRs estructurados, **organizados por dominio**, que Claude consultará en futuras sesiones vía `.matecito-ai/adr/INDEX.md`.
 
@@ -152,7 +152,7 @@ Cuando se recorrieron todas, materializá (ver "Materialización").
 
 ### 6. Validación (recomendada)
 
-Al cerrar, ofrecé correr el validador `project-decisions-validate` en **contexto fresco** (como sub-agente), pasándole el tipo de proyecto y la lista de fases relevantes. Chequea coherencia entre ADRs, completitud y verificabilidad, y reporta con severidad. No modifica nada — los hallazgos los resuelve el usuario vía modo update. Es opcional pero recomendado: ojos frescos atrapan contradicciones que el flujo de la entrevista no ve.
+Al cerrar, ofrecé correr el validador `development-decisions-validate` en **contexto fresco** (como sub-agente), pasándole el tipo de proyecto y la lista de fases relevantes. Chequea coherencia entre ADRs, completitud y verificabilidad, y reporta con severidad. No modifica nada — los hallazgos los resuelve el usuario vía modo update. Es opcional pero recomendado: ojos frescos atrapan contradicciones que el flujo de la entrevista no ve.
 
 ---
 
@@ -330,7 +330,7 @@ Notas del contrato del ADR (también en `~/.claude/references/adr/templates/adr.
    - Tecnologías registradas en `tech/`
    - **Lista separada de ADRs `Pending`/`Deferred` con su trigger**, así sabe qué quedó por decidir
    - Sugerencia de commitear estos archivos al repo
-8. Ofrecer correr el validador `project-decisions-validate` en contexto fresco (ver flujo, paso 6) antes de dar por cerrado el bootstrap.
+8. Ofrecer correr el validador `development-decisions-validate` en contexto fresco (ver flujo, paso 6) antes de dar por cerrado el bootstrap.
 
 ---
 

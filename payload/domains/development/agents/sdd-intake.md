@@ -54,7 +54,7 @@ Return a structured result with these fields:
 - `status`: `done` | `blocked` | `needs-decision`
 - `executive_summary`: one-sentence description of the structured request and the triage outcome
 - `artifacts`: topic_keys or file paths written (e.g. `sdd/{change-name}/intake`)
-- `next_recommended`: `sdd-explore` (full flow) | `direct-implementation` (trivial, SDD not needed) | `project-decisions-bootstrap` (an undecided architectural question must be captured first)
+- `next_recommended`: `sdd-explore` (full flow) | `direct-implementation` (trivial, SDD not needed) | `development-decisions-bootstrap` (an undecided architectural question must be captured first)
 - `diagram`: `needed | not-needed` — whether an architecture diagram is warranted per the diagram inference test (decided here, generated downstream)
 - `ui-test`: `needed | not-needed` — whether UI verification via ProofShot is warranted (keyword-inferred or explicit override; confirmed at INTAKE GATE; execution deferred to sdd-verify)
 - `blockers`: ADR conflicts (`blocked`) or undecided decisions (`needs-decision`) found, with the ADR cited

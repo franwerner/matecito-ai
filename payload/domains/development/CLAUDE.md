@@ -19,8 +19,8 @@
 | Decision record | `ADR`, stored in `.matecito-ai/adr/` |
 | Decision-record concept reference | `~/.claude/references/adr/README.md` |
 | Canonical catalog | `design-patterns` at `~/.claude/references/design-patterns/` (`Applied pattern: X` → `patterns/<x>.md`) |
-| Decision-mining executor | `project-decisions-mine` |
-| Decision-capture skill | `project-decisions-bootstrap` |
+| Decision-mining executor | `development-decisions-mine` |
+| Decision-capture skill | `development-decisions-bootstrap` |
 | Exploration index | CodeGraph (`mcp__codegraph__*`), active when `.codegraph/` exists |
 | Guards | `strict-tdd`, `review-workload` |
 | Engram topic-key namespace | `sdd-init/{project}` · `sdd/{change-name}/{intake,explore,proposal,spec,design,tasks,apply-progress,verify-report,archive-report,state}` |
@@ -83,4 +83,4 @@ Same precedence as model resolution — per-project `domainConfig.development.st
 After `sdd-tasks` and before `sdd-apply`, inspect `Review Workload Forecast`. If chained PRs recommended / 400-line budget risk High / decision needed → apply cached `delivery_strategy` (`ask-on-risk` default: STOP and ask chained PRs vs `size:exception`). Automatic mode does not override this guard.
 
 ## Decision-Gap Capture — development specifics
-The kernel owns the generic mine gate. In development the mining executor is `project-decisions-mine`; confirmed candidates are materialized as `[Inferred]` `.md` ADRs and the `.matecito-ai/adr/INDEX.md` is updated **once at the end**; the ADRs live ONLY as `.md`, never recorded in Engram.
+The kernel owns the generic mine gate. In development the mining executor is `development-decisions-mine`; confirmed candidates are materialized as `[Inferred]` `.md` ADRs and the `.matecito-ai/adr/INDEX.md` is updated **once at the end**; the ADRs live ONLY as `.md`, never recorded in Engram.

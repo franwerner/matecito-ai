@@ -12,6 +12,6 @@ Separadas en archivos individuales (uno por plantilla) para que sean auditables 
 | [tech-adr.md](tech-adr.md) | `.matecito-ai/adr/tech/<nombre>.md` | Mini-ADR por tecnología concreta elegida. |
 | [tech-index.md](tech-index.md) | `.matecito-ai/adr/tech/INDEX.md` | Catálogo de tecnologías por categoría. |
 
-> El template del `CLAUDE.md` raíz del proyecto NO vive acá: es propio de `project-decisions-bootstrap` (`templates/claude-md.md`), porque solo bootstrap escribe ese archivo.
+> El template del `CLAUDE.md` raíz del proyecto NO vive acá: es propio de `development-decisions-bootstrap` (`templates/claude-md.md`), porque solo bootstrap escribe ese archivo.
 
 **Leyenda de placeholders:** `<...>` = valor a completar al materializar. Los bloques `<!-- ... -->` son instrucciones del contrato (no van en el archivo generado).

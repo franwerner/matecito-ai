@@ -1,6 +1,6 @@
 <!-- Canonical template: índice RAÍZ (`.matecito-ai/adr/INDEX.md`). Enruta por dominio. Consumido por la fase de Materialización de SKILL.md. -->
 
-# Project Decision Records — Índice raíz
+# Development Decision Records — Índice raíz
 
 Las decisiones están organizadas por **dominio**. Este índice te dice qué dominio mirar; el detalle de cada decisión está en el índice de su dominio.
 

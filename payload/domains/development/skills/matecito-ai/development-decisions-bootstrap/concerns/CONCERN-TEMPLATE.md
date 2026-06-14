@@ -116,4 +116,4 @@ Desde ese momento, todo bootstrap futuro considera el concern, y el modo update 
 
 ## Si la contradicción también es nueva
 
-Si al agregar el concern detectás una combinación que puede contradecir a otro (ej: el concern nuevo choca con `auth` en ciertos casos), agregá también la regla a la rúbrica del validador (`project-decisions-validate/coherence-rules.md`), con severidad, dominio(s) y mensaje qué/por qué/sugerencia. Así el validador la atrapa de ahí en más.
+Si al agregar el concern detectás una combinación que puede contradecir a otro (ej: el concern nuevo choca con `auth` en ciertos casos), agregá también la regla a la rúbrica del validador (`development-decisions-validate/coherence-rules.md`), con severidad, dominio(s) y mensaje qué/por qué/sugerencia. Así el validador la atrapa de ahí en más.

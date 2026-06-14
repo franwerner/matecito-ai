@@ -1,6 +1,6 @@
 # Rúbrica de coherencia y completitud
 
-Lista central de chequeos que aplica `project-decisions-validate`. Es **ratchet-able**: cuando aparece una contradicción nueva, se agrega acá y queda cubierta para siempre.
+Lista central de chequeos que aplica `development-decisions-validate`. Es **ratchet-able**: cuando aparece una contradicción nueva, se agrega acá y queda cubierta para siempre.
 
 ## Cómo la lee el validador
 

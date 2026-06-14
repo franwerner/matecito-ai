@@ -83,8 +83,8 @@ First apply the **ADR activation gate** (single source of truth in `matecito-ai:
 Read `.matecito-ai/adr/INDEX.md` and the indexes of the domains this request touches.
 This is a **shallow** check — you are looking for early blockers, not doing design:
 
-- **Conflict:** does the request contradict an `Accepted` ADR? (e.g. "endpoint público sin login" vs an auth ADR that requires protection.) → set `status: blocked`, name the ADR, and recommend resolving via `project-decisions-bootstrap` (update) or adjusting the request. Do NOT proceed to recommend the flow.
-- **Undecided question:** does the request require an architectural decision that NO ADR covers? (e.g. export of huge files — sync or background job? no ADR says.) → set `status: needs-decision`, name the gap, and recommend `project-decisions-bootstrap` to capture it *before* the flow runs.
+- **Conflict:** does the request contradict an `Accepted` ADR? (e.g. "endpoint público sin login" vs an auth ADR that requires protection.) → set `status: blocked`, name the ADR, and recommend resolving via `development-decisions-bootstrap` (update) or adjusting the request. Do NOT proceed to recommend the flow.
+- **Undecided question:** does the request require an architectural decision that NO ADR covers? (e.g. export of huge files — sync or background job? no ADR says.) → set `status: needs-decision`, name the gap, and recommend `development-decisions-bootstrap` to capture it *before* the flow runs.
 - **All clear** → `status: done`, proceed with the routing from Step 4.
 
 The point: catch the blocker now, at intake, instead of letting the flow discover it at the design phase after wasting explore/propose/spec.
@@ -122,10 +122,10 @@ Lane: {direct | reduced | full | custom} — add-ons: [{explore? propose? design
 {One of:
 - "Clear — no conflict with existing ADRs, no undecided question."
 - "⛔ BLOCKED: conflicts with `<domain>/<slug>.md` — {what}. Resolve before proceeding."
-- "🟡 NEEDS DECISION: `<domain>` has no ADR for {what}. Capture via project-decisions-bootstrap first."}
+- "🟡 NEEDS DECISION: `<domain>` has no ADR for {what}. Capture via development-decisions-bootstrap first."}
 
 ### Next
-{direct-implementation | project-decisions-bootstrap | the first phase the chosen lane runs — `sdd-explore` if `explore` is on, else `sdd-propose` if `propose` is on, else `sdd-spec`}
+{direct-implementation | development-decisions-bootstrap | the first phase the chosen lane runs — `sdd-explore` if `explore` is on, else `sdd-propose` if `propose` is on, else `sdd-spec`}
 ```
 
 This brief is the entry artifact for the flow. The next phase reads it as its starting point — `sdd-explore` in the full lane, `sdd-spec` in the reduced lane — so the flow doesn't start from a vague one-liner.
