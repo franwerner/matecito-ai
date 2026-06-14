@@ -164,7 +164,7 @@ func permissionPattern(name string) string {
 // AllSteps devuelve los pasos de registro y configuración que install.Run gestiona.
 // Los pasos de binarios (engram, codegraph, matecito-ai) y deploy son responsabilidad
 // de sync.Sync; AllSteps solo cubre los pasos de MCP y configuración de ~/.claude/.
-// Los MCP base son fijos; los MCP por dominio salen de los manifests activos.
+// No hay MCP base; todos salen de los manifests de los dominios activos.
 func AllSteps(opts Options) []Step {
 	steps := domainMCPSteps(opts)
 	steps = append(steps, claudeMdReferenceStep(opts), mcpPermissionsStep(opts))
@@ -506,7 +506,9 @@ func UpdateEngramPlugin(opts Options) error {
 	if err := runIO(opts, "claude", "plugin", "marketplace", "update", "engram"); err != nil {
 		return err
 	}
-	return runIO(opts, "claude", "plugin", "update", "engram")
+	// `plugin update` requires the installed plugin id (plugin@marketplace), not
+	// the short name — `claude plugin list` reports it as `engram@engram`.
+	return runIO(opts, "claude", "plugin", "update", "engram@engram")
 }
 
 func codegraphBinaryStep(opts Options) Step {
@@ -567,7 +569,7 @@ func ensureUserNpmPrefix(opts Options) error {
 func engramMCPStep(opts Options) Step {
 	return Step{
 		Name: "Engram MCP (plugin)",
-		Plan: "claude plugin marketplace add Gentleman-Programming/engram && claude plugin install engram",
+		Plan: "claude plugin marketplace add Gentleman-Programming/engram && claude plugin install engram@engram",
 		Check: func() bool {
 			_, ok := mcp.Find("engram")
 			return !ok
@@ -579,7 +581,9 @@ func engramMCPStep(opts Options) Step {
 			if err := runIO(opts, "claude", "plugin", "marketplace", "add", "Gentleman-Programming/engram"); err != nil {
 				return err
 			}
-			return runIO(opts, "claude", "plugin", "install", "engram")
+			// Install with the full plugin@marketplace id so the install matches the
+			// id `plugin update`/`plugin list` use later (`engram@engram`).
+			return runIO(opts, "claude", "plugin", "install", "engram@engram")
 		},
 	}
 }
