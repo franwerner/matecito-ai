@@ -25,7 +25,7 @@ The script exits with a clear message if `dot` is missing — fall back to hand-
 python3 <this-skill-dir>/scripts/autolayout.py graph.json -o /tmp/diagram.drawio
 ```
 
-It prints `wrote /tmp/diagram.drawio (N nodes, M edges)` to stderr and writes a normal `.drawio` file to a **system temp path** (never the working dir). From there, follow the main workflow's **Render** step (SKILL.md Step 3): validate the temp file with `scripts/validate.py`, then **read the XML back** and extract the inner `<mxGraphModel>...</mxGraphModel>` (drop the `<mxfile><diagram>` wrapper) to pass to `mcp__drawio__create_new_diagram(xml)` for the live preview — then run the self-check and review loop.
+It prints `wrote /tmp/diagram.drawio (N nodes, M edges)` to stderr and writes a normal `.drawio` file to a **system temp path** (never the working dir). From there, follow the main workflow's **Render** step (SKILL.md Step 4): validate the temp file with `scripts/validate.py`, then **read the XML back** and extract the inner `<mxGraphModel>...</mxGraphModel>` (drop the `<mxfile><diagram>` wrapper) and full-render the `<mxGraphModel>` from scratch via the `mcp__drawio__*` MCP — then run the self-check and review loop.
 
 ## Input format
 

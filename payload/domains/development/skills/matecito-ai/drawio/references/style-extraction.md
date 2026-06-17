@@ -11,7 +11,7 @@ After extracting a candidate preset, render this seven-node sample using the can
 - Row 2 (y=180): `security` (x=80), `service` (x=340), `queue` (x=600)
 - Row 3 (y=340): `database` (x=80), `external` (x=340), `error` (x=600)
 
-**Template — substitute `{{...}}` placeholders from the candidate preset.** The MCP consumes the bare `<mxGraphModel>`; pass it to `create_new_diagram` **without** the `<mxfile><diagram>` wrapper shown below.
+**Template — substitute `{{...}}` placeholders from the candidate preset.** The MCP consumes the bare `<mxGraphModel>`; full-render the `<mxGraphModel>` from scratch (this replaces any existing diagram) via the `mcp__drawio__*` MCP **without** the `<mxfile><diagram>` wrapper shown below.
 
 The vertex style for role `R` is built as:
 `<shapes[R]>;whiteSpace=wrap;html=1;fillColor=<palette[roles[R]].fillColor>;strokeColor=<palette[roles[R]].strokeColor>;fontFamily=<font.fontFamily>;fontSize=<font.fontSize>`
@@ -95,14 +95,14 @@ The edge style is built as:
 ### Rendering the sample
 
 1. Fill the template with the candidate preset's values and extract the bare `<mxGraphModel>...</mxGraphModel>` (drop the `<mxfile><diagram>` wrapper).
-2. Pass that `<mxGraphModel>` to `mcp__drawio__create_new_diagram(xml)` — the sample appears in the live preview. (Call `mcp__drawio__start_session` once first if the preview isn't open yet.) Nothing is written to the working directory.
-3. Inspect the result via `mcp__drawio__get_diagram` and/or the live preview to confirm the palette/shapes/fonts/edges read correctly.
+2. Full-render the `<mxGraphModel>` from scratch (this replaces any existing diagram) via the `mcp__drawio__*` MCP — the sample appears in the live preview. (Open the live preview session once first if the preview isn't open yet.) Nothing is written to the working directory.
+3. Read the current diagram state and/or the live preview to confirm the palette/shapes/fonts/edges read correctly.
 4. Show the user: preset summary table + live preview + provenance/confidence line.
 
 ### Approval loop
 
 - "save" / "looks good" → write candidate to `~/.drawio-skill/styles/<name>.json`; delete tempfile.
-- "change <field> to <value>" → edit the in-memory candidate; re-render the sample via `create_new_diagram`; re-ask.
+- "change <field> to <value>" → edit the in-memory candidate; re-render the sample by full-rendering the `<mxGraphModel>` from scratch via the `mcp__drawio__*` MCP; re-ask.
 - "cancel" → delete tempfile; no save.
 
 ### If sample render fails (MCP error)

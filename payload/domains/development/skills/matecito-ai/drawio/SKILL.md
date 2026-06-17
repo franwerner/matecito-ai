@@ -13,7 +13,7 @@ metadata: {"hermes":{"tags":["drawio","diagram","flowchart","architecture","visu
 
 ## Overview
 
-This skill builds `<mxGraphModel>` XML **in memory** and renders it live via the `mcp__drawio__*` MCP (ephemeral live preview). It **NEVER** writes `.drawio`/PNG files to the working directory. The skill **complements** the MCP: the skill supplies the rich vocabulary (shapes, icons, styles, layout) and the MCP supplies the live render. Export to a file happens **only** on explicit user request, via `mcp__drawio__export_diagram`, to a path **outside the repo**.
+This skill builds `<mxGraphModel>` XML **in memory** and renders it live via the `mcp__drawio__*` MCP (ephemeral live preview). It **NEVER** writes `.drawio`/PNG files to the working directory. The skill **complements** the MCP: the skill supplies the rich vocabulary (shapes, icons, styles, layout) and the MCP supplies the live render. Export to a file happens **only** on explicit user request, to a path **outside the repo**.
 
 ## When to use / when NOT to use
 
@@ -61,11 +61,14 @@ Load the preset JSON from `~/.drawio-skill/styles/<name>.json`, falling back to 
 
 When a preset loads successfully, mention it in the first line of the reply: *"Using preset `<name>` (confidence: `<level>`)."* See the **Applying a preset** subsection below for how the preset changes color/shape/edge/font decisions.
 
-1. **Ensure the preview session** — call `mcp__drawio__start_session` once to open the live preview in the browser. `start_session` returns the actual preview URL — the port is assigned **dynamically** (commonly `6002`, or the next free one such as `6003`), so use whatever it reports rather than assuming a fixed port. No binary resolution is needed; the MCP provides the render.
+1. **Ensure the preview session** — open the live preview session once (via the `mcp__drawio__*` MCP) to open the live preview in the browser. The MCP returns the actual preview URL — the port is assigned **dynamically** (commonly `6002`, or the next free one such as `6003`), so use whatever it reports rather than assuming a fixed port. No binary resolution is needed; the MCP provides the render.
 2. **Plan** — identify shapes, relationships, layout (LR or TB), group by tier/layer. Start margins at `x=40, y=40` and space shapes per the **Layout tips** table below (gaps scale with node count). The MCP's `800×600` is the **single-page target for simple diagrams (≤5 nodes)** — keep those within it. Medium/large diagrams *will* exceed it, and that's fine: the live preview scrolls and zooms. **Prioritize legibility (the table's gaps) over fitting one page** — never compress a large diagram to force it into `800×600`.
 3. **Generate** — build the `<mxGraphModel>` XML **in memory** (do not write to the working dir). Hand-place coordinates for small/styled diagrams. **For large or layout-heavy diagrams (dependency/call graphs, code structure, >~15 nodes), don't hand-place** — describe the graph as JSON (write it by hand, or generate it with any external analyzer that emits nodes/edges — see `references/autolayout.md`) and run `python3 <this-skill-dir>/scripts/autolayout.py graph.json -o /tmp/<name>.drawio` to compute node positions + orthogonal edge routing via Graphviz. **`autolayout.py` writes its `.drawio` output to a system temp path (e.g. `/tmp`), never to the working dir** — you then **read the XML back from the temp file** to pass it to the MCP. Run `python3 <this-skill-dir>/scripts/validate.py /tmp/<name>.drawio` against that temp file for a fast structural lint (dangling edges, dup ids, overlaps) before rendering. **IMPORTANT:** the MCP consumes a bare `<mxGraphModel>` **without** the `<mxfile><diagram>` wrapper; if a tool produced the full `<mxfile>`, extract only the inner `<mxGraphModel>...</mxGraphModel>` before passing it to the MCP.
-4. **Render** — pass the `<mxGraphModel>` XML to `mcp__drawio__create_new_diagram(xml)`; the diagram appears live in the preview opened by `start_session`. There is no preview PNG export, no `-e` flag, no PNG repair. (Note: `create_new_diagram` **destroys** any prior diagram — use it only for the first render or an explicit "start over".)
-5. **Self-check** — optional, if the model has vision. Call `mcp__drawio__get_diagram` to inspect the structure and/or look at the live preview, then apply the checks in the table below. Apply any fixes via `mcp__drawio__edit_diagram`.
+4. **Render** — full-render the `<mxGraphModel>` from scratch (this replaces any existing diagram) via the `mcp__drawio__*` MCP; the diagram appears live in the preview opened in step 1. There is no preview PNG export, no `-e` flag, no PNG repair.
+
+   **Decision — full render vs incremental edit:** first render or a layout-wide regeneration → full-render from scratch. Any change to an already-rendered diagram → incremental edit (read the current state first). Never full-render to make a small change — it wipes the user's manual edits.
+
+5. **Self-check** — optional, if the model has vision. Read the current diagram state to inspect the structure and/or look at the live preview, then apply the checks in the table below. Apply any fixes by applying minimal incremental edits to the existing diagram via the `mcp__drawio__*` MCP.
 
 | Check | What to look for | Fix action |
 |-------|-----------------|-----------------|
@@ -78,7 +81,7 @@ When a preset loads successfully, mention it in the first line of the reply: *"U
 
 - Max **2 self-check rounds** — if issues remain after 2 fixes, show the user anyway.
 
-6. **Review loop** — show the live preview to the user and collect feedback. Apply **minimal** edits via `mcp__drawio__get_diagram` (always read the current state first — it includes the user's manual edits) followed by `mcp__drawio__edit_diagram` (add/update/delete operations keyed by `cell_id`, each carrying a complete `mxCell` in `new_xml`).
+6. **Review loop** — show the live preview to the user and collect feedback. Apply **minimal** edits by first reading the current diagram state (always read the current state first — it includes the user's manual edits) then applying minimal incremental edits (add/update/delete operations keyed by `cell_id`, each carrying a complete `mxCell` in `new_xml`) via the `mcp__drawio__*` MCP.
 
 **Targeted edit rules** — for each type of feedback, apply the minimal MCP operation:
 
@@ -91,15 +94,15 @@ When a preset loads successfully, mention it in the first line of the reply: *"U
 | Resize shape X | `update` the matching cell — new `mxCell` with adjusted `width`/`height` in `mxGeometry` |
 | Add arrow from A to B | `add` a new `mxCell` edge with `source`/`target` matching A and B ids |
 | Change label text | `update` the matching cell — new `mxCell` with the new `value` |
-| Change layout direction | **Full regeneration** — rebuild the `<mxGraphModel>` and re-render with `create_new_diagram` |
+| Change layout direction | **Full regeneration** — rebuild the `<mxGraphModel>` and full-render it from scratch |
 
 **Rules:**
 - For single-element changes: `update`/`add`/`delete` individual cells — preserves layout tuning from prior iterations.
-- For layout-wide changes (e.g., swap LR↔TB, "start over"): regenerate the full `<mxGraphModel>` and call `create_new_diagram` again.
-- Always call `mcp__drawio__get_diagram` before editing so you operate on the current state.
+- For layout-wide changes (e.g., swap LR↔TB, "start over"): regenerate the full `<mxGraphModel>` and full-render it from scratch via the `mcp__drawio__*` MCP.
+- Always read the current diagram state before editing so you operate on the current state.
 - Loop continues until the user says approved / done / LGTM.
 
-7. **Final (no export by default)** — the deliverable is the **live preview**; nothing is written to disk. **Only** if the user explicitly asks for a file, export via `mcp__drawio__export_diagram(path, format)` to a path **outside the repo** that the user specifies.
+7. **Final (no export by default)** — the deliverable is the **live preview**; nothing is written to disk. **Only** if the user explicitly asks for a file, export to a file outside the repo (via the `mcp__drawio__*` MCP) to a path **outside the repo** that the user specifies.
 
 ## Style Presets
 
@@ -311,7 +314,7 @@ These gaps take priority over the `800×600` single-page target: only a Simple d
 
 ## Export (only on explicit user request)
 
-By default **nothing is exported** — the deliverable is the **live preview**. If, and only if, the user explicitly asks for a file, use `mcp__drawio__export_diagram(path, format)` with `format` of `png`, `svg`, or `drawio`, writing to a path **outside the repo** that the user specifies. There is no draw.io CLI, no PNG repair, no browser fallback, and no PATH/WSL2 handling — the MCP owns the render and the export.
+By default **nothing is exported** — the deliverable is the **live preview**. If, and only if, the user explicitly asks for a file, export to a file outside the repo via the `mcp__drawio__*` MCP with `format` of `png`, `svg`, or `drawio`, writing to a path **outside the repo** that the user specifies. There is no draw.io CLI, no PNG repair, no browser fallback, and no PATH/WSL2 handling — the MCP owns the render and the export.
 
 ## Common Mistakes
 

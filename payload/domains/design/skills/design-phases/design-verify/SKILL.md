@@ -50,8 +50,7 @@ This phase ORCHESTRATES those skills; the technique lives in them — do not dup
     for touched surfaces), run TWO checks against each DDR's `## Reglas verificables`:
     (i) **Produced-work compliance** — the pieces produced in THIS change honor the DDR's concrete
         rules.
-    (ii) **Live-Figma drift** — when a Figma file is connected, READ the real state
-        (`mcp__figma__get_styles`, `mcp__figma__get_components`) and compare rule-by-rule: color
+    (ii) **Live-Figma drift** — when a Figma file is connected, read the file's styles and components via the figma MCP and compare rule-by-rule: color
         styles vs palette, text styles vs type scale, tokens vs spacing, components vs the defined
         set, measured contrast vs target.
     Any divergence (produced work OR live Figma) → CRITICAL `DDR-VIOLATION`, citing the DDR and the

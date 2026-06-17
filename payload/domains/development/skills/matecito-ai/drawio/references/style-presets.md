@@ -58,14 +58,14 @@ When SKILL.md's Step 0 identified a preset, it fully replaces the built-in palet
 1. **Load the extraction reference.** Read `references/style-extraction.md` into context.
 2. **Extract** following the XML path or image path procedure in the reference.
 3. **Normalize and build candidate.** Convert the user-provided preset name to lowercase. Use this normalized name for ALL file paths in this flow. Build the candidate preset JSON and write it to `/tmp/drawio-preset-<name>.json` (where `<name>` is the already-normalized name). Do **not** save to `~/.drawio-skill/styles/<name>.json` yet.
-4. **Render a sample live** using the sample-diagram skeleton in `references/style-extraction.md`, parameterized by the candidate preset. Pass its bare `<mxGraphModel>` to `mcp__drawio__create_new_diagram(xml)` so it appears in the live preview (see the Rendering the sample steps in `style-extraction.md`). No PNG is written to the working directory.
+4. **Render a sample live** using the sample-diagram skeleton in `references/style-extraction.md`, parameterized by the candidate preset. Full-render the `<mxGraphModel>` from scratch (this replaces any existing diagram) via the `mcp__drawio__*` MCP so it appears in the live preview (see the Rendering the sample steps in `style-extraction.md`). No PNG is written to the working directory.
 5. **Show the user:**
    - Preset summary table (palette hex values, shapes per role, font, edge style, extras).
-   - The live preview (inspect via `mcp__drawio__get_diagram` and/or the browser preview).
+   - The live preview (read the current diagram state and/or the browser preview).
    - Provenance line: `source.type`, `source.path`, `extracted_at`, `confidence`.
 6. **Wait for approval:**
    - "save" / "looks good" → write candidate to `~/.drawio-skill/styles/<name>.json`. Create `~/.drawio-skill/styles/` if it doesn't exist. Delete the tempfile.
-   - "change `<field>` to `<value>`" → edit the in-memory candidate, re-render the sample (`create_new_diagram`), re-ask.
+   - "change `<field>` to `<value>`" → edit the in-memory candidate, re-render the sample (full-render the `<mxGraphModel>` from scratch via the `mcp__drawio__*` MCP), re-ask.
    - "cancel" / "abort" / "no" → delete the tempfile; nothing saved.
 
 **Error behavior:**
