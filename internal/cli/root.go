@@ -71,5 +71,6 @@ func NewRootCmd() *cobra.Command {
 	root.AddCommand(NewVerifyCmd())
 	root.AddCommand(NewInstallCmd())
 	root.AddCommand(NewUpdateCmd())
+	root.AddCommand(NewHookCmd())
 	return root
 }

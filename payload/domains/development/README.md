@@ -66,9 +66,12 @@ Las piezas específicas de desarrollo del ecosistema:
 | **MCP** | `drawio` _(next-ai-draw-io)_ | Render de diagramas de arquitectura on-demand y **efímeros**: el thread principal renderiza en vivo el `<mxGraphModel>` en el paso de `design` (preview en la URL que reporta `start_session`; el puerto es dinámico). El **vocabulario** (formas, iconos, estilos, layout) lo aporta la skill `drawio`. No se exporta ningún archivo al repo. |
 | **MCP** | `debugger` _(mcp-debugger)_ | Step-through DAP on-demand, nunca automático. Hogar principal: `sdd-apply` (diagnostica + corrige en el mismo contexto). En `sdd-verify`: solo diagnóstico, sin fixes. Se omite en silencio si el toolchain de debug del lenguaje no está disponible. |
 | **CLI** | `proofshot` | Verificación visual de UI: graba el browser y valida los scenarios. `sdd-verify` la corre cuando el cambio toca UI y proofshot está disponible. |
+| **Hook** | `git-commit-validator` | Hook `PreToolUse` sobre `git commit` (subcomando Go `matecito-ai hook git-commit-validate`): bloquea atribución a IA (`Co-Authored-By`, `Claude`, …), avisa si el formato no es Conventional Commits, y deja pasar lo que no puede inspeccionar. |
 | **Agentes** | `sdd-*` | Un sub-agente por fase, con contexto propio. |
 
 > **Dependencias declaradas (manifest).** `mcp: [engram, context7, codegraph, drawio, debugger]` · `binaries: [engram, codegraph, proofshot]`. Nada se instala global: el ecosistema instala esto solo cuando development está activo, y deriva de `mcp` los permisos de Claude Code (`mcp__<name>__*`).
+
+> **Hooks (transparencia).** Cuando development está activo, el instalador **escribe el hook en tu `~/.claude/settings.json`** y este corre **automáticamente** (Claude Code no pide aprobación para hooks). El hook se identifica con una marca `matecitoId` y se reconcilia por identidad en cada `install`/`update` (reemplaza el suyo, nunca toca tus hooks). Vive como subcomando del binario `matecito-ai` — no se deposita ningún script en tu `~/.claude`.
 
 ## Skills
 

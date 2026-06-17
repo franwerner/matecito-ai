@@ -1,0 +1,1 @@
+{"event":"PreToolUse","matcher":"Bash","if":"Bash(git commit *)","type":"command","command":"matecito-ai hook git-commit-validate"}
