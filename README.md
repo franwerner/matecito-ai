@@ -169,4 +169,5 @@ matecito-ai es una capa de integración sobre proyectos de terceros. El crédito
 - **[codegraph](https://github.com/colbymchenry/codegraph)** — grafo de conocimiento del código vía tree-sitter, expuesto como MCP.
 - **[context7](https://github.com/upstash/context7)** — documentación de librerías en vivo, expuesta como MCP.
 - **[next-ai-draw-io](https://github.com/DayuanJiang/next-ai-draw-io)** — generación de diagramas draw.io desde lenguaje natural, expuesta como MCP.
+- **[mcp-debugger](https://github.com/debugmcp/mcp-debugger)** — debugging step-through headless sobre DAP (multi-lenguaje), expuesto como MCP.
 - **[proofshot](https://github.com/AmElmo/proofshot)** — verificación visual de UI grabando sesiones de browser, integrada como CLI.
