@@ -16,6 +16,7 @@ import (
 	"github.com/franwerner/matecito-ai/internal/checks/debugger"
 	"github.com/franwerner/matecito-ai/internal/checks/drawio"
 	"github.com/franwerner/matecito-ai/internal/checks/engram"
+	"github.com/franwerner/matecito-ai/internal/checks/hooks"
 	"github.com/franwerner/matecito-ai/internal/checks/permissions"
 	"github.com/franwerner/matecito-ai/internal/checks/prereqs"
 	"github.com/franwerner/matecito-ai/internal/checks/proofshot"
@@ -120,6 +121,8 @@ func runChecks() tea.Msg {
 	binActive := func(name string) bool { return binErr != nil || slices.Contains(activeBins, name) }
 	activeIDs, _, idErr := manifest.ResolveFromEnv()
 	devActive := idErr != nil || slices.Contains(activeIDs, "development")
+	activeHooks, hooksErr := manifest.ActiveHooksFromEnv()
+	hooksActive := hooksErr == nil && len(activeHooks) > 0
 
 	clusters := []cluster{{"Prerequisites", prereqs.All()}}
 	if mcpActive("engram") {
@@ -144,6 +147,9 @@ func runChecks() tea.Msg {
 		cluster{"Integración con Claude Code", claudemd.All()},
 		cluster{"Auto-aprobación de tools (settings.json)", permissions.All(install.ActiveMCPPatterns())},
 	)
+	if hooksActive {
+		clusters = append(clusters, cluster{"Hooks de dominios activos", hooks.All()})
+	}
 	if devActive {
 		clusters = append(clusters, cluster{"Cross-check SDD ↔ MCP (" + sddDir + ")", sdd.CrossCheck(sddDir)})
 	}

@@ -80,6 +80,7 @@ func buildMappings(payloadFS fs.FS, active []string) ([]Mapping, error) {
 	return mappings, nil
 }
 
+
 type FileStatus int
 
 const (
@@ -92,7 +93,7 @@ const (
 // (Target). El contenido sale de una de dos fuentes: Source (ruta interna al
 // fs.FS del payload, copiada byte a byte) o Inline (bytes generados en memoria,
 // usado para matecito-ai.md = core + índice de dominios). Si Inline != nil tiene
-// prioridad y Source se ignora.
+// prioridad y Source se ignora. Todos los archivos se escriben con permisos 0o644.
 type FileOp struct {
 	Source string
 	Inline []byte
@@ -487,20 +488,20 @@ func Apply(payloadFS fs.FS, ops []FileOp, claudeHome, backupDir string) (bool, e
 			if err := os.WriteFile(op.Target, op.Inline, 0o644); err != nil {
 				return backupCreated, err
 			}
-		} else if err := copyFromFS(payloadFS, op.Source, op.Target); err != nil {
+		} else if err := copyFromFS(payloadFS, op.Source, op.Target, 0o644); err != nil {
 			return backupCreated, err
 		}
 	}
 	return backupCreated, nil
 }
 
-func copyFromFS(payloadFS fs.FS, src, dst string) error {
+func copyFromFS(payloadFS fs.FS, src, dst string, mode os.FileMode) error {
 	in, err := payloadFS.Open(src)
 	if err != nil {
 		return err
 	}
 	defer in.Close()
-	out, err := os.Create(dst)
+	out, err := os.OpenFile(dst, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, mode)
 	if err != nil {
 		return err
 	}

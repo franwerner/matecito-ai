@@ -168,7 +168,7 @@ func permissionPattern(name string) string {
 // No hay MCP base; todos salen de los manifests de los dominios activos.
 func AllSteps(opts Options) []Step {
 	steps := domainMCPSteps(opts)
-	steps = append(steps, claudeMdReferenceStep(opts), mcpPermissionsStep(opts))
+	steps = append(steps, claudeMdReferenceStep(opts), mcpPermissionsStep(opts), hooksDeployStep(opts))
 	return steps
 }
 
@@ -279,6 +279,72 @@ func mcpPermissionsStep(opts Options) Step {
 				return err
 			}
 			if !settings.Merge(doc, ActiveMCPPatterns()) {
+				return nil
+			}
+			if err := backupSettings(path, opts.BackupDir); err != nil {
+				return err
+			}
+			out, err := json.MarshalIndent(doc, "", "  ")
+			if err != nil {
+				return err
+			}
+			out = append(out, '\n')
+			if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+				return err
+			}
+			return os.WriteFile(path, out, 0o644)
+		},
+	}
+}
+
+// activeHookEntries converts the resolved hooks from the environment into the
+// HookEntry type that settings.ReconcileHooks consumes. Id is forwarded from
+// the resolved hook so matecito-owned handlers carry their identity marker.
+func activeHookEntries() []settings.HookEntry {
+	hooks, err := manifest.ActiveHooksFromEnv()
+	if err != nil {
+		return nil
+	}
+	entries := make([]settings.HookEntry, 0, len(hooks))
+	for _, h := range hooks {
+		entries = append(entries, settings.HookEntry{
+			Event:   h.Event,
+			Matcher: h.Matcher,
+			Command: h.Command,
+			If:      h.If,
+			Type:    h.Type,
+			Timeout: h.Timeout,
+			Id:      h.Id,
+		})
+	}
+	return entries
+}
+
+// hooksDeployStep registers the active domains' hooks in ~/.claude/settings.json
+// using identity-based reconciliation. Check returns true when ReconcileHooks
+// would change settings.json (computed against the loaded document). Run backs
+// up settings.json then reconciles and writes.
+func hooksDeployStep(opts Options) Step {
+	return Step{
+		Name: "Hooks de dominios activos (settings.json)",
+		Plan: "reconciliar handlers de hooks por matecitoId en ~/.claude/settings.json (reemplaza stale handlers, preserva handlers de usuario)",
+		Check: func() bool {
+			doc, err := settings.Load()
+			if err != nil {
+				return false
+			}
+			return settings.ReconcileHooks(doc, activeHookEntries())
+		},
+		Run: func() error {
+			path, err := settings.Path()
+			if err != nil {
+				return err
+			}
+			doc, err := settings.Load()
+			if err != nil {
+				return err
+			}
+			if !settings.ReconcileHooks(doc, activeHookEntries()) {
 				return nil
 			}
 			if err := backupSettings(path, opts.BackupDir); err != nil {

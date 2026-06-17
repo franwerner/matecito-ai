@@ -13,6 +13,7 @@ import (
 	"github.com/franwerner/matecito-ai/internal/checks/debugger"
 	"github.com/franwerner/matecito-ai/internal/checks/drawio"
 	"github.com/franwerner/matecito-ai/internal/checks/engram"
+	"github.com/franwerner/matecito-ai/internal/checks/hooks"
 	"github.com/franwerner/matecito-ai/internal/checks/permissions"
 	"github.com/franwerner/matecito-ai/internal/checks/prereqs"
 	"github.com/franwerner/matecito-ai/internal/checks/proofshot"
@@ -28,7 +29,7 @@ func NewVerifyCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "verify",
 		GroupID: "status",
-		Short:   "Reporta el estado del entorno (prereqs + Engram + CodeGraph + context7 + drawio + debugger + proofshot + SDD)",
+		Short:   "Reporta el estado del entorno (prereqs + Engram + CodeGraph + context7 + drawio + debugger + proofshot + hooks + SDD)",
 		Long:    "verify chequea prerequisites del sistema, el estado de los componentes\nregistrados y la coherencia entre el SDD forkeado y los MCP reales.",
 		Example: `  # Estado del entorno (default sdd-dir: ~/.claude/agents)
   matecito-ai verify
@@ -48,6 +49,8 @@ func NewVerifyCmd() *cobra.Command {
 			proofshotActive := binErr != nil || containsString(activeBins, "proofshot")
 			activeIDs, _, idErr := manifest.ResolveFromEnv()
 			devActive := idErr != nil || containsString(activeIDs, "development")
+			activeHooks, hooksErr := manifest.ActiveHooksFromEnv()
+			hooksActive := hooksErr == nil && len(activeHooks) > 0
 
 			pre := prereqs.All()
 			integ := claudemd.All()
@@ -81,6 +84,10 @@ func NewVerifyCmd() *cobra.Command {
 			if devActive {
 				sx = sdd.CrossCheck(sddDir)
 			}
+			var hk []check.Result
+			if hooksActive {
+				hk = hooks.All()
+			}
 
 			render.Section(os.Stdout, "Prerequisites", pre)
 			if engramActive {
@@ -103,11 +110,14 @@ func NewVerifyCmd() *cobra.Command {
 			}
 			render.Section(os.Stdout, "Integración con Claude Code", integ)
 			render.Section(os.Stdout, "Auto-aprobación de tools (settings.json)", perm)
+			if hooksActive {
+				render.Section(os.Stdout, "Hooks de dominios activos", hk)
+			}
 			if devActive {
 				render.Section(os.Stdout, "Cross-check SDD ↔ MCP ("+sddDir+")", sx)
 			}
 
-			all := make([]check.Result, 0, len(pre)+len(eng)+len(cg)+len(c7)+len(dr)+len(dbg)+len(ps)+len(integ)+len(perm)+len(sx))
+			all := make([]check.Result, 0, len(pre)+len(eng)+len(cg)+len(c7)+len(dr)+len(dbg)+len(ps)+len(integ)+len(perm)+len(hk)+len(sx))
 			all = append(all, pre...)
 			all = append(all, eng...)
 			all = append(all, cg...)
@@ -117,6 +127,7 @@ func NewVerifyCmd() *cobra.Command {
 			all = append(all, ps...)
 			all = append(all, integ...)
 			all = append(all, perm...)
+			all = append(all, hk...)
 			all = append(all, sx...)
 
 			if code := render.Summary(os.Stdout, all); code != 0 {
