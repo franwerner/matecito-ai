@@ -144,6 +144,7 @@ var mcpRegistry = map[string]mcpDef{
 	"context7":  {step: context7MCPStep},
 	"codegraph": {step: codegraphMCPStep},
 	"drawio":    {step: drawioMCPStep},
+	"debugger":  {step: debuggerMCPStep},
 	"figma":     {step: figmaMCPStep},
 	"canva":     {step: canvaMCPStep},
 }
@@ -678,6 +679,23 @@ func drawioMCPStep(opts Options) Step {
 				return errors.New("claude no está en PATH")
 			}
 			return runIO(opts, "claude", "mcp", "add", "--scope", "user", "drawio", "--", "npx", "-y", "@next-ai-drawio/mcp-server@latest")
+		},
+	}
+}
+
+func debuggerMCPStep(opts Options) Step {
+	return Step{
+		Name: "debugger MCP (mcp-debugger)",
+		Plan: "claude mcp add --scope user debugger -- npx -y @debugmcp/mcp-debugger@latest stdio",
+		Check: func() bool {
+			_, ok := mcp.Find("debugger")
+			return !ok
+		},
+		Run: func() error {
+			if _, err := exec.LookPath("claude"); err != nil {
+				return errors.New("claude no está en PATH")
+			}
+			return runIO(opts, "claude", "mcp", "add", "--scope", "user", "debugger", "--", "npx", "-y", "@debugmcp/mcp-debugger@latest", "stdio")
 		},
 	}
 }

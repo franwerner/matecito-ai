@@ -13,6 +13,8 @@ import (
 	"github.com/franwerner/matecito-ai/internal/checks/claudemd"
 	"github.com/franwerner/matecito-ai/internal/checks/codegraph"
 	"github.com/franwerner/matecito-ai/internal/checks/context7"
+	"github.com/franwerner/matecito-ai/internal/checks/debugger"
+	"github.com/franwerner/matecito-ai/internal/checks/drawio"
 	"github.com/franwerner/matecito-ai/internal/checks/engram"
 	"github.com/franwerner/matecito-ai/internal/checks/permissions"
 	"github.com/franwerner/matecito-ai/internal/checks/prereqs"
@@ -128,6 +130,12 @@ func runChecks() tea.Msg {
 	}
 	if mcpActive("context7") {
 		clusters = append(clusters, cluster{"context7", context7.All()})
+	}
+	if mcpActive("drawio") {
+		clusters = append(clusters, cluster{"drawio", drawio.All()})
+	}
+	if mcpActive("debugger") {
+		clusters = append(clusters, cluster{"debugger", debugger.All()})
 	}
 	if binActive("proofshot") {
 		clusters = append(clusters, cluster{"proofshot", proofshot.All()})

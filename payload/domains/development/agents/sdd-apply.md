@@ -5,7 +5,7 @@ description: >
   should begin. Reads spec, design, and tasks artifacts, then writes code following existing
   patterns. Marks tasks complete as it goes.
 model: sonnet
-tools: Read, Edit, Write, Glob, Grep, Bash, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save, mcp__plugin_engram_engram__mem_update, mcp__codegraph__codegraph_search, mcp__codegraph__codegraph_callers, mcp__codegraph__codegraph_callees, mcp__codegraph__codegraph_impact, mcp__codegraph__codegraph_node, mcp__context7__resolve_library_id, mcp__context7__query
+tools: Read, Edit, Write, Glob, Grep, Bash, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save, mcp__plugin_engram_engram__mem_update, mcp__codegraph__codegraph_search, mcp__codegraph__codegraph_callers, mcp__codegraph__codegraph_callees, mcp__codegraph__codegraph_impact, mcp__codegraph__codegraph_node, mcp__context7__resolve_library_id, mcp__context7__query, mcp__debugger__create_debug_session, mcp__debugger__set_breakpoint, mcp__debugger__start_debugging, mcp__debugger__get_local_variables, mcp__debugger__get_variables, mcp__debugger__get_stack_trace, mcp__debugger__step_over, mcp__debugger__step_into, mcp__debugger__step_out, mcp__debugger__continue_execution, mcp__debugger__evaluate_expression, mcp__debugger__close_debug_session, mcp__debugger__list_supported_languages
 # matecito-ai: added codegraph_* (impact analysis before changing symbols) and context7 (live library docs). VERIFY tool name prefixes match your MCP server registrations (codegraph → mcp__codegraph__*, context7 → mcp__context7__*).
 ---
 

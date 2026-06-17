@@ -8,6 +8,7 @@ func TestPermissionPattern_ConventionAndOverride(t *testing.T) {
 		"context7":  "mcp__context7__*",             // convention
 		"codegraph": "mcp__codegraph__*",            // convention
 		"drawio":    "mcp__drawio__*",               // convention
+		"debugger":  "mcp__debugger__*",             // convention
 		"figma":     "mcp__figma__*",                // convention
 		"unknown":   "mcp__unknown__*",              // not in registry → convention
 	}

@@ -64,10 +64,11 @@ Las piezas específicas de desarrollo del ecosistema:
 | **MCP** | `context7` | Documentación de librerías al día (contra APIs alucinadas). Se engancha en `apply`. |
 | **MCP** | `codegraph` | Grafo de código pre-indexado (tree-sitter + SQLite) para explorar por estructura. |
 | **MCP** | `drawio` _(next-ai-draw-io)_ | Render de diagramas de arquitectura on-demand y **efímeros**: el thread principal renderiza en vivo el `<mxGraphModel>` en el paso de `design` (preview en la URL que reporta `start_session`; el puerto es dinámico). El **vocabulario** (formas, iconos, estilos, layout) lo aporta la skill `drawio`. No se exporta ningún archivo al repo. |
+| **MCP** | `debugger` _(mcp-debugger)_ | Step-through DAP on-demand, nunca automático. Hogar principal: `sdd-apply` (diagnostica + corrige en el mismo contexto). En `sdd-verify`: solo diagnóstico, sin fixes. Se omite en silencio si el toolchain de debug del lenguaje no está disponible. |
 | **CLI** | `proofshot` | Verificación visual de UI: graba el browser y valida los scenarios. `sdd-verify` la corre cuando el cambio toca UI y proofshot está disponible. |
 | **Agentes** | `sdd-*` | Un sub-agente por fase, con contexto propio. |
 
-> **Dependencias declaradas (manifest).** `mcp: [engram, context7, codegraph, drawio]` · `binaries: [engram, codegraph, proofshot]`. Nada se instala global: el ecosistema instala esto solo cuando development está activo, y deriva de `mcp` los permisos de Claude Code (`mcp__<name>__*`).
+> **Dependencias declaradas (manifest).** `mcp: [engram, context7, codegraph, drawio, debugger]` · `binaries: [engram, codegraph, proofshot]`. Nada se instala global: el ecosistema instala esto solo cuando development está activo, y deriva de `mcp` los permisos de Claude Code (`mcp__<name>__*`).
 
 ## Skills
 
@@ -86,6 +87,7 @@ development-decisions-bootstrap  # captura interactiva de decisiones → ADRs
 development-decisions-validate   # validación consultiva de ADRs
 development-decisions-mine       # minería de decisiones desde el código → ADRs Inferred
 sdd-intake                   # estructura el pedido crudo y produce el brief de entrada
+debugger                     # preflight por lenguaje, loop de debug DAP y install helper via mcp__debugger__*
 ```
 
 ## Guards

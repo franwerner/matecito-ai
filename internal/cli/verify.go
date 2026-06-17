@@ -10,6 +10,7 @@ import (
 	"github.com/franwerner/matecito-ai/internal/checks/claudemd"
 	"github.com/franwerner/matecito-ai/internal/checks/codegraph"
 	"github.com/franwerner/matecito-ai/internal/checks/context7"
+	"github.com/franwerner/matecito-ai/internal/checks/debugger"
 	"github.com/franwerner/matecito-ai/internal/checks/drawio"
 	"github.com/franwerner/matecito-ai/internal/checks/engram"
 	"github.com/franwerner/matecito-ai/internal/checks/permissions"
@@ -27,7 +28,7 @@ func NewVerifyCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "verify",
 		GroupID: "status",
-		Short:   "Reporta el estado del entorno (prereqs + Engram + CodeGraph + context7 + drawio + proofshot + SDD)",
+		Short:   "Reporta el estado del entorno (prereqs + Engram + CodeGraph + context7 + drawio + debugger + proofshot + SDD)",
 		Long:    "verify chequea prerequisites del sistema, el estado de los componentes\nregistrados y la coherencia entre el SDD forkeado y los MCP reales.",
 		Example: `  # Estado del entorno (default sdd-dir: ~/.claude/agents)
   matecito-ai verify
@@ -42,6 +43,7 @@ func NewVerifyCmd() *cobra.Command {
 			context7Active := mcpErr != nil || containsString(activeMCP, "context7")
 			codegraphActive := mcpErr != nil || containsString(activeMCP, "codegraph")
 			drawioActive := mcpErr != nil || containsString(activeMCP, "drawio")
+			debuggerActive := mcpErr != nil || containsString(activeMCP, "debugger")
 			activeBins, binErr := manifest.ActiveBinariesFromEnv()
 			proofshotActive := binErr != nil || containsString(activeBins, "proofshot")
 			activeIDs, _, idErr := manifest.ResolveFromEnv()
@@ -71,6 +73,10 @@ func NewVerifyCmd() *cobra.Command {
 			if drawioActive {
 				dr = drawio.All()
 			}
+			var dbg []check.Result
+			if debuggerActive {
+				dbg = debugger.All()
+			}
 			var sx []check.Result
 			if devActive {
 				sx = sdd.CrossCheck(sddDir)
@@ -89,6 +95,9 @@ func NewVerifyCmd() *cobra.Command {
 			if drawioActive {
 				render.Section(os.Stdout, "drawio", dr)
 			}
+			if debuggerActive {
+				render.Section(os.Stdout, "debugger", dbg)
+			}
 			if proofshotActive {
 				render.Section(os.Stdout, "proofshot", ps)
 			}
@@ -98,12 +107,13 @@ func NewVerifyCmd() *cobra.Command {
 				render.Section(os.Stdout, "Cross-check SDD ↔ MCP ("+sddDir+")", sx)
 			}
 
-			all := make([]check.Result, 0, len(pre)+len(eng)+len(cg)+len(c7)+len(dr)+len(ps)+len(integ)+len(perm)+len(sx))
+			all := make([]check.Result, 0, len(pre)+len(eng)+len(cg)+len(c7)+len(dr)+len(dbg)+len(ps)+len(integ)+len(perm)+len(sx))
 			all = append(all, pre...)
 			all = append(all, eng...)
 			all = append(all, cg...)
 			all = append(all, c7...)
 			all = append(all, dr...)
+			all = append(all, dbg...)
 			all = append(all, ps...)
 			all = append(all, integ...)
 			all = append(all, perm...)

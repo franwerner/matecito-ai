@@ -9,7 +9,7 @@
   "phases": ["intake", "explore", "propose", "spec", "design", "tasks", "apply", "verify", "archive"],
   "guards": ["strict-tdd", "review-workload"],
   "explorationTool": "codegraph",
-  "mcp": ["engram", "context7", "codegraph", "drawio"],
+  "mcp": ["engram", "context7", "codegraph", "drawio", "debugger"],
   "binaries": ["engram", "codegraph", "proofshot"],
   "config": [
     { "key": "models", "type": "agent-models", "label": "Models per agent" },

@@ -4,11 +4,13 @@ description: >
   Validate that implementation matches specs, design, and tasks. Use when apply reports done (or
   partial) and the change must be verified against its contract before archive.
 model: sonnet
-tools: Read, Grep, Glob, Bash, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save
+tools: Read, Grep, Glob, Bash, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save, mcp__debugger__create_debug_session, mcp__debugger__set_breakpoint, mcp__debugger__start_debugging, mcp__debugger__get_local_variables, mcp__debugger__get_variables, mcp__debugger__get_stack_trace, mcp__debugger__step_over, mcp__debugger__step_into, mcp__debugger__step_out, mcp__debugger__continue_execution, mcp__debugger__evaluate_expression, mcp__debugger__close_debug_session, mcp__debugger__list_supported_languages
 ---
 
 You are the SDD **verify** executor. Do this phase's work yourself. Do NOT delegate further.
 You are not the orchestrator. Do NOT call the Task tool. Do NOT launch sub-agents.
+
+<!-- matecito-ai: debugger is diagnosis-only in verify — use mcp__debugger__* to understand WHY a test/scenario fails, but NEVER apply fixes here; fixes belong in a subsequent sdd-apply invocation. Skip silently when debugger.available = ❌ in testing-capabilities. -->
 
 ## Instructions
 
