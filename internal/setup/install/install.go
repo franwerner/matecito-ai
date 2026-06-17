@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/franwerner/matecito-ai/internal/hook"
 	"github.com/franwerner/matecito-ai/internal/manifest"
 	"github.com/franwerner/matecito-ai/internal/mcp"
 	"github.com/franwerner/matecito-ai/internal/platform"
@@ -297,11 +298,11 @@ func mcpPermissionsStep(opts Options) Step {
 	}
 }
 
-// activeHookEntries converts the resolved hooks from the environment into the
-// HookEntry type that settings.ReconcileHooks consumes. Id is forwarded from
-// the resolved hook so matecito-owned handlers carry their identity marker.
+// activeHookEntries converts the active domains' registered hooks into the
+// HookEntry type that settings.ReconcileHooks consumes. Id is forwarded so
+// matecito-owned handlers carry their identity marker.
 func activeHookEntries() []settings.HookEntry {
-	hooks, err := manifest.ActiveHooksFromEnv()
+	hooks, err := hook.ActiveHooks()
 	if err != nil {
 		return nil
 	}
@@ -310,9 +311,8 @@ func activeHookEntries() []settings.HookEntry {
 		entries = append(entries, settings.HookEntry{
 			Event:   h.Event,
 			Matcher: h.Matcher,
-			Command: h.Command,
+			Command: h.Command(),
 			If:      h.If,
-			Type:    h.Type,
 			Timeout: h.Timeout,
 			Id:      h.Id,
 		})

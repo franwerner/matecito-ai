@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/fs"
-	"os"
 	"path"
 	"sort"
 	"strings"
@@ -16,50 +15,6 @@ import (
 	"github.com/franwerner/matecito-ai/internal/agentmodel"
 	"github.com/franwerner/matecito-ai/internal/setup/deploy"
 )
-
-// knownEvents is the set of Claude Code hook event names as of 2026-06.
-// Events not in this set emit a warning at install time but are not rejected
-// so that manifests remain forward-compatible with new events.
-var knownEvents = map[string]bool{
-	"SessionStart": true, "Setup": true, "UserPromptSubmit": true,
-	"UserPromptExpansion": true, "PreToolUse": true, "PermissionRequest": true,
-	"PermissionDenied": true, "PostToolUse": true, "PostToolUseFailure": true,
-	"PostToolBatch": true, "Notification": true, "MessageDisplay": true,
-	"SubagentStart": true, "SubagentStop": true, "TaskCreated": true,
-	"TaskCompleted": true, "Stop": true, "StopFailure": true, "TeammateIdle": true,
-	"InstructionsLoaded": true, "ConfigChange": true, "CwdChanged": true,
-	"FileChanged": true, "WorktreeCreate": true, "WorktreeRemove": true,
-	"PreCompact": true, "PostCompact": true, "Elicitation": true,
-	"ElicitationResult": true, "SessionEnd": true,
-}
-
-// HookSpec is the schema of a co-located hook.json file. It declares a single
-// hook handler for the enclosing domain. Command is the exact command string
-// that Claude Code will invoke (e.g. "matecito-ai hook git-commit-validate").
-// Id is optional; when absent it is derived as "<domainId>/<hookFolderName>".
-type HookSpec struct {
-	Event   string `json:"event"`
-	Type    string `json:"type"`
-	Command string `json:"command"`
-	Matcher string `json:"matcher,omitempty"`
-	If      string `json:"if,omitempty"`
-	Timeout int    `json:"timeout,omitempty"`
-	Id      string `json:"id,omitempty"`
-}
-
-// ResolvedHook is a parsed hook.json with Command taken AS-IS (no path
-// resolution). Install and verify consume this. Id carries the resolved
-// identity: explicit from hook.json when set, derived as
-// "<domainId>/<hookFolderName>" otherwise.
-type ResolvedHook struct {
-	Event   string
-	Matcher string
-	If      string
-	Type    string
-	Timeout int
-	Command string // exact command string from hook.json, taken AS-IS (not a path)
-	Id      string // identity for reconciliation; never empty after resolution
-}
 
 // DecisionRecord names the domain's decision-record type and where records live
 // (ADR under .matecito-ai/adr for development; DDR under .matecito-ai/ddr for design).
@@ -322,66 +277,4 @@ func IsDomainActive(id string) bool {
 		}
 	}
 	return false
-}
-
-// ResolveHooksFromFS scans the given active domain ids for co-located hook.json
-// files under domains/<id>/hooks/<hookName>/hook.json in payloadFS, parses each
-// HookSpec, and returns a ResolvedHook with Command taken AS-IS from hook.json
-// (no script-path resolution). Unknown events warn to stderr but do not block.
-func ResolveHooksFromFS(ids []string, payloadFS fs.FS) ([]ResolvedHook, error) {
-	var resolved []ResolvedHook
-	for _, id := range ids {
-		hooksDir := path.Join("domains", id, "hooks")
-		entries, err := fs.ReadDir(payloadFS, hooksDir)
-		if err != nil {
-			// domain ships no hooks/ tree — skip silently
-			continue
-		}
-		for _, e := range entries {
-			if !e.IsDir() {
-				continue
-			}
-			hookName := e.Name()
-			specPath := path.Join(hooksDir, hookName, "hook.json")
-			data, err := fs.ReadFile(payloadFS, specPath)
-			if err != nil {
-				// hook folder without hook.json — skip
-				continue
-			}
-			var spec HookSpec
-			if err := json.Unmarshal(data, &spec); err != nil {
-				fmt.Fprintf(os.Stderr, "warning: %s: invalid hook.json: %v (skipping)\n", specPath, err)
-				continue
-			}
-			if !knownEvents[spec.Event] {
-				fmt.Fprintf(os.Stderr, "warning: hook %s/%s declares unknown event %q (continuing)\n", id, hookName, spec.Event)
-			}
-			// Derive the identity when hook.json omits an explicit id.
-			resolvedID := spec.Id
-			if resolvedID == "" {
-				resolvedID = id + "/" + hookName
-			}
-			resolved = append(resolved, ResolvedHook{
-				Event:   spec.Event,
-				Matcher: spec.Matcher,
-				If:      spec.If,
-				Type:    spec.Type,
-				Timeout: spec.Timeout,
-				Command: spec.Command,
-				Id:      resolvedID,
-			})
-		}
-	}
-	return resolved, nil
-}
-
-// ActiveHooksFromEnv scans each active domain's hooks/ tree in the payload FS
-// for co-located hook.json files, taking each hook's Command AS-IS. Mirrors
-// ActiveMCPFromEnv.
-func ActiveHooksFromEnv() ([]ResolvedHook, error) {
-	ids, payloadFS, err := ResolveFromEnv()
-	if err != nil {
-		return nil, err
-	}
-	return ResolveHooksFromFS(ids, payloadFS)
 }

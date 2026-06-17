@@ -18,6 +18,7 @@ import (
 	"github.com/franwerner/matecito-ai/internal/checks/prereqs"
 	"github.com/franwerner/matecito-ai/internal/checks/proofshot"
 	"github.com/franwerner/matecito-ai/internal/checks/sdd"
+	"github.com/franwerner/matecito-ai/internal/hook"
 	"github.com/franwerner/matecito-ai/internal/manifest"
 	"github.com/franwerner/matecito-ai/internal/render"
 	"github.com/franwerner/matecito-ai/internal/setup/install"
@@ -49,7 +50,7 @@ func NewVerifyCmd() *cobra.Command {
 			proofshotActive := binErr != nil || containsString(activeBins, "proofshot")
 			activeIDs, _, idErr := manifest.ResolveFromEnv()
 			devActive := idErr != nil || containsString(activeIDs, "development")
-			activeHooks, hooksErr := manifest.ActiveHooksFromEnv()
+			activeHooks, hooksErr := hook.ActiveHooks()
 			hooksActive := hooksErr == nil && len(activeHooks) > 0
 
 			pre := prereqs.All()

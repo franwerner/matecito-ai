@@ -71,7 +71,7 @@ Las piezas específicas de desarrollo del ecosistema:
 
 > **Dependencias declaradas (manifest).** `mcp: [engram, context7, codegraph, drawio, debugger]` · `binaries: [engram, codegraph, proofshot]`. Nada se instala global: el ecosistema instala esto solo cuando development está activo, y deriva de `mcp` los permisos de Claude Code (`mcp__<name>__*`).
 
-> **Hooks (transparencia).** Cuando development está activo, el instalador **escribe el hook en tu `~/.claude/settings.json`** y este corre **automáticamente** (Claude Code no pide aprobación para hooks). El hook se identifica con una marca `matecitoId` y se reconcilia por identidad en cada `install`/`update` (reemplaza el suyo, nunca toca tus hooks). Vive como subcomando del binario `matecito-ai` — no se deposita ningún script en tu `~/.claude`.
+> **Hooks (transparencia).** Cuando development está activo, el instalador **escribe el hook en tu `~/.claude/settings.json`** y este corre **automáticamente** (Claude Code no pide aprobación para hooks). El hook se identifica con una marca `matecitoId` y se reconcilia por identidad en cada `install`/`update` (reemplaza el suyo, nunca toca tus hooks). Su declaración e implementación viven compiladas dentro del binario `matecito-ai` (subcomando `hook git-commit-validate`) — no hay archivo de hook en el payload ni script alguno depositado en tu `~/.claude`.
 
 ## Skills
 

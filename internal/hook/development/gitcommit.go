@@ -1,21 +1,26 @@
-// Package hook contains the logic for matecito-ai hook subcommands. Each
-// subcommand is a thin cobra wrapper around a pure function defined here so
-// that the behaviour can be tested without spawning a process.
-package hook
+// Package development self-registers the development domain's hooks into the
+// hook registry via init(). It is imported for side effects only (blank import
+// in main); nothing reads its exported symbols.
+package development
 
 import (
 	"encoding/json"
 	"regexp"
 	"strings"
 	"unicode/utf8"
+
+	"github.com/franwerner/matecito-ai/internal/hook"
 )
 
-// ValidateResult is returned by ValidateGitCommit. Code matches the Claude Code
-// hook exit-code contract: 0 = allow, 2 = block. Message is the text to write
-// to stderr (empty when Code == 0 and no warning is needed).
-type ValidateResult struct {
-	Code    int
-	Message string
+func init() {
+	hook.Register(hook.Hook{
+		Domain:     "development",
+		Subcommand: "git-commit-validate",
+		Event:      "PreToolUse",
+		Matcher:    "Bash",
+		If:         "Bash(git commit *)",
+		Run:        run,
+	})
 }
 
 // preToolUsePayload is the minimal shape of the Claude Code PreToolUse hook
@@ -41,30 +46,30 @@ var conventionalCommit = regexp.MustCompile(
 	`^(feat|fix|refactor|docs|test|chore|build|perf|style|revert)(\([a-z0-9-]+\))?: [a-z].*[^.]$`,
 )
 
-// ValidateGitCommit parses the PreToolUse hook payload from payloadJSON,
-// extracts the git commit message from a -m "..." / -m '...' argument, and
-// applies the attribution block and format-warn rules.
+// run parses the PreToolUse hook payload from payloadJSON, extracts the git
+// commit message from a -m "..." / -m '...' argument, and applies the
+// attribution block and format-warn rules.
 //
 // Fail-open rules (returns Code=0, Message=""):
 //   - payloadJSON is empty, malformed, or has no tool_input.command
 //   - the Bash command has no -m <message> argument (interactive/file-based commit)
-func ValidateGitCommit(payloadJSON []byte) ValidateResult {
+func run(payloadJSON []byte) hook.Result {
 	if len(payloadJSON) == 0 {
-		return ValidateResult{}
+		return hook.Result{}
 	}
 
 	var p preToolUsePayload
 	if err := json.Unmarshal(payloadJSON, &p); err != nil {
-		return ValidateResult{} // fail open
+		return hook.Result{} // fail open
 	}
 	bashCmd := p.ToolInput.Command
 	if bashCmd == "" {
-		return ValidateResult{} // fail open
+		return hook.Result{} // fail open
 	}
 
 	msg := extractCommitMessage(bashCmd)
 	if msg == "" {
-		return ValidateResult{} // no -m argument — fail open
+		return hook.Result{} // no -m argument — fail open
 	}
 
 	// Hard block: AI/Claude attribution (case-insensitive).
@@ -73,7 +78,7 @@ func ValidateGitCommit(payloadJSON []byte) ValidateResult {
 		// The robot emoji is multi-byte; check the original message too.
 		patLower := strings.ToLower(pat)
 		if strings.Contains(lower, patLower) || (utf8.RuneCountInString(pat) > 1 && strings.Contains(msg, pat)) {
-			return ValidateResult{
+			return hook.Result{
 				Code:    2,
 				Message: "BLOCKED: commit message contains AI/Claude attribution (" + pat + "). Remove AI attribution before committing.",
 			}
@@ -82,13 +87,13 @@ func ValidateGitCommit(payloadJSON []byte) ValidateResult {
 
 	// Format warn: not Conventional Commits (exit 0, note to stderr).
 	if !conventionalCommit.MatchString(msg) {
-		return ValidateResult{
+		return hook.Result{
 			Code:    0,
 			Message: "WARN: commit message does not follow Conventional Commits (e.g. feat(scope): lowercase subject). Consider revising.",
 		}
 	}
 
-	return ValidateResult{}
+	return hook.Result{}
 }
 
 // extractCommitMessage extracts the value of the first -m <message> argument

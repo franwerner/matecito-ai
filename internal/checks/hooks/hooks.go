@@ -4,14 +4,14 @@ import (
 	"fmt"
 
 	"github.com/franwerner/matecito-ai/internal/check"
-	"github.com/franwerner/matecito-ai/internal/manifest"
+	"github.com/franwerner/matecito-ai/internal/hook"
 	"github.com/franwerner/matecito-ai/internal/setup/settings"
 )
 
 // resolveHooks is the resolution seam so tests can substitute the real
-// manifest.ActiveHooksFromEnv without depending on host environment state.
-var resolveHooks = func() ([]manifest.ResolvedHook, error) {
-	return manifest.ActiveHooksFromEnv()
+// hook.ActiveHooks without depending on host environment state.
+var resolveHooks = func() ([]hook.Hook, error) {
+	return hook.ActiveHooks()
 }
 
 // loadSettings is the settings load seam for the same reason.
@@ -48,8 +48,8 @@ func All() []check.Result {
 // checkSettings reports whether settings.json contains a handler whose
 // matecitoId matches the declared hook's Id and whose command also matches.
 // Every resolved hook carries a non-empty Id after resolution.
-func checkSettings(h manifest.ResolvedHook, doc map[string]any, docErr error) check.Result {
-	name := fmt.Sprintf("hook handler: %s/%s", h.Event, h.Command)
+func checkSettings(h hook.Hook, doc map[string]any, docErr error) check.Result {
+	name := fmt.Sprintf("hook handler: %s/%s", h.Event, h.Command())
 	r := check.Result{
 		Name:     name,
 		Required: false,
@@ -65,7 +65,7 @@ func checkSettings(h manifest.ResolvedHook, doc map[string]any, docErr error) ch
 	// Identity-based check: match by matecitoId and command.
 	// Every resolved hook carries a non-empty Id after resolution.
 	for _, e := range existing {
-		if e.Id == h.Id && e.Command == h.Command {
+		if e.Id == h.Id && e.Command == h.Command() {
 			found = true
 			break
 		}

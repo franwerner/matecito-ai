@@ -21,6 +21,7 @@ import (
 	"github.com/franwerner/matecito-ai/internal/checks/prereqs"
 	"github.com/franwerner/matecito-ai/internal/checks/proofshot"
 	"github.com/franwerner/matecito-ai/internal/checks/sdd"
+	"github.com/franwerner/matecito-ai/internal/hook"
 	"github.com/franwerner/matecito-ai/internal/manifest"
 	"github.com/franwerner/matecito-ai/internal/setup/install"
 	"github.com/franwerner/matecito-ai/internal/tui/nav"
@@ -121,7 +122,7 @@ func runChecks() tea.Msg {
 	binActive := func(name string) bool { return binErr != nil || slices.Contains(activeBins, name) }
 	activeIDs, _, idErr := manifest.ResolveFromEnv()
 	devActive := idErr != nil || slices.Contains(activeIDs, "development")
-	activeHooks, hooksErr := manifest.ActiveHooksFromEnv()
+	activeHooks, hooksErr := hook.ActiveHooks()
 	hooksActive := hooksErr == nil && len(activeHooks) > 0
 
 	clusters := []cluster{{"Prerequisites", prereqs.All()}}

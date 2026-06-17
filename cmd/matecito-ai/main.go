@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/franwerner/matecito-ai/internal/cli"
+	_ "github.com/franwerner/matecito-ai/internal/hook/development"
 )
 
 func main() {

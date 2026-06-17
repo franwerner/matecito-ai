@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/franwerner/matecito-ai/internal/check"
-	"github.com/franwerner/matecito-ai/internal/manifest"
+	"github.com/franwerner/matecito-ai/internal/hook"
 )
 
 // TestAll_SettingsMissing exercises the StatusMissing branch for a hook whose
@@ -12,9 +12,9 @@ import (
 func TestAll_SettingsMissing(t *testing.T) {
 	orig := resolveHooks
 	t.Cleanup(func() { resolveHooks = orig })
-	resolveHooks = func() ([]manifest.ResolvedHook, error) {
-		return []manifest.ResolvedHook{
-			{Event: "PreToolUse", Matcher: "Bash", Command: "matecito-ai hook git-commit-validate", Id: "development/git-commit-validator"},
+	resolveHooks = func() ([]hook.Hook, error) {
+		return []hook.Hook{
+			{Event: "PreToolUse", Matcher: "Bash", Subcommand: "git-commit-validate", Id: "development/git-commit-validate"},
 		}, nil
 	}
 	origLoad := loadSettings
@@ -44,13 +44,13 @@ func TestAll_SettingsMissing(t *testing.T) {
 // should produce StatusOK.
 func TestAll_MatchByMatecitoId(t *testing.T) {
 	const cmd = "matecito-ai hook git-commit-validate"
-	const mid = "development/git-commit-validator"
+	const mid = "development/git-commit-validate"
 
 	orig := resolveHooks
 	t.Cleanup(func() { resolveHooks = orig })
-	resolveHooks = func() ([]manifest.ResolvedHook, error) {
-		return []manifest.ResolvedHook{
-			{Event: "PreToolUse", Matcher: "Bash", Command: cmd, Id: mid},
+	resolveHooks = func() ([]hook.Hook, error) {
+		return []hook.Hook{
+			{Event: "PreToolUse", Matcher: "Bash", Subcommand: "git-commit-validate", Id: mid},
 		}, nil
 	}
 
@@ -91,13 +91,13 @@ func TestAll_MatchByMatecitoId(t *testing.T) {
 // handler whose matecitoId matches but the command differs, the check reports
 // StatusMissing (stale, not yet reconciled).
 func TestAll_MatecitoIdMismatchMissing(t *testing.T) {
-	const mid = "development/git-commit-validator"
+	const mid = "development/git-commit-validate"
 
 	orig := resolveHooks
 	t.Cleanup(func() { resolveHooks = orig })
-	resolveHooks = func() ([]manifest.ResolvedHook, error) {
-		return []manifest.ResolvedHook{
-			{Event: "PreToolUse", Matcher: "Bash", Command: "matecito-ai hook git-commit-validate", Id: mid},
+	resolveHooks = func() ([]hook.Hook, error) {
+		return []hook.Hook{
+			{Event: "PreToolUse", Matcher: "Bash", Subcommand: "git-commit-validate", Id: mid},
 		}, nil
 	}
 

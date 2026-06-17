@@ -12,24 +12,27 @@ import (
 
 // NewHookCmd returns the hidden "hook" command group. It is invoked by Claude
 // Code hook handlers (not by users), so the group and its subcommands are
-// marked Hidden to keep the help output clean.
+// marked Hidden to keep the help output clean. Subcommands are built from the
+// compiled-in hook registry.
 func NewHookCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:    "hook",
 		Short:  "Hook handlers invoked by Claude Code (not user-facing)",
 		Hidden: true,
 	}
-	cmd.AddCommand(newGitCommitValidateCmd())
+	for _, h := range hook.Registered() {
+		cmd.AddCommand(newHookSubcommand(h))
+	}
 	return cmd
 }
 
-// newGitCommitValidateCmd returns the "hook git-commit-validate" subcommand.
-// It reads the PreToolUse hook payload from stdin, validates the git commit
-// message, and exits with the appropriate code (0 allow, 2 block).
-func newGitCommitValidateCmd() *cobra.Command {
+// newHookSubcommand wraps one registered hook as a cobra subcommand: it reads
+// the hook payload from stdin, runs the hook, writes any message to stderr, and
+// exits with the hook's code (0 allow, 2 block).
+func newHookSubcommand(h hook.Hook) *cobra.Command {
 	return &cobra.Command{
-		Use:    "git-commit-validate",
-		Short:  "Validate git commit messages from a Claude Code PreToolUse hook payload",
+		Use:    h.Subcommand,
+		Short:  "Hook handler " + h.Id,
 		Hidden: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			payload, err := io.ReadAll(os.Stdin)
@@ -37,7 +40,7 @@ func newGitCommitValidateCmd() *cobra.Command {
 				// stdin read error — fail open (do not block)
 				return nil
 			}
-			result := hook.ValidateGitCommit(payload)
+			result := h.Run(payload)
 			if result.Message != "" {
 				fmt.Fprintln(os.Stderr, result.Message)
 			}

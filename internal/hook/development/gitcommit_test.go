@@ -1,11 +1,11 @@
-package hook
+package development
 
 import (
 	"strings"
 	"testing"
 )
 
-func TestValidateGitCommit(t *testing.T) {
+func TestRun(t *testing.T) {
 	// buildPayload wraps a Bash command into a minimal PreToolUse JSON payload.
 	buildPayload := func(bashCmd string) []byte {
 		return []byte(`{"tool_input":{"command":` + `"` + strings.ReplaceAll(bashCmd, `"`, `\"`) + `"}}`)
@@ -100,7 +100,7 @@ func TestValidateGitCommit(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := ValidateGitCommit(tt.payload)
+			got := run(tt.payload)
 			if got.Code != tt.wantCode {
 				t.Errorf("Code = %d, want %d (message: %q)", got.Code, tt.wantCode, got.Message)
 			}
@@ -116,9 +116,9 @@ func TestValidateGitCommit(t *testing.T) {
 
 func TestExtractCommitMessage(t *testing.T) {
 	tests := []struct {
-		name  string
-		cmd   string
-		want  string
+		name string
+		cmd  string
+		want string
 	}{
 		{"double quoted", `git commit -m "feat: do stuff"`, "feat: do stuff"},
 		{"single quoted", `git commit -m 'fix: typo'`, "fix: typo"},
