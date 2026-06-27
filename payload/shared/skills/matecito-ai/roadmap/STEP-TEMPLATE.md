@@ -3,9 +3,6 @@ step: N
 title: "Título del step"
 status: pending
 # status: pending | in-progress | done
-flow: none
-# flow: none | sdd | design
-# "none" = no requiere flujo estructurado; "sdd" = mapea a /sdd-new; "design" = mapea a /design-new
 ---
 
 # STEP-N — Título del step
@@ -36,7 +33,9 @@ flow: none
 ## Next context prompt
 
 <!-- Esta sección es para el usuario: copiar y pegar en una nueva sesión para retomar
-     sin perder contexto. Se actualiza al cerrar la sesión en este step. -->
+     sin perder contexto. Se actualiza al cerrar la sesión en este step.
+     Solo es "viva" para el step `in-progress` (el que vas a retomar); en steps `done` o
+     `pending` es opcional y puede omitirse o quedar desactualizada. -->
 
 **Roadmap:** [título del roadmap]
 **Carpeta:** `.matecito-ai/roadmaps/<titulo>/`

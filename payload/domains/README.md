@@ -45,6 +45,8 @@ Las mismas reglas de aplanamiento que los dominios aplican: `skills/<group>/<ski
 
 **No existe `payload/shared/hooks/`.** Los hooks siempre activos se registran como compiled-in usando `hook.SharedDomain = "shared"` — cualquier hook con `Domain == "shared"` es incluido por `ForDomains` sin importar el set de dominios activos, sin necesitar un directorio en el payload.
 
+El catálogo de QUÉ entrega este tier vive en [`../shared/README.md`](../shared/README.md).
+
 ## Campos de manifest.json
 
 | Campo | Significado |

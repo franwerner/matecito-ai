@@ -107,8 +107,6 @@ Por cada step del set confirmado:
    - Step complejo (implementación, refactor grande, migración): profundizar: subtareas, criterios
      de completitud, dependencias.
 3. Confirmar el checklist resultante antes de pasar al siguiente.
-4. Si el step claramente mapea a un flujo de desarrollo o diseño (ver "Handoff a flujos"), anotarlo
-   en ese momento en la metadata del step.
 
 **Regla**: no sobre-especificar steps simples. Una línea de contexto + 3-4 ítems de checklist es
 suficiente para un step sencillo.
@@ -198,8 +196,11 @@ Si el step activo mapea a trabajo de desarrollo o diseño, proponer el comando d
 scope pre-llenado. **El handoff PROPONE; nunca ejecuta autónomamente.** La propuesta pasa por
 el INTAKE GATE del flujo destino — el usuario confirma, ajusta o cancela.
 
-**Detección:** el step mapea a un flujo cuando su objetivo es implementar código, un feature, un
-refactor, una migración de datos, o producir assets visuales / un sistema de diseño.
+**Detección:** la skill DERIVE el flujo destino (development → `/sdd-new`, design → `/design-new`,
+o ninguno) en ESTE momento, a partir del objetivo del step y del/los dominio(s) del roadmap — no hay
+un campo `flow:` guardado en el step. El step mapea a un flujo cuando su objetivo es implementar
+código, un feature, un refactor, una migración de datos, o producir assets visuales / un sistema de
+diseño.
 
 **Formato de propuesta:**
 
@@ -243,6 +244,9 @@ Al cargar cualquier roadmap (no solo en `continue`), verificar:
 2. El rollup en `INDEX.md` refleja el estado real de los steps.
 3. Los Pendientes del step anterior marcados como `- [x]` se eliminan del carried-forward (ya
    resueltos).
+4. El `## Next context prompt` solo es "vivo" para el step `in-progress` (el que se va a retomar);
+   en steps `done` o `pending` es opcional y puede estar omitido o desactualizado — no lo trates
+   como inconsistencia.
 
 Si hay inconsistencias, reportarlas y proponer la corrección antes de continuar.
 
@@ -274,9 +278,15 @@ steps que no están en `done`.
 - Son loose ends que aparecieron MIENTRAS se trabajaba un step y NO están en el checklist
   principal: preguntas sin responder, decisiones aplazadas, tareas que surgieron fuera de scope,
   descubrimientos que necesitan seguimiento.
+- **Es una mecánica de `next`/`continue`, no de `new`:** al crear el roadmap (`/roadmap new`) TODOS
+  los steps arrancan `pending` con `## Pendientes` vacío; los pendientes y el carry-forward recién
+  emergen MIENTRAS se trabaja un step (vía `/roadmap continue` / `/roadmap next`).
 - Se escriben como `- [ ]` en `## Pendientes`. Sin timestamps. Tickables cuando se resuelven.
 - Cuando un step se marca `done`, sus Pendientes abiertos se TRASLADAN al step siguiente (no se
   pierden, no se eliminan en silencio).
+- **Copiar, no mover:** el step ORIGEN conserva su ítem abierto como registro histórico (no se
+  borra); se carry-forward una COPIA al `## Pendientes` del step siguiente. El rollup del `INDEX.md`
+  cuenta los `- [ ]` SOLO en steps que no están en `done`, y eso es lo que evita el doble conteo.
 - Se cuentan en el rollup de `INDEX.md` como `pendientes-abiertos: N`.
 - Un step puede marcarse `done` con Pendientes abiertos, siempre que el checklist principal esté
   completo. Los Pendientes abiertos son deuda visible, no bloqueantes de `done`.

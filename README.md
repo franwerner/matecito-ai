@@ -49,7 +49,7 @@ Agregar un dominio nuevo (marketing, video, contable, …) es **implementar el c
 | **Lane fork** | El flujo es una **base inmutable** + **add-ons opcionales**; el tamaño del cambio decide qué fases corren (`direct \| reduced \| full \| custom`). |
 | **Engram** | Mecanismo de memoria persistente del orquestador: SQLite standalone con descubrimientos, contexto y fixes entre sesiones. Como todo, su instalación la **declara cada dominio** en su manifest (no es global). |
 | **Contrato de área** | El `manifest.json` + el fragmento `CLAUDE.md` de cada dominio: cómo un plugin se enchufa al núcleo (vocabulario, fases, guards, `mcp`, `binaries`, config). |
-| **Tier compartido** | Skills, agentes y referencias en `payload/shared/` se despliegan **siempre**, sin importar los dominios activos. Los hooks siempre activos usan `hook.SharedDomain = "shared"` (compiled-in, sin directorio en el payload). |
+| **Tier compartido** | Skills, agentes y referencias en `payload/shared/` se despliegan **siempre**, sin importar los dominios activos. Los hooks siempre activos usan `hook.SharedDomain = "shared"` (compiled-in, sin directorio en el payload). Catálogo de lo que entrega: [README del tier compartido](payload/shared/README.md). |
 
 > **Nada se instala global.** Cada dominio declara en su `manifest.json` los `mcp` y `binaries` que usa; el ecosistema instala la **unión** de los dominios activos. Los **permisos** de Claude Code se infieren de esa declaración (`name → mcp__<name>__*`); el único permiso global fijo es `Skill`.
 
