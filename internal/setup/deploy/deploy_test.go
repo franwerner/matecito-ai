@@ -254,6 +254,102 @@ func TestPlan_RealPayload_IndexesBothDomains(t *testing.T) {
 	}
 }
 
+// TestPlan_SharedDeploys_ZeroActiveDomains verifies that shared components
+// deploy even when the active-domain set is empty.
+func TestPlan_SharedDeploys_ZeroActiveDomains(t *testing.T) {
+	payload := fstest.MapFS{
+		"core/CLAUDE.md":                              {Data: []byte("# core\n")},
+		"domains/development/agents/noop.md":          {Data: []byte("noop")},
+		"shared/skills/grp/myskill/SKILL.md":          {Data: []byte("shared skill")},
+	}
+	claudeHome := newClaudeHome(t)
+
+	ops, err := deploy.Plan(payload, claudeHome, []string{})
+	if err != nil {
+		t.Fatalf("Plan: %v", err)
+	}
+
+	for _, op := range ops {
+		if strings.HasSuffix(op.Target, filepath.Join("skills", "myskill", "SKILL.md")) {
+			return
+		}
+	}
+	t.Errorf("expected shared skill target in ops, got: %v", ops)
+}
+
+// TestPlan_SharedDeploys_AlongsideActiveDomain verifies that shared components
+// deploy alongside active-domain components.
+func TestPlan_SharedDeploys_AlongsideActiveDomain(t *testing.T) {
+	payload := fstest.MapFS{
+		"core/CLAUDE.md":                                    {Data: []byte("# core\n")},
+		"domains/development/agents/agent.md":               {Data: []byte("agent")},
+		"shared/skills/grp/myskill/SKILL.md":                {Data: []byte("shared skill")},
+	}
+	claudeHome := newClaudeHome(t)
+
+	ops, err := deploy.Plan(payload, claudeHome, []string{"development"})
+	if err != nil {
+		t.Fatalf("Plan: %v", err)
+	}
+
+	var foundShared, foundAgent bool
+	for _, op := range ops {
+		if strings.HasSuffix(op.Target, filepath.Join("skills", "myskill", "SKILL.md")) {
+			foundShared = true
+		}
+		if strings.HasSuffix(op.Target, filepath.Join("agents", "agent.md")) {
+			foundAgent = true
+		}
+	}
+	if !foundShared {
+		t.Error("expected shared skill target in ops")
+	}
+	if !foundAgent {
+		t.Error("expected development agent target in ops")
+	}
+}
+
+// TestPlan_SharedSkill_Flattens verifies that a shared skill under
+// shared/skills/<group>/<skill>/ is flattened to skills/<skill>/, matching
+// the domain-skill flattening rule.
+func TestPlan_SharedSkill_Flattens(t *testing.T) {
+	payload := fstest.MapFS{
+		"core/CLAUDE.md":                     {Data: []byte("# core\n")},
+		"domains/.keep":                       {Data: []byte{}},
+		"shared/skills/grp/myskill/SKILL.md": {Data: []byte("shared skill")},
+	}
+	claudeHome := newClaudeHome(t)
+
+	ops, err := deploy.Plan(payload, claudeHome, []string{})
+	if err != nil {
+		t.Fatalf("Plan: %v", err)
+	}
+
+	want := filepath.Join(claudeHome, "skills", "myskill", "SKILL.md")
+	for _, op := range ops {
+		if op.Target == want {
+			return
+		}
+	}
+	t.Errorf("expected target %q, ops: %v", want, ops)
+}
+
+// TestPlan_SharedVsDomain_SameTarget_Clashes verifies that a shared component
+// and a domain component resolving to the same target still produce a clashError.
+func TestPlan_SharedVsDomain_SameTarget_Clashes(t *testing.T) {
+	payload := fstest.MapFS{
+		"core/CLAUDE.md":                                    {Data: []byte("# core\n")},
+		"shared/skills/grp/audit/SKILL.md":                  {Data: []byte("shared")},
+		"domains/development/skills/grp/audit/SKILL.md":     {Data: []byte("dev")},
+	}
+	claudeHome := newClaudeHome(t)
+
+	_, err := deploy.Plan(payload, claudeHome, nil)
+	if err == nil {
+		t.Fatal("expected clash error, got nil")
+	}
+}
+
 // TestResolvePayloadFS_Embedded verifies that ResolvePayloadFS falls back to the
 // embedded payload when no local payload/ dir is present (R4.7).
 func TestResolvePayloadFS_Embedded(t *testing.T) {
@@ -283,5 +379,54 @@ func TestResolvePayloadFS_Embedded(t *testing.T) {
 	_, statErr := fs.Stat(fsys, "core/CLAUDE.md")
 	if statErr != nil {
 		t.Errorf("core/CLAUDE.md not found in resolved FS (%s): %v", source, statErr)
+	}
+}
+
+// TestWalkDir_GitkeepFiltered verifies that .gitkeep placeholder files are never
+// emitted as FileOps, while real files in the same subtree are still included.
+func TestWalkDir_GitkeepFiltered(t *testing.T) {
+	// A subtree that contains only .gitkeep files — simulates empty shared/agents/
+	// and shared/references/ directories as they exist in the repository.
+	onlyGitkeep := fstest.MapFS{
+		"core/CLAUDE.md":             {Data: []byte("# core\n")},
+		"domains/.keep":              {Data: []byte{}},
+		"shared/agents/.gitkeep":     {Data: []byte{}},
+		"shared/references/.gitkeep": {Data: []byte{}},
+		"shared/skills/.gitkeep":     {Data: []byte{}},
+	}
+	claudeHome := newClaudeHome(t)
+
+	ops, err := deploy.Plan(onlyGitkeep, claudeHome, []string{})
+	if err != nil {
+		t.Fatalf("Plan: %v", err)
+	}
+	for _, op := range ops {
+		if filepath.Base(op.Target) == ".gitkeep" {
+			t.Errorf("unexpected .gitkeep in ops: %s", op.Target)
+		}
+	}
+
+	// A real file alongside a .gitkeep must still be deployed.
+	withReal := fstest.MapFS{
+		"core/CLAUDE.md":           {Data: []byte("# core\n")},
+		"domains/.keep":            {Data: []byte{}},
+		"shared/agents/.gitkeep":   {Data: []byte{}},
+		"shared/agents/myagent.md": {Data: []byte("agent")},
+	}
+	ops2, err := deploy.Plan(withReal, claudeHome, []string{})
+	if err != nil {
+		t.Fatalf("Plan (withReal): %v", err)
+	}
+	var foundAgent bool
+	for _, op := range ops2 {
+		if filepath.Base(op.Target) == ".gitkeep" {
+			t.Errorf("unexpected .gitkeep in ops2: %s", op.Target)
+		}
+		if strings.HasSuffix(op.Target, filepath.Join("agents", "myagent.md")) {
+			foundAgent = true
+		}
+	}
+	if !foundAgent {
+		t.Error("expected myagent.md in ops2, not found")
 	}
 }

@@ -30,6 +30,21 @@ con el id del dominio ante cualquier riesgo (p. ej. `design-audit` en vez de
 **falla rápido** con un error de colisión consciente del dominio (ver
 `deploy.clashError`) — nada se sobrescribe en silencio.
 
+## Shared tier
+
+`payload/shared/` es un nivel de deploy **transversal**: sus componentes se despliegan **incondicionalmente**, sin importar qué dominios tenga activos el usuario.
+
+```
+payload/shared/
+├── skills/<group>/   # skills cross-domain  → ~/.claude/skills/
+├── agents/           # agentes cross-domain → ~/.claude/agents/
+└── references/       # catálogos           → ~/.claude/references/
+```
+
+Las mismas reglas de aplanamiento que los dominios aplican: `skills/<group>/<skill>/` se aplana a `~/.claude/skills/<skill>/`; la capa `<group>` es solo organizativa. La convención de nombres únicos de skills sigue vigente: si un componente shared y uno de dominio apuntan al mismo destino, el deploy **falla con un error de colisión** (el guard `seen[Target]→Source` de `Plan()` no tiene excepciones para el tier shared).
+
+**No existe `payload/shared/hooks/`.** Los hooks siempre activos se registran como compiled-in usando `hook.SharedDomain = "shared"` — cualquier hook con `Domain == "shared"` es incluido por `ForDomains` sin importar el set de dominios activos, sin necesitar un directorio en el payload.
+
 ## Campos de manifest.json
 
 | Campo | Significado |

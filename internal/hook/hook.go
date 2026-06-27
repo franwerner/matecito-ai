@@ -35,6 +35,11 @@ func (h Hook) Command() string {
 	return "matecito-ai hook " + h.Subcommand
 }
 
+// SharedDomain is the sentinel domain value for hooks that must be active
+// regardless of which domains the user has enabled. Hooks registered with
+// Domain == SharedDomain are included by ForDomains for any active set.
+const SharedDomain = "shared"
+
 var registry []Hook
 
 // Register adds a hook to the compiled-in registry, deriving Id as
@@ -52,7 +57,8 @@ func Registered() []Hook {
 	return registry
 }
 
-// ForDomains returns the registered hooks whose Domain is among ids.
+// ForDomains returns the registered hooks whose Domain is among ids or whose
+// Domain is SharedDomain (always included regardless of active set).
 func ForDomains(ids []string) []Hook {
 	want := make(map[string]struct{}, len(ids))
 	for _, id := range ids {
@@ -60,7 +66,7 @@ func ForDomains(ids []string) []Hook {
 	}
 	var out []Hook
 	for _, h := range registry {
-		if _, ok := want[h.Domain]; ok {
+		if _, ok := want[h.Domain]; ok || h.Domain == SharedDomain {
 			out = append(out, h)
 		}
 	}

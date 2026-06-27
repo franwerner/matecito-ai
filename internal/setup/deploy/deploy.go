@@ -54,8 +54,9 @@ func domainActive(active []string, id string) bool {
 
 // buildMappings discovers the per-domain component plan from the payload
 // layout: every ACTIVE domain under domains/ contributes its agents/skills/
-// references. The composed matecito-ai.md (core + domain CLAUDE.md fragments)
-// is handled separately in Plan via composeClaudeMdOp.
+// references. Shared components under shared/ are appended unconditionally
+// (no active-domain gate). The composed matecito-ai.md (core + domain CLAUDE.md
+// fragments) is handled separately in Plan via composeClaudeMdOp.
 func buildMappings(payloadFS fs.FS, active []string) ([]Mapping, error) {
 	var mappings []Mapping
 
@@ -77,6 +78,16 @@ func buildMappings(payloadFS fs.FS, active []string) ([]Mapping, error) {
 			mappings = append(mappings, Mapping{SourceRel: src, TargetRel: c.TargetRel, Mode: c.Mode})
 		}
 	}
+
+	// Shared components deploy unconditionally, independent of the active-domain set.
+	for _, c := range domainComponents {
+		src := path.Join("shared", c.SourceRel)
+		if _, err := fs.Stat(payloadFS, src); err != nil {
+			continue
+		}
+		mappings = append(mappings, Mapping{SourceRel: src, TargetRel: c.TargetRel, Mode: c.Mode})
+	}
+
 	return mappings, nil
 }
 
@@ -355,6 +366,11 @@ func walkDir(payloadFS fs.FS, sourceRoot, targetRoot string) ([]FileOp, error) {
 		rel, err := filepath.Rel(sourceRoot, p)
 		if err != nil {
 			return err
+		}
+		// .gitkeep files exist only to keep empty directories in the repository;
+		// they must never be deployed to the user's ~/.claude/ tree.
+		if filepath.Base(rel) == ".gitkeep" {
+			return nil
 		}
 		ops = append(ops, FileOp{Source: p, Target: filepath.Join(targetRoot, rel)})
 		return nil
