@@ -12,7 +12,6 @@ import (
 	"github.com/franwerner/matecito-ai/internal/tui/screens/config"
 	"github.com/franwerner/matecito-ai/internal/tui/screens/domainconfig"
 	"github.com/franwerner/matecito-ai/internal/tui/screens/domains"
-	"github.com/franwerner/matecito-ai/internal/tui/screens/install"
 	"github.com/franwerner/matecito-ai/internal/tui/screens/menu"
 	"github.com/franwerner/matecito-ai/internal/tui/screens/sddmodel"
 	tuisync "github.com/franwerner/matecito-ai/internal/tui/screens/sync"
@@ -219,7 +218,7 @@ func (m AppModel) View() string {
 func (m AppModel) buildChild(s Screen) (ChildModel, tea.Cmd) {
 	switch s {
 	case ScreenInstall:
-		return install.New(), nil
+		return tuisync.New(m.syncOpts), nil
 	case ScreenSync:
 		return tuisync.New(m.syncOpts), nil
 	case ScreenVerify:

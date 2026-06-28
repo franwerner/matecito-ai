@@ -47,87 +47,6 @@ type Options struct {
 	SelfVersion string
 }
 
-func Run(opts Options) error {
-	if opts.Stdin == nil {
-		opts.Stdin = os.Stdin
-	}
-	if opts.Stdout == nil {
-		opts.Stdout = os.Stdout
-	}
-	if opts.Stderr == nil {
-		opts.Stderr = os.Stderr
-	}
-	if opts.BackupDir == "" {
-		bd, err := deploy.BackupDir()
-		if err != nil {
-			return fmt.Errorf("resolviendo backup dir: %w", err)
-		}
-		opts.BackupDir = bd
-	}
-
-	steps := AllSteps(opts)
-	plan := make([]Step, 0, len(steps))
-	for _, s := range steps {
-		if s.Check() {
-			plan = append(plan, s)
-		}
-	}
-
-	if len(plan) == 0 {
-		fmt.Fprintln(opts.Stdout, "Nada para hacer — todo está instalado y actualizado.")
-		return nil
-	}
-
-	fmt.Fprintln(opts.Stdout, "Plan:")
-	for i, s := range plan {
-		fmt.Fprintf(opts.Stdout, "  %d. %s\n     %s\n", i+1, s.Name, s.Plan)
-	}
-
-	if opts.DryRun {
-		fmt.Fprintln(opts.Stdout, "\n(dry-run) no se ejecutó nada.")
-		return nil
-	}
-
-	if !opts.Yes {
-		if !confirm(opts.Stdin, opts.Stdout, "\n¿Ejecutar? [y/N]: ") {
-			fmt.Fprintln(opts.Stdout, "Cancelado.")
-			return nil
-		}
-	}
-
-	if err := backupClaudeJSON(opts.BackupDir); err != nil {
-		return fmt.Errorf("falló el backup de ~/.claude.json: %w", err)
-	}
-
-	for i, s := range plan {
-		fmt.Fprintf(opts.Stdout, "\n[%d/%d] %s\n", i+1, len(plan), s.Name)
-		if err := s.Run(); err != nil {
-			fmt.Fprintf(opts.Stderr, "✗ falló: %v\n", err)
-			if hasBackup(opts.BackupDir) {
-				fmt.Fprintf(opts.Stderr, "Backup intacto en %s\n", opts.BackupDir)
-			}
-			return fmt.Errorf("install detenido en %q", s.Name)
-		}
-		fmt.Fprintln(opts.Stdout, "✓ OK")
-	}
-
-	if hasBackup(opts.BackupDir) {
-		fmt.Fprintf(opts.Stdout, "\nBackup: %s\n", opts.BackupDir)
-	}
-	fmt.Fprintln(opts.Stdout, "\nListo. Verificá con: matecito-ai verify")
-	return nil
-}
-
-// hasBackup devuelve true si la carpeta de backup existe en disco — i.e. si
-// alguno de los pasos de la corrida tuvo algo que respaldar.
-func hasBackup(backupDir string) bool {
-	if backupDir == "" {
-		return false
-	}
-	info, err := os.Stat(backupDir)
-	return err == nil && info.IsDir()
-}
-
 // mcpDef is the single source of truth for one MCP server: how to register it
 // (step) and the permission tool pattern it needs auto-approved (toolPattern).
 // An empty toolPattern means "derive by convention" (mcp__<name>__*); only
@@ -163,7 +82,8 @@ func permissionPattern(name string) string {
 	return "mcp__" + name + "__*"
 }
 
-// AllSteps devuelve los pasos de registro y configuración que install.Run gestiona.
+// AllSteps devuelve los pasos de registro y configuración que sync.Sync aplica
+// vía el componente "config ecosistema" (ApplyConfigSteps / ConfigStepsPending).
 // Los pasos de binarios (engram, codegraph, matecito-ai) y deploy son responsabilidad
 // de sync.Sync; AllSteps solo cubre los pasos de MCP y configuración de ~/.claude/.
 // No hay MCP base; todos salen de los manifests de los dominios activos.
@@ -204,16 +124,6 @@ func ActiveMCPPatterns() []string {
 		patterns = append(patterns, permissionPattern(name))
 	}
 	return append(patterns, "Skill")
-}
-
-// AllBinarySteps devuelve los pasos de binarios para usos que no pasen por sync.Sync.
-// No se usa en el flujo normal del comando install, pero se conserva para compatibilidad.
-func AllBinarySteps(opts Options) []Step {
-	return []Step{
-		engramBinaryStep(opts),
-		codegraphBinaryStep(opts),
-		deployStep(opts),
-	}
 }
 
 // ConfigStepsPending reporta si algún paso de config del ecosistema (registro de
@@ -375,77 +285,6 @@ func backupSettings(settingsPath, backupDir string) error {
 		return err
 	}
 	return os.WriteFile(filepath.Join(backupDir, "settings.json"), data, 0o644)
-}
-
-type deployPrep struct {
-	source    string
-	ops       []deploy.FileOp
-	summary   string
-	shouldRun bool
-	err       error
-}
-
-func prepareDeploy() deployPrep {
-	var p deployPrep
-	payloadFS, source, err := deploy.ResolvePayloadFS()
-	if err != nil {
-		p.summary = "no se pudo resolver payload: " + err.Error()
-		p.err = err
-		return p
-	}
-	p.source = source
-
-	claudeHome, err := deploy.ClaudeHome()
-	if err != nil {
-		p.err = err
-		return p
-	}
-	active, _ := manifest.ActiveIDsFromEnv()
-	p.ops, err = deploy.Plan(payloadFS, claudeHome, active)
-	if err != nil {
-		p.err = err
-		p.summary = "error planeando deploy: " + err.Error()
-		return p
-	}
-	s := deploy.Summarize(p.ops)
-	p.summary = fmt.Sprintf("desde %s: %d nuevos, %d cambiados (%d sin cambio)",
-		source, s.New, s.Changed, s.Same)
-	p.shouldRun = s.New+s.Changed > 0
-	return p
-}
-
-func deployStep(opts Options) Step {
-	prep := prepareDeploy()
-
-	return Step{
-		Name:  "Deploy del fork (payload → ~/.claude/)",
-		Plan:  prep.summary,
-		Check: func() bool { return prep.shouldRun },
-		Run: func() error {
-			if prep.err != nil {
-				return prep.err
-			}
-
-			// re-resolver payload para el Run (el fs.FS de prepareDeploy es
-			// un valor de interface no almacenado en el struct)
-			payloadFS, _, err := deploy.ResolvePayloadFS()
-			if err != nil {
-				return fmt.Errorf("no se pudo resolver payload: %w", err)
-			}
-
-			claudeHome, err := deploy.ClaudeHome()
-			if err != nil {
-				return err
-			}
-			_, err = deploy.Apply(payloadFS, prep.ops, claudeHome, opts.BackupDir)
-			if err != nil {
-				return err
-			}
-			s := deploy.Summarize(prep.ops)
-			fmt.Fprintf(opts.Stdout, "  %d nuevos, %d cambiados, %d sin cambio\n", s.New, s.Changed, s.Same)
-			return nil
-		},
-	}
 }
 
 func engramBinaryStep(opts Options) Step {
