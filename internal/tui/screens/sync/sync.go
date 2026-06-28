@@ -41,6 +41,7 @@ type SyncModel struct {
 	err             error
 	awaitingConfirm bool
 	planActions     []pkgsync.SyncAction
+	planStates      []pkgsync.ComponentState // retained to show per-component metadata (e.g. payload source) in the plan view
 	// selfReplaced indica que el binario fue actualizado y re-exec fue intentado.
 	// En Unix el proceso no debería llegar aquí (syscall.Exec reemplaza el proceso);
 	// en Windows o ante un error de exec, se muestra un aviso en pantalla.
@@ -96,6 +97,7 @@ func (m SyncModel) Update(msg tea.Msg) (nav.ChildModel, tea.Cmd) {
 		// a Detect de nuevo.
 		m.opts.PreDetected = msg.states
 		m.planActions = msg.actions
+		m.planStates = msg.states
 		m.awaitingConfirm = true
 		return m, nil
 
@@ -146,6 +148,13 @@ func (m SyncModel) View() string {
 		if len(m.planActions) == 0 {
 			sb.WriteString(styles.Dimmed.Render("  Nada para hacer — todo está instalado y actualizado.") + "\n")
 		} else {
+			// Build payload-source lookup from detected states.
+			sourceByComponent := make(map[string]string, len(m.planStates))
+			for _, s := range m.planStates {
+				if s.PayloadSource != "" {
+					sourceByComponent[s.Name] = s.PayloadSource
+				}
+			}
 			sb.WriteString("  Plan:\n")
 			for i, a := range m.planActions {
 				verb := "instalar"
@@ -153,6 +162,9 @@ func (m SyncModel) View() string {
 					verb = "actualizar"
 				}
 				sb.WriteString(fmt.Sprintf("    %d. %s — %s\n", i+1, a.Component, verb))
+				if src, ok := sourceByComponent[a.Component]; ok {
+					sb.WriteString(fmt.Sprintf("       payload: %s\n", src))
+				}
 			}
 			sb.WriteString("\n" + styles.Warn.Render("  ¿Ejecutar? [y/n]") + "\n")
 		}

@@ -123,9 +123,10 @@ type ComponentState struct {
 	Present        bool
 	CurrentVersion string
 	LatestVersion  string
-	PayloadChanged bool // solo relevante para KindDeploy
-	Pending        bool // reconciliación pendiente sin semántica de versión (config ecosistema)
-	Unknown        bool // true cuando latest no pudo obtenerse (offline / error)
+	PayloadChanged bool   // solo relevante para KindDeploy
+	PayloadSource  string // "embedded" o ruta local; solo relevante para KindDeploy
+	Pending        bool   // reconciliación pendiente sin semántica de versión (config ecosistema)
+	Unknown        bool   // true cuando latest no pudo obtenerse (offline / error)
 }
 
 // configComponent es el componente coarse-grained que reconcilia la config del
@@ -255,8 +256,9 @@ func Detect(opts Options) ([]ComponentState, error) {
 
 	// --- Deploy (payload) ---
 	deployState := ComponentState{Name: "deploy"}
-	payloadFS, _, deployErr := deploy.ResolvePayloadFS()
+	payloadFS, payloadSource, deployErr := deploy.ResolvePayloadFS()
 	if deployErr == nil {
+		deployState.PayloadSource = payloadSource
 		claudeHome, homeErr := deploy.ClaudeHome()
 		if homeErr == nil {
 			active, _ := manifest.ActiveIDsFromEnv()
@@ -324,6 +326,14 @@ func Sync(opts Options) Result {
 		return result
 	}
 
+	// Build a source lookup so the deploy entry can show its payload origin.
+	sourceByComponent := make(map[string]string, len(states))
+	for _, s := range states {
+		if s.PayloadSource != "" {
+			sourceByComponent[s.Name] = s.PayloadSource
+		}
+	}
+
 	// Mostrar el plan antes de ejecutar (dry-run lo imprime y sale).
 	fmt.Fprintln(out, "Plan:")
 	for i, a := range active {
@@ -332,6 +342,9 @@ func Sync(opts Options) Result {
 			verb = "actualizar"
 		}
 		fmt.Fprintf(out, "  %d. %s — %s\n", i+1, a.Component, verb)
+		if src, ok := sourceByComponent[a.Component]; ok {
+			fmt.Fprintf(out, "     payload: %s\n", src)
+		}
 	}
 
 	if opts.DryRun {

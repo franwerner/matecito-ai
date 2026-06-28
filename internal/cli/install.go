@@ -59,6 +59,14 @@ Muestra el plan combinado antes de ejecutar. Se continúa ante errores de binari
 				return nil
 			}
 
+			// Build a payload-source lookup for the plan display.
+			sourceByComponent := make(map[string]string, len(states))
+			for _, s := range states {
+				if s.PayloadSource != "" {
+					sourceByComponent[s.Name] = s.PayloadSource
+				}
+			}
+
 			// Mostrar plan combinado.
 			n := 1
 			fmt.Fprintln(os.Stdout, "Plan:")
@@ -68,6 +76,9 @@ Muestra el plan combinado antes de ejecutar. Se continúa ante errores de binari
 					verb = "actualizar"
 				}
 				fmt.Fprintf(os.Stdout, "  %d. %s — %s\n", n, a.Component, verb)
+				if src, ok := sourceByComponent[a.Component]; ok {
+					fmt.Fprintf(os.Stdout, "     payload: %s\n", src)
+				}
 				n++
 			}
 
