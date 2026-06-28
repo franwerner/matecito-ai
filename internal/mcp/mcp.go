@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync"
 )
 
 type Found struct {
@@ -16,11 +17,67 @@ type Found struct {
 	Source    string
 }
 
+func defaultRunMCPList() ([]byte, error) {
+	if _, err := exec.LookPath("claude"); err != nil {
+		return nil, err
+	}
+	return exec.Command("claude", "mcp", "list").CombinedOutput()
+}
+
+// runMCPList is the indirection used to invoke "claude mcp list". Tests
+// replace this var with a stub to avoid requiring a real claude binary.
+var runMCPList func() ([]byte, error) = defaultRunMCPList
+
+// cliCache holds the memoized result of a single "claude mcp list" call.
+// Access is guarded by cliCacheMu / cliCacheOnce so concurrent goroutines
+// (e.g. the TUI Sync goroutine) never race.
+var (
+	cliCacheMu   sync.Mutex
+	cliCacheOnce *sync.Once
+	cliCacheData []byte
+	cliCacheErr  error
+)
+
+func init() {
+	cliCacheOnce = &sync.Once{}
+}
+
+// InvalidateCLICache discards the cached "claude mcp list" result so the next
+// Find or ListAll call re-invokes the runner. Call this after registering a new
+// MCP server (e.g. after ApplyConfigSteps) to avoid stale reads.
+func InvalidateCLICache() {
+	cliCacheMu.Lock()
+	defer cliCacheMu.Unlock()
+	cliCacheOnce = &sync.Once{}
+	cliCacheData = nil
+	cliCacheErr = nil
+}
+
+// cachedCLIOutput returns the memoized output of runMCPList, invoking it at
+// most once per command invocation (or since the last InvalidateCLICache call).
+func cachedCLIOutput() ([]byte, error) {
+	cliCacheMu.Lock()
+	once := cliCacheOnce
+	cliCacheMu.Unlock()
+
+	once.Do(func() {
+		data, err := runMCPList()
+		cliCacheMu.Lock()
+		cliCacheData = data
+		cliCacheErr = err
+		cliCacheMu.Unlock()
+	})
+
+	cliCacheMu.Lock()
+	defer cliCacheMu.Unlock()
+	return cliCacheData, cliCacheErr
+}
+
 func Find(needle string) (Found, bool) {
-	if f, ok := findViaCLI(needle); ok {
+	if f, ok := findInJSON(needle); ok {
 		return f, true
 	}
-	if f, ok := findInJSON(needle); ok {
+	if f, ok := findViaCLI(needle); ok {
 		return f, true
 	}
 	return Found{}, false
@@ -40,10 +97,7 @@ func (f Found) Describe() string {
 }
 
 func findViaCLI(needle string) (Found, bool) {
-	if _, err := exec.LookPath("claude"); err != nil {
-		return Found{}, false
-	}
-	out, err := exec.Command("claude", "mcp", "list").CombinedOutput()
+	out, err := cachedCLIOutput()
 	if err != nil {
 		return Found{}, false
 	}
@@ -65,21 +119,21 @@ func findViaCLI(needle string) (Found, bool) {
 
 func ListAll() []string {
 	set := map[string]struct{}{}
-	if _, err := exec.LookPath("claude"); err == nil {
-		if out, err := exec.Command("claude", "mcp", "list").CombinedOutput(); err == nil {
-			for _, line := range strings.Split(string(out), "\n") {
-				line = strings.TrimSpace(line)
-				if line == "" {
-					continue
-				}
-				idx := strings.Index(line, ": ")
-				if idx <= 0 {
-					continue
-				}
-				set[line[:idx]] = struct{}{}
+
+	if out, err := cachedCLIOutput(); err == nil {
+		for _, line := range strings.Split(string(out), "\n") {
+			line = strings.TrimSpace(line)
+			if line == "" {
+				continue
 			}
+			idx := strings.Index(line, ": ")
+			if idx <= 0 {
+				continue
+			}
+			set[line[:idx]] = struct{}{}
 		}
 	}
+
 	if home, err := os.UserHomeDir(); err == nil {
 		if data, err := os.ReadFile(filepath.Join(home, ".claude.json")); err == nil {
 			var doc struct {
@@ -92,6 +146,7 @@ func ListAll() []string {
 			}
 		}
 	}
+
 	out := make([]string, 0, len(set))
 	for name := range set {
 		out = append(out, name)

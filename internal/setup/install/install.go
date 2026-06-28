@@ -157,6 +157,7 @@ func ApplyConfigSteps(opts Options) error {
 	if err := backupClaudeJSON(opts.BackupDir); err != nil {
 		return err
 	}
+	ran := false
 	for _, s := range AllSteps(opts) {
 		if !s.Check() {
 			continue
@@ -165,6 +166,12 @@ func ApplyConfigSteps(opts Options) error {
 		if err := s.Run(); err != nil {
 			return fmt.Errorf("%s: %w", s.Name, err)
 		}
+		ran = true
+	}
+	// Invalidate the CLI result cache so any Find call after ApplyConfigSteps
+	// reflects newly registered MCP servers instead of the pre-registration snapshot.
+	if ran {
+		mcp.InvalidateCLICache()
 	}
 	return nil
 }
