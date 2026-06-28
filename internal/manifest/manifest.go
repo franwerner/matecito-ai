@@ -46,9 +46,9 @@ type Manifest struct {
 	Phases            []string       `json:"phases"`
 	Guards            []string       `json:"guards"`
 	ExplorationTool   string         `json:"explorationTool,omitempty"`
-	MCP      []string      `json:"mcp"`
-	Binaries []string      `json:"binaries"`
-	Config   []ConfigField `json:"config,omitempty"`
+	MCP               []string       `json:"mcp"`
+	Binaries          []string       `json:"binaries"`
+	Config            []ConfigField  `json:"config,omitempty"`
 }
 
 // RelPath is the manifest location within the payload for a domain id.

@@ -163,7 +163,6 @@ func HookList(doc map[string]any) []HookEntry {
 	return entries
 }
 
-
 // ReconcileHooks performs identity-based reconciliation of hook handlers.
 // Matecito owns every handler that carries a non-empty "matecitoId" field in
 // settings.json.

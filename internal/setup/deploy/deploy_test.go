@@ -258,9 +258,9 @@ func TestPlan_RealPayload_IndexesBothDomains(t *testing.T) {
 // deploy even when the active-domain set is empty.
 func TestPlan_SharedDeploys_ZeroActiveDomains(t *testing.T) {
 	payload := fstest.MapFS{
-		"core/CLAUDE.md":                              {Data: []byte("# core\n")},
-		"domains/development/agents/noop.md":          {Data: []byte("noop")},
-		"shared/skills/grp/myskill/SKILL.md":          {Data: []byte("shared skill")},
+		"core/CLAUDE.md":                     {Data: []byte("# core\n")},
+		"domains/development/agents/noop.md": {Data: []byte("noop")},
+		"shared/skills/grp/myskill/SKILL.md": {Data: []byte("shared skill")},
 	}
 	claudeHome := newClaudeHome(t)
 
@@ -281,9 +281,9 @@ func TestPlan_SharedDeploys_ZeroActiveDomains(t *testing.T) {
 // deploy alongside active-domain components.
 func TestPlan_SharedDeploys_AlongsideActiveDomain(t *testing.T) {
 	payload := fstest.MapFS{
-		"core/CLAUDE.md":                                    {Data: []byte("# core\n")},
-		"domains/development/agents/agent.md":               {Data: []byte("agent")},
-		"shared/skills/grp/myskill/SKILL.md":                {Data: []byte("shared skill")},
+		"core/CLAUDE.md":                      {Data: []byte("# core\n")},
+		"domains/development/agents/agent.md": {Data: []byte("agent")},
+		"shared/skills/grp/myskill/SKILL.md":  {Data: []byte("shared skill")},
 	}
 	claudeHome := newClaudeHome(t)
 
@@ -315,7 +315,7 @@ func TestPlan_SharedDeploys_AlongsideActiveDomain(t *testing.T) {
 func TestPlan_SharedSkill_Flattens(t *testing.T) {
 	payload := fstest.MapFS{
 		"core/CLAUDE.md":                     {Data: []byte("# core\n")},
-		"domains/.keep":                       {Data: []byte{}},
+		"domains/.keep":                      {Data: []byte{}},
 		"shared/skills/grp/myskill/SKILL.md": {Data: []byte("shared skill")},
 	}
 	claudeHome := newClaudeHome(t)
@@ -338,9 +338,9 @@ func TestPlan_SharedSkill_Flattens(t *testing.T) {
 // and a domain component resolving to the same target still produce a clashError.
 func TestPlan_SharedVsDomain_SameTarget_Clashes(t *testing.T) {
 	payload := fstest.MapFS{
-		"core/CLAUDE.md":                                    {Data: []byte("# core\n")},
-		"shared/skills/grp/audit/SKILL.md":                  {Data: []byte("shared")},
-		"domains/development/skills/grp/audit/SKILL.md":     {Data: []byte("dev")},
+		"core/CLAUDE.md":                                {Data: []byte("# core\n")},
+		"shared/skills/grp/audit/SKILL.md":              {Data: []byte("shared")},
+		"domains/development/skills/grp/audit/SKILL.md": {Data: []byte("dev")},
 	}
 	claudeHome := newClaudeHome(t)
 

@@ -91,7 +91,6 @@ func buildMappings(payloadFS fs.FS, active []string) ([]Mapping, error) {
 	return mappings, nil
 }
 
-
 type FileStatus int
 
 const (
