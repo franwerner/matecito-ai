@@ -17,6 +17,8 @@
 
 <lo decidido, en imperativo. Ej: "Usamos JWT con refresh tokens y rotación; access token de 15min, refresh de 7d.">
 
+<!-- Vocabulario (aplica a Contexto/Decisión/Consecuencias/Alternativas): conceptos, patrones y límites — NUNCA identificadores internos volátiles (clase, método, columna, error interno, ruta de archivo). Si te sale escribir uno, reubicalo: límite estable → glob en `## Alcance`; aserción chequeable → `## Reglas verificables` (ahí sí podés nombrar la clase, es el ancla). Excepción: nombre de tecnología/librería y contrato público (endpoint público, código de error expuesto). El ejemplo de arriba es conceptual a propósito. Ver `~/.claude/references/adr/README.md` → "No es el cómo". -->
+
 <!-- Si Status es Pending o Deferred, REEMPLAZAR "Decisión" por:
 
 ## Razón de omisión / aplazamiento
@@ -83,4 +85,5 @@ Globs **a nivel convención** —patrones estructurales estables, no archivos co
 Notas del contrato (no van en el ADR generado):
 - No hay sección `Historial`. El historial de ediciones lo lleva git; la evolución de decisiones se ve en la cadena de `Superseded`.
 - Header en inglés (`Status`, `Type`, `Date`, `Applied pattern`); nombres de sección y prosa en español.
+- Self-check antes de dar por escrito el ADR: releé Contexto/Decisión/Consecuencias/Alternativas y por cada nombre de clase/método/columna/archivo/error interno, convertilo en un glob (`## Alcance`) o una regla (`## Reglas verificables`), o reformulá la frase en términos de concepto. Excepción: tecnología/librería y contrato público.
 -->

@@ -332,6 +332,8 @@ Notas del contrato del ADR (también en `~/.claude/references/adr/templates/adr.
    - Sugerencia de commitear estos archivos al repo
 8. Ofrecer correr el validador `development-decisions-validate` en contexto fresco (ver flujo, paso 6) antes de dar por cerrado el bootstrap.
 
+**Vocabulario del ADR — self-check obligatorio antes de escribir cada ADR-archivo (`Accepted`):** el razonamiento (Contexto/Decisión/Consecuencias/Alternativas) va en **conceptos, patrones y límites**. Ningún identificador interno volátil (clase, método, columna, error interno, ruta de archivo) en esas secciones — reubicalo a `## Alcance` (glob estable) o a `## Reglas verificables` (ahí sí nombrás la clase, es el ancla que se chequea). No inventes subsecciones tipo "Forma hexagonal" / "Mecanismo concreto" que vuelquen la implementación en el porqué. Excepción: nombre de tecnología/librería (es la decisión) y contrato público (endpoint público, código de error expuesto). Ver `~/.claude/references/adr/README.md` → "No es el cómo".
+
 ---
 
 ## Modo update (cuando `.matecito-ai/adr/INDEX.md` ya existe)
@@ -379,6 +381,7 @@ Desde ese momento, todo bootstrap futuro lo considera, y el modo update lo ofrec
 - ❌ Mantener una tabla `Historial` manual → es redundante con git y se pudre.
 - ❌ Inventar reglas no discutidas con el usuario en la materialización → todo lo que va al ADR fue confirmado.
 - ❌ Reglas vagas tipo "tratá de no acoplar capas" → siempre verificable: paths, globs, ejemplos.
+- ❌ Nombrar identificadores internos volátiles (clases, métodos, columnas, rutas de archivo, errores internos) en el razonamiento del ADR (Contexto/Decisión/Consecuencias/Alternativas) → van a `## Alcance` (glob estable) o `## Reglas verificables` (ancla chequeable), nunca al porqué. El razonamiento se escribe en conceptos/patrones/límites; se pudre con el primer rename si calca el código. Excepción: nombre de tecnología/librería y contrato público. Ver `~/.claude/references/adr/README.md`.
 - ❌ Sobrescribir un `CLAUDE.md` existente sin permiso → preguntar y ofrecer merge.
 - ❌ Asumir el stack en lugar de detectarlo en pre-flight → leer manifests primero.
 - ❌ Leer todo el catálogo `concerns/` de una → leer `INDEX.md` (raíz) para seleccionar, y cada `concerns/<dominio>/<slug>.md` solo cuando se trata esa fase.

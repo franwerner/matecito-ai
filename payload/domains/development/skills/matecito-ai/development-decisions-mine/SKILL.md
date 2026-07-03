@@ -277,6 +277,7 @@ Cuando mine corre sobre un repo que ya tiene ADRs `Inferred`:
 - No correr Mode B cuando el flag es false → invariante 1. La ausencia de `.matecito-ai/adr/` NO es razón para no correr: mine bootstrapea los primeros.
 - No inventar el porqué de una decisión → WHY siempre vacío en Inferred.
 - No usar `path:line` como locator → siempre globs estructurales o entradas de manifest.
+- No volcar identificadores internos volátiles (clases, métodos, columnas, errores internos) en `observado` como si fueran el porqué → `observado` es el QUÉ estructural conceptual + su prevalencia; el razonamiento queda vacío hasta que un humano lo ratifique. Los anclajes concretos van a `## Alcance` como globs, no al cuerpo del ADR.
 - No crear Inferred con confidence low → los low van a bootstrap como pregunta abierta.
 - No marcar un ADR Inferred como Accepted → eso lo hace el humano vía bootstrap modo update.
 - No inventar dominios nuevos ni concerns nuevos → taxonomía cerrada, solo flagear gaps.
