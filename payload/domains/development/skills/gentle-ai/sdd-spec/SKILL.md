@@ -49,15 +49,15 @@ FOR EACH entry under "New Capabilities":
 
 FOR EACH entry under "Modified Capabilities":
 ├── This becomes a DELTA spec against the existing capability
-└── Read the existing capability spec from Engram first — your delta modifies it
+└── Read the existing DURABLE capability-spec (`.matecito-ai/development-specs/<type>/<capability>.md`) first — your delta modifies it. If it does not exist, treat it as a NEW capability spec.
 ```
 
 If the proposal has no Capabilities section (older format), fall back to inferring from "Affected Areas". But always prefer the explicit Capabilities mapping when present.
 
-### Step 3: Read Existing Specs
+### Step 3: Read Existing Durable Specs
 
-<!-- matecito-ai: engram-only -->
-Existing specs were already retrieved from Engram in the Persistence Contract (or passed inline in `none` mode). Skip filesystem reads.
+<!-- matecito-ai: los capability-specs durables viven en archivos (`.matecito-ai/development-specs/`), como los ADR; NO son artefactos de flujo en Engram. Los artefactos del pipeline (proposal, etc.) SÍ vienen de Engram por el Persistence Contract. -->
+For a Modified Capability, read its durable capability-spec from `.matecito-ai/development-specs/<type>/<capability>.md` — it is the source of truth of the current behavior your delta modifies (format in `~/.claude/references/spec/README.md`). If the file does not exist, there is no existing behavior: write a full spec (NEW), not a delta.
 
 ### Step 4: Write Delta Specs
 
@@ -76,9 +76,9 @@ When writing a `## MODIFIED Requirements` section, follow this exact workflow:
 5. Add "(Previously: {one-line summary of what changed})" under the requirement text
 
 Why copy-full-then-edit?
-→ The archive step REPLACES the requirement in main specs with your MODIFIED block
-→ If your block is partial, the archive will lose scenarios you didn't copy
-→ Common pitfall: only writing the changed scenario and losing the rest
+→ At archive, the delta is merged into the durable capability-spec anchored on scenarios (each MODIFIED scenario replaces its match; scenarios not present in the delta are preserved)
+→ Copying the full requirement block keeps every scenario visible so the merge maps each one cleanly and nothing is dropped by accident
+→ Common pitfall: rewriting only the changed scenario as if it were the whole requirement
 → If adding NEW behavior WITHOUT changing existing behavior, use ADDED instead
 ```
 

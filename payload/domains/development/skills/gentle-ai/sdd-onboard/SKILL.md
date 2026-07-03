@@ -164,8 +164,9 @@ Run `sdd-verify` behavior. Explain the compliance matrix:
 ### Phase 9: Archive (narrated)
 
 ```
-"Step 8: Archive — We merge our delta specs into the main specs and close the change.
- The specs now describe the new behavior. The change becomes the audit trail."
+"Step 8: Archive — We merge our delta specs into the durable capability-specs
+ (`.matecito-ai/development-specs/<type>/<capability>.md`) and close the change.
+ Those capability-specs now describe the new accumulated behavior. The change becomes the audit trail."
 ```
 
 Run `sdd-archive` behavior. Show the result:
@@ -186,7 +187,7 @@ Here's what we built together:
 **Change**: {change-name}
 **Artifacts created**:
 - proposal.md — the WHY
-- specs/{capability}/spec.md — the WHAT
+- .matecito-ai/development-specs/<type>/<capability>.md — the WHAT
 - design.md — the HOW
 - tasks.md — the STEPS
 

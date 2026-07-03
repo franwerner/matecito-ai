@@ -65,14 +65,14 @@ Meta-commands (orchestrator handles them): `/sdd-new <change>`, `/sdd-continue [
 | `sdd-intake` | raw request | `intake` |
 | `sdd-explore` | intake (brief) | `explore` |
 | `sdd-propose` | exploration (optional) | `proposal` |
-| `sdd-spec` | proposal (required) | `spec` |
-| `sdd-design` | proposal + **ADRs** (required) | `design` |
-| `sdd-tasks` | spec + design (required) | `tasks` |
+| `sdd-spec` | proposal (required) + **durable capability-spec** (for Modified Capabilities) | `spec` |
+| `sdd-design` | proposal + **ADRs** + **durable capability-specs** (required) | `design` |
+| `sdd-tasks` | spec + design + **durable capability-specs touched** (required) | `tasks` |
 | `sdd-apply` | tasks + spec + design + apply-progress | `apply-progress` |
-| `sdd-verify` | spec + tasks + apply-progress + **ADRs touched** | `verify-report` |
-| `sdd-archive` | all artifacts | `archive-report` |
+| `sdd-verify` | spec + tasks + apply-progress + **ADRs touched** + **capability-specs touched** | `verify-report` |
+| `sdd-archive` | all artifacts | `archive-report` + **durable capability-specs (merge)** |
 
-The "Reads" column lists the **full-lane** ideal. In `reduced`/`custom` lanes some upstream phases don't run, so each phase reads the **nearest available upstream**: `sdd-spec` falls back to the intake brief when there is no proposal; `sdd-apply` treats `spec` as the floor and skips `tasks`/`design` when absent.
+The "Reads" column lists the **full-lane** ideal. In `reduced`/`custom` lanes some upstream phases don't run, so each phase reads the **nearest available upstream**: `sdd-spec` falls back to the intake brief when there is no proposal; `sdd-apply` treats `spec` as the floor and skips `tasks`/`design` when absent. The **durable capability-specs** are read only when `.matecito-ai/development-specs/` exists; absent → skip silently (same presence-based gate as ADRs).
 
 ## Guards
 
@@ -84,3 +84,10 @@ After `sdd-tasks` and before `sdd-apply`, inspect `Review Workload Forecast`. If
 
 ## Decision-Gap Capture — development specifics
 The kernel owns the generic mine gate. In development the mining executor is `development-decisions-mine`; confirmed candidates are materialized as `[Inferred]` `.md` ADRs and the `.matecito-ai/adr/INDEX.md` is updated **once at the end**; the ADRs live ONLY as `.md`, never recorded in Engram.
+
+## Capability-specs — development specifics
+The system's **behavior** (the WHAT) is captured as durable **capability-specs**: files under `.matecito-ai/development-specs/<type>/<capability>.md` (type ∈ `flow` | `rule` | `lifecycle` | `process`), versioned in git and **never recorded in Engram** — exactly like ADRs. Concept and templates in `~/.claude/references/spec/README.md` and `~/.claude/references/spec/templates/`.
+
+**Exception to engram-only (explicit).** The engram-only rule forbids file-based *proposal stores* of flow artifacts (like `openspec/`); it does NOT forbid durable repo knowledge. Capability-specs are durable knowledge that governs and verifies code — categorically the same as ADRs — so they live as files. The pipeline artifacts (`proposal`/`spec`/`design`/`tasks`/`verify-report`) stay in Engram; only the **accumulated behavior** is materialized to files. Never write pipeline artifacts to the filesystem.
+
+**Who touches them:** `development-spec-bootstrap` authors them upfront (interview by capability, by type); `sdd-archive` merges each change's delta into them (scenario-anchored, non-destructive); `sdd-spec`/`sdd-design`/`sdd-tasks`/`sdd-verify` read them as the behavior contract; `development-spec-validate` checks coherence across them. Presence-based gate: absent store → every reader skips silently.

@@ -62,6 +62,12 @@ If the project has `.matecito-ai/adr/` (decisions captured by `development-decis
 If `.matecito-ai/adr/` does NOT exist, proceed normally (note that the project has no captured decisions).
 <!-- matecito-ai: read project ADRs before designing — END -->
 
+<!-- matecito-ai: read durable capability-specs before designing — START -->
+#### Step 2b: Read the project's capability-specs (durable behavior)
+
+If the project has `.matecito-ai/development-specs/` (durable capability-specs under `<type>/<capability>.md`, type ∈ flow|rule|lifecycle|process — concept at `~/.claude/references/spec/README.md`), read the capability-specs this change touches. They are the accumulated **intended behavior** (the WHAT) the technical design must satisfy — the sibling of the ADRs, which are the constraints (the why/how-decision). Design so the change fits the behavior these specs already describe; if it must change that behavior, say so explicitly under "New Decisions". If `.matecito-ai/development-specs/` does NOT exist, proceed normally.
+<!-- matecito-ai: read durable capability-specs before designing — END -->
+
 ### Step 3: Write design.md
 
 <!-- matecito-ai: engram-only; no se crean archivos. -->

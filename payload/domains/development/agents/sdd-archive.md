@@ -2,8 +2,8 @@
 name: sdd-archive
 description: >
   Archive a completed and verified change. Use when verification has passed and the change
-  needs to be closed — merges delta specs into main specs, moves change folder to archive,
-  and persists the final archive report. Completes the SDD cycle.
+  needs to be closed — merges the change's delta into the durable capability-specs
+  (`.matecito-ai/development-specs/`) and persists the final archive report. Completes the SDD cycle.
 model: haiku
 tools: Read, Edit, Write, Glob, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save
 ---
@@ -23,8 +23,9 @@ Execute all steps from the skill directly in this context window:
    - `mem_search("sdd/{change-name}/design")` → `mem_get_observation`
    - `mem_search("sdd/{change-name}/tasks")` → `mem_get_observation`
    - `mem_search("sdd/{change-name}/verify-report")` → `mem_get_observation`
-<!-- matecito-ai: engram-only — pasos de merge/move de openspec removidos -->
-2. Write final archive report with all observation IDs for traceability
+<!-- matecito-ai: engram-only para artefactos de flujo; los capability-specs durables SÍ se materializan a archivos. -->
+2. Merge the change's delta spec into the durable capability-specs under `.matecito-ai/development-specs/<type>/<capability>.md` (scenario-anchored, non-destructive; create missing, update indices) — see SKILL Step 2. Skip in `none` mode.
+3. Write final archive report with all observation IDs for traceability
 <!-- matecito-ai: Inferred ADRs are NOT recorded here. ADRs (any status) live ONLY in their `.md` under `.matecito-ai/adr/`; never duplicated into Engram or the archive-report. -->
 3. Mark the change state as archived in Engram
 4. Persist archive report to active backend

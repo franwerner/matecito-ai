@@ -32,6 +32,7 @@ From the orchestrator:
 > Follow **Section B** (retrieval) and **Section C** (persistence) from `skills/_shared/sdd-phase-common.md`.
 
 - **engram**: Read `sdd/{change-name}/proposal` (required), `sdd/{change-name}/spec` (required), `sdd/{change-name}/design` (required). Save as `sdd/{change-name}/tasks`.
+<!-- matecito-ai: also read the durable capability-specs of the capabilities this change touches — `.matecito-ai/development-specs/<type>/<capability>.md` (type ∈ flow|rule|lifecycle|process; concept at ~/.claude/references/spec/README.md), when present. They are the accumulated behavior contract the tasks must uphold, alongside the change spec and the design. -->
 - **none**: Return result only. Never create or modify project files.
 
 ## What to Do
