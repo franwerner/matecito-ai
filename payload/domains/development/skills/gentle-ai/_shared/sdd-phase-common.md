@@ -10,7 +10,7 @@ Executor boundary: every SDD phase agent is an EXECUTOR, not an orchestrator. Do
 
 1. Load this phase's own `SKILL.md` (and any module it explicitly tells you to load, e.g. `strict-tdd.md`).
 2. If the orchestrator's launch prompt includes explicit `SKILL: Load` instructions, load those exact skill files too.
-3. Project-level conventions live in the project's own files — read `.matecito-ai/adr/` (architecture decisions), `CLAUDE.md`, and any `config.yaml` the phase references. Those are the project's standards in matecito-ai; there is no separate registry to consult.
+3. Project-level conventions live in the project's own files — read `.matecito-ai/edr/` (architecture decisions), `CLAUDE.md`, and any `config.yaml` the phase references. Those are the project's standards in matecito-ai; there is no separate registry to consult.
 
 Proceed with the phase skill as your authority. Loading a skill file is NOT delegation.
 

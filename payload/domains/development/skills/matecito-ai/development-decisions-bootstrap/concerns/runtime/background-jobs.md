@@ -36,7 +36,7 @@ Una o dos, según haga falta.
 
 ## Notas de lógica (para el motor)
 
-- Si eligió "Ninguno por ahora", no hagas la pregunta 2. Materializá el ADR con `Status: Pending` y razón ("sin caso de uso de background identificado todavía").
+- Si eligió "Ninguno por ahora", no hagas la pregunta 2. Materializá el EDR con `Status: Pending` y razón ("sin caso de uso de background identificado todavía").
 
 ## Tech a registrar
 
@@ -44,7 +44,7 @@ Si se elige una librería o broker concreto (ej: `celery.md`, `bullmq.md`, `rabb
 
 ## Qué materializar
 
-ADR `background-jobs` materializado según el template `~/.claude/references/adr/templates/adr.md`. La **Decisión** captura: mecanismo elegido (ninguno / cola de mensajes / queue in-process / scheduler), broker o librería concreta si aplica, estrategia de reintentos y dead-letter, y si los workers corren como procesos separados del proceso web (12-factor VIII/IX).
+EDR `background-jobs` materializado según el template `~/.claude/references/edr/templates/edr.md`. La **Decisión** captura: mecanismo elegido (ninguno / cola de mensajes / queue in-process / scheduler), broker o librería concreta si aplica, estrategia de reintentos y dead-letter, y si los workers corren como procesos separados del proceso web (12-factor VIII/IX).
 
 **Reglas verificables** (cada una con su mecanismo al inicio):
 
@@ -52,6 +52,6 @@ ADR `background-jobs` materializado según el template `~/.claude/references/adr
 - **[manual]** todo job encolado tiene política de reintento con backoff exponencial y, salvo idempotencia explícita, una dead-letter queue donde aterrizan los mensajes envenenados.
 - **[tool: test]** los jobs sin reintento son idempotentes (re-ejecutarlos no duplica efectos), verificado con un test que los corre dos veces.
 
-Si se eligió "Ninguno por ahora", el ADR va con `Status: Pending` y la razón concreta ("sin caso de uso de background identificado todavía"); en ese caso no lleva Reglas verificables.
+Si se eligió "Ninguno por ahora", el EDR va con `Status: Pending` y la razón concreta ("sin caso de uso de background identificado todavía"); en ese caso no lleva Reglas verificables.
 
 **Relacionados:** vincular con `resilience` si los reintentos/backoff comparten política, y con `concurrency-async` cuando los workers definen el modelo de concurrencia.

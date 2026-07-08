@@ -17,7 +17,7 @@ A comment is valid **only if it explains the WHY** (intent, constraint, tradeoff
 
 ## Conciseness
 
-If a comment is valid, keep it **one line**. A comment that needs a paragraph is a signal the WHY belongs somewhere more durable — an ADR, the commit body, or a test name — not inline. Length is not thoroughness; a verbose comment rots faster and is read less.
+If a comment is valid, keep it **one line**. A comment that needs a paragraph is a signal the WHY belongs somewhere more durable — an EDR, the commit body, or a test name — not inline. Length is not thoroughness; a verbose comment rots faster and is read less.
 
 ## Before commenting, check the WHY doesn't belong elsewhere
 
@@ -26,7 +26,7 @@ A comment is the last resort, not the first. Before writing one, ask if the WHY 
 - A **better name** (`retryAfter429` beats `// wait before retrying`).
 - A **test** whose name states the expected behavior.
 - The **commit body** (see the `git` skill) — motivation, evaluated alternatives.
-- An **ADR** — an architectural decision with reach beyond this line.
+- An **EDR** — an architectural decision with reach beyond this line.
 
 Only when none of those fits does the comment earn its place.
 
@@ -82,11 +82,11 @@ Rule of thumb: document the **contract**, never the **implementation**. Internal
 
 ## Project convention precedence
 
-If the repo enforces its own convention via an ADR or tooling — license headers, mandatory public JSDoc, doc-comment linting (godoc, rustdoc) — **that convention wins** over this skill for the cases it covers. This skill is the default, not an override of an explicit project decision.
+If the repo enforces its own convention via an EDR or tooling — license headers, mandatory public JSDoc, doc-comment linting (godoc, rustdoc) — **that convention wins** over this skill for the cases it covers. This skill is the default, not an override of an explicit project decision.
 
 ## Self-check (before writing any comment)
 
 1. Does it explain **WHY**, not WHAT/HOW? If not → don't write it.
 2. Would a competent reader get it from the code in <10s? If yes → don't write it.
-3. Does the WHY belong in a name / test / commit / ADR instead? If yes → put it there.
+3. Does the WHY belong in a name / test / commit / EDR instead? If yes → put it there.
 4. Can it be **one line**? If not → reconsider where it belongs.

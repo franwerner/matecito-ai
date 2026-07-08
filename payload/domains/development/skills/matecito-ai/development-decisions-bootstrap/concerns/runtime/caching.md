@@ -36,7 +36,7 @@ Una o dos, según haga falta.
 
 ## Notas de lógica (para el motor)
 
-- Si en la pregunta 1 eligió "Ninguno por ahora", no hagas la pregunta 2. Materializá el ADR con `Status: Pending` y razón ("sin problema de performance medido todavía"), no como decisión hueca.
+- Si en la pregunta 1 eligió "Ninguno por ahora", no hagas la pregunta 2. Materializá el EDR con `Status: Pending` y razón ("sin problema de performance medido todavía"), no como decisión hueca.
 
 ## Tech a registrar
 
@@ -44,12 +44,12 @@ Si se elige Redis / Memcached u otra herramienta, registrala en el catálogo `te
 
 ## Qué materializar
 
-ADR `caching` materializado según el template `~/.claude/references/adr/templates/adr.md`. La **Decisión** captura: qué se cachea y qué no, la capa elegida (in-memory / distribuido / CDN-HTTP), la estrategia de invalidación (TTL fijo / por evento / mix) y los TTLs concretos si se definieron.
+EDR `caching` materializado según el template `~/.claude/references/edr/templates/edr.md`. La **Decisión** captura: qué se cachea y qué no, la capa elegida (in-memory / distribuido / CDN-HTTP), la estrategia de invalidación (TTL fijo / por evento / mix) y los TTLs concretos si se definieron.
 
 **Reglas verificables** (cada una con su mecanismo al inicio):
 
-- **[manual]** solo se cachea lo enumerado en la Decisión; cachear datos fuera de esa lista requiere actualizar el ADR.
+- **[manual]** solo se cachea lo enumerado en la Decisión; cachear datos fuera de esa lista requiere actualizar el EDR.
 - **[manual]** cada entrada cacheada tiene un TTL explícito o una regla de purga por evento; ninguna entrada queda sin política de expiración.
 - **[manual]** en escrituras críticas la entrada correspondiente se purga o se reescribe en el mismo flujo, para no servir datos viejos.
 
-Si se eligió "Ninguno por ahora", el ADR va con `Status: Pending` y la razón concreta ("sin problema de performance medido todavía"); en ese caso no lleva Reglas verificables.
+Si se eligió "Ninguno por ahora", el EDR va con `Status: Pending` y la razón concreta ("sin problema de performance medido todavía"); en ese caso no lleva Reglas verificables.

@@ -16,8 +16,8 @@
 | Phase agents | `sdd-*` (`sdd-intake`, `sdd-explore`, …, `sdd-archive`) |
 | Phase commands | `/sdd-*` |
 | Alignment artifact | `spec` |
-| Decision record | `ADR`, stored in `.matecito-ai/adr/` |
-| Decision-record concept reference | `~/.claude/references/adr/README.md` |
+| Decision record | `EDR`, stored in `.matecito-ai/edr/` |
+| Decision-record concept reference | `~/.claude/references/edr/README.md` |
 | Canonical catalog | `design-patterns` at `~/.claude/references/design-patterns/` (`Applied pattern: X` → `patterns/<x>.md`) |
 | Decision-mining executor | `development-decisions-mine` |
 | Decision-capture skill | `development-decisions-bootstrap` |
@@ -33,7 +33,7 @@ Code (variables, functions, classes, constants): English. Comments follow the `c
 Code exploration prefers CodeGraph when `.codegraph/` exists (structural questions); grep for literal text or non-indexed files. The SDD fork assumes the `mcp__codegraph__*` prefix — verify the tool names (`codegraph_search`, `codegraph_explore`, `codegraph_impact`, etc.) match the real MCP registration.
 
 ## Architecture diagrams (drawio)
-Diagramming here is two complementary pieces: the **`drawio` skill** owns the *vocabulary* — how to build the diagram XML (shapes, branded/AI icons via `shapesearch`/`aiicons`, style presets, layout, diagram-type templates) — and the **`mcp__drawio__*` MCP** owns the *live render* — it renders the skill's `<mxGraphModel>` as an ephemeral preview; the skill itself never writes files. This rule is the **single source of truth for when to draw**. Diagrams are generated **on demand, never automatically**, and only when the change has structural complexity worth visualizing. **Diagram inference test — generate when** the change introduces or rewires ≥3-4 components with relationships, data flow crosses boundaries (layers/services/new modules), there is a non-trivial process with branches or states, or the task is to understand existing code spread across many files (CodeGraph can feed the graph) — **plus** capturing the shape of an architectural decision (ADR). **Do NOT generate** for a small fix, rename, config tweak, single-file/single-unit change, or linear logic — there prose or a snippet is clearer. **Model — offer-and-confirm, never unilateral.** **Decide vs generate (timing):** the structure does not exist yet at intake, so `sdd-intake` only *decides* — it sets `diagram: needed | not-needed` in the brief per this test, and the user confirms it at the **INTAKE GATE** (that gate IS the confirmation for the in-flow case; no re-ask later). **Generation is EPHEMERAL — always a live preview, NEVER a file in the project (zero `.drawio` artifacts in the repo).** The diagram is rendered by the **main thread** with a live preview (`mcp__drawio__*` — `start_session` reports the preview URL; the port is assigned dynamically, not fixed); nothing is exported or persisted. When the flag is `needed`, the main thread offers to render it live at the design step — the **headless `sdd-design` sub-agent does NOT generate or export diagrams**; it only notes that a live diagram is recommended. Same for a `direct` lane / outside the flow. Apply this same test before offering.
+Diagramming here is two complementary pieces: the **`drawio` skill** owns the *vocabulary* — how to build the diagram XML (shapes, branded/AI icons via `shapesearch`/`aiicons`, style presets, layout, diagram-type templates) — and the **`mcp__drawio__*` MCP** owns the *live render* — it renders the skill's `<mxGraphModel>` as an ephemeral preview; the skill itself never writes files. This rule is the **single source of truth for when to draw**. Diagrams are generated **on demand, never automatically**, and only when the change has structural complexity worth visualizing. **Diagram inference test — generate when** the change introduces or rewires ≥3-4 components with relationships, data flow crosses boundaries (layers/services/new modules), there is a non-trivial process with branches or states, or the task is to understand existing code spread across many files (CodeGraph can feed the graph) — **plus** capturing the shape of an architectural decision (EDR). **Do NOT generate** for a small fix, rename, config tweak, single-file/single-unit change, or linear logic — there prose or a snippet is clearer. **Model — offer-and-confirm, never unilateral.** **Decide vs generate (timing):** the structure does not exist yet at intake, so `sdd-intake` only *decides* — it sets `diagram: needed | not-needed` in the brief per this test, and the user confirms it at the **INTAKE GATE** (that gate IS the confirmation for the in-flow case; no re-ask later). **Generation is EPHEMERAL — always a live preview, NEVER a file in the project (zero `.drawio` artifacts in the repo).** The diagram is rendered by the **main thread** with a live preview (`mcp__drawio__*` — `start_session` reports the preview URL; the port is assigned dynamically, not fixed); nothing is exported or persisted. When the flag is `needed`, the main thread offers to render it live at the design step — the **headless `sdd-design` sub-agent does NOT generate or export diagrams**; it only notes that a live diagram is recommended. Same for a `direct` lane / outside the flow. Apply this same test before offering.
 
 ## Debugger MCP (mcp-debugger)
 The debugger MCP (`mcp__debugger__*`, DAP step-through via `@debugmcp/mcp-debugger`) is **on-demand only** — it is NEVER invoked automatically. Its primary home is `sdd-apply`: when a runtime defect is encountered and the per-language debug toolchain is available (detected by `sdd-init` and cached in `sdd/{project}/testing-capabilities`), `sdd-apply` MAY diagnose the root cause AND apply a fix in the same context. In `sdd-verify`, the debugger is **diagnosis-only**: it MAY be used to understand why a test or scenario fails, but MUST NOT apply fixes there — any fix found belongs in a subsequent `sdd-apply` invocation. When the per-language debug toolchain is absent (`debugger.available = ❌` in testing-capabilities), both phases skip debugger usage silently — no error, no warning, no section. **For the full usage guide** — preflight (adapter vs. toolchain binary distinction), per-language install helper, and the debug loop — read the **`debugger` skill** (`payload/domains/development/skills/matecito-ai/debugger/SKILL.md`).
@@ -43,7 +43,7 @@ The debugger MCP (`mcp__debugger__*`, DAP step-through via `@debugmcp/mcp-debugg
 ```
 sdd-intake → sdd-explore → sdd-propose → sdd-spec → sdd-design → sdd-tasks → sdd-apply → sdd-verify → sdd-archive
                                               ^
-                                           (design reads ADRs)
+                                           (design reads EDRs)
 ```
 
 ### Commands
@@ -52,7 +52,7 @@ sdd-intake → sdd-explore → sdd-propose → sdd-spec → sdd-design → sdd-t
 - `/sdd-intake <request>` → structure a raw request into an Intake Brief (entry phase)
 - `/sdd-explore <topic>` → investigate; reads codebase, compares approaches
 - `/sdd-apply [change]` → implement tasks in batches
-- `/sdd-verify [change]` → validate against specs + ADRs
+- `/sdd-verify [change]` → validate against specs + EDRs
 - `/sdd-archive [change]` → close a change, persist final state in Engram
 - `/sdd-onboard` → guided end-to-end walkthrough
 
@@ -66,13 +66,13 @@ Meta-commands (orchestrator handles them): `/sdd-new <change>`, `/sdd-continue [
 | `sdd-explore` | intake (brief) | `explore` |
 | `sdd-propose` | exploration (optional) | `proposal` |
 | `sdd-spec` | proposal (required) + **durable capability-spec** (for Modified Capabilities) | `spec` |
-| `sdd-design` | proposal + **ADRs** + **durable capability-specs** (required) | `design` |
+| `sdd-design` | proposal + **EDRs** + **durable capability-specs** (required) | `design` |
 | `sdd-tasks` | spec + design + **durable capability-specs touched** (required) | `tasks` |
 | `sdd-apply` | tasks + spec + design + apply-progress | `apply-progress` |
-| `sdd-verify` | spec + tasks + apply-progress + **ADRs touched** + **capability-specs touched** | `verify-report` |
+| `sdd-verify` | spec + tasks + apply-progress + **EDRs touched** + **capability-specs touched** | `verify-report` |
 | `sdd-archive` | all artifacts | `archive-report` + **durable capability-specs (merge)** |
 
-The "Reads" column lists the **full-lane** ideal. In `reduced`/`custom` lanes some upstream phases don't run, so each phase reads the **nearest available upstream**: `sdd-spec` falls back to the intake brief when there is no proposal; `sdd-apply` treats `spec` as the floor and skips `tasks`/`design` when absent. The **durable capability-specs** are read only when `.matecito-ai/development-specs/` exists; absent → skip silently (same presence-based gate as ADRs).
+The "Reads" column lists the **full-lane** ideal. In `reduced`/`custom` lanes some upstream phases don't run, so each phase reads the **nearest available upstream**: `sdd-spec` falls back to the intake brief when there is no proposal; `sdd-apply` treats `spec` as the floor and skips `tasks`/`design` when absent. The **durable capability-specs** are read only when `.matecito-ai/development-specs/` exists; absent → skip silently (same presence-based gate as EDRs).
 
 ## Guards
 
@@ -83,11 +83,11 @@ Same precedence as model resolution — per-project `domainConfig.development.st
 After `sdd-tasks` and before `sdd-apply`, inspect `Review Workload Forecast`. If chained PRs recommended / 400-line budget risk High / decision needed → apply cached `delivery_strategy` (`ask-on-risk` default: STOP and ask chained PRs vs `size:exception`). Automatic mode does not override this guard.
 
 ## Decision-Gap Capture — development specifics
-The kernel owns the generic mine gate. In development the mining executor is `development-decisions-mine`; confirmed candidates are materialized as `[Inferred]` `.md` ADRs and the `.matecito-ai/adr/INDEX.md` is updated **once at the end**; the ADRs live ONLY as `.md`, never recorded in Engram.
+The kernel owns the generic mine gate. In development the mining executor is `development-decisions-mine`; confirmed candidates are materialized as `[Inferred]` `.md` EDRs and the `.matecito-ai/edr/INDEX.md` is updated **once at the end**; the EDRs live ONLY as `.md`, never recorded in Engram.
 
 ## Capability-specs — development specifics
-The system's **behavior** (the WHAT) is captured as durable **capability-specs**: files under `.matecito-ai/development-specs/<type>/<capability>.md` (type ∈ `flow` | `rule` | `lifecycle` | `process`), versioned in git and **never recorded in Engram** — exactly like ADRs. Concept and templates in `~/.claude/references/spec/README.md` and `~/.claude/references/spec/templates/`.
+The system's **behavior** (the WHAT) is captured as durable **capability-specs**: files under `.matecito-ai/development-specs/<type>/<capability>.md` (type ∈ `flow` | `rule` | `lifecycle` | `process`), versioned in git and **never recorded in Engram** — exactly like EDRs. Concept and templates in `~/.claude/references/spec/README.md` and `~/.claude/references/spec/templates/`.
 
-**Exception to engram-only (explicit).** The engram-only rule forbids file-based *proposal stores* of flow artifacts (like `openspec/`); it does NOT forbid durable repo knowledge. Capability-specs are durable knowledge that governs and verifies code — categorically the same as ADRs — so they live as files. The pipeline artifacts (`proposal`/`spec`/`design`/`tasks`/`verify-report`) stay in Engram; only the **accumulated behavior** is materialized to files. Never write pipeline artifacts to the filesystem.
+**Exception to engram-only (explicit).** The engram-only rule forbids file-based *proposal stores* of flow artifacts (like `openspec/`); it does NOT forbid durable repo knowledge. Capability-specs are durable knowledge that governs and verifies code — categorically the same as EDRs — so they live as files. The pipeline artifacts (`proposal`/`spec`/`design`/`tasks`/`verify-report`) stay in Engram; only the **accumulated behavior** is materialized to files. Never write pipeline artifacts to the filesystem.
 
 **Who touches them:** `development-spec-bootstrap` authors them upfront (interview by capability, by type); `sdd-archive` merges each change's delta into them (scenario-anchored, non-destructive); `sdd-spec`/`sdd-design`/`sdd-tasks`/`sdd-verify` read them as the behavior contract; `development-spec-validate` checks coherence across them. Presence-based gate: absent store → every reader skips silently.

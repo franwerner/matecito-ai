@@ -48,9 +48,9 @@ Una por turno. Para cada una: línea de "por qué importa", opciones con default
 
 ## Notas de lógica (para el motor)
 
-- **Si en architecture-style eligió "Sin patrón formal" o "acoplamiento directo":** DI probablemente es Not Applicable o se reduce a instanciación manual en main. Crear el ADR con ese status y motivo.
+- **Si en architecture-style eligió "Sin patrón formal" o "acoplamiento directo":** DI probablemente es Not Applicable o se reduce a instanciación manual en main. Crear el EDR con ese status y motivo.
 - **Si el framework ya provee DI** (NestJS, Spring, ASP.NET): la pregunta 2 (librería de container) no aplica — anotar que se usa el mecanismo del framework y por qué (integración nativa, menos dependencias).
-- **Si eligió "Manual":** la pregunta 2 y 3 cambian de naturaleza — ya no hay container ni scopes formales. El ADR documenta el composition root y qué factories existen.
+- **Si eligió "Manual":** la pregunta 2 y 3 cambian de naturaleza — ya no hay container ni scopes formales. El EDR documenta el composition root y qué factories existen.
 
 ## Tech a registrar
 
@@ -58,7 +58,7 @@ Si se eligió un container de DI externo: `dependency-injector.md`, `awilix.md`,
 
 ## Qué materializar
 
-ADR `dependency-injection` materializado según `~/.claude/references/adr/templates/adr.md`. Debe contener:
+EDR `dependency-injection` materializado según `~/.claude/references/edr/templates/edr.md`. Debe contener:
 
 - **Contexto** y **Decisión**: mecanismo elegido (manual / container / framework), librería específica si aplica (`dependency-injector`, `awilix`, `tsyringe`, Spring IoC, etc.), scopes por tipo de componente (servicio, repository, unit of work), y — si es composition root manual — dónde vive y quién es responsable de armarlo.
 - **Reglas verificables**: las reglas de scope como aserciones con su mecanismo al inicio, no como intención vaga. Ej: `[manual]` todo `Service` se registra como singleton; `[manual]` todo `Repository` y unit of work es scoped al request; `[tool: <linter/test>]` si la convención de registro es chequeable por la librería de DI o un test de wiring. Conservá los valores concretos de scope por tipo de componente.

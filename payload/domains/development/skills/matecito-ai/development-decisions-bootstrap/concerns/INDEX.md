@@ -10,11 +10,11 @@ Menú de fases (concerns) que la skill puede recorrer, **organizado por dominio*
    - **Recomendado** → se sugiere; el usuario decide.
 3. Muestra el set; el usuario elige qué definir ahora, y puede agregar una **fase custom**.
 4. Por cada fase elegida, el motor lee `<dominio>/<slug>.md` y la trata con las reglas del motor.
-5. Las relevantes NO elegidas → ADR `Not Applicable` / `Pending` + razón. Nunca hueco silencioso.
+5. Las relevantes NO elegidas → EDR `Not Applicable` / `Pending` + razón. Nunca hueco silencioso.
 
 ## Dominios canónicos (fijos)
 
-La taxonomía de dominios es **cerrada y la impone el motor** — la misma para el catálogo interno y para la salida `.matecito-ai/adr/`, así todos los repos del equipo se ven igual. Cada dominio tiene su propio `INDEX.md` con el detalle de sus concerns y el **criterio de pertenencia** (cuándo un concern nuevo va ahí).
+La taxonomía de dominios es **cerrada y la impone el motor** — la misma para el catálogo interno y para la salida `.matecito-ai/edr/`, así todos los repos del equipo se ven igual. Cada dominio tiene su propio `INDEX.md` con el detalle de sus concerns y el **criterio de pertenencia** (cuándo un concern nuevo va ahí).
 
 ### Activos (con concerns)
 
@@ -53,7 +53,7 @@ Casilleros válidos para que nada quede sin lugar. Se pueblan vía ratchet cuand
 
 ## Fase custom
 
-Si el usuario tiene un tema fuera de este catálogo, el motor le hace las preguntas genéricas, determina a qué **dominio canónico** pertenece, crea `<dominio>/<slug>.md` con el formato estándar y suma la fila al índice de ese dominio + a la matriz de abajo. Antes de guardarlo pregunta: **¿reusable (queda en el catálogo) o solo para este proyecto (solo genera el ADR)?**
+Si el usuario tiene un tema fuera de este catálogo, el motor le hace las preguntas genéricas, determina a qué **dominio canónico** pertenece, crea `<dominio>/<slug>.md` con el formato estándar y suma la fila al índice de ese dominio + a la matriz de abajo. Antes de guardarlo pregunta: **¿reusable (queda en el catálogo) o solo para este proyecto (solo genera el EDR)?**
 
 ## Leyenda
 
@@ -78,6 +78,7 @@ Cada fila apunta a `<dominio>/<slug>.md`. La columna **Dominio** es la carpeta c
 | [layers-and-dependencies](structure/layers-and-dependencies.md) | structure | deep | los que eligieron un patrón en architecture-style | — |
 | [inter-layer-communication](structure/inter-layer-communication.md) | structure | deep | proyectos con capas (Clean / Layered / Hexagonal) | `monolito-modular` |
 | [folder-structure](structure/folder-structure.md) | structure | light | todos | — |
+| [code-conventions](structure/code-conventions.md) | structure | deep | — | todos los productivos |
 
 ### runtime
 | Fase | Dominio | Prof. | Requerido para | Recomendado para |

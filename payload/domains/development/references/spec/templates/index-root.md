@@ -2,7 +2,7 @@
 
 # Capability specs — Índice raíz
 
-El comportamiento del sistema, capturado por **capacidad** y organizado por **tipo**. Cada capability-spec dice *qué hace* el sistema; el *por qué* de cada elección técnica vive en `../adr/`, y el *cómo* literal en el código.
+El comportamiento del sistema, capturado por **capacidad** y organizado por **tipo**. Cada capability-spec dice *qué hace* el sistema; el *por qué* de cada elección técnica vive en `../edr/`, y el *cómo* literal en el código.
 
 ## Cómo usar este índice
 

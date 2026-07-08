@@ -32,12 +32,12 @@ El modelo de escalado esperado (vertical u horizontal) y si la arquitectura lo s
 
 ## Notas de lógica (para el motor)
 
-- Si elige "Vertical por ahora" o "Sin escalado previsto", no hacer la pregunta 2. Registrar el ADR con el modelo elegido y la condición de revisión ("revisar si se supera X usuarios / Y req/s").
+- Si elige "Vertical por ahora" o "Sin escalado previsto", no hacer la pregunta 2. Registrar el EDR con el modelo elegido y la condición de revisión ("revisar si se supera X usuarios / Y req/s").
 - Si ya se definió `deployment-topology` con "múltiples instancias", proponer "horizontal desde el inicio" como default en la pregunta 1.
 
 ## Qué materializar
 
-ADR `scalability` materializado según el template `~/.claude/references/adr/templates/adr.md`.
+EDR `scalability` materializado según el template `~/.claude/references/edr/templates/edr.md`.
 
 - **Contexto:** modelo de escalado esperado (vertical, horizontal, sin escalado) y qué condicionantes lo justifican; si escala horizontal, por qué el proceso debe ser stateless.
 - **Decisión:** modelo de escalado elegido, si el proceso es stateless o stateful, dónde vive el estado cuando hay múltiples instancias, y la condición de revisión de esta decisión.
@@ -46,5 +46,5 @@ ADR `scalability` materializado según el template `~/.claude/references/adr/tem
   - **[manual]** el proceso puede reiniciarse o reemplazarse sin pérdida de datos (requisito base de escala horizontal, 12-factor VI).
   - **[manual]** la condición de revisión está fijada con un umbral concreto (ej: "revisar si se supera `___` usuarios / `___` req/s").
 
-  Si se eligió "vertical por ahora" o "sin escalado previsto", el ADR registra el modelo y la condición de revisión sin imponer la regla de statelessness.
+  Si se eligió "vertical por ahora" o "sin escalado previsto", el EDR registra el modelo y la condición de revisión sin imponer la regla de statelessness.
 - `Relacionados`: `relacionado-con` → `caching` y `deployment-topology` cuando el modelo horizontal externaliza sesión/cache o asume múltiples instancias.

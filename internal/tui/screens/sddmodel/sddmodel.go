@@ -32,6 +32,10 @@ type AgentModelModel struct {
 	// se usan para mostrar el modelo efectivo cuando el valor es GlobalSentinel.
 	globalCfg  *agentmodel.Config
 	projectCfg *agentmodel.Config
+	// defaults es el modelo default por agente leído del frontmatter del payload
+	// (domains/<domain>/agents/*.md). Es la base de la herencia: lo que se usa
+	// cuando ni el proyecto ni el global fijan un override.
+	defaults map[string]string
 	// models es el mapa editable de agente → modelo durante la sesión.
 	models  map[string]string
 	cursor  int
@@ -44,8 +48,21 @@ type saveErrMsg struct{ err error }
 
 // New construye un AgentModelModel cargando el config del scope activo.
 // globalCfg y projectCfg son pre-cargados por AppModel.buildChild para
-// evitar I/O duplicado y para tener ambos disponibles en render.
+// evitar I/O duplicado y para tener ambos disponibles en render. Los defaults
+// por agente se leen del payload aquí y se inyectan en newModel.
 func New(globalCfg *agentmodel.Config, projectCfg *agentmodel.Config, configPath string, scope agentmodel.Scope, domain string, agents []string) AgentModelModel {
+	defaults := map[string]string{}
+	if payloadFS, _, fsErr := deploy.ResolvePayloadFS(); fsErr == nil {
+		if defs, defErr := agentmodel.DefaultsForDomain(payloadFS, domain); defErr == nil {
+			defaults = defs
+		}
+	}
+	return newModel(globalCfg, projectCfg, configPath, scope, domain, agents, defaults)
+}
+
+// newModel es el constructor puro (sin I/O de payload): recibe los defaults ya
+// resueltos para poder testear el sembrado y la herencia de forma determinística.
+func newModel(globalCfg *agentmodel.Config, projectCfg *agentmodel.Config, configPath string, scope agentmodel.Scope, domain string, agents []string, defaults map[string]string) AgentModelModel {
 	m := AgentModelModel{
 		configPath: configPath,
 		scope:      scope,
@@ -53,43 +70,37 @@ func New(globalCfg *agentmodel.Config, projectCfg *agentmodel.Config, configPath
 		agents:     agents,
 		globalCfg:  globalCfg,
 		projectCfg: projectCfg,
+		defaults:   defaults,
 		models:     make(map[string]string),
 	}
 
-	// cargar modelos desde el config del scope activo
+	// cargar los overrides explícitos del config del scope activo
 	var activeCfg *agentmodel.Config
 	if scope == agentmodel.ScopeProject {
 		activeCfg = projectCfg
 	} else {
 		activeCfg = globalCfg
 	}
-
-	if activeCfg != nil && len(activeCfg.DomainModels(domain)) > 0 {
+	if activeCfg != nil {
 		for k, v := range activeCfg.DomainModels(domain) {
 			m.models[k] = v
 		}
-	} else if scope == agentmodel.ScopeGlobal {
-		// en scope global sin config, sembrar desde defaults del payload
-		payloadFS, _, fsErr := deploy.ResolvePayloadFS()
-		if fsErr == nil {
-			defaults, defErr := agentmodel.DefaultsForDomain(payloadFS, domain)
-			if defErr == nil {
-				for k, v := range defaults {
-					m.models[k] = v
-				}
-			}
-		}
 	}
 
-	// en Project scope: agentes sin override → sentinel "(global)"
-	// en Global scope: agentes sin entrada → sonnet como fallback
+	// completar los agentes sin override explícito:
+	//   Project scope → sentinel "(global)" (heredan del efectivo).
+	//   Global scope  → default real del payload por agente; sonnet solo como
+	//   último recurso cuando el payload no declara default para ese agente.
 	for _, agent := range m.agents {
-		if _, ok := m.models[agent]; !ok {
-			if scope == agentmodel.ScopeProject {
-				m.models[agent] = GlobalSentinel
-			} else {
-				m.models[agent] = agentmodel.ValidModels[2] // sonnet
-			}
+		if _, ok := m.models[agent]; ok {
+			continue
+		}
+		if scope == agentmodel.ScopeProject {
+			m.models[agent] = GlobalSentinel
+		} else if d := defaults[agent]; d != "" {
+			m.models[agent] = d
+		} else {
+			m.models[agent] = agentmodel.ValidModels[2] // sonnet
 		}
 	}
 
@@ -198,7 +209,11 @@ func (m AgentModelModel) View() string {
 // Cuando el valor es GlobalSentinel, muestra el modelo efectivo resuelto como referencia.
 func (m AgentModelModel) renderModelPills(agent, active string) string {
 	if active == GlobalSentinel {
+		// efectivo = override global → default del payload; nunca un hardcodeo.
 		resolved, _ := agentmodel.ResolveModel(m.globalCfg, nil, m.domain, agent)
+		if resolved == "" {
+			resolved = m.defaults[agent]
+		}
 		ref := "(hereda global)"
 		if resolved != "" {
 			ref = fmt.Sprintf("(hereda: %s)", resolved)
@@ -227,10 +242,15 @@ func (m AgentModelModel) saveAndBack() tea.Cmd {
 		}
 
 		for agent, model := range m.models {
-			if model == GlobalSentinel {
+			switch {
+			case model == GlobalSentinel:
 				// limpiar el override per-proyecto para este agente
 				cfg.SetDomainModelOverride(m.domain, agent, "")
-			} else {
+			case m.scope == agentmodel.ScopeGlobal && model == m.defaults[agent]:
+				// igual al default del payload → no persistir override espurio,
+				// así el global no contamina la herencia de los proyectos.
+				cfg.SetDomainModelOverride(m.domain, agent, "")
+			default:
 				cfg.SetDomainModelOverride(m.domain, agent, model)
 			}
 		}

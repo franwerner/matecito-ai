@@ -46,7 +46,7 @@ Una por turno. Para cada una: línea de "por qué importa", opciones con default
 
 ## Qué materializar
 
-ADR `architecture-style` materializado según `~/.claude/references/adr/templates/adr.md`. Debe contener:
+EDR `architecture-style` materializado según `~/.claude/references/edr/templates/edr.md`. Debe contener:
 
 - **Contexto** y **Decisión**: patrón arquitectónico elegido, nivel de acoplamiento buscado, y justificación concreta (por qué este patrón para este tipo de proyecto y equipo).
 - **Reglas verificables**: si el patrón implica restricciones específicas, enumeralas como aserciones chequeables con su mecanismo al inicio. Ej: `[tool: dependency-cruiser]` ningún módulo de `domain/**` importa framework externo; `[manual]` los bordes I/O exponen interfaces, el resto es concreto (si no hay check automático). Estas reglas son la base de layers-and-dependencies.

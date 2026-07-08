@@ -70,8 +70,8 @@ Lenguaje principal y framework web/CLI si aplica. Son las primeras entradas de `
 
 ## Qué materializar
 
-ADR `context` materializado según el template `~/.claude/references/adr/templates/adr.md`. Esta fase es mayormente descriptiva (caracteriza el proyecto, no impone una restricción chequeable), así que el cuerpo se concentra en `Contexto` y `Decisión`; **no se inventan `Reglas verificables`** salvo que alguna respuesta derive en una restricción real (en cuyo caso se marca con su mecanismo `[tool: ...]` o `[manual]`).
+EDR `context` materializado según el template `~/.claude/references/edr/templates/edr.md`. Esta fase es mayormente descriptiva (caracteriza el proyecto, no impone una restricción chequeable), así que el cuerpo se concentra en `Contexto` y `Decisión`; **no se inventan `Reglas verificables`** salvo que alguna respuesta derive en una restricción real (en cuyo caso se marca con su mecanismo `[tool: ...]` o `[manual]`).
 
 - **Contexto / Decisión** deben capturar los campos descriptivos: tipo de proyecto, lenguaje, framework, versión detectada o declarada, tamaño de equipo, y greenfield vs. código existente vs. migración.
 - Si se usó el **atajo de script** (script + solo), documentar en `Decisión` qué fases se saltaron (architecture-style, layers-and-dependencies, inter-layer-communication) y por qué.
-- `Relacionados`: este ADR es la entrada de las demás fases; si querés, podés enlazar con `relacionado-con` los ADRs que derivan sus defaults de este contexto. No es obligatorio.
+- `Relacionados`: este EDR es la entrada de las demás fases; si querés, podés enlazar con `relacionado-con` los EDRs que derivan sus defaults de este contexto. No es obligatorio.

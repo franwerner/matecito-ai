@@ -32,13 +32,13 @@ Cada chequeo tiene: **severidad** (CRITICAL / WARNING / SUGGESTION), una **condi
 
 ## Referencias
 
-- **[CRITICAL]** Un link de "Referencias → ADR" apunta a un archivo que no existe en `.matecito-ai/adr/` (referencia colgada).
-- **[SUGGESTION]** Un comportamiento claramente gobernado por una decisión técnica (ej: una política de reintentos, un formato de error) no linkea ningún ADR → puede faltar el ADR o la referencia. (Solo sugerencia: no todo comportamiento tiene un ADR.)
+- **[CRITICAL]** Un link de "Referencias → EDR" apunta a un archivo que no existe en `.matecito-ai/edr/` (referencia colgada).
+- **[SUGGESTION]** Un comportamiento claramente gobernado por una decisión técnica (ej: una política de reintentos, un formato de error) no linkea ningún EDR → puede faltar el EDR o la referencia. (Solo sugerencia: no todo comportamiento tiene un EDR.)
 
 ## Vocabulario (separación qué-hace vs cómo)
 
-- **[WARNING]** Un spec nombra **identificadores internos volátiles** (clases, métodos, columnas de base de datos, errores internos, rutas de archivo) en cualquier sección → el spec es el *qué hace*, en idioma de dominio + contrato público; el *cómo* es del código y el *por qué* del ADR. Excepción: nombre de tecnología/librería y contrato público (endpoints públicos, códigos de error expuestos). Ver `~/.claude/references/spec/README.md` → "No es el cómo".
-- **[SUGGESTION]** Un spec incluye justificación/argumentación de por qué se eligió un enfoque técnico → eso es un ADR; el spec especifica, no argumenta.
+- **[WARNING]** Un spec nombra **identificadores internos volátiles** (clases, métodos, columnas de base de datos, errores internos, rutas de archivo) en cualquier sección → el spec es el *qué hace*, en idioma de dominio + contrato público; el *cómo* es del código y el *por qué* del EDR. Excepción: nombre de tecnología/librería y contrato público (endpoints públicos, códigos de error expuestos). Ver `~/.claude/references/spec/README.md` → "No es el cómo".
+- **[SUGGESTION]** Un spec incluye justificación/argumentación de por qué se eligió un enfoque técnico → eso es un EDR; el spec especifica, no argumenta.
 
 ## Higiene de status
 

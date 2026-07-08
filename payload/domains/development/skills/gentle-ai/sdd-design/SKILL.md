@@ -46,26 +46,26 @@ Before designing, read the actual code that will be affected:
 - Dependencies and interfaces
 - Test infrastructure (if any)
 
-<!-- matecito-ai: read project ADRs before designing — START -->
-#### Step 2a: Read the project's architecture decisions (ADRs)
+<!-- matecito-ai: read project EDRs before designing — START -->
+#### Step 2a: Read the project's architecture decisions (EDRs)
 
-If the project has `.matecito-ai/adr/` (decisions captured by `development-decisions-bootstrap`), you MUST consult it before proposing any architecture, because the design has to RESPECT decisions already made — not re-decide them.
+If the project has `.matecito-ai/edr/` (decisions captured by `development-decisions-bootstrap`), you MUST consult it before proposing any architecture, because the design has to RESPECT decisions already made — not re-decide them.
 
-1. Read `.matecito-ai/adr/INDEX.md` (root index) to see which domains exist.
-2. For each domain this change touches (e.g. a new endpoint touches `security`, `contracts`, `runtime`), read the relevant ADRs in `.matecito-ai/adr/<domain>/` — focus on their **Decisión**, **Reglas verificables**, AND **Applied pattern** (if present) sections.
+1. Read `.matecito-ai/edr/INDEX.md` (root index) to see which domains exist.
+2. For each domain this change touches (e.g. a new endpoint touches `security`, `contracts`, `runtime`), read the relevant EDRs in `.matecito-ai/edr/<domain>/` — focus on their **Decisión**, **Reglas verificables**, AND **Applied pattern** (if present) sections.
 3. When writing the design:
-   - **Respect every `Accepted` ADR that applies.** Your "Architecture Decisions" must align with them; cite the ADR (e.g. `security/auth.md`) when a decision is constrained by it.
-   - **If an applicable ADR declares `Applied pattern: X`,** your design MUST implement X according to the canonical definition in `~/.claude/references/design-patterns/patterns/<x>.md` — read that file before designing. Cite the pattern by name in your Architecture Decisions. Do not propose a variant unless the ADR itself justifies the deviation.
-   - If the design would **contradict** an `Accepted` ADR → STOP. Do not silently override a standing decision. Report it as a blocker in your return summary so the user can either adjust the design or change the decision via `development-decisions-bootstrap` (update mode).
-   - If the change requires a decision **no ADR covers** (a genuinely new architectural choice) → flag it explicitly under "New decisions (not yet in ADRs)" in your design, and recommend capturing it via `development-decisions-bootstrap` before/with implementation. Document your proposed choice, but mark it as pending ADR capture. When your new decision IS a canonical pattern, name it (the catalog is available at `~/.claude/references/design-patterns/`) so the future ADR can record `Applied pattern: <Nombre>`.
+   - **Respect every `Accepted` EDR that applies.** Your "Architecture Decisions" must align with them; cite the EDR (e.g. `security/auth.md`) when a decision is constrained by it.
+   - **If an applicable EDR declares `Applied pattern: X`,** your design MUST implement X according to the canonical definition in `~/.claude/references/design-patterns/patterns/<x>.md` — read that file before designing. Cite the pattern by name in your Architecture Decisions. Do not propose a variant unless the EDR itself justifies the deviation.
+   - If the design would **contradict** an `Accepted` EDR → STOP. Do not silently override a standing decision. Report it as a blocker in your return summary so the user can either adjust the design or change the decision via `development-decisions-bootstrap` (update mode).
+   - If the change requires a decision **no EDR covers** (a genuinely new architectural choice) → flag it explicitly under "New decisions (not yet in EDRs)" in your design, and recommend capturing it via `development-decisions-bootstrap` before/with implementation. Document your proposed choice, but mark it as pending EDR capture. When your new decision IS a canonical pattern, name it (the catalog is available at `~/.claude/references/design-patterns/`) so the future EDR can record `Applied pattern: <Nombre>`.
 
-If `.matecito-ai/adr/` does NOT exist, proceed normally (note that the project has no captured decisions).
-<!-- matecito-ai: read project ADRs before designing — END -->
+If `.matecito-ai/edr/` does NOT exist, proceed normally (note that the project has no captured decisions).
+<!-- matecito-ai: read project EDRs before designing — END -->
 
 <!-- matecito-ai: read durable capability-specs before designing — START -->
 #### Step 2b: Read the project's capability-specs (durable behavior)
 
-If the project has `.matecito-ai/development-specs/` (durable capability-specs under `<type>/<capability>.md`, type ∈ flow|rule|lifecycle|process — concept at `~/.claude/references/spec/README.md`), read the capability-specs this change touches. They are the accumulated **intended behavior** (the WHAT) the technical design must satisfy — the sibling of the ADRs, which are the constraints (the why/how-decision). Design so the change fits the behavior these specs already describe; if it must change that behavior, say so explicitly under "New Decisions". If `.matecito-ai/development-specs/` does NOT exist, proceed normally.
+If the project has `.matecito-ai/development-specs/` (durable capability-specs under `<type>/<capability>.md`, type ∈ flow|rule|lifecycle|process — concept at `~/.claude/references/spec/README.md`), read the capability-specs this change touches. They are the accumulated **intended behavior** (the WHAT) the technical design must satisfy — the sibling of the EDRs, which are the constraints (the why/how-decision). Design so the change fits the behavior these specs already describe; if it must change that behavior, say so explicitly under "New Decisions". If `.matecito-ai/development-specs/` does NOT exist, proceed normally.
 <!-- matecito-ai: read durable capability-specs before designing — END -->
 
 ### Step 3: Write design.md
@@ -90,7 +90,7 @@ How does this map to the proposal's approach? Reference specs.}
 **Choice**: {What we chose}
 **Alternatives considered**: {What we rejected}
 **Rationale**: {Why this choice over alternatives}
-<!-- matecito-ai: when a decision is constrained by an existing ADR, add: **Constrained by**: `<domain>/<slug>.md` -->
+<!-- matecito-ai: when a decision is constrained by an existing EDR, add: **Constrained by**: `<domain>/<slug>.md` -->
 <!-- matecito-ai: when the decision maps to a canonical pattern, add: **Applied pattern**: <Name> — <1-line why>. Definition at ~/.claude/references/design-patterns/patterns/<name>.md -->
 
 ### Decision: {Decision Title}
@@ -99,24 +99,24 @@ How does this map to the proposal's approach? Reference specs.}
 **Alternatives considered**: {What we rejected}
 **Rationale**: {Why this choice over alternatives}
 
-<!-- matecito-ai: ADR alignment sections — START -->
-## ADR Alignment
+<!-- matecito-ai: EDR alignment sections — START -->
+## EDR Alignment
 
-| Applicable ADR | Status | How this design respects it |
+| Applicable EDR | Status | How this design respects it |
 |----------------|--------|------------------------------|
 | `<domain>/<slug>.md` | Accepted | {how the design complies} |
 
-## New Decisions (not yet in ADRs)
+## New Decisions (not yet in EDRs)
 
-{Architectural choices this change requires that NO existing ADR covers.
+{Architectural choices this change requires that NO existing EDR covers.
 For each: the proposed choice + a note to capture it via development-decisions-bootstrap.
-If none, state "None — all decisions are covered by existing ADRs."}
+If none, state "None — all decisions are covered by existing EDRs."}
 
-## ADR Conflicts (BLOCKER if any)
+## EDR Conflicts (BLOCKER if any)
 
-{Any place where this change would contradict an Accepted ADR.
+{Any place where this change would contradict an Accepted EDR.
 If present, this design is BLOCKED until resolved. If none, state "None."}
-<!-- matecito-ai: ADR alignment sections — END -->
+<!-- matecito-ai: EDR alignment sections — END -->
 
 ## Data Flow
 
@@ -194,8 +194,8 @@ Ready for tasks (sdd-tasks).
 ## Rules
 
 - ALWAYS read the actual codebase before designing — never guess
-<!-- matecito-ai: ADRs are binding — respect Accepted ADRs in .matecito-ai/adr/; never contradict one silently (report as blocker); flag uncovered decisions for capture via development-decisions-bootstrap (see Step 2a) -->
-- ALWAYS read `.matecito-ai/adr/` (if present) before designing; treat Accepted ADRs as binding constraints, surface conflicts as blockers, and flag new uncovered decisions
+<!-- matecito-ai: EDRs are binding — respect Accepted EDRs in .matecito-ai/edr/; never contradict one silently (report as blocker); flag uncovered decisions for capture via development-decisions-bootstrap (see Step 2a) -->
+- ALWAYS read `.matecito-ai/edr/` (if present) before designing; treat Accepted EDRs as binding constraints, surface conflicts as blockers, and flag new uncovered decisions
 - Every decision MUST have a rationale (the "why")
 - Include concrete file paths, not abstract descriptions
 - Use the project's ACTUAL patterns and conventions, not generic best practices

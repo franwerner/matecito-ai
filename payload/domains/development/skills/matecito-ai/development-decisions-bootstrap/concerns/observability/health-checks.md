@@ -44,7 +44,7 @@ Readiness chequea:
 
 ## Qué materializar
 
-ADR `health-checks` materializado según el template `~/.claude/references/adr/templates/adr.md`. La **Decisión** captura: endpoints expuestos (`/health/live` + `/health/ready` o solo `/health`), qué chequea cada uno con la lista concreta de dependencias si se definió, los timeouts de los checks, y cómo los consume el orquestador (config de probes de Kubernetes/ECS si aplica).
+EDR `health-checks` materializado según el template `~/.claude/references/edr/templates/edr.md`. La **Decisión** captura: endpoints expuestos (`/health/live` + `/health/ready` o solo `/health`), qué chequea cada uno con la lista concreta de dependencias si se definió, los timeouts de los checks, y cómo los consume el orquestador (config de probes de Kubernetes/ECS si aplica).
 
 **Reglas verificables** (cada una con su mecanismo al inicio):
 

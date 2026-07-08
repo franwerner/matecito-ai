@@ -1,8 +1,8 @@
-<!-- Canonical template: índice del catálogo de tecnologías (`.matecito-ai/adr/tech/INDEX.md`). Las categorías sin filas se dejan vacías para que se vean los huecos. Consumido por SKILL.md (Catálogo de tecnologías). -->
+<!-- Canonical template: índice del catálogo de tecnologías (`.matecito-ai/edr/tech/INDEX.md`). Las categorías sin filas se dejan vacías para que se vean los huecos. Consumido por SKILL.md (Catálogo de tecnologías). -->
 
 # Catálogo de tecnologías
 
-Registro vivo de las tecnologías concretas elegidas. Cada entrada apunta a un mini-ADR con el "por qué" y alternativas descartadas.
+Registro vivo de las tecnologías concretas elegidas. Cada entrada apunta a un mini-EDR con el "por qué" y alternativas descartadas.
 
 **Para Claude:** consultá esta tabla antes de sugerir agregar una nueva dependencia. Si lo que vas a agregar pisa con algo ya elegido, **no lo agregues sin preguntar**.
 

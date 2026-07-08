@@ -44,7 +44,7 @@ Si se elige una librería de resiliencia concreta, registrarla en el catálogo `
 
 ## Qué materializar
 
-ADR `resilience` materializado según el template `~/.claude/references/adr/templates/adr.md`. La **Decisión** captura: política elegida (solo timeout / timeout+retry con backoff / timeout+retry+circuit breaker / sin política), los valores concretos si se definieron (timeout en ms, max retries, backoff base, umbral del circuit breaker) y la librería de resiliencia si aplica.
+EDR `resilience` materializado según el template `~/.claude/references/edr/templates/edr.md`. La **Decisión** captura: política elegida (solo timeout / timeout+retry con backoff / timeout+retry+circuit breaker / sin política), los valores concretos si se definieron (timeout en ms, max retries, backoff base, umbral del circuit breaker) y la librería de resiliencia si aplica.
 
 **Reglas verificables** (cada una con su mecanismo al inicio):
 
@@ -52,6 +52,6 @@ ADR `resilience` materializado según el template `~/.claude/references/adr/temp
 - **[manual]** los retries usan backoff exponencial con un tope de reintentos definido; no hay retries fijos sin backoff que amplifiquen la carga sobre un servicio caído.
 - **[manual]** si se eligió circuit breaker: las llamadas a servicios críticos pasan por el breaker con el umbral definido, no lo bypassean.
 
-Si se eligió "Sin política formal por ahora", el ADR va con `Status: Pending` y la razón concreta ("proyecto sin dependencias externas todavía; revisar cuando se integre la primera"); en ese caso no lleva Reglas verificables.
+Si se eligió "Sin política formal por ahora", el EDR va con `Status: Pending` y la razón concreta ("proyecto sin dependencias externas todavía; revisar cuando se integre la primera"); en ese caso no lleva Reglas verificables.
 
 **Relacionados:** vincular con `background-jobs` si los reintentos de jobs comparten la misma política de backoff.

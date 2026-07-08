@@ -1,6 +1,6 @@
 ---
 name: development-spec-bootstrap
-description: Entrevista interactiva por capability para definir el COMPORTAMIENTO de un sistema (qué hace, no cómo está construido) y materializarlo como capability-specs organizados por tipo en .matecito-ai/development-specs/<type>/. Usá esta skill SIEMPRE que el usuario quiera "definir el sistema completo antes de empezar", "especificar el comportamiento", "escribir los flujos", "definir las reglas de negocio", "qué hace el sistema ante X", pida ayuda con casos borde de un flujo, o mencione "capability spec", "spec de comportamiento", "definir capabilities". También si detectás un repo con .matecito-ai/adr/ pero sin .matecito-ai/development-specs/ y el usuario está por definir comportamiento (flujos, reglas, estados) todavía no escrito. NO es para decisiones técnicas (eso es development-decisions-bootstrap → ADRs).
+description: Entrevista interactiva por capability para definir el COMPORTAMIENTO de un sistema (qué hace, no cómo está construido) y materializarlo como capability-specs organizados por tipo en .matecito-ai/development-specs/<type>/. Usá esta skill SIEMPRE que el usuario quiera "definir el sistema completo antes de empezar", "especificar el comportamiento", "escribir los flujos", "definir las reglas de negocio", "qué hace el sistema ante X", pida ayuda con casos borde de un flujo, o mencione "capability spec", "spec de comportamiento", "definir capabilities". También si detectás un repo con .matecito-ai/edr/ pero sin .matecito-ai/development-specs/ y el usuario está por definir comportamiento (flujos, reglas, estados) todavía no escrito. NO es para decisiones técnicas (eso es development-decisions-bootstrap → EDRs).
 ---
 
 # Development Spec Bootstrap
@@ -9,16 +9,16 @@ Entrevista al usuario para capturar el **comportamiento** del sistema —qué ha
 
 El objetivo es que el comportamiento quede **definido y verificable** antes de construir, no implícito en el PRD o en la cabeza del autor. Eso le permite a Claude (y a cualquier dev) implementar y testear contra un contrato claro del *qué hace*.
 
-Es la contraparte de `development-decisions-bootstrap`: esa captura *qué se eligió y por qué* (ADRs); esta captura *qué hace* (specs). Ver la distinción en `~/.claude/references/spec/README.md`.
+Es la contraparte de `development-decisions-bootstrap`: esa captura *qué se eligió y por qué* (EDRs); esta captura *qué hace* (specs). Ver la distinción en `~/.claude/references/spec/README.md`.
 
 ---
 
 ## Qué es (y qué no es) un capability-spec
 
-El concepto canónico —qué cuenta como capability-spec, la separación con el ADR (qué-hace vs por-qué), los tipos y los estados— vive en `~/.claude/references/spec/README.md` (referencia consultable, agnóstica de flujo). bootstrap **aplica** ese concepto; no lo redefine. La *estructura* concreta del archivo está en `~/.claude/references/spec/templates/capability.md`.
+El concepto canónico —qué cuenta como capability-spec, la separación con el EDR (qué-hace vs por-qué), los tipos y los estados— vive en `~/.claude/references/spec/README.md` (referencia consultable, agnóstica de flujo). bootstrap **aplica** ese concepto; no lo redefine. La *estructura* concreta del archivo está en `~/.claude/references/spec/templates/capability.md`.
 
 **Lo esencial que el motor asume:**
-- El spec describe **comportamiento observable y verificable**, en **idioma de dominio + contrato público**. NUNCA identificadores internos volátiles (clases, métodos, columnas, errores internos, rutas de archivo). El *cómo* es del código; el *por qué* es del ADR.
+- El spec describe **comportamiento observable y verificable**, en **idioma de dominio + contrato público**. NUNCA identificadores internos volátiles (clases, métodos, columnas, errores internos, rutas de archivo). El *cómo* es del código; el *por qué* es del EDR.
 - Cada regla/flujo/borde importante lleva al menos un **escenario Given/When/Then** — es lo que lo vuelve testeable.
 
 ---
@@ -27,7 +27,7 @@ El concepto canónico —qué cuenta como capability-spec, la separación con el
 
 A diferencia de `development-decisions-bootstrap`, esta skill **no tiene catálogo de datos**: las capabilities no son una taxonomía fija, se **descubren por proyecto**. Lo único fijo es la **taxonomía de tipos**, que vive acá mismo (abajo). Todo el motor es este `SKILL.md`.
 
-- **Entrada:** la descripción del sistema + el PRD/proposal si existe + los ADRs ya definidos (para linkear, no repetir).
+- **Entrada:** la descripción del sistema + el PRD/proposal si existe + los EDRs ya definidos (para linkear, no repetir).
 - **Salida:** capability-specs en `.matecito-ai/development-specs/<type>/<capability>.md`, con índice raíz (enruta por tipo) + un `INDEX.md` por tipo.
 
 ---
@@ -52,7 +52,7 @@ Todas usan la **misma plantilla**; cada tipo enfatiza su esqueleto y omite lo qu
 ## Cuándo correr esta skill
 
 - El usuario quiere **definir el sistema completo antes de construir** (su necesidad típica).
-- Hay ADRs (`.matecito-ai/adr/`) pero el comportamiento no está escrito en ningún lado durable.
+- Hay EDRs (`.matecito-ai/edr/`) pero el comportamiento no está escrito en ningún lado durable.
 - El usuario pide especificar un flujo, una regla, un ciclo de vida o un proceso con detalle.
 
 Si `.matecito-ai/development-specs/INDEX.md` ya existe con contenido: **NO rehagas todo**. Andá al modo `update` (final del documento).
@@ -73,7 +73,7 @@ Si `.matecito-ai/development-specs/INDEX.md` ya existe con contenido: **NO rehag
 
 **Permití `Draft`.** Una capability puede quedar `Draft` (le faltan escenarios o bordes) con una nota de qué falta. Mejor un spec honesto en Draft que uno inventado en Accepted.
 
-**Linkeá al ADR, no lo repitas.** Cuando un comportamiento está gobernado por una decisión técnica ya escrita en un ADR, referencialo en "Referencias"; no copies el cómo/por qué al spec.
+**Linkeá al EDR, no lo repitas.** Cuando un comportamiento está gobernado por una decisión técnica ya escrita en un EDR, referencialo en "Referencias"; no copies el cómo/por qué al spec.
 
 ---
 
@@ -84,12 +84,12 @@ Antes de la primera pregunta, inspeccioná el repo:
 ```bash
 ls -la
 test -d .matecito-ai/development-specs && echo "--- specs existentes (por tipo) ---" && find .matecito-ai/development-specs -name '*.md' | sort
-test -d .matecito-ai/adr && echo "--- ADRs a linkear ---" && find .matecito-ai/adr -name '*.md' | sort
+test -d .matecito-ai/edr && echo "--- EDRs a linkear ---" && find .matecito-ai/edr -name '*.md' | sort
 test -f CLAUDE.md && echo "--- CLAUDE.md ---" && cat CLAUDE.md
 find . -maxdepth 2 -iname 'PRD*' -o -iname 'README*' -o -iname '*proposal*' 2>/dev/null | head
 ```
 
-Con eso sabés: si hay specs previos (→ modo update), qué ADRs existen (para linkear), y si hay un PRD del que derivar las capabilities.
+Con eso sabés: si hay specs previos (→ modo update), qué EDRs existen (para linkear), y si hay un PRD del que derivar las capabilities.
 
 ---
 
@@ -117,7 +117,7 @@ Slugs en **inglés kebab-case**. Clasificá cada capability con la regla de `~/.
 
 ### 3. Ajuste del set
 
-Incorporá lo que el usuario agregue/saque/renombre. Una capability que el usuario decide **no especificar ahora** no se inventa: se puede dejar como `Draft` con una nota, o directamente no crearla (a diferencia de los ADRs, un comportamiento sin definir no necesita constancia formal — no hay "Not Applicable" para specs).
+Incorporá lo que el usuario agregue/saque/renombre. Una capability que el usuario decide **no especificar ahora** no se inventa: se puede dejar como `Draft` con una nota, o directamente no crearla (a diferencia de los EDRs, un comportamiento sin definir no necesita constancia formal — no hay "Not Applicable" para specs).
 
 ### 4. Recorrido por capability
 
@@ -129,7 +129,7 @@ Cuando se recorrieron todas, materializá (ver "Materialización").
 
 ### 6. Validación (recomendada)
 
-Al cerrar, ofrecé correr `development-spec-validate` en **contexto fresco** (sub-agente): chequea coherencia entre specs (contradicciones, entidades/estados no definidos, referencias colgadas a ADRs), completitud y verificabilidad. No modifica nada — los hallazgos los resuelve el usuario vía modo update.
+Al cerrar, ofrecé correr `development-spec-validate` en **contexto fresco** (sub-agente): chequea coherencia entre specs (contradicciones, entidades/estados no definidos, referencias colgadas a EDRs), completitud y verificabilidad. No modifica nada — los hallazgos los resuelve el usuario vía modo update.
 
 ---
 
@@ -147,7 +147,7 @@ Procedimiento genérico del motor, para cualquier tipo:
    - **Entidades y estados** (lifecycle) — transiciones y qué las dispara.
    - **Errores de cara al actor** — el contrato de error observable.
 4. **Escenarios.** Por cada regla/rama/borde relevante, escribí un Given/When/Then. Es el paso que vuelve verificable la capability; no lo saltees.
-5. **Referencias.** Si algún comportamiento está gobernado por un ADR existente (lo viste en pre-flight), linkealo. Si notás que falta un ADR (una decisión técnica no tomada), anotalo como pregunta abierta para `development-decisions-bootstrap` — no lo resuelvas acá.
+5. **Referencias.** Si algún comportamiento está gobernado por un EDR existente (lo viste en pre-flight), linkealo. Si notás que falta un EDR (una decisión técnica no tomada), anotalo como pregunta abierta para `development-decisions-bootstrap` — no lo resuelvas acá.
 6. **Self-check de vocabulario** antes de escribir: ningún identificador interno volátil en ninguna sección. Reformulá a idioma de dominio / contrato público, o mové el ancla técnica a un link en "Referencias".
 7. **Materializá** el spec en `.matecito-ai/development-specs/<type>/<capability>.md`.
 
@@ -189,7 +189,7 @@ Los templates son el **contrato canónico** y viven en `~/.claude/references/spe
 2. Escribir cada `<type>/<capability>.md` (`Accepted` completo; `Draft` con nota de qué falta).
 3. Escribir `<type>/INDEX.md` por tipo usado.
 4. Escribir `.matecito-ai/development-specs/INDEX.md` (raíz), listando los tipos usados y, en "Tipos sin uso", los que no aplican.
-5. **Asentar el pointer en el `CLAUDE.md` del proyecto** (idempotente, con la sección de `templates/claude-md-spec.md`): si `CLAUDE.md` no existe, crealo con esa sección; si existe, agregá o actualizá SOLO la sección `## Comportamiento del sistema (capability-specs)` (localizada por su heading) sin tocar el resto —en particular, NO pises la sección de ADRs si `development-decisions-bootstrap` ya la escribió—. Así Claude sabe que debe consultar los specs antes de implementar, igual que consulta los ADRs.
+5. **Asentar el pointer en el `CLAUDE.md` del proyecto** (idempotente, con la sección de `templates/claude-md-spec.md`): si `CLAUDE.md` no existe, crealo con esa sección; si existe, agregá o actualizá SOLO la sección `## Comportamiento del sistema (capability-specs)` (localizada por su heading) sin tocar el resto —en particular, NO pises la sección de EDRs si `development-decisions-bootstrap` ya la escribió—. Así Claude sabe que debe consultar los specs antes de implementar, igual que consulta los EDRs.
 6. Reportar al usuario: lista de archivos creados **agrupada por tipo**, 1 línea por capability con su status entre corchetes, las capabilities que quedaron `Draft` con qué les falta, y si se creó/actualizó el `CLAUDE.md`. Sugerir commitear.
 7. Ofrecer `development-spec-validate` en contexto fresco.
 
@@ -214,11 +214,11 @@ Los templates son el **contrato canónico** y viven en `~/.claude/references/spe
 
 ## Anti-patterns que esta skill evita
 
-- ❌ Nombrar identificadores internos volátiles (clases, métodos, columnas, rutas, errores internos) en cualquier sección → idioma de dominio + contrato público; el ancla técnica va como link al ADR en "Referencias".
-- ❌ Escribir el *por qué* o el *cómo* en el spec → eso es ADR (por qué) o código (cómo). El spec es el *qué hace*.
+- ❌ Nombrar identificadores internos volátiles (clases, métodos, columnas, rutas, errores internos) en cualquier sección → idioma de dominio + contrato público; el ancla técnica va como link al EDR en "Referencias".
+- ❌ Escribir el *por qué* o el *cómo* en el spec → eso es EDR (por qué) o código (cómo). El spec es el *qué hace*.
 - ❌ Afirmar comportamiento sin un escenario Given/When/Then que lo verifique → toda regla/rama/borde relevante lleva su escenario.
 - ❌ Quedarse en el happy path → empujar los casos borde es el valor de la skill.
-- ❌ Repetir el contenido de un ADR en el spec → linkearlo, no copiarlo.
+- ❌ Repetir el contenido de un EDR en el spec → linkearlo, no copiarlo.
 - ❌ Inventar tipos nuevos por proyecto → la taxonomía de tipos es fija (`flow`/`rule`/`lifecycle`/`process`).
 - ❌ Tirar todas las preguntas en un turno → una por turno.
 - ❌ Dumpear la lista de capabilities sin clasificarlas por tipo → la enumeración siempre viene agrupada por tipo.
@@ -229,6 +229,6 @@ Los templates son el **contrato canónico** y viven en `~/.claude/references/spe
 
 ## Recordatorio final
 
-El valor de esta skill no está en las preguntas — está en que el comportamiento quede **escrito, verificable y mantenido**, y separado limpio del *por qué* (ADR) y del *cómo* (código). Si el spec sale vago o calca el código, fallamos. Si cada capability dice con precisión qué hace el sistema ante cada situación —con sus escenarios testeables— cualquiera puede implementar y verificar contra un contrato claro.
+El valor de esta skill no está en las preguntas — está en que el comportamiento quede **escrito, verificable y mantenido**, y separado limpio del *por qué* (EDR) y del *cómo* (código). Si el spec sale vago o calca el código, fallamos. Si cada capability dice con precisión qué hace el sistema ante cada situación —con sus escenarios testeables— cualquiera puede implementar y verificar contra un contrato claro.
 
 Escribí los specs con la misma claridad con la que le explicarías el comportamiento del sistema a un dev nuevo el primer día.

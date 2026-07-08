@@ -87,7 +87,7 @@ Brand and design decisions ("the palette is X because…", "CTAs look like Y
 because…") are captured once as DDRs under `.matecito-ai/ddr/`, then **respected
 and verified** by the `system` and `verify` phases. Same concept and gates as the
 kernel's decision records — only the term (DDR) and store differ from development's
-ADRs.
+EDRs.
 
 ## Decision-Gap Capture — design specifics
 The kernel owns the generic mine gate (it dispatches the active domain's mining executor post-verify, gates candidates with the user, and materializes them). In design the mining executor is `design-decisions-mine` (it reads the live Figma file, not code); confirmed candidates are materialized as `[Inferred]` `.md` DDRs under `.matecito-ai/ddr/<surface>/<slug>.md` and the `.matecito-ai/ddr/INDEX.md` is updated **once at the end**; the DDRs live ONLY as `.md`, never recorded in Engram. Ratifying `Inferred → Accepted` (interviewing the why) is done by `design-decisions-bootstrap` in update mode — never automatic.

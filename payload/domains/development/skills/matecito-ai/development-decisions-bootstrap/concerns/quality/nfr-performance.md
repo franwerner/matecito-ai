@@ -37,11 +37,11 @@ Definí al menos uno de estos (dejá en blanco los que no apliquen):
 
 ## Notas de lógica (para el motor)
 
-- Si elige "Sin objetivos formales por ahora", no hacer la pregunta 2. Materializar el ADR con `Status: Pending` y motivo.
+- Si elige "Sin objetivos formales por ahora", no hacer la pregunta 2. Materializar el EDR con `Status: Pending` y motivo.
 
 ## Qué materializar
 
-ADR `nfr-performance` materializado según el template `~/.claude/references/adr/templates/adr.md`.
+EDR `nfr-performance` materializado según el template `~/.claude/references/edr/templates/edr.md`.
 
 - **Contexto:** por qué se fijan objetivos de performance (expectativa de carga, criticidad del flujo) y bajo qué condiciones de medición se entienden.
 - **Decisión:** los objetivos cuantitativos acordados, el endpoint o flujo de referencia para medirlos, y el mecanismo de detección de regresión elegido.

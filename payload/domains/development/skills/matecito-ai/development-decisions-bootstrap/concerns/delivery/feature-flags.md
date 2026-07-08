@@ -34,7 +34,7 @@ Si el proyecto usa flags de features, con qué mecanismo, y cómo se nombran y e
 
 ## Notas de lógica (para el motor)
 
-- Si elige "Ninguno por ahora", no hacer la pregunta 2. Materializar el ADR con `Status: Pending` y motivo "sin necesidad identificada aún".
+- Si elige "Ninguno por ahora", no hacer la pregunta 2. Materializar el EDR con `Status: Pending` y motivo "sin necesidad identificada aún".
 
 ## Tech a registrar
 
@@ -42,7 +42,7 @@ Si se elige una librería o servicio de feature flags, registrarlo en `tech/`.
 
 ## Qué materializar
 
-ADR `feature-flags` materializado según `~/.claude/references/adr/templates/adr.md`. Debe contener:
+EDR `feature-flags` materializado según `~/.claude/references/edr/templates/edr.md`. Debe contener:
 
 - **Contexto** y **Decisión**: mecanismo elegido (o decisión explícita de no usar, con `Status: Pending` y motivo si es "ninguno por ahora"), la convención de naming, y quién tiene permiso de cambiar un flag en producción.
 - **Reglas verificables**: las convenciones de naming y ciclo de vida como aserciones con su mecanismo al inicio. Ej: `[manual]` todo flag sigue el prefijo `feat_<ticket>_<nombre>` / `exp_<ticket>_<nombre>`; `[manual]` todo flag se elimina en el sprint siguiente a su activación definitiva; `[manual]` solo <rol> puede cambiar un flag en producción. Usá `[tool: <linter/test>]` si el naming o la expiración es chequeable automáticamente. Conservá los valores concretos del prefijo y la regla de expiración.

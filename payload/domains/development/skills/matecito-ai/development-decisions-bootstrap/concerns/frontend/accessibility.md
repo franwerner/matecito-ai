@@ -40,7 +40,7 @@ Si se elige un linter o librería de testing de a11y (ej: `eslint-plugin-jsx-a11
 
 ## Qué materializar
 
-ADR `accessibility` materializado según el template `~/.claude/references/adr/templates/adr.md`.
+EDR `accessibility` materializado según el template `~/.claude/references/edr/templates/edr.md`.
 
 - **Contexto:** por qué importa la accesibilidad en este proyecto (obligación legal aplicable, tipo de usuarios) y el nivel WCAG objetivo elegido (2.2 A | AA | AAA, o "sin objetivo formal por ahora").
 - **Decisión:** nivel de conformidad objetivo y el mecanismo de verificación elegido (linter estático, testing con axe-core, ambos, revisión manual).
@@ -49,4 +49,4 @@ ADR `accessibility` materializado según el template `~/.claude/references/adr/t
   - **[tool: axe-core]** la suite de tests no reporta violaciones de nivel ≥ al objetivo (A/AA) en las vistas cubiertas.
   - **[manual]** navegación completa por teclado y verificación con lector de pantalla en los flujos críticos.
 
-  Si se eligió "sin verificación formal por ahora", marcar la regla mínima como `[manual]` y materializar el ADR con `Status: Pending` indicando el trigger esperado.
+  Si se eligió "sin verificación formal por ahora", marcar la regla mínima como `[manual]` y materializar el EDR con `Status: Pending` indicando el trigger esperado.

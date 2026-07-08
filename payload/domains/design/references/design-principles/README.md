@@ -13,7 +13,7 @@ This catalog is the **single source of truth for design rationale** in the desig
 ## How this catalog is used
 
 - **Skills cite it.** `brand-guide`, `explore-variations`, `consistency-audit`, `design-review`, and the `explain-concept` mentor skill reference a principle by name instead of restating the rationale. The canonical text lives here once.
-- **DDRs reference it.** A Design Decision Record captures `Applied principle: X` the same way a development ADR captures `Applied pattern: X`. Before implementing the decision, consult `principles/<x>.md` to know the principle's contract; if you deviate, justify it in the DDR.
+- **DDRs reference it.** A Design Decision Record captures `Applied principle: X` the same way a development EDR captures `Applied pattern: X`. Before implementing the decision, consult `principles/<x>.md` to know the principle's contract; if you deviate, justify it in the DDR.
 - **The design phases consult it before deciding.** `design-system` locks the palette, type scale, grid, and spacing *against* these principles. `design-verify` flags any produced piece that breaks one.
 - **The guards enforce a subset of it.** `visual-accessibility` operationalizes [`accessibility`](principles/accessibility.md), [`contrast`](principles/contrast.md), [`color`](principles/color.md), and [`typography`](principles/typography.md) into WCAG-measurable checks. `brand-consistency` leans on [`repetition`](principles/repetition.md) to detect pieces that drift from the system.
 

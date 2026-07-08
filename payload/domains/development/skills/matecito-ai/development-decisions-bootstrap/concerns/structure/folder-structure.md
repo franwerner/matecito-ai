@@ -10,7 +10,7 @@ source: práctica clásica de convenciones de proyecto · arc42 §8 (conceptos t
 
 ## Qué decide
 
-Cómo se organiza el código dentro de cada capa (por feature vs por tipo técnico) y las convenciones de nombres por tipo de artefacto. Decisión de baja entropía pero alta frecuencia: se aplica en cada archivo nuevo.
+Cómo se organiza el código dentro de cada capa (por feature vs por tipo técnico) y qué **sufijo de rol** identifica cada tipo de artefacto. Decisión de baja entropía pero alta frecuencia: se aplica en cada archivo nuevo. (El *casing* de los nombres NO se decide acá — es de `code-conventions`.)
 
 ## Preguntas
 
@@ -25,31 +25,26 @@ Una o dos, según haga falta.
 - **Híbrido: por feature en `application/` e `infrastructure/`, por tipo en `domain/`** — combina cohesión de feature con pureza del dominio.
 - No sé, recomendame.
 
-### 2. Convenciones de nombres por tipo de artefacto
+### 2. Sufijos de rol por tipo de artefacto
 
-> Sin convención explícita cada dev nombra diferente; la búsqueda por nombre deja de funcionar.
+> El sufijo de un archivo (`.controller`, `.use-case`, `.repository`) marca su **rol y su capa** — es un ancla estructural verificable, no solo un nombre.
 
-Preguntá y confirmá para cada tipo relevante al stack:
+Definí qué **sufijo** identifica cada tipo de artefacto relevante al stack, y si es **obligatorio**:
 
-- **Servicios:** `UserService` / `user_service.py` / `user.service.ts`
-- **Repositorios:** `UserRepository` / `user_repository.py` / `user.repository.ts`
-- **Casos de uso / handlers:** `CreateUserUseCase` / `create_user.py` / `create-user.handler.ts`
-- **DTOs / schemas:** `UserDTO` / `UserSchema` / `CreateUserRequest`
-- **Entidades de dominio:** `User` / `user.entity.ts`
-- **Controllers / handlers HTTP:** `UserController` / `user_router.py` / `user.controller.ts`
+- **Servicios:** `*.service` · **Repositorios:** `*.repository` · **Casos de uso / handlers:** `*.use-case` / `*.handler` · **DTOs / schemas:** `*.dto` / `*.schema` · **Entidades de dominio:** `*.entity` · **Controllers / handlers HTTP:** `*.controller` / `*.routes`
 
-Confirmar: ¿snake_case, camelCase o PascalCase por tipo? ¿Con sufijo obligatorio (`Service`, `Repository`, `Controller`) o sin sufijo?
+Confirmar: ¿sufijo obligatorio por tipo o sin sufijo? El **casing** de esos nombres (kebab / camel / Pascal) NO se decide acá — es una convención global de `code-conventions`. Acá va solo *qué sufijo = qué rol*.
 
 ## Notas de lógica (para el motor)
 
-- Si en architecture-style eligió "Vertical Slice": la pregunta 1 ya está respondida implícitamente (por feature es el default de Vertical Slice). Documentarlo en el ADR como consecuencia del estilo elegido y saltar la pregunta.
-- El default de casing depende del lenguaje detectado en Fase 0: Python → snake_case para archivos y variables, PascalCase para clases; JS/TS → camelCase para variables, PascalCase para clases, kebab-case para archivos (con o sin sufijo según el framework); Java/C# → PascalCase para clases y archivos. Mostrar el default del lenguaje como propuesta y pedir confirmación.
+- Si en architecture-style eligió "Vertical Slice": la pregunta 1 ya está respondida implícitamente (por feature es el default de Vertical Slice). Documentarlo en el EDR como consecuencia del estilo elegido y saltar la pregunta.
+- El **casing** de nombres (archivos, tipos, variables) NO se decide en esta fase: es una convención global de `code-conventions`. Acá solo se fija la taxonomía de sufijos de rol; el EDR de esta fase hereda el casing de `code-conventions`. Si `code-conventions` no se va a tratar, remití el casing a esa fase (no lo dupliques acá).
 
 ## Qué materializar
 
-ADR `folder-structure` materializado según `~/.claude/references/adr/templates/adr.md`. Debe contener:
+EDR `folder-structure` materializado según `~/.claude/references/edr/templates/edr.md`. Debe contener:
 
 - **Contexto** y **Decisión**: criterio de organización dentro de cada capa (por tipo técnico vs por feature vs híbrido), las convenciones de nombres por tipo de artefacto (clase y archivo), y si los sufijos son obligatorios o no. Conservá los ejemplos concretos de paths: `src/application/users/create_user.py`, `src/domain/user.py`, `src/infrastructure/db/user_repository.py`.
-- **Reglas verificables**: cada convención de nombres como aserción chequeable con su mecanismo al inicio. Ej: `[tool: <linter/naming check>]` sufijo `*.routes.ts` obligatorio en handlers HTTP; `[tool: <linter>]` casing por lenguaje (snake_case archivos Python, kebab-case archivos TS); `[manual]` si no hay check automático para una convención dada. Reformulá la tabla de naming como este conjunto de aserciones, sin perder los nombres concretos por artefacto.
+- **Reglas verificables**: cada **sufijo de rol** como aserción chequeable con su mecanismo al inicio. Ej: `[tool: <linter/naming check>]` sufijo `*.routes.ts` obligatorio en handlers HTTP; `[tool: <linter>]` cada tipo de artefacto lleva su sufijo. El **casing** NO va acá — es de `code-conventions`.
 - **Alcance**: como decisión estructural, incluí los globs **a nivel convención** que la decisión gobierna (ej: `src/**/<feature>/`, `src/**/*.routes.ts`, `src/domain/**`). Patrones estables, no archivos concretos.
-- **Relacionados** (opcional): vinculá con `architecture-style` y `layers-and-dependencies` como decisiones de las que esta depende.
+- **Relacionados** (opcional): vinculá con `architecture-style` y `layers-and-dependencies` como decisiones de las que esta depende, y `relacionado-con` → `code-conventions` (que fija el casing de los nombres cuyos sufijos define esta fase).

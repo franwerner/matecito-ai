@@ -1,6 +1,6 @@
-<!-- Canonical template: ADR individual (`.matecito-ai/adr/<dominio>/<slug>.md`). Consumido por la fase de Materialización de SKILL.md. -->
+<!-- Canonical template: EDR individual (`.matecito-ai/edr/<dominio>/<slug>.md`). Consumido por la fase de Materialización de SKILL.md. -->
 
-# ADR — <título>
+# EDR — <título>
 
 - **Status:** <Inferred | Accepted | Pending | Deferred | Superseded>
 - **Type:** <decision | convention | policy>
@@ -17,7 +17,7 @@
 
 <lo decidido, en imperativo. Ej: "Usamos JWT con refresh tokens y rotación; access token de 15min, refresh de 7d.">
 
-<!-- Vocabulario (aplica a Contexto/Decisión/Consecuencias/Alternativas): conceptos, patrones y límites — NUNCA identificadores internos volátiles (clase, método, columna, error interno, ruta de archivo). Si te sale escribir uno, reubicalo: límite estable → glob en `## Alcance`; aserción chequeable → `## Reglas verificables` (ahí sí podés nombrar la clase, es el ancla). Excepción: nombre de tecnología/librería y contrato público (endpoint público, código de error expuesto). El ejemplo de arriba es conceptual a propósito. Ver `~/.claude/references/adr/README.md` → "No es el cómo". -->
+<!-- Vocabulario (aplica a Contexto/Decisión/Consecuencias/Alternativas): conceptos, patrones y límites — NUNCA identificadores internos volátiles (clase, método, columna, error interno, ruta de archivo). Si te sale escribir uno, reubicalo: límite estable → glob en `## Alcance`; aserción chequeable → `## Reglas verificables` (ahí sí podés nombrar la clase, es el ancla). Excepción: nombre de tecnología/librería y contrato público (endpoint público, código de error expuesto). El ejemplo de arriba es conceptual a propósito. Ver `~/.claude/references/edr/README.md` → "No es el cómo". -->
 
 <!-- Si Status es Pending o Deferred, REEMPLAZAR "Decisión" por:
 
@@ -34,10 +34,10 @@
 <!-- Si Status es Superseded, agregar:
 ## Reemplazado por
 [<slug-del-nuevo>.md](<slug-del-nuevo>.md) — <1 línea de por qué cambió la decisión>
-(Si el ADR nuevo está en otro dominio, usar ruta relativa: [../<otro-dominio>/<slug>.md](../<otro-dominio>/<slug>.md))
+(Si el EDR nuevo está en otro dominio, usar ruta relativa: [../<otro-dominio>/<slug>.md](../<otro-dominio>/<slug>.md))
 -->
 
-<!-- Si Status es Inferred (ADR minado por development-decisions-mine desde el código, NO decidido aún por un humano), agregar esta sección. Es TRANSITORIA: al promoverse a Accepted vía bootstrap, se elimina (git conserva la traza). El humano completa Contexto/Decisión/Consecuencias; mine NUNCA infiere el porqué — solo registra el qué observado.
+<!-- Si Status es Inferred (EDR minado por development-decisions-mine desde el código, NO decidido aún por un humano), agregar esta sección. Es TRANSITORIA: al promoverse a Accepted vía bootstrap, se elimina (git conserva la traza). El humano completa Contexto/Decisión/Consecuencias; mine NUNCA infiere el porqué — solo registra el qué observado.
 
 ## Evidencia (inferida)
 
@@ -76,14 +76,14 @@ Globs **a nivel convención** —patrones estructurales estables, no archivos co
 
 ## Relacionados
 
-<!-- Opcional. Links tipados a otros ADRs. Tipos: `depende-de`, `refina`, `relacionado-con`. Para reemplazos usar la sección "Reemplazado por" de arriba, no esta. Mismo dominio: ruta corta `<slug>.md`; otro dominio: ruta relativa `../<dominio>/<slug>.md`. Omitir la sección si no hay vínculos. -->
+<!-- Opcional. Links tipados a otros EDRs. Tipos: `depende-de`, `refina`, `relacionado-con`. Para reemplazos usar la sección "Reemplazado por" de arriba, no esta. Mismo dominio: ruta corta `<slug>.md`; otro dominio: ruta relativa `../<dominio>/<slug>.md`. Omitir la sección si no hay vínculos. -->
 
 - `depende-de` → [<slug>.md](<slug>.md) — <1 línea>
 - `relacionado-con` → [../<dominio>/<slug>.md](../<dominio>/<slug>.md) — <1 línea>
 
 <!--
-Notas del contrato (no van en el ADR generado):
+Notas del contrato (no van en el EDR generado):
 - No hay sección `Historial`. El historial de ediciones lo lleva git; la evolución de decisiones se ve en la cadena de `Superseded`.
 - Header en inglés (`Status`, `Type`, `Date`, `Applied pattern`); nombres de sección y prosa en español.
-- Self-check antes de dar por escrito el ADR: releé Contexto/Decisión/Consecuencias/Alternativas y por cada nombre de clase/método/columna/archivo/error interno, convertilo en un glob (`## Alcance`) o una regla (`## Reglas verificables`), o reformulá la frase en términos de concepto. Excepción: tecnología/librería y contrato público.
+- Self-check antes de dar por escrito el EDR: releé Contexto/Decisión/Consecuencias/Alternativas y por cada nombre de clase/método/columna/archivo/error interno, convertilo en un glob (`## Alcance`) o una regla (`## Reglas verificables`), o reformulá la frase en términos de concepto. Excepción: tecnología/librería y contrato público.
 -->

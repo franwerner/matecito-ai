@@ -39,7 +39,7 @@ Qué modelo de permisos rige el acceso a recursos o acciones, y dónde se evalú
 
 ## Qué materializar
 
-ADR `authorization` materializado según `~/.claude/references/adr/templates/adr.md`. Debe contener:
+EDR `authorization` materializado según `~/.claude/references/edr/templates/edr.md`. Debe contener:
 
 - **Contexto**: cuántos roles o niveles de acceso existen y por qué se centraliza la evaluación de permisos.
 - **Decisión**: modelo elegido (boolean simple, RBAC o ABAC), descripción de los roles o atributos relevantes si aplica, y punto de evaluación (middleware/guard global, use case/service de dominio, o mix).

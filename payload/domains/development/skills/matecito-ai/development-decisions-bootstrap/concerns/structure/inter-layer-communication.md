@@ -54,8 +54,8 @@ Una por turno. Para cada una: línea de "por qué importa", opciones con default
 
 ## Notas de lógica (para el motor)
 
-- **Si en architecture-style eligió "Sin patrón formal":** esta fase es Not Applicable. Crear el ADR con ese status y motivo.
-- **Si eligió "Vertical Slice":** la pregunta 3 cambia — no hay interfaces de repositorio en `domain/` ni `application/`; en Vertical Slice las interfaces viven dentro del feature. Adaptar la opción y el ADR.
+- **Si en architecture-style eligió "Sin patrón formal":** esta fase es Not Applicable. Crear el EDR con ese status y motivo.
+- **Si eligió "Vertical Slice":** la pregunta 3 cambia — no hay interfaces de repositorio en `domain/` ni `application/`; en Vertical Slice las interfaces viven dentro del feature. Adaptar la opción y el EDR.
 - **Si eligió "Message bus externo" en la pregunta 2:** es una decisión de infraestructura que implica tech adicional (Kafka, RabbitMQ, SQS, etc.). Registrala en `tech/` y anotá que la fase de data-access puede necesitar revisión.
 
 ## Tech a registrar
@@ -64,7 +64,7 @@ Si en la pregunta 4 se menciona una librería de validación concreta (pydantic,
 
 ## Qué materializar
 
-ADR `inter-layer-communication` materializado según `~/.claude/references/adr/templates/adr.md`. Debe contener:
+EDR `inter-layer-communication` materializado según `~/.claude/references/edr/templates/edr.md`. Debe contener:
 
 - **Contexto** y **Decisión**: política de DTOs vs entidades en los bordes (con nombres concretos de las clases de mapeo si los hay), estilo de comunicación sync/async (y message bus si aplica), dónde se declaran las interfaces de repositorios y servicios externos (`domain/` vs `application/` vs dentro del feature), y la política de validación (qué valida cada capa, con qué herramienta).
 - **Reglas verificables**: traducí cada una de esas cuatro políticas a aserciones chequeables con su mecanismo al inicio, no como intenciones vagas. Ej: `[tool: dependency-cruiser]` las clases de `domain/**` no se exponen en firmas de controllers; `[tool: <linter>]` interfaces de repositorio declaradas solo en `application/**`; `[manual]` el borde valida formato/tipo con la librería elegida (pydantic/zod/joi) y el dominio valida reglas de negocio. Si se eligió una librería de validación concreta, nombrala en el `[tool: ...]`.

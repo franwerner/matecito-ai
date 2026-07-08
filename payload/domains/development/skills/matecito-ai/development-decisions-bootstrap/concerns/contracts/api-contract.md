@@ -38,7 +38,7 @@ Cómo se versiona la API, cómo se pagina, el formato de respuesta estándar, e 
 
 ## Qué materializar
 
-ADR `api-contract` materializado según `~/.claude/references/adr/templates/adr.md`. Debe contener:
+EDR `api-contract` materializado según `~/.claude/references/edr/templates/edr.md`. Debe contener:
 
 - **Contexto**: por qué sin estrategia de versionado cualquier cambio breaking rompe clientes sin aviso, y qué consumidores tiene la API.
 - **Decisión**: estrategia de versionado (URL, header, o sin versionado), enfoque schema-first vs code-first, formato de respuesta estándar (estructura de éxito y de error), mecanismo de paginación (cursor-based, offset/limit), política de idempotencia, y si hay un schema publicado (URL o ubicación en el repo).

@@ -67,18 +67,18 @@ Mostrá las reglas como lista en formato path/glob verificable y pedí confirmac
 ## Notas de lógica (para el motor)
 
 - **Proponer capas según el estilo elegido en architecture-style:** no pedir al usuario que defina las capas desde cero. Derivar la propuesta del patrón y pedir confirmación/ajuste.
-- **Escribir las reglas de dependencia como globs/paths verificables:** formato `src/<capa>/**` o `<módulo>/**` según la convención del proyecto. Las reglas vagas ("no acoplar capas") no van al ADR.
+- **Escribir las reglas de dependencia como globs/paths verificables:** formato `src/<capa>/**` o `<módulo>/**` según la convención del proyecto. Las reglas vagas ("no acoplar capas") no van al EDR.
 - **Mencionar enforcement al cerrar la fase:** una vez confirmadas las reglas, informar al usuario que se pueden enforcar con:
   - `import-linter` (Python) — archivo `.importlinter` con secciones `[importlinter:contract:...]`
   - `dependency-cruiser` (JS/TS) — archivo `.dependency-cruiser.js` con reglas `forbidden`
   - `ArchUnit` (Java) — tests de arquitectura en el suite de unit tests
   - No forzar que lo configuren ahora; solo mencionarlo para que sepan que la decisión es accionable.
-- **Si eligió Vertical Slice:** las "reglas de dependencia" cambian: la restricción es que los features no se importen entre sí directamente; solo comparten a través de `shared/`. Adaptar la propuesta y el ADR.
-- **Si eligió Sin patrón formal:** esta fase es Not Applicable. Crear el ADR con ese status y el motivo.
+- **Si eligió Vertical Slice:** las "reglas de dependencia" cambian: la restricción es que los features no se importen entre sí directamente; solo comparten a través de `shared/`. Adaptar la propuesta y el EDR.
+- **Si eligió Sin patrón formal:** esta fase es Not Applicable. Crear el EDR con ese status y el motivo.
 
 ## Qué materializar
 
-ADR `layers-and-dependencies` materializado según `~/.claude/references/adr/templates/adr.md`. Debe contener:
+EDR `layers-and-dependencies` materializado según `~/.claude/references/edr/templates/edr.md`. Debe contener:
 
 - **Contexto** y **Decisión**: lista de capas con nombre de carpeta y responsabilidad de cada una.
 - **Reglas verificables**: las reglas de dependencia escritas como paths/globs (qué puede importar qué, qué está explícitamente prohibido), cada una como aserción con su mecanismo al inicio según la herramienta de enforcement elegida o disponible. Ej: `[tool: dependency-cruiser]` ningún import desde `src/presentation/**` hacia `src/infrastructure/**`; `[tool: import-linter]` `src/domain/**` solo importa de `src/domain/**`; `[tool: ArchUnit]` para Java. Usá `[manual]` solo si no hay herramienta disponible todavía. Nombrá la herramienta concreta (`import-linter` / `dependency-cruiser` / `ArchUnit` / `deptrac`) en cada `[tool: ...]` para que en sesiones futuras se sepa cómo verificar las reglas.

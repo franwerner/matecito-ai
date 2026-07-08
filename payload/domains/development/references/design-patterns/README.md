@@ -1,6 +1,6 @@
 # Design Patterns — Reference catalog
 
-> **This is a consultable catalog, not a skill.** The `development-decisions-bootstrap` and `sdd-design` skills reference it by pattern name. When an ADR declares `Applied pattern: X`, the canonical definition lives in [`patterns/<x>.md`](patterns/).
+> **This is a consultable catalog, not a skill.** The `development-decisions-bootstrap` and `sdd-design` skills reference it by pattern name. When an EDR declares `Applied pattern: X`, the canonical definition lives in [`patterns/<x>.md`](patterns/).
 
 ## Overview
 

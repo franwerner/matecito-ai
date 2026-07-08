@@ -26,7 +26,7 @@ Execute all steps from the skill directly in this context window:
 <!-- matecito-ai: engram-only para artefactos de flujo; los capability-specs durables SÍ se materializan a archivos. -->
 2. Merge the change's delta spec into the durable capability-specs under `.matecito-ai/development-specs/<type>/<capability>.md` (scenario-anchored, non-destructive; create missing, update indices) — see SKILL Step 2. Skip in `none` mode.
 3. Write final archive report with all observation IDs for traceability
-<!-- matecito-ai: Inferred ADRs are NOT recorded here. ADRs (any status) live ONLY in their `.md` under `.matecito-ai/adr/`; never duplicated into Engram or the archive-report. -->
+<!-- matecito-ai: Inferred EDRs are NOT recorded here. EDRs (any status) live ONLY in their `.md` under `.matecito-ai/edr/`; never duplicated into Engram or the archive-report. -->
 3. Mark the change state as archived in Engram
 4. Persist archive report to active backend
 

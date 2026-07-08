@@ -26,8 +26,8 @@ Run when the orchestrator launches verification for an SDD change. You are the q
 - Execute relevant tests; static analysis alone is never verification.
 - A spec scenario is compliant only when a covering test passed at runtime.
 - Compare specs first, design second, task completion third.
-<!-- matecito-ai: also verify the changed code respects the ADRs it touched (scoped to this change, not a full catalog audit) — see Execution Step 6b -->
-- Verify the changed code respects the ADRs it touched (scoped to this change); a violation is CRITICAL `ADR-VIOLATION`.
+<!-- matecito-ai: also verify the changed code respects the EDRs it touched (scoped to this change, not a full catalog audit) — see Execution Step 6b -->
+- Verify the changed code respects the EDRs it touched (scoped to this change); a violation is CRITICAL `EDR-VIOLATION`.
 <!-- matecito-ai: also validate the implemented behavior against the durable capability-specs (`.matecito-ai/development-specs/`) — accumulated behavior state, not only the change delta — see Execution Step 6d -->
 - Validate the implemented behavior against the durable capability-specs of the capabilities this change touches (`.matecito-ai/development-specs/<type>/<capability>.md`, when present); a divergence from the accumulated intended behavior is CRITICAL `SPEC-VIOLATION`.
 - Do not fix issues; report them for the orchestrator/user.
@@ -47,8 +47,8 @@ Run when the orchestrator launches verification for an SDD change. You are the q
 | Test command exits non-zero | CRITICAL. |
 | Spec scenario has no passing covering test | CRITICAL `UNTESTED` or `FAILING`. |
 | Design deviation exists | WARNING unless it breaks a spec. |
-<!-- matecito-ai: ADR violation in the changed code is CRITICAL -->
-| Changed code violates an ADR it touched | CRITICAL `ADR-VIOLATION` (cite the ADR). |
+<!-- matecito-ai: EDR violation in the changed code is CRITICAL -->
+| Changed code violates an EDR it touched | CRITICAL `EDR-VIOLATION` (cite the EDR). |
 | `ui-test != needed` OR `uiTest.available` absent or ❌ | Skip UI step silently — no mention, no UI Verdict section. |
 | Scenario step target matches `@e\d+` | CRITICAL — reject authored runtime ref; scenario FAILS static validation. |
 | Any per-scenario STATE assertion FAIL | CRITICAL — blocks archive. |
@@ -67,13 +67,13 @@ Run when the orchestrator launches verification for an SDD change. You are the q
 4. Count completed and incomplete tasks.
 5. Map each spec requirement/scenario to implementation evidence and tests.
 6. Check design decisions against changed code.
-<!-- matecito-ai: verify the change respects the ADRs it touched -->
-6b. Check ADR compliance (scoped to THIS change). For each ADR listed in the design's "ADR Alignment" section (or, if absent, the ADRs in `.matecito-ai/adr/<domain>/` for the domains this change touched), confirm the implemented code actually honors that ADR's concrete rules (e.g. auth mechanism, error format, validation location, layer dependencies). This is scoped to the current change — do NOT audit the whole ADR catalog here. Report any violation as CRITICAL `ADR-VIOLATION` (cite the ADR). If `.matecito-ai/adr/` does not exist, skip this step.
+<!-- matecito-ai: verify the change respects the EDRs it touched -->
+6b. Check EDR compliance (scoped to THIS change). For each EDR listed in the design's "EDR Alignment" section (or, if absent, the EDRs in `.matecito-ai/edr/<domain>/` for the domains this change touched), confirm the implemented code actually honors that EDR's concrete rules (e.g. auth mechanism, error format, validation location, layer dependencies). This is scoped to the current change — do NOT audit the whole EDR catalog here. Report any violation as CRITICAL `EDR-VIOLATION` (cite the EDR). If `.matecito-ai/edr/` does not exist, skip this step.
 <!-- matecito-ai: validate implemented behavior against the durable capability-specs (accumulated behavior, not just the change delta) -->
 6d. Check capability-spec compliance (durable behavior). For each capability this change touches that has a durable spec under `.matecito-ai/development-specs/<type>/<capability>.md` (type ∈ flow|rule|lifecycle|process), confirm the implemented code honors the accumulated intended behavior that spec describes — not only the delta introduced by this change. Report any divergence as CRITICAL `SPEC-VIOLATION` (cite the capability-spec). If `.matecito-ai/development-specs/` does not exist, skip this step.
 <!-- matecito-ai: decision-gap confirmation hook
-Active ONLY when flagDecisionGaps=true (does NOT depend on ADRs existing). When active: read the tasks artifact; collect all `· adr: <domain>/<slug>` whose file `.matecito-ai/adr/<domain>/<slug>.md` does NOT exist — these are the decision gaps. For each gap: (a) check the task is `[x]` (complete); (b) check its `criteria:` passes in the shipped code (static inspection or test result). If (a) and (b) → `implemented: yes`; otherwise `implemented: no`. Add a `## Decision Gaps` section to the verify-report with the table `| domain/slug | task | implemented? |`. If the section has at least one `yes`, the orchestrator may trigger the mine gate post-verify. When flag off: do NOT add the section, do NOT mention anything — byte-identical behavior to before. -->
-6c. (Decision-gap confirmation — flag-gated) When `flagDecisionGaps=true` (regardless of ADR presence): from the tasks artifact collect all `· adr: <domain>/<slug>` refs whose target file does NOT exist → these are decision gaps. For each: confirm task is `[x]` AND `criteria:` passes in shipped code → mark `implemented: yes/no`. Add `## Decision Gaps` to the verify-report: `| domain/slug | task | implemented? |`. Silent when flag off.
+Active ONLY when flagDecisionGaps=true (does NOT depend on EDRs existing). When active: read the tasks artifact; collect all `· edr: <domain>/<slug>` whose file `.matecito-ai/edr/<domain>/<slug>.md` does NOT exist — these are the decision gaps. For each gap: (a) check the task is `[x]` (complete); (b) check its `criteria:` passes in the shipped code (static inspection or test result). If (a) and (b) → `implemented: yes`; otherwise `implemented: no`. Add a `## Decision Gaps` section to the verify-report with the table `| domain/slug | task | implemented? |`. If the section has at least one `yes`, the orchestrator may trigger the mine gate post-verify. When flag off: do NOT add the section, do NOT mention anything — byte-identical behavior to before. -->
+6c. (Decision-gap confirmation — flag-gated) When `flagDecisionGaps=true` (regardless of EDR presence): from the tasks artifact collect all `· edr: <domain>/<slug>` refs whose target file does NOT exist → these are decision gaps. For each: confirm task is `[x]` AND `criteria:` passes in shipped code → mark `implemented: yes/no`. Add `## Decision Gaps` to the verify-report: `| domain/slug | task | implemented? |`. Silent when flag off.
 7. Run test, build/type-check, and coverage commands when available.
 8. Build the behavioral compliance matrix from actual test results.
 9. Persist and return the verification report.

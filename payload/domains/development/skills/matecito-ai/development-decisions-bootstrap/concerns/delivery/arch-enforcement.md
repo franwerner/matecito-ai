@@ -36,7 +36,7 @@ Cómo convertir las reglas de dependencia definidas en `layers-and-dependencies`
 ## Notas de lógica (para el motor)
 
 - Esta fase requiere que `layers-and-dependencies` esté en status `Accepted` con reglas definidas. Si no hay capas definidas o están `Pending`, marcar esta fase como `Pending` con motivo "sin reglas de dependencia para enforcer".
-- Las reglas a enforcer (paths/globs tipo "X solo importa de Y", "prohibido X → Z") ya están acordadas en el ADR `layers-and-dependencies`. No hay que volver a pedirlas — se leen de ese ADR.
+- Las reglas a enforcer (paths/globs tipo "X solo importa de Y", "prohibido X → Z") ya están acordadas en el EDR `layers-and-dependencies`. No hay que volver a pedirlas — se leen de ese EDR.
 - El mapeo de herramienta por stack (para la pregunta 1): Python → `import-linter`; JS/TS → `dependency-cruiser`; Java/Kotlin → `ArchUnit`; PHP → `deptrac`. Mostralo como default según el lenguaje detectado.
 - Si el repo ya tiene código, después de implementar el enforcement ofrecé correr el linter una vez para confirmar que la configuración es válida y que el código actual respeta las reglas. Si es greenfield, queda listo para cuando haya código.
 
@@ -46,11 +46,11 @@ La herramienta elegida (ej: `import-linter.md`, `dependency-cruiser.md`, `archun
 
 ## Qué materializar
 
-> **Nota sobre el artefacto.** Esta fase es de las pocas cuyo output incluye un archivo de configuración ejecutable, no solo una decisión escrita. El ADR documenta *qué* se decidió; la **config concreta del linter la escribe el agente en el repo** al implementar, traduciendo las reglas reales del ADR `layers-and-dependencies` a la sintaxis de la herramienta elegida. El concern NO trae plantillas de config hardcodeadas — eso es trabajo de implementación, guiado por el ADR.
+> **Nota sobre el artefacto.** Esta fase es de las pocas cuyo output incluye un archivo de configuración ejecutable, no solo una decisión escrita. El EDR documenta *qué* se decidió; la **config concreta del linter la escribe el agente en el repo** al implementar, traduciendo las reglas reales del EDR `layers-and-dependencies` a la sintaxis de la herramienta elegida. El concern NO trae plantillas de config hardcodeadas — eso es trabajo de implementación, guiado por el EDR.
 
-ADR `arch-enforcement` materializado según `~/.claude/references/adr/templates/adr.md`. Debe contener:
+EDR `arch-enforcement` materializado según `~/.claude/references/edr/templates/edr.md`. Debe contener:
 
-- **Contexto** y **Decisión**: la herramienta de enforcement elegida y por qué (normalmente el default del stack), si corre en CI bloqueando el merge / solo localmente / todavía no, y la referencia al ADR `layers-and-dependencies` como origen de las reglas que el linter traduce (no duplicar las reglas acá).
+- **Contexto** y **Decisión**: la herramienta de enforcement elegida y por qué (normalmente el default del stack), si corre en CI bloqueando el merge / solo localmente / todavía no, y la referencia al EDR `layers-and-dependencies` como origen de las reglas que el linter traduce (no duplicar las reglas acá).
 - **Reglas verificables**: expresá las garantías que da esta decisión como aserciones con su mecanismo al inicio, nombrando la herramienta elegida. Ej: `[tool: dependency-cruiser]` el step de arch-lint corre en CI y bloquea el merge ante cualquier violación; `[tool: import-linter]` la config existe en su ubicación esperada y el comando definido la ejecuta. Usá `[manual]` solo si por ahora es convención documentada sin check.
 - **Alcance**: como decisión estructural, incluí la **ubicación esperada de la config** y los globs **a nivel convención** que el enforcement cubre (ej: `.importlinter`, `.dependency-cruiser.js`, test de ArchUnit, `deptrac.yaml`; y `src/**` como superficie analizada). Indicá el **comando** que la ejecuta para que quien implemente sepa qué archivo crear y qué step agregar al CI. La config de CI concreta (GitHub Actions, GitLab, etc.) depende del proyecto.
 - **Relacionados**: vinculá con `layers-and-dependencies` (fuente de las reglas) y `ci-quality-gates` (donde este check se integra como gate).

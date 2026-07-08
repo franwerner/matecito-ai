@@ -56,14 +56,14 @@ Una por turno. Para cada una: línea de "por qué importa", opciones con default
 
 ## Tech a registrar   <!-- opcional: incluir solo si la fase puede involucrar una tecnología concreta -->
 
-<qué mini-ADR de tech crear si se elige una herramienta específica. Ej: "la librería de Result si se usa (returns, neverthrow)">
+<qué mini-EDR de tech crear si se elige una herramienta específica. Ej: "la librería de Result si se usa (returns, neverthrow)">
 
 ## Qué materializar
 
-ADR `<name>` materializado según el template canónico [`templates/adr.md`](~/.claude/references/adr/templates/adr.md). Especificá qué campos concretos y verificables debe contener:
+EDR `<name>` materializado según el template canónico [`templates/edr.md`](~/.claude/references/edr/templates/edr.md). Especificá qué campos concretos y verificables debe contener:
 - **Reglas verificables:** nombrá las reglas como valores concretos (no adjetivos vagos), cada una con su mecanismo de verificación al inicio: `[tool: <herramienta>]` o `[manual]`.
 - **Alcance** (solo concerns espaciales/estructurales): los globs a nivel convención —patrones estables, no archivos concretos— que la decisión gobierna.
-- **Relacionados** (si aplica): vínculos tipados esperados con otros ADRs.
+- **Relacionados** (si aplica): vínculos tipados esperados con otros EDRs.
 ```
 
 ---
@@ -72,12 +72,12 @@ ADR `<name>` materializado según el template canónico [`templates/adr.md`](~/.
 
 Estas reglas protegen el patrón de la skill. Romperlas degrada el catálogo con el tiempo.
 
-- ❌ **No metas código de implementación.** El concern decide *qué* y *por qué*; el *cómo* (el código) lo escribe el agente después, en el repo, leyendo el ADR. Sin snippets de Python/JS/etc. mostrando cómo implementar la decisión.
+- ❌ **No metas código de implementación.** El concern decide *qué* y *por qué*; el *cómo* (el código) lo escribe el agente después, en el repo, leyendo el EDR. Sin snippets de Python/JS/etc. mostrando cómo implementar la decisión.
   - **Única excepción:** una fase cuyo *output sea un artefacto de configuración* (como `arch-enforcement`, que produce config de linter). Aun así, el concern describe *qué* artefacto generar y con qué reglas — **no trae la config hardcodeada**. El agente la escribe traduciendo las reglas reales del proyecto.
 - ❌ **No pinees versiones de tecnologías.** Mal: "usá FastAPI 0.115". La versión la decide el usuario y vive en el catálogo `tech/`, no hardcodeada en el concern. Las tecnologías se nombran solo **como ejemplos ilustrativos** de una opción (ej: "proveedor externo (Auth0, Keycloak, Cognito)").
 - ❌ **No prescribas una tecnología.** El concern ofrece opciones abstractas con ejemplos; el usuario elige y eso se registra en `tech/`. El concern no dice "usá Redis" — dice "cache distribuido (Redis/Memcached)" como una opción entre otras.
 - ❌ **No escribas opciones sin default ni sin "no sé, recomendame".** Toda pregunta ofrece un default razonado y la salida "no sé, recomendame" para quien no tiene opinión.
-- ❌ **No uses lenguaje vago en "Qué materializar".** Mal: "manejá bien los errores". Bien: reglas verificables con valores concretos (ej: "access token 15min, refresh 7d con rotación"), cada una con su mecanismo `[tool: <herramienta>]` o `[manual]`. Lo que va al ADR tiene que ser chequeable.
+- ❌ **No uses lenguaje vago en "Qué materializar".** Mal: "manejá bien los errores". Bien: reglas verificables con valores concretos (ej: "access token 15min, refresh 7d con rotación"), cada una con su mecanismo `[tool: <herramienta>]` o `[manual]`. Lo que va al EDR tiene que ser chequeable.
 - ❌ **No dupliques contenido de otra fase.** Si una decisión ya la captura otro concern, referencialo, no lo repitas.
 
 ---

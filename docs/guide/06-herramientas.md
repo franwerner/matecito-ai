@@ -19,7 +19,7 @@ Las herramientas (MCP y CLI) se enganchan en las fases donde aportan. El CLI `ma
 ## Engram — la memoria
 
 Es el medio por el que **pasa la información entre fases**: cada fase guarda su artefacto bajo `sdd/<change>/<artefacto>` y la siguiente lo lee (ver [02](02-flujo-sdd.md#cómo-se-pasa-la-información-entre-fases)). Persiste entre sesiones, así que el contexto no se pierde al cerrar.
-**No guarda ADRs** — esos viven solo en `.matecito-ai/adr/*.md`.
+**No guarda EDRs** — esos viven solo en `.matecito-ai/edr/*.md`.
 
 ## codegraph — exploración por estructura
 
@@ -40,5 +40,5 @@ Los diagramas se generan **on-demand, nunca automáticamente**, y son **efímero
 ## Referencias consultables (no son herramientas)
 
 Además de las herramientas hay **references** — material pasivo que las skills consultan, en `~/.claude/references/`:
-- **`adr/`** — el concepto de ADR + las plantillas de estructura. Ver [04](04-decisiones-adr.md).
-- **`design-patterns/`** — catálogo canónico de patrones. Cuando un ADR declara `Patrón aplicado: X`, `design` respeta su definición.
+- **`edr/`** — el concepto de EDR + las plantillas de estructura. Ver [04](04-decisiones-edr.md).
+- **`design-patterns/`** — catálogo canónico de patrones. Cuando un EDR declara `Patrón aplicado: X`, `design` respeta su definición.

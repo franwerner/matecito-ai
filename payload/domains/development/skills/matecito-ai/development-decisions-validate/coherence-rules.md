@@ -4,11 +4,11 @@ Lista central de chequeos que aplica `development-decisions-validate`. Es **ratc
 
 ## Cómo la lee el validador
 
-Cada chequeo tiene: **severidad** (CRITICAL / WARNING / SUGGESTION), una **condición** evaluada sobre los ADRs, el/los **dominio(s)** donde viven los ADRs involucrados (para localizar los archivos), y un **mensaje** (qué/por qué/sugerencia). El validador evalúa las condiciones contra `.matecito-ai/adr/<dominio>/` y reporta las que se cumplen.
+Cada chequeo tiene: **severidad** (CRITICAL / WARNING / SUGGESTION), una **condición** evaluada sobre los EDRs, el/los **dominio(s)** donde viven los EDRs involucrados (para localizar los archivos), y un **mensaje** (qué/por qué/sugerencia). El validador evalúa las condiciones contra `.matecito-ai/edr/<dominio>/` y reporta las que se cumplen.
 
 ## Mapa slug → dominio
 
-Para localizar el archivo de cada ADR nombrado abajo. Un ADR vive en `.matecito-ai/adr/<dominio>/<slug>.md`. (El campo `Dominio:` del encabezado del ADR es la fuente de verdad si hay duda.)
+Para localizar el archivo de cada EDR nombrado abajo. Un EDR vive en `.matecito-ai/edr/<dominio>/<slug>.md`. (El campo `Dominio:` del encabezado del EDR es la fuente de verdad si hay duda.)
 
 | Slug | Dominio |
 |---|---|
@@ -31,45 +31,45 @@ Dominios reservados (aparecen solo si el proyecto los pobló vía ratchet): `lif
 
 ### Completitud
 
-- **[WARNING]** Una fase relevante para el tipo de proyecto no tiene ADR (ni siquiera `Not Applicable`). Hueco silencioso. *(Requiere la lista de fases relevantes o el catálogo `concerns/INDEX.md`; si no están disponibles, marcar como "no verificable".)*
-- **[NOTA — Inferred]** ADRs con `Status: Inferred` NO cierran la preocupación: no los contés como decisión tomada en el conteo de completitud; no reportes como defecto las secciones WHY/Consecuencias/Reglas vacías (esperadas en Inferred); sí verificá que `## Alcance` siga matcheando (ancla de drift). Un Inferred convive con un WARNING de completitud si la preocupación sigue sin una decisión `Accepted`.
+- **[WARNING]** Una fase relevante para el tipo de proyecto no tiene EDR (ni siquiera `Not Applicable`). Hueco silencioso. *(Requiere la lista de fases relevantes o el catálogo `concerns/INDEX.md`; si no están disponibles, marcar como "no verificable".)*
+- **[NOTA — Inferred]** EDRs con `Status: Inferred` NO cierran la preocupación: no los contés como decisión tomada en el conteo de completitud; no reportes como defecto las secciones WHY/Consecuencias/Reglas vacías (esperadas en Inferred); sí verificá que `## Alcance` siga matcheando (ancla de drift). Un Inferred convive con un WARNING de completitud si la preocupación sigue sin una decisión `Accepted`.
 
 ### Higiene de status
 
-- **[WARNING]** ADR `Accepted` sin sección "Decisión" con contenido concreto.
-- **[WARNING]** ADR `Pending` o `Deferred` sin razón ni trigger.
-- **[CRITICAL]** ADR `Superseded` sin link "Reemplazado por", o el ADR linkeado no existe. *(El link puede ser intra-dominio `<slug>.md` o cross-dominio `../<dominio>/<slug>.md`; verificá ambos.)*
-- **[WARNING]** ADR `Not Applicable` sin razón.
+- **[WARNING]** EDR `Accepted` sin sección "Decisión" con contenido concreto.
+- **[WARNING]** EDR `Pending` o `Deferred` sin razón ni trigger.
+- **[CRITICAL]** EDR `Superseded` sin link "Reemplazado por", o el EDR linkeado no existe. *(El link puede ser intra-dominio `<slug>.md` o cross-dominio `../<dominio>/<slug>.md`; verificá ambos.)*
+- **[WARNING]** EDR `Not Applicable` sin razón.
 
 ### Verificabilidad
 
 - **[WARNING]** `layers-and-dependencies` `Accepted` con reglas en prosa vaga en vez de globs/paths verificables.
-- **[SUGGESTION]** Lenguaje vago ("tratá de no", "en lo posible", "idealmente", "evitar cuando se pueda") en las reglas de un ADR `Accepted`.
+- **[SUGGESTION]** Lenguaje vago ("tratá de no", "en lo posible", "idealmente", "evitar cuando se pueda") en las reglas de un EDR `Accepted`.
 
 ### Integridad de la taxonomía
 
-- **[CRITICAL]** Existe una carpeta bajo `.matecito-ai/adr/` que no es un dominio canónico ni `tech/`. La taxonomía es cerrada; un dominio nuevo es decisión de catálogo, no de proyecto.
-- **[WARNING]** El campo `Dominio:` del encabezado de un ADR no coincide con la carpeta en la que está el archivo. Mover el ADR a su carpeta correcta o corregir el campo.
-- **[WARNING]** Un ADR está listado en el índice raíz (`.matecito-ai/adr/INDEX.md`) pero su dominio no tiene `INDEX.md`, o viceversa (índice de dominio sin entrada en el raíz). Índices desincronizados.
-- **[SUGGESTION]** Un dominio tiene `INDEX.md` pero ningún ADR (carpeta de dominio vacía en la salida). Limpiar la carpeta o el índice.
+- **[CRITICAL]** Existe una carpeta bajo `.matecito-ai/edr/` que no es un dominio canónico ni `tech/`. La taxonomía es cerrada; un dominio nuevo es decisión de catálogo, no de proyecto.
+- **[WARNING]** El campo `Dominio:` del encabezado de un EDR no coincide con la carpeta en la que está el archivo. Mover el EDR a su carpeta correcta o corregir el campo.
+- **[WARNING]** Un EDR está listado en el índice raíz (`.matecito-ai/edr/INDEX.md`) pero su dominio no tiene `INDEX.md`, o viceversa (índice de dominio sin entrada en el raíz). Índices desincronizados.
+- **[SUGGESTION]** Un dominio tiene `INDEX.md` pero ningún EDR (carpeta de dominio vacía en la salida). Limpiar la carpeta o el índice.
 
 ### Coherencia del campo `type`
 
-- **[SUGGESTION]** Un ADR marcado `type: convention` o `type: policy` tiene una sección "Alternativas consideradas" sustanciosa → quizá es en realidad una `decision`; revisar el type.
-- **[SUGGESTION]** Un ADR marcado `type: decision` y `Accepted` sin "Alternativas consideradas" ni "Consecuencias" → una decisión sin trade-offs documentados es sospechosa; o falta contenido o es en realidad una convention.
-- **[WARNING]** Un ADR `type: policy` `Accepted` sin "Reglas verificables" accionables → una política sin reglas accionables no se puede cumplir ni chequear.
+- **[SUGGESTION]** Un EDR marcado `type: convention` o `type: policy` tiene una sección "Alternativas consideradas" sustanciosa → quizá es en realidad una `decision`; revisar el type.
+- **[SUGGESTION]** Un EDR marcado `type: decision` y `Accepted` sin "Alternativas consideradas" ni "Consecuencias" → una decisión sin trade-offs documentados es sospechosa; o falta contenido o es en realidad una convention.
+- **[WARNING]** Un EDR `type: policy` `Accepted` sin "Reglas verificables" accionables → una política sin reglas accionables no se puede cumplir ni chequear.
 
 ### Trazabilidad a código (sección `Alcance`)
 
-- **[WARNING]** Un ADR con sección `Alcance` cuyos globs no matchean ningún archivo del repo → drift: el código se movió o la decisión quedó obsoleta. *(Requiere acceso al árbol de archivos del proyecto; si no está disponible, marcar como "no verificable".)*
-- **[SUGGESTION]** Un ADR estructural (`structure` / `folder-structure` / `layers-and-dependencies`) `Accepted` sin sección `Alcance` → una decisión espacial sin globs de alcance no es verificable; considerar agregarlos.
+- **[WARNING]** Un EDR con sección `Alcance` cuyos globs no matchean ningún archivo del repo → drift: el código se movió o la decisión quedó obsoleta. *(Requiere acceso al árbol de archivos del proyecto; si no está disponible, marcar como "no verificable".)*
+- **[SUGGESTION]** Un EDR estructural (`structure` / `folder-structure` / `layers-and-dependencies`) `Accepted` sin sección `Alcance` → una decisión espacial sin globs de alcance no es verificable; considerar agregarlos.
 - **[SUGGESTION]** Una regla bajo "Reglas verificables" sin marca de mecanismo (`[tool: ...]` o `[manual]`) → no queda claro cómo se chequea; agregar el mecanismo.
 
 ---
 
-## Contradicciones conocidas (combinaciones entre ADRs)
+## Contradicciones conocidas (combinaciones entre EDRs)
 
-La columna **Dominio(s)** indica dónde viven los ADRs de la condición. "cross" = la contradicción cruza dominios.
+La columna **Dominio(s)** indica dónde viven los EDRs de la condición. "cross" = la contradicción cruza dominios.
 
 | # | Severidad | Dominio(s) | Condición | Mensaje |
 |---|---|---|---|---|
@@ -107,6 +107,6 @@ Aplican solo si el proyecto pobló esos dominios vía ratchet. Se anticipan acá
 Cuando encontrás una contradicción o un chequeo útil que no está acá:
 
 - Genérico → agregalo como bullet en la sección "Chequeos genéricos" (en la subsección que corresponda).
-- Combinación entre ADRs → agregá una fila en "Contradicciones conocidas" (o en la subtabla de dominios reservados si involucra uno).
+- Combinación entre EDRs → agregá una fila en "Contradicciones conocidas" (o en la subtabla de dominios reservados si involucra uno).
 
 Siempre con severidad, dominio(s) y mensaje (qué/por qué/sugerencia). Si la combinación cruza dominios, marcala "cross" en la columna Dominio(s). Así el validador la atrapa de ahí en más.

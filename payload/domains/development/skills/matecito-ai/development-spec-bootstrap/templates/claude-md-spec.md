@@ -1,4 +1,4 @@
-<!-- Canonical template: SECCIÓN de `CLAUDE.md` raíz del proyecto que apunta al índice de capability-specs. La agrega development-spec-bootstrap en la materialización, de forma IDEMPOTENTE: si el CLAUDE.md no existe, se crea con esta sección; si existe, se agrega/actualiza SOLO esta sección (ancla: el heading de abajo) sin tocar el resto (p. ej. la sección de ADRs). NO duplicar. -->
+<!-- Canonical template: SECCIÓN de `CLAUDE.md` raíz del proyecto que apunta al índice de capability-specs. La agrega development-spec-bootstrap en la materialización, de forma IDEMPOTENTE: si el CLAUDE.md no existe, se crea con esta sección; si existe, se agrega/actualiza SOLO esta sección (ancla: el heading de abajo) sin tocar el resto (p. ej. la sección de EDRs). NO duplicar. -->
 
 ## Comportamiento del sistema (capability-specs)
 
@@ -9,4 +9,4 @@ El comportamiento de este proyecto —qué hace ante cada situación— está en
 2. Abrí `.matecito-ai/development-specs/<type>/INDEX.md` y leé el capability-spec de lo que vas a tocar — es el contrato del *qué hace*, con sus escenarios verificables.
 3. Si hay contradicción entre tu plan y un spec `Accepted`: pará y preguntale al usuario.
 
-Los specs dicen *qué hace* el sistema; el *por qué* de cada elección técnica vive en `.matecito-ai/adr/` y el *cómo* literal en el código. Para definir, actualizar o validar comportamiento, usá `development-spec-bootstrap` (y `development-spec-validate` para chequear coherencia).
+Los specs dicen *qué hace* el sistema; el *por qué* de cada elección técnica vive en `.matecito-ai/edr/` y el *cómo* literal en el código. Para definir, actualizar o validar comportamiento, usá `development-spec-bootstrap` (y `development-spec-validate` para chequear coherencia).

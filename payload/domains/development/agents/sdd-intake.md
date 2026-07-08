@@ -4,12 +4,12 @@ description:
   Intake and structure a raw user request before any SDD phase runs. Use as the FIRST step
   when a user describes a feature, bug, change, or task in natural language and it needs to be
   turned into a clear, structured brief. Asks targeted intake questions, classifies the change,
-  triages whether the full SDD flow is needed, and catches ADR conflicts or undecided
+  triages whether the full SDD flow is needed, and catches EDR conflicts or undecided
   architectural questions before exploration begins.
 model: sonnet
 tools: Read, Grep, Glob, mcp__plugin_engram_engram__mem_save
 # matecito-ai: sdd-intake is the entry phase of the SDD flow. It structures the raw request and
-# produces a brief artifact that sdd-explore consumes. It reads ADRs only to catch early
+# produces a brief artifact that sdd-explore consumes. It reads EDRs only to catch early
 # blockers; it does NOT explore the codebase (that is sdd-explore's job).
 ---
 
@@ -29,14 +29,14 @@ Execute all steps from the skill directly in this context window:
 <!-- matecito-ai: diagram inference test — single source of truth in matecito-ai:behavior (Ecosystem) -->
 4b. Diagram decision: evaluate per the diagram inference test (CLAUDE.md Ecosystem zone) whether this change warrants an architecture diagram. Set `diagram: needed | not-needed` (with a one-line reason) in the brief. Do NOT generate — generation happens downstream (`sdd-design`, or the direct implementation). The user confirms this flag at the intake gate.
 4c. UI-test decision: infer `ui-test: needed | not-needed` (with a one-line reason) in the brief. Inference rule: scan the request's scenarios and description for any of these keywords — `browser`, `page`, `form`, `screen`, `visual`, `click`, `render` — and set `needed` if any are present. An explicit author override (`ui-test: needed` or `ui-test: not-needed` written in the request) takes precedence over keyword inference; default is `not-needed` when no keywords match and no override is present. Surface the flag at the INTAKE GATE beside `diagram` so the user can confirm or adjust both together. Do NOT run proofshot — decision only; execution happens in sdd-verify.
-5. Early guard (ADR activation gate): if `.matecito-ai/adr/` is absent or empty, ADRs are inactive — skip this step silently (`status: done`, no ADR mention in the brief). Only when it exists with content, check it for conflicts or undecided questions this request raises
+5. Early guard (EDR activation gate): if `.matecito-ai/edr/` is absent or empty, EDRs are inactive — skip this step silently (`status: done`, no EDR mention in the brief). Only when it exists with content, check it for conflicts or undecided questions this request raises
 6. Produce the structured brief artifact and return it
 
 Do NOT explore the codebase in depth (that is sdd-explore). Do NOT design or implement.
 Your job is to turn a vague chat request into a clear, structured brief — and to stop early
-if there is an ADR conflict or an undecided architectural question **when ADRs are active**.
-When `.matecito-ai/adr/` is absent or empty, never emit `blocked`/`needs-decision` for ADR
-reasons and never mention ADRs — treat such questions as ordinary design decisions for later
+if there is an EDR conflict or an undecided architectural question **when EDRs are active**.
+When `.matecito-ai/edr/` is absent or empty, never emit `blocked`/`needs-decision` for EDR
+reasons and never mention EDRs — treat such questions as ordinary design decisions for later
 phases (sdd-explore/sdd-design).
 
 ## Engram Save (mandatory when tied to a named change)
@@ -57,6 +57,6 @@ Return a structured result with these fields:
 - `next_recommended`: `sdd-explore` (full flow) | `direct-implementation` (trivial, SDD not needed) | `development-decisions-bootstrap` (an undecided architectural question must be captured first)
 - `diagram`: `needed | not-needed` — whether an architecture diagram is warranted per the diagram inference test (decided here, generated downstream)
 - `ui-test`: `needed | not-needed` — whether UI verification via ProofShot is warranted (keyword-inferred or explicit override; confirmed at INTAKE GATE; execution deferred to sdd-verify)
-- `blockers`: ADR conflicts (`blocked`) or undecided decisions (`needs-decision`) found, with the ADR cited
+- `blockers`: EDR conflicts (`blocked`) or undecided decisions (`needs-decision`) found, with the EDR cited
 - `risks`: anything ambiguous or risky surfaced during intake
 - `skill_resolution`: `phase-skill` (loaded own SKILL.md) or `none`

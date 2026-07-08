@@ -46,7 +46,7 @@ Librería de instrumentación si se elige una concreta (ej: `prometheus-client.m
 
 ## Qué materializar
 
-ADR `metrics` materializado según el template `~/.claude/references/adr/templates/adr.md`. La **Decisión** captura: modelo elegido (RED / USE / negocio / ninguno), formato de exposición (Prometheus pull / OTLP push / cloud-native), destino de almacenamiento, y las métricas concretas iniciales si se definieron (ej: `http_requests_total`, `http_request_duration_seconds`, `db_pool_connections_active`).
+EDR `metrics` materializado según el template `~/.claude/references/edr/templates/edr.md`. La **Decisión** captura: modelo elegido (RED / USE / negocio / ninguno), formato de exposición (Prometheus pull / OTLP push / cloud-native), destino de almacenamiento, y las métricas concretas iniciales si se definieron (ej: `http_requests_total`, `http_request_duration_seconds`, `db_pool_connections_active`).
 
 **Reglas verificables** (cada una con su mecanismo al inicio):
 
@@ -54,6 +54,6 @@ ADR `metrics` materializado según el template `~/.claude/references/adr/templat
 - **[manual]** las métricas se exponen en el formato decidido (ej: endpoint `/metrics` Prometheus u OTLP), no en formatos mezclados.
 - **[manual]** las métricas iniciales enumeradas en la Decisión existen y se emiten con los nombres acordados.
 
-Si se eligió "Ninguna por ahora", el ADR va con `Status: Pending` y la razón concreta; en ese caso no lleva Reglas verificables.
+Si se eligió "Ninguna por ahora", el EDR va con `Status: Pending` y la razón concreta; en ese caso no lleva Reglas verificables.
 
 **Relacionados:** vincular con `tracing` cuando ambos comparten el SDK de OpenTelemetry/OTLP para unificar el stack de observabilidad.

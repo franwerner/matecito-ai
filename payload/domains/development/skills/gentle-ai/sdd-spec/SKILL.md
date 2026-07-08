@@ -56,7 +56,7 @@ If the proposal has no Capabilities section (older format), fall back to inferri
 
 ### Step 3: Read Existing Durable Specs
 
-<!-- matecito-ai: los capability-specs durables viven en archivos (`.matecito-ai/development-specs/`), como los ADR; NO son artefactos de flujo en Engram. Los artefactos del pipeline (proposal, etc.) SÍ vienen de Engram por el Persistence Contract. -->
+<!-- matecito-ai: los capability-specs durables viven en archivos (`.matecito-ai/development-specs/`), como los EDR; NO son artefactos de flujo en Engram. Los artefactos del pipeline (proposal, etc.) SÍ vienen de Engram por el Persistence Contract. -->
 For a Modified Capability, read its durable capability-spec from `.matecito-ai/development-specs/<type>/<capability>.md` — it is the source of truth of the current behavior your delta modifies (format in `~/.claude/references/spec/README.md`). If the file does not exist, there is no existing behavior: write a full spec (NEW), not a delta.
 
 ### Step 4: Write Delta Specs

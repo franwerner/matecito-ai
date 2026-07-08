@@ -58,10 +58,10 @@ Una por turno. Para cada una: línea de "por qué importa", opciones con default
 
 ## Notas de lógica (para el motor)
 
-- **Si en Fase 0 el tipo de proyecto es `cli`, `libreria` o `script`:** esta fase probablemente es Not Applicable. Crear el ADR con ese status y motivo antes de preguntar.
+- **Si en Fase 0 el tipo de proyecto es `cli`, `libreria` o `script`:** esta fase probablemente es Not Applicable. Crear el EDR con ese status y motivo antes de preguntar.
 - **Si eligió OAuth 2.0 / OIDC:** la pregunta 4 (expiración) la maneja el proveedor; aclarar eso y saltear o simplificar la pregunta.
 - **Si eligió "API keys":** la pregunta 4 no aplica; en cambio, preguntar si las keys tienen fecha de expiración y cómo se rotan.
-- **Si eligió "Sin modelo de permisos":** la pregunta 2 y parte de la 3 quedan reducidas; documentar el motivo en el ADR.
+- **Si eligió "Sin modelo de permisos":** la pregunta 2 y parte de la 3 quedan reducidas; documentar el motivo en el EDR.
 
 ## Tech a registrar
 
@@ -69,7 +69,7 @@ Librería de auth si se usa una específica (`passport.md`, `authlib.md`, `next-
 
 ## Qué materializar
 
-ADR `auth` materializado según `~/.claude/references/adr/templates/adr.md`. Debe contener:
+EDR `auth` materializado según `~/.claude/references/edr/templates/edr.md`. Debe contener:
 
 - **Contexto**: tipo de clientes (web/API/integración), nivel de sensibilidad de los datos, y por qué este mecanismo es difícil de migrar una vez que hay usuarios en producción.
 - **Decisión**: mecanismo de autenticación elegido y sus valores; modelo de permisos con descripción de los roles si aplica; dónde y cómo se valida (middleware/guard centralizado, decorator por endpoint, o manual); política de tokens/sesiones con las duraciones escritas como valores concretos, no como "corta duración".

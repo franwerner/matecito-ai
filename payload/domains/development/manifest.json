@@ -4,7 +4,7 @@
   "summary": "Desarrollo de software con SDD sobre un repo de código (features, fixes, refactors, arquitectura).",
   "workspace": "repository",
   "alignmentArtifact": "spec",
-  "decisionRecord": { "term": "ADR", "dir": ".matecito-ai/adr" },
+  "decisionRecord": { "term": "EDR", "dir": ".matecito-ai/edr" },
   "canonicalCatalog": "design-patterns",
   "phases": ["intake", "explore", "propose", "spec", "design", "tasks", "apply", "verify", "archive"],
   "guards": ["strict-tdd", "review-workload"],
@@ -14,6 +14,6 @@
   "config": [
     { "key": "models", "type": "agent-models", "label": "Models per agent" },
     { "key": "strictTdd", "type": "bool", "label": "Strict TDD", "default": false },
-    { "key": "flagDecisionGaps", "type": "bool", "label": "Auto-mine ADR", "default": false }
+    { "key": "flagDecisionGaps", "type": "bool", "label": "Auto-mine EDR", "default": false }
   ]
 }

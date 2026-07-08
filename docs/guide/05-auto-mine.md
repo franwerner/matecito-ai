@@ -1,35 +1,35 @@
-# 05 — Auto-mine de ADRs (`flagDecisionGaps`)
+# 05 — Auto-mine de EDRs (`flagDecisionGaps`)
 
-[← 04 Decisiones y ADRs](04-decisiones-adr.md) · [Índice](README.md) · Siguiente: [06 — Herramientas →](06-herramientas.md)
+[← 04 Decisiones y EDRs](04-decisiones-edr.md) · [Índice](README.md) · Siguiente: [06 — Herramientas →](06-herramientas.md)
 
-> Esta página describe el auto-mine de **ADRs**, el decision record del dominio **development**. El mecanismo (detectar gaps in-flow, opt-in vía `flagDecisionGaps`, materializar `Inferred` con confirmación) es del núcleo; otro dominio lo aplica a su propio tipo de record (p. ej. auto-mine de DDR en design).
+> Esta página describe el auto-mine de **EDRs**, el decision record del dominio **development**. El mecanismo (detectar gaps in-flow, opt-in vía `flagDecisionGaps`, materializar `Inferred` con confirmación) es del núcleo; otro dominio lo aplica a su propio tipo de record (p. ej. auto-mine de DDR en design).
 
 `mine` tiene dos modos, un mismo motor:
 
-- **Mode A — scan brownfield**: lo invocás explícitamente sobre un repo. Escanea todo y propone ADRs `Inferred`.
-- **Mode B — in-flow**: corre dentro del flujo SDD, opt-in vía el flag **`flagDecisionGaps`**. Detecta decisiones que el cambio implementó y no tienen ADR.
+- **Mode A — scan brownfield**: lo invocás explícitamente sobre un repo. Escanea todo y propone EDRs `Inferred`.
+- **Mode B — in-flow**: corre dentro del flujo SDD, opt-in vía el flag **`flagDecisionGaps`**. Detecta decisiones que el cambio implementó y no tienen EDR.
 
-Esta página cubre el Mode B. (El concepto de mine como proponente está en [04](04-decisiones-adr.md).)
+Esta página cubre el Mode B. (El concepto de mine como proponente está en [04](04-decisiones-edr.md).)
 
-## El gate es la INTENCIÓN, no la presencia de ADRs
+## El gate es la INTENCIÓN, no la presencia de EDRs
 
-`flagDecisionGaps` es **opt-in, off por default**. Con el flag off: silencio total, el flujo se comporta como siempre. Con el flag on, mine funciona **aunque no exista `.matecito-ai/adr/`**: si no hay ADRs, toda decisión implementada es un hueco, y mine **bootstrapea los primeros**. Su única dependencia dura es el **catálogo de concerns** (viene con la skill).
+`flagDecisionGaps` es **opt-in, off por default**. Con el flag off: silencio total, el flujo se comporta como siempre. Con el flag on, mine funciona **aunque no exista `.matecito-ai/edr/`**: si no hay EDRs, toda decisión implementada es un hueco, y mine **bootstrapea los primeros**. Su única dependencia dura es el **catálogo de concerns** (viene con la skill).
 
-Esto preserva el invariante de matecito-ai: **los ADRs nunca son obligatorios ni molestan** — detecta y ofrece; nunca impone.
+Esto preserva el invariante de matecito-ai: **los EDRs nunca son obligatorios ni molestan** — detecta y ofrece; nunca impone.
 
 ## El flujo, fase por fase
 
 ```
-tasks      → marca los gaps         (a qué ADR pertenece + cuáles no existen)
+tasks      → marca los gaps         (a qué EDR pertenece + cuáles no existen)
 apply      → implementa
 verify     → confirma cuáles se implementaron (## Decision Gaps: implemented yes/no)
 boundary   → el ORQUESTADOR lanza N miners sobre los gaps implemented:yes
 gate       → mostrar candidatos → confirm/edit/skip (thread principal)
 materialize→ escribe los .md Inferred (+ INDEX) — solo lo confirmado
-archive    → cierra (no registra ADRs)
+archive    → cierra (no registra EDRs)
 ```
 
-1. **tasks** asigna `· adr: <dominio>/<slug>` (mapeado a un concern) a las tareas que tocan una decisión, y chequea si el archivo existe. Una `· adr:` cuyo ADR **no existe** = **gap dangling**. El conjunto de dangling = la gap list (sin campo extra). Solo con el flag on.
+1. **tasks** asigna `· edr: <dominio>/<slug>` (mapeado a un concern) a las tareas que tocan una decisión, y chequea si el archivo existe. Una `· edr:` cuyo EDR **no existe** = **gap dangling**. El conjunto de dangling = la gap list (sin campo extra). Solo con el flag on.
 2. **verify** confirma, por cada gap, si `implemented: yes` — la tarea está `[x]` **y** su `criteria:` pasa en el código embarcado. Lo vuelca en `## Decision Gaps`.
 3. **boundary verify→archive**: el **orquestador** evalúa el *mine gate*. Si `flagDecisionGaps` on **y** hay ≥1 gap `implemented: yes`, arma la gap list (scope) y **lanza los miners**.
 4. **fan-out**: si son muchos gaps, el orquestador parte la lista en batches y despacha **N miners en paralelo** (cada uno mode-agnóstico: `scope → candidates[]`). Mergea y **deduplica por `dominio/slug`**.
@@ -42,14 +42,14 @@ tasks marca el gap **sin código todavía** (evidencia débil) → barato. El mi
 
 ## Quién hace qué
 
-- **tasks / verify**: producen los datos del gap (a qué ADR, y si se implementó). **No lanzan miners.**
+- **tasks / verify**: producen los datos del gap (a qué EDR, y si se implementó). **No lanzan miners.**
 - **orquestador** (hilo principal): el único que lanza sub-agentes. Lee `## Decision Gaps`, arma el scope, dispara los N miners, mergea, presenta el gate, materializa. La regla vive en `CLAUDE.md` ("Decision-Gap Capture").
-- **miner (ejecutor)**: mode-agnóstico, recibe un scope, devuelve candidatos. No lee el flag, no se ramifica por modo, no escribe ADRs (eso es el thread principal post-confirm).
+- **miner (ejecutor)**: mode-agnóstico, recibe un scope, devuelve candidatos. No lee el flag, no se ramifica por modo, no escribe EDRs (eso es el thread principal post-confirm).
 
 ## No recomienda "siempre"
 
-Con el flag on, mine solo recomienda cuando hay un hueco **real**: la tarea tocó una decisión, esa decisión no tiene ADR, y verify confirmó que se implementó. Un cambio mecánico (sin decisiones) → cero gaps → silencio. Y aun con candidatos, **ofrece**: confirmás o saltás.
+Con el flag on, mine solo recomienda cuando hay un hueco **real**: la tarea tocó una decisión, esa decisión no tiene EDR, y verify confirmó que se implementó. Un cambio mecánico (sin decisiones) → cero gaps → silencio. Y aun con candidatos, **ofrece**: confirmás o saltás.
 
 ## Después: ratificar
 
-Lo que mine materializa son **borradores `Inferred`** (sin porqué). Para convertirlos en decisiones plenas (`Accepted`), corrés **`bootstrap` en modo update**, que te entrevista el porqué. Ver [04 — ciclo de vida](04-decisiones-adr.md#el-ciclo-de-vida-de-una-decisión).
+Lo que mine materializa son **borradores `Inferred`** (sin porqué). Para convertirlos en decisiones plenas (`Accepted`), corrés **`bootstrap` en modo update**, que te entrevista el porqué. Ver [04 — ciclo de vida](04-decisiones-edr.md#el-ciclo-de-vida-de-una-decisión).

@@ -30,7 +30,7 @@ Dónde se almacenan los secretos del sistema (credenciales, tokens, claves), có
 
 ## Qué materializar
 
-ADR `secrets-management` materializado según `~/.claude/references/adr/templates/adr.md`. Esta es una decisión de tipo `policy`; sus reglas deben quedar especialmente accionables. Debe contener:
+EDR `secrets-management` materializado según `~/.claude/references/edr/templates/edr.md`. Esta es una decisión de tipo `policy`; sus reglas deben quedar especialmente accionables. Debe contener:
 
 - **Contexto**: por qué un secreto en el repositorio es una brecha permanente (el historial de git persiste aunque se borre), citando OWASP ASVS 2.10.4 (prohíbe credenciales hardcodeadas) y 12-factor §III (separación estricta de config y código).
 - **Decisión**: backend de almacenamiento elegido (variables de entorno, secret manager gestionado, o `.env` local + var en CI/CD), y política de rotación (manual, automática, o no definida).

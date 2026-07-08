@@ -16,7 +16,7 @@ func payload() fstest.MapFS {
 			"summary": "build software with SDD",
 			"workspace": "repository",
 			"alignmentArtifact": "spec",
-			"decisionRecord": { "term": "ADR", "dir": ".matecito-ai/adr" },
+			"decisionRecord": { "term": "EDR", "dir": ".matecito-ai/edr" },
 			"canonicalCatalog": "design-patterns",
 			"phases": ["intake", "spec", "apply", "verify", "archive"],
 			"guards": ["strict-tdd", "review-workload"],
@@ -46,7 +46,7 @@ func TestLoad(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
-	if m.AlignmentArtifact != "spec" || m.DecisionRecord.Term != "ADR" || m.DecisionRecord.Dir != ".matecito-ai/adr" {
+	if m.AlignmentArtifact != "spec" || m.DecisionRecord.Term != "EDR" || m.DecisionRecord.Dir != ".matecito-ai/edr" {
 		t.Errorf("unexpected manifest: %+v", m)
 	}
 	if m.Summary != "build software with SDD" {

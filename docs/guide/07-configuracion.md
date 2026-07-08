@@ -40,7 +40,7 @@ Resolución **por-proyecto → global → default**:
 
 - **Modelo por agente** (`models`) — qué modelo usa cada fase **de ese dominio** (`sdd-*` en development, `design-*` en design). Sin valor configurado, cada agente usa su default curado (no el modelo de la conversación).
 - **Guards** — los controles propios del dominio. En development: **Strict TDD** (`strictTdd`) — si está activo, `apply` y `verify` siguen el ciclo test-first.
-- **Auto-mine** (`flagDecisionGaps`) — opt-in, off por default. Detecta decisiones implementadas sin decision record durante el flujo; al cerrar, ofrece minarlas como `Inferred`. **Auto-mine ADR** en development, **Auto-mine DDR** en design. Ver [05](05-auto-mine.md).
+- **Auto-mine** (`flagDecisionGaps`) — opt-in, off por default. Detecta decisiones implementadas sin decision record durante el flujo; al cerrar, ofrece minarlas como `Inferred`. **Auto-mine EDR** en development, **Auto-mine DDR** en design. Ver [05](05-auto-mine.md).
 
 **Scope** — si los cambios desde la TUI aplican al proyecto actual o al global.
 
@@ -57,7 +57,7 @@ Clave de diseño: **los sub-agentes ejecutores no leen `config.json`.** El **orq
 Sin subcomando y en terminal interactiva, `matecito-ai` abre una TUI con el estado del entorno, la instalación, y la **Configuración**, organizada en **General** + **una entrada por dominio activo**:
 
 - **General** — la **selección de dominios** (qué áreas tenés activas).
-- **Por dominio** — entrás a un dominio y ves su config, renderizada desde su contrato (`manifest.json`): en **development**, _Models per agent · Strict TDD · Auto-mine ADR_; en **design**, _Models per agent · Auto-mine DDR_. La config de un dominio **solo aparece si está activo**.
+- **Por dominio** — entrás a un dominio y ves su config, renderizada desde su contrato (`manifest.json`): en **development**, _Models per agent · Strict TDD · Auto-mine EDR_; en **design**, _Models per agent · Auto-mine DDR_. La config de un dominio **solo aparece si está activo**.
 
 Los toggles son scope-aware (editan el config global o el del proyecto según el scope activo).
 

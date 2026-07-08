@@ -7,7 +7,7 @@
 
 <!-- Header mínimo a propósito: el TIPO y el slug ya están en la ruta del archivo (`<type>/<capability>.md`) — no se repiten como propiedad. El historial lo lleva git. `Date` es la fecha del comportamiento vigente, no la de la última edición. Si Status es Deprecated, agregar una línea `**Reemplazado por:** [<capability>.md](<capability>.md)`. -->
 
-<!-- VOCABULARIO (aplica a TODAS las secciones): se escribe en el idioma del dominio + contrato público (endpoints públicos, códigos de error expuestos). NUNCA identificadores internos volátiles: clases, métodos, columnas de base de datos, errores internos, rutas de archivo. El "cómo" es del código; el "por qué" es del ADR. Ver `~/.claude/references/spec/README.md`. -->
+<!-- VOCABULARIO (aplica a TODAS las secciones): se escribe en el idioma del dominio + contrato público (endpoints públicos, códigos de error expuestos). NUNCA identificadores internos volátiles: clases, métodos, columnas de base de datos, errores internos, rutas de archivo. El "cómo" es del código; el "por qué" es del EDR. Ver `~/.claude/references/spec/README.md`. -->
 
 ## Propósito
 
@@ -70,15 +70,15 @@
 
 ## Referencias
 
-<!-- Opcional. Links al ADR que gobierna el CÓMO de un comportamiento y al proposal/PRD que da el contexto de negocio. El spec no repite el contenido del ADR; lo linkea. Omitir si no hay. -->
+<!-- Opcional. Links al EDR que gobierna el CÓMO de un comportamiento y al proposal/PRD que da el contexto de negocio. El spec no repite el contenido del EDR; lo linkea. Omitir si no hay. -->
 
-- **ADR** → [`../adr/<dominio>/<slug>.md`](../adr/<dominio>/<slug>.md) — <qué decisión gobierna este comportamiento>.
+- **EDR** → [`../edr/<dominio>/<slug>.md`](../edr/<dominio>/<slug>.md) — <qué decisión gobierna este comportamiento>.
 - **Contexto de negocio** → <PRD / proposal / fuente>.
 
 <!--
 Notas del contrato (no van en el capability-spec generado):
 - No hay sección `Historial`. El historial de ediciones lo lleva git.
 - Nombres de sección y prosa en español; header (`Status`, `Date`) en inglés.
-- Self-check antes de dar por escrito el spec: releé todas las secciones y por cada nombre de clase/método/columna/archivo/error interno, reformulá la frase en lenguaje de dominio o contrato público. Si de verdad hace falta anclar a una decisión técnica, va como link en "Referencias" (al ADR), no inline.
+- Self-check antes de dar por escrito el spec: releé todas las secciones y por cada nombre de clase/método/columna/archivo/error interno, reformulá la frase en lenguaje de dominio o contrato público. Si de verdad hace falta anclar a una decisión técnica, va como link en "Referencias" (al EDR), no inline.
 - Toda sección marcada "Omitir si no aplica" se borra entera cuando no aplica — no se deja vacía ni con "N/A".
 -->

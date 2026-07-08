@@ -20,13 +20,13 @@ Also read shared conventions at `~/.claude/skills/_shared/sdd-phase-common.md`.
 Execute all steps from the skill directly in this context window:
 <!-- matecito-ai: nearest-artifact — in a custom lane design can run without a proposal; fall back to spec, then the intake brief -->
 1. Read the upstream artifact — proposal if present, else fall back to the spec, else the intake brief: `mem_search("sdd/{change-name}/proposal")`; if no result, `mem_search("sdd/{change-name}/spec")`; if still none, `mem_search("sdd/{change-name}/intake")` → `mem_get_observation`.
-<!-- matecito-ai: ADR activation gate (presence-based) — single source of truth in matecito-ai:behavior -->
-1b. ADR activation gate: if `.matecito-ai/adr/` is absent or empty, ADRs are inactive — skip all ADR steps (1b and 4b) silently, no mention. If active: read root `INDEX.md` + the ADRs of the domains this change touches. Accepted ADRs are binding constraints.
+<!-- matecito-ai: EDR activation gate (presence-based) — single source of truth in matecito-ai:behavior -->
+1b. EDR activation gate: if `.matecito-ai/edr/` is absent or empty, EDRs are inactive — skip all EDR steps (1b and 4b) silently, no mention. If active: read root `INDEX.md` + the EDRs of the domains this change touches. Accepted EDRs are binding constraints.
 2. Choose the architecture approach (pattern, layering, boundaries)
 3. Map components, data flow, integration points
-4. Capture ADR-style decisions with rationale and rejected alternatives
-<!-- matecito-ai: align with ADRs; block on conflict; flag uncovered decisions -->
-4b. Align decisions with existing ADRs (cite them). If the design contradicts an Accepted ADR → return `blocked`. If it needs a decision no ADR covers → flag it for capture via development-decisions-bootstrap.
+4. Capture EDR-style decisions with rationale and rejected alternatives
+<!-- matecito-ai: align with EDRs; block on conflict; flag uncovered decisions -->
+4b. Align decisions with existing EDRs (cite them). If the design contradicts an Accepted EDR → return `blocked`. If it needs a decision no EDR covers → flag it for capture via development-decisions-bootstrap.
 <!-- matecito-ai: diagram inference test — single source of truth in matecito-ai:behavior (Ecosystem). Diagrams are EPHEMERAL: this headless phase does NOT generate or export any diagram file. -->
 4c. Architecture diagram: if the intake brief's `diagram` flag is `needed`, NOTE in your result (summary/`risks`) that a live diagram of the chosen architecture is recommended — the **main thread** renders it on demand with the `drawio` skill (vocabulary) + the `mcp__drawio__*` MCP (ephemeral live preview), nothing is written to the repo. This phase does NOT generate or export any diagram. If `not-needed` or absent, skip silently.
 5. Persist design to active backend

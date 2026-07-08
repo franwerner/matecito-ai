@@ -32,7 +32,7 @@ From the orchestrator:
 
 - **engram**: Read `sdd/{change-name}/proposal`, `sdd/{change-name}/spec`, `sdd/{change-name}/design`, `sdd/{change-name}/tasks`, `sdd/{change-name}/verify-report` (all required). Record all observation IDs in the archive report for traceability. Save as `sdd/{change-name}/archive-report`.
 - **none**: Return closure summary only. Do not perform archive file operations.
-<!-- matecito-ai: ADRs (any status, incl. Inferred) live ONLY in their `.md` under `.matecito-ai/adr/` — never in Engram or the archive-report. This step MUST NOT add an Inferred-ADR listing. Guard prevents regeneration from re-introducing an inclusion hook. -->
+<!-- matecito-ai: EDRs (any status, incl. Inferred) live ONLY in their `.md` under `.matecito-ai/edr/` — never in Engram or the archive-report. This step MUST NOT add an Inferred-EDR listing. Guard prevents regeneration from re-introducing an inclusion hook. -->
 
 ## What to Do
 
@@ -41,7 +41,7 @@ Follow **Section A** from `skills/_shared/sdd-phase-common.md`.
 
 ### Step 2: Merge Delta Spec into Durable Capability-Specs
 
-<!-- matecito-ai: los capability-specs durables SÍ viven en archivos (`.matecito-ai/development-specs/`), como los ADR — son conocimiento durable del repo, NO un artefacto de flujo. Esto NO viola engram-only (que prohíbe *proposal stores* de flujo tipo openspec/): los artefactos del pipeline (proposal/spec/design/tasks/verify) siguen SOLO en Engram; únicamente el estado ACUMULADO del comportamiento se materializa a archivos versionados. Guarda: nunca escribir el proposal/design/tasks a archivos. -->
+<!-- matecito-ai: los capability-specs durables SÍ viven en archivos (`.matecito-ai/development-specs/`), como los EDR — son conocimiento durable del repo, NO un artefacto de flujo. Esto NO viola engram-only (que prohíbe *proposal stores* de flujo tipo openspec/): los artefactos del pipeline (proposal/spec/design/tasks/verify) siguen SOLO en Engram; únicamente el estado ACUMULADO del comportamiento se materializa a archivos versionados. Guarda: nunca escribir el proposal/design/tasks a archivos. -->
 
 Read the change's delta spec from Engram (`sdd/{change-name}/spec`). For each capability it touches, fold the delta into the durable capability-spec under `.matecito-ai/development-specs/<type>/<capability>.md` (source of truth of the system's behavior). Read the templates from `~/.claude/references/spec/templates/` and the concept from `~/.claude/references/spec/README.md` before writing.
 
@@ -53,7 +53,7 @@ Read the change's delta spec from Engram (`sdd/{change-name}/spec`). For each ca
 - **REMOVED** → quitá el escenario/comportamiento removido; si una capability queda sin comportamiento, marcá su spec `Deprecated` (no borres el archivo).
 - Si el merge sería **destructivo** (perdería escenarios o secciones no mencionados en el delta) → NO lo apliques: avisá al orquestador y pedí confirmación.
 - Actualizá el `INDEX.md` del tipo afectado y el índice raíz (`development-specs/INDEX.md`).
-- **Vocabulario:** al escribir el spec durable, idioma de dominio + contrato público; NUNCA identificadores internos volátiles (clases, métodos, columnas, rutas, errores internos). El *cómo* es del código; el *por qué* es del ADR (linkealo en "Referencias").
+- **Vocabulario:** al escribir el spec durable, idioma de dominio + contrato público; NUNCA identificadores internos volátiles (clases, métodos, columnas, rutas, errores internos). El *cómo* es del código; el *por qué* es del EDR (linkealo en "Referencias").
 
 In `none` mode there is no durable store to update — skip this step.
 

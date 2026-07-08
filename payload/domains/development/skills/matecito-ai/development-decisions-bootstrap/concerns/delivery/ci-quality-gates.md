@@ -43,7 +43,7 @@ Si se usa `pre-commit` framework, registrarlo en `tech/`. Si se elige un linter 
 
 ## Qué materializar
 
-ADR `ci-quality-gates` materializado según `~/.claude/references/adr/templates/adr.md`. Debe contener:
+EDR `ci-quality-gates` materializado según `~/.claude/references/edr/templates/edr.md`. Debe contener:
 
 - **Contexto** y **Decisión**: lista de checks que bloquean el merge, herramienta concreta para cada uno (linter, formatter, type-check, tests, cobertura, arch-enforcement), y si hay pre-commit y con qué framework.
 - **Reglas verificables**: la política "nada llega a main sin pasar X, Y, Z" desagregada en una aserción por check, con la herramienta como mecanismo. Ej: `[tool: ESLint]` el merge se bloquea si el linter reporta errores; `[tool: Prettier]` el merge se bloquea si hay diff de formato; `[tool: tsc --noEmit]` el merge se bloquea ante errores de tipos; `[tool: pre-commit]` los mismos checks corren en local vía `.pre-commit-config.yaml`. Cada gate ausente NO se inventa: solo listá los acordados.

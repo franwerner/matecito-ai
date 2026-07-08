@@ -4,7 +4,7 @@
 
 El SDD (Spec-Driven Development) es el **flujo del dominio development**: la capa de planificación estructurada para cambios sustanciales sobre un repo de código. Lleva un pedido en lenguaje natural hasta el código, por fases.
 
-> **Qué es del núcleo y qué de development.** El *esqueleto* —base inmutable + add-ons opcionales, las lanes, el INTAKE GATE, el modelo configurable por agente— lo aporta el **núcleo** y es común a todos los dominios. SDD es cómo development **nombra y concreta** ese esqueleto: las fases `sdd-*`, el artefacto de alineación (`spec`), los ADRs y codegraph. Otro dominio (p. ej. design) reusa el mismo esqueleto con sus propios nombres de fase y herramientas.
+> **Qué es del núcleo y qué de development.** El *esqueleto* —base inmutable + add-ons opcionales, las lanes, el INTAKE GATE, el modelo configurable por agente— lo aporta el **núcleo** y es común a todos los dominios. SDD es cómo development **nombra y concreta** ese esqueleto: las fases `sdd-*`, el artefacto de alineación (`spec`), los EDRs y codegraph. Otro dominio (p. ej. design) reusa el mismo esqueleto con sus propios nombres de fase y herramientas.
 
 ## El pipeline
 
@@ -53,15 +53,15 @@ Formato de topic key: `sdd/<change-name>/<artefacto>`.
 | `explore` | intake | `explore` |
 | `propose` | explore | `proposal` |
 | `spec` | proposal (o intake si no hay) | `spec` |
-| `design` | proposal + **ADRs** | `design` |
+| `design` | proposal + **EDRs** | `design` |
 | `tasks` | spec + design | `tasks` |
 | `apply` | tasks + spec + design + apply-progress | `apply-progress` |
-| `verify` | spec + tasks + apply-progress + **ADRs tocados** | `verify-report` |
+| `verify` | spec + tasks + apply-progress + **EDRs tocados** | `verify-report` |
 | `archive` | todos los artefactos | `archive-report` |
 
 En lanes reducidas, cada fase lee el **upstream más cercano disponible** (ej. `spec` arranca del brief de intake si no hubo proposal).
 
-> **Importante:** los **ADRs no viven en Engram** — viven solo en `.matecito-ai/adr/<dominio>/<slug>.md`. Los artefactos SDD pueden *referenciar* un ADR por `<dominio>/<slug>` (puntero de flujo), nunca su contenido. Ver [04](04-decisiones-adr.md).
+> **Importante:** los **EDRs no viven en Engram** — viven solo en `.matecito-ai/edr/<dominio>/<slug>.md`. Los artefactos SDD pueden *referenciar* un EDR por `<dominio>/<slug>` (puntero de flujo), nunca su contenido. Ver [04](04-decisiones-edr.md).
 
 ## El rol del orquestador
 
@@ -69,4 +69,4 @@ El orquestador es el hilo principal de Claude (no un archivo): mantiene una conv
 
 Pasos condicionales que el orquestador evalúa entre fases (no son fases):
 - **Review Workload Guard** (entre tasks y apply) — si el cambio puede pasar el presupuesto de review, propone PRs encadenados.
-- **Decision-Gap Capture / mine gate** (entre verify y archive) — si está activo el auto-mine y hay huecos implementados, dispara la minería de ADRs. Ver [05](05-auto-mine.md).
+- **Decision-Gap Capture / mine gate** (entre verify y archive) — si está activo el auto-mine y hay huecos implementados, dispara la minería de EDRs. Ver [05](05-auto-mine.md).

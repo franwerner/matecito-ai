@@ -17,7 +17,7 @@ import (
 )
 
 // DecisionRecord names the domain's decision-record type and where records live
-// (ADR under .matecito-ai/adr for development; DDR under .matecito-ai/ddr for design).
+// (EDR under .matecito-ai/edr for development; DDR under .matecito-ai/ddr for design).
 type DecisionRecord struct {
 	Term string `json:"term"`
 	Dir  string `json:"dir"`

@@ -36,7 +36,7 @@ Si se elige una librería en la app (ej: `express-rate-limit`, `slowapi`, `throt
 
 ## Qué materializar
 
-ADR `rate-limiting` materializado según `~/.claude/references/adr/templates/adr.md`. Esta es una decisión de tipo `policy`; sus reglas deben quedar especialmente accionables. Debe contener:
+EDR `rate-limiting` materializado según `~/.claude/references/edr/templates/edr.md`. Esta es una decisión de tipo `policy`; sus reglas deben quedar especialmente accionables. Debe contener:
 
 - **Contexto**: por qué sin límite un cliente puede agotar recursos o forzar credenciales por fuerza bruta, y cómo el punto de aplicación determina si la protección llega antes o después del código de la app.
 - **Decisión**: granularidad elegida (IP, usuario autenticado, API key, o mix), punto de aplicación (API gateway/reverse proxy vs middleware de la app), y los límites concretos si se definieron.

@@ -45,7 +45,7 @@ Si elige un runtime async con librería concreta (ej: `asyncio`, `tokio`, `trio`
 
 ## Qué materializar
 
-ADR `concurrency-async` materializado según el template `~/.claude/references/adr/templates/adr.md`. La **Decisión** captura: modelo elegido (síncrono directo / async nativo / threads / workers de proceso), la razón basada en el tipo de carga esperada (I/O-bound vs CPU-bound), la política de mezcla sync/async si aplica (async puro vs pragmático) y la tech concreta si se registró.
+EDR `concurrency-async` materializado según el template `~/.claude/references/edr/templates/edr.md`. La **Decisión** captura: modelo elegido (síncrono directo / async nativo / threads / workers de proceso), la razón basada en el tipo de carga esperada (I/O-bound vs CPU-bound), la política de mezcla sync/async si aplica (async puro vs pragmático) y la tech concreta si se registró.
 
 **Reglas verificables** (cada una con su mecanismo al inicio):
 
