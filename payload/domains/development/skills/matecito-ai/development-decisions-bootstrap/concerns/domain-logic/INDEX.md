@@ -1,10 +1,10 @@
 # Dominio: `domain-logic`
 
-Cómo se modela el negocio en sí: reglas de negocio, invariantes, lenguaje ubicuo, agregados y límites de consistencia (DDD).
+Decisiones de **cómo se modela el negocio**: el paradigma de modelado elegido, la estructura de las entidades y sus relaciones, dónde viven las reglas e invariantes, y la terminología del dominio. NO las reglas de negocio en sí (eso son capability-specs) — acá va la *decisión de modelado*, no el comportamiento. (DDD —agregados, límites de consistencia, lenguaje ubicuo— es un ejemplo de vocabulario, no un requisito.)
 
 ## Criterio de pertenencia
 
-Un concern nuevo va en `domain-logic` si trata sobre *las reglas del negocio* independientes de la tecnología. Distinto de `structure` (cómo se organiza el código que las implementa).
+Un concern nuevo va en `domain-logic` si trata sobre *una decisión de cómo se modela el dominio* independiente de la tecnología — el paradigma, la forma de las entidades, dónde se ubican reglas e invariantes. Distinto de `structure` (cómo se organiza el código que las implementa) y de los capability-specs (cuáles son las reglas y qué hace el sistema).
 
 ## Concerns en este dominio
 
