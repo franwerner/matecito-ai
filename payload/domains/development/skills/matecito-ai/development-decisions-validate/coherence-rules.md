@@ -12,7 +12,6 @@ Para localizar el archivo de cada EDR nombrado abajo. Un EDR vive en `.matecito-
 
 | Slug | Dominio |
 |---|---|
-| context | context |
 | architecture-style, layers-and-dependencies, inter-layer-communication, folder-structure | structure |
 | error-handling, concurrency-async, background-jobs, resilience, caching | runtime |
 | data-access, data-modeling | data |
@@ -79,7 +78,7 @@ La columna **Dominio(s)** indica dónde viven los EDRs de la condición. "cross"
 | 4 | WARNING | structure + delivery (cross) | `layers-and-dependencies` `Accepted` (hay capas) **y** `arch-enforcement` ∈ {`Not Applicable`, "sin enforcement"} | Reglas de capas sin enforcement automatizado se degradan en el primer sprint apurado. Considerar import-linter/dependency-cruiser/ArchUnit. |
 | 5 | WARNING | runtime + tech (cross) | `error-handling` = "Result/Either" **y** stack Python/JS/TS sin librería de Result en `tech/` | Result types sin librería en ese stack es incómodo de sostener. Confirmar la elección o registrar la librería (returns, neverthrow). |
 | 6 | WARNING | data + structure (cross) | `data-access` usa patrón Repository **y** `architecture-style` = "sin patrón formal" | Repository sin arquitectura en capas suele ser inconsistente u over-engineering. Revisar si hace falta. |
-| 7 | WARNING | security + context (cross) | `auth` = `Not Applicable` **y** tipo de proyecto ∈ {api-rest, api-graphql, web-ssr, web-spa} | API/web marcando auth como N/A: confirmar que es realmente interno o sin usuarios. |
+| 7 | WARNING | security + tipo de proyecto (cross) | `auth` = `Not Applicable` **y** tipo de proyecto ∈ {api-rest, api-graphql, web-ssr, web-spa} | API/web marcando auth como N/A: confirmar que es realmente interno o sin usuarios. |
 | 8 | WARNING | delivery + tech (cross) | `testing-strategy` con TDD obligatorio o cobertura mínima **y** sin test framework en `tech/` | Se exige TDD/cobertura pero no hay framework de test registrado. Registrar el framework. |
 | 9 | WARNING | security + structure (cross) | `input-validation` "solo en el borde" **y** `inter-layer-communication` "validación solo en dominio" | La validación quedó con un hueco o duplicada. Definir cuál es la fuente de verdad (o defensa en profundidad explícita). |
 | 10 | SUGGESTION | observability + delivery (cross) | `metrics` / `tracing` / `health-checks` `Accepted` **y** `deployment-topology` = `Not Applicable` | Observabilidad definida sin saber dónde/cómo corre el sistema. Conviene definir la topología. |

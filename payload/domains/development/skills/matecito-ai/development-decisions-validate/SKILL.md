@@ -17,7 +17,7 @@ Esta validación SOLO sirve si es adversarial: leé únicamente lo que está ESC
 
 La taxonomía es fija (la misma que impone `development-decisions-bootstrap`):
 
-**Activos:** `context` · `structure` · `runtime` · `data` · `observability` · `security` · `contracts` · `delivery` · `frontend` · `quality`
+**Activos:** `structure` · `runtime` · `data` · `observability` · `security` · `contracts` · `delivery` · `frontend` · `quality`
 **Reservados:** `lifecycle` · `integration` · `privacy` · `release` · `domain-logic` · `compliance` · `ux-product`
 
 Cualquier carpeta bajo `.matecito-ai/edr/` que no sea uno de estos dominios (ni `tech/`) es un hallazgo de integridad de taxonomía.
@@ -29,7 +29,7 @@ Leé `.matecito-ai/edr/INDEX.md`. Si no existe, no hay nada que validar → suge
 ## Proceso
 
 1. **Inventariá la estructura.** Listá todo: `find .matecito-ai/edr -name '*.md'`. Identificá el índice raíz, los índices de dominio (`<dominio>/INDEX.md`), los EDRs (`<dominio>/<slug>.md`) y `tech/INDEX.md` + `tech/*.md`.
-2. **Identificá el tipo de proyecto** desde el EDR `context` (en `.matecito-ai/edr/context/context.md`).
+2. **Identificá el tipo de proyecto** desde el parámetro que te pasa el invocador (el bootstrap lo pasa al lanzarte). Si corrés standalone, inferilo del catálogo `tech/` y la estructura del repo, o preguntalo.
 3. **Para el chequeo de completitud** necesitás saber qué fases son relevantes a ese tipo:
    - Si el bootstrap te lanzó, usá la lista de fases relevantes que te pasó.
    - Si corrés standalone y podés acceder al catálogo `concerns/INDEX.md` de `development-decisions-bootstrap`, usalo.

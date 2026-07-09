@@ -36,7 +36,7 @@ El motor lee `concerns/INDEX.md` **una sola vez** para armar la lista de fases r
 La skill usa una taxonomía de dominios **cerrada e impuesta por el motor** — idéntica en el catálogo interno (`concerns/<dominio>/`) y en la salida (`.matecito-ai/edr/<dominio>/`). Esto garantiza que todos los repos del equipo se vean igual y que ningún tema quede sin un casillero claro.
 
 **Activos** (tienen concerns hoy):
-`context` · `structure` · `runtime` · `data` · `observability` · `security` · `contracts` · `delivery` · `frontend` · `quality`
+`structure` · `runtime` · `data` · `observability` · `security` · `contracts` · `delivery` · `frontend` · `quality`
 
 **Reservados** (casilleros válidos, sin concerns todavía — se pueblan vía ratchet):
 `lifecycle` · `integration` · `privacy` · `release` · `domain-logic` · `compliance` · `ux-product`
@@ -134,10 +134,13 @@ De la descripción + el pre-flight, inferí (sin re-preguntar lo que ya quedó c
 
 - **Tipo de proyecto** → mapealo a un token de `concerns/INDEX.md` (`api-rest`, `api-graphql`, `cli`, `libreria`, `web-spa`, `web-ssr`, `microservicio`, `monolito-modular`, `script`). Si es ambiguo entre dos, hacé UNA pregunta puntual.
 - **Stack** → del pre-flight o de lo que mencionó. Si no se detectó y es crítico, preguntá.
+- **Tamaño de equipo y punto de partida** → inferilos de la descripción y el pre-flight (greenfield si el repo está vacío; código existente / migración si ya hay código). Escalan la formalidad: solo / equipo chico → mantené lo mínimo; equipo grande → subí las fases de convención (`folder-structure`, `ci-quality-gates`, `arch-enforcement`).
 - **"Knobs" de intensidad** del lenguaje de la descripción:
   - Menciona seguridad alta / datos sensibles / usuarios externos → subí las fases del dominio `security` (`authorization`, `input-validation`, `rate-limiting`, `cors`, `secrets-management`, `dependency-scanning`) a Requerido.
   - Menciona MVP / prototipo / "rápido" → mantené lo esencial, ofrecé el resto como opcional.
   - Menciona convenciones estrictas / equipo grande → incluí `folder-structure`, `ci-quality-gates`, `arch-enforcement`.
+
+**Atajo para scripts mínimos.** Si es un `script` de una sola persona, proponé un set mínimo —saltá `architecture-style`, `layers-and-dependencies` e `inter-layer-communication`, y andá directo a `folder-structure` + lo esencial de `delivery`. Pedí permiso explícito para el atajo; las fases salteadas quedan registradas como `Not Applicable` con su razón.
 
 Leé `concerns/INDEX.md` UNA vez. Armá el set: **Requerido(token) + Recomendado(token)**, ajustado por los knobs. Presentalo **agrupado por dominio** (el mismo orden del índice raíz):
 

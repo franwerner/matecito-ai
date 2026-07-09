@@ -4,7 +4,7 @@ Menú de fases (concerns) que la skill puede recorrer, **organizado por dominio*
 
 ## Cómo lo usa el motor
 
-1. Fase 0 detecta el tipo de proyecto → lo mapea a un token de abajo.
+1. El pre-flight + la inferencia inicial (ver `SKILL.md`) detectan el tipo de proyecto → lo mapean a un token de abajo.
 2. El motor recorre la matriz de aplicabilidad y arma dos grupos:
    - **Requerido** → se incluye por default (el usuario puede marcarlo `Not Applicable` con razón).
    - **Recomendado** → se sugiere; el usuario decide.
@@ -20,7 +20,6 @@ La taxonomía de dominios es **cerrada y la impone el motor** — la misma para 
 
 | Dominio | Qué agrupa | Índice |
 |---|---|---|
-| `context` | Propósito, alcance, stack, equipo | [context/INDEX.md](context/INDEX.md) |
 | `structure` | Patrón arquitectónico, capas, dependencias, organización de archivos | [structure/INDEX.md](structure/INDEX.md) |
 | `runtime` | Errores, concurrencia, background jobs, resiliencia, caching | [runtime/INDEX.md](runtime/INDEX.md) |
 | `data` | Modelado y acceso a datos persistentes | [data/INDEX.md](data/INDEX.md) |
@@ -65,11 +64,6 @@ Si el usuario tiene un tema fuera de este catálogo, el motor le hace las pregun
 ## Matriz de aplicabilidad
 
 Cada fila apunta a `<dominio>/<slug>.md`. La columna **Dominio** es la carpeta canónica (interna y de salida).
-
-### context
-| Fase | Dominio | Prof. | Requerido para | Recomendado para |
-|---|---|---|---|---|
-| [context](context/context.md) | context | deep | todos (entrada, siempre primero) | — |
 
 ### structure
 | Fase | Dominio | Prof. | Requerido para | Recomendado para |
