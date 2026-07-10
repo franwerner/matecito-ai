@@ -45,6 +45,11 @@ Dominios reservados (aparecen solo si el proyecto los pobló vía ratchet): `lif
 - **[WARNING]** `layers-and-dependencies` `Accepted` con reglas en prosa vaga en vez de globs/paths verificables.
 - **[SUGGESTION]** Lenguaje vago ("tratá de no", "en lo posible", "idealmente", "evitar cuando se pueda") en las reglas de un EDR `Accepted`.
 
+### Pureza del razonamiento (vocabulario)
+
+- **[WARNING]** Una sección de razonamiento (`Contexto` / `Decisión` / `Consecuencias` / `Alternativas consideradas`) de un EDR `Accepted` nombra **identificadores internos volátiles**: método/función (`camelCase(...)`), columna/campo de base de datos, clase interna (`*Error`, `*Service`, `*Repository`, entidad), ruta de archivo (`src/…`) o enum interno — que NO son nombre de tecnología/librería ni contrato público (endpoint, header, código de error expuesto). El razonamiento calca el código y se pudre con el primer rename. Reubicar a `## Alcance` (glob estable) o `## Reglas verificables` (ancla chequeable), o reformular en concepto. *(Heurística: backticks con identificadores tipo código en la prosa del razonamiento. El MISMO nombre en `## Reglas verificables` / `## Alcance` / `## Evidencia (inferida)` es correcto — ahí es el ancla, no un hallazgo. En `Inferred` estas secciones están vacías, así que no aplica.)* Ver `~/.claude/references/edr/README.md` → "Dónde va cada nombre".
+- **[WARNING]** Un EDR tiene **anotaciones de edición inline** en la prosa — "(actualizada `<fecha>`)", "(renombrado …)", "(por REFACTOR/Fase N)" — o ancla el razonamiento a **nombres de planificación efímeros** (slices, tickets, fases de roadmap, milestones). Es un EDR-como-changelog: la evolución la lleva git y la cadena `Superseded`, no parches entre paréntesis; el Contexto expresa el condicionante conceptual, no cómo se llamaba el trabajo que lo trajo. Mover el cambio de fondo a un EDR nuevo + `Superseded`, o quitar la anotación.
+
 ### Integridad de la taxonomía
 
 - **[CRITICAL]** Existe una carpeta bajo `.matecito-ai/edr/` que no es un dominio canónico ni `tech/`. La taxonomía es cerrada; un dominio nuevo es decisión de catálogo, no de proyecto.

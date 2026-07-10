@@ -17,7 +17,7 @@
 
 <lo decidido, en imperativo. Ej: "Usamos JWT con refresh tokens y rotación; access token de 15min, refresh de 7d.">
 
-<!-- Vocabulario (aplica a Contexto/Decisión/Consecuencias/Alternativas): conceptos, patrones y límites — NUNCA identificadores internos volátiles (clase, método, columna, error interno, ruta de archivo). Si te sale escribir uno, reubicalo: límite estable → glob en `## Alcance`; aserción chequeable → `## Reglas verificables` (ahí sí podés nombrar la clase, es el ancla). Excepción: nombre de tecnología/librería y contrato público (endpoint público, código de error expuesto). El ejemplo de arriba es conceptual a propósito. Ver `~/.claude/references/edr/README.md` → "No es el cómo". -->
+<!-- Vocabulario (aplica a Contexto/Decisión/Consecuencias/Alternativas): conceptos, patrones y límites — NUNCA identificadores internos volátiles (clase, método, columna, error interno, ruta de archivo, enum interno). Si te sale escribir uno, corré el test del identificador volátil (¿lo nombra un consumidor externo? ¿sobrevive a un rename interno? ¿es la decisión o solo el cómo?) y si falla, reubicalo: límite estable → glob en `## Alcance`; aserción chequeable → `## Reglas verificables` (ahí sí podés nombrar la clase, es el ancla). Tampoco anotaciones de edición inline ("(actualizada YYYY-MM-DD)", "(renombrado …)") ni nombres de planificación efímeros (slices, tickets, fases de roadmap) en la prosa. Excepción: nombre de tecnología/librería y contrato público (endpoint público, código de error expuesto). El ejemplo de arriba es conceptual a propósito. Ver `~/.claude/references/edr/README.md` → "Dónde va cada nombre — el test del identificador volátil". -->
 
 <!-- Si Status es Pending o Deferred, REEMPLAZAR "Decisión" por:
 
@@ -85,5 +85,5 @@ Globs **a nivel convención** —patrones estructurales estables, no archivos co
 Notas del contrato (no van en el EDR generado):
 - No hay sección `Historial`. El historial de ediciones lo lleva git; la evolución de decisiones se ve en la cadena de `Superseded`.
 - Header en inglés (`Status`, `Type`, `Date`, `Applied pattern`); nombres de sección y prosa en español.
-- Self-check antes de dar por escrito el EDR: releé Contexto/Decisión/Consecuencias/Alternativas y por cada nombre de clase/método/columna/archivo/error interno, convertilo en un glob (`## Alcance`) o una regla (`## Reglas verificables`), o reformulá la frase en términos de concepto. Excepción: tecnología/librería y contrato público.
+- Self-check antes de dar por escrito el EDR: releé Contexto/Decisión/Consecuencias/Alternativas y por cada nombre de clase/método/columna/archivo/error interno, convertilo en un glob (`## Alcance`) o una regla (`## Reglas verificables`), o reformulá la frase en términos de concepto. Chequeá además que no haya anotaciones de edición inline ni nombres de slice/ticket/roadmap en la prosa. Excepción: tecnología/librería y contrato público. Guía completa (test + tabla mal→bien): `~/.claude/references/edr/README.md` → "Dónde va cada nombre".
 -->

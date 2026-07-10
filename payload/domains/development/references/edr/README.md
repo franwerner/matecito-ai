@@ -28,6 +28,30 @@ Responde: *"qué decidimos, por qué, y qué gobierna de acá en adelante"*.
 - **No es el "cómo".** El detalle de implementación vive en el código y sus comentarios. El EDR captura el *porqué* de una elección, no el paso a paso. En concreto, las secciones de **razonamiento** (Contexto, Decisión, Consecuencias, Alternativas) se escriben en términos de **conceptos, patrones y límites** — nunca nombrando **identificadores internos volátiles**: clases, métodos, columnas de base de datos, errores internos ni rutas de archivo concretas. Un identificador así en el razonamiento vuelve al EDR un calco del código que se pudre con el primer rename. Si hace falta anclar a algo concreto, va a la sección de anclaje/enforcement de la plantilla (un glob estable, o una regla verificable —que sí puede nombrar la clase, porque es el ancla que se chequea—), no al razonamiento. Excepción: el nombre de una tecnología/librería (que ES la decisión) y el contrato público de cara al consumidor (endpoints públicos, códigos de error expuestos).
 - **No es un porqué adivinado.** Inferir la razón de una decisión sin que conste es inventar. El porqué lo aporta una persona.
 
+## Dónde va cada nombre — el test del identificador volátil
+
+La regla "el razonamiento va en conceptos" no prohíbe nombrar lo concreto; regula **dónde** va cada nombre. Un identificador (clase, método, columna, error interno, ruta, enum interno) tiene lugar en el EDR, pero en la **sección-ancla** (`## Alcance` con un glob estable, o `## Reglas verificables` donde el nombre es lo que se chequea), **nunca** en la prosa del razonamiento (Contexto / Decisión / Consecuencias / Alternativas). La diferencia es funcional: el ancla se chequea y avisa cuando el código se movió; el nombre suelto en la prosa solo se pudre callado con el primer rename.
+
+**El test (3 preguntas).** Un nombre concreto puede quedar en el razonamiento solo si pasa las tres. Si falla alguna, es volátil → reubicalo al ancla.
+
+1. **¿Lo nombra un consumidor externo?** Endpoint público, header del contrato, código de error expuesto, nombre de tecnología/librería. Si es puro interno, falla.
+2. **¿Sobrevive a un rename interno sin que el EDR mienta?** Si renombrar la columna/método/carpeta mañana vuelve falsa una frase del razonamiento, falla.
+3. **¿Es la decisión misma o solo cómo se implementó?** El nombre de la tecnología *es* la decisión (pasa). El método/columna/clase/ruta es el *cómo* (falla).
+
+**Traducción — el mismo hecho, mal y bien:**
+
+| Sección | ❌ Calco del código (en el razonamiento) | ✅ Concepto en el razonamiento + ancla aparte |
+|---|---|---|
+| Decisión | "las transiciones ocurren vía `markActive()` / `markDone(resultId)` / `markFailed(reason)`" | Razonamiento: "las transiciones de estado solo ocurren vía métodos de la entidad, nunca seteando el estado a mano." — y en `## Reglas verificables`: **[manual]** ningún repo/use case setea el estado directo. |
+| Decisión | "tabla `orders` con `id`, `tenantId` FK, `ownerId` FK, `refId` nullable, `failureReason`" | Razonamiento: "se persiste la operación con audit trail: identidad, dueño, referencia opcional y motivo de fallo." — el modelo concreto vive en el código; si hace falta anclar, la regla verificable nombra la columna. |
+| Decisión | "jerarquía `BaseError` → `ExpiredError`, `NotAllowedError` en `src/features/*/domain/errors/`" | Razonamiento: "errores de negocio como jerarquía propia; los del proveedor externo se traducen en el borde del adapter." — y en `## Alcance`: `src/**/domain/errors/**`. |
+| Contexto | "el cambio `feature-x` (Fase 2 del roadmap); slice `modulo-saliente`" | "se agrega una operación remota de escritura que puede fallar transitoria o permanentemente." (el condicionante conceptual, no el nombre del ticket/slice) |
+
+**Dos formas prohibidas** (mismo mal: el razonamiento calca la implementación, así que cada cambio de código obliga a parchear la prosa):
+
+- **EDR-como-changelog.** Anotaciones de edición inline en la prosa — "(actualizada `<fecha>`)", "(renombrado tras el refactor de la capa X)". La evolución la lleva git; un cambio de fondo es un EDR nuevo + el viejo `Superseded`, no un parche entre paréntesis.
+- **Anclar a nombres de planificación efímeros.** Slices, tickets, fases de roadmap, nombres de milestone en el razonamiento. Envejecen en semanas y no significan nada para quien lee el EDR después. El Contexto expresa el condicionante (qué cambió, por qué hace falta decidir), no cómo se llamaba el trabajo que lo trajo.
+
 ## Estados (un EDR no es estático)
 
 Un EDR tiene ciclo de vida. Dos estados importan para el concepto:
