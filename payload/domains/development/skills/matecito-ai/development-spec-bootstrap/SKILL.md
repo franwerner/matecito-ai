@@ -198,10 +198,11 @@ Los templates son el **contrato canónico** y viven en `~/.claude/references/spe
 ## Modo update (cuando `.matecito-ai/development-specs/INDEX.md` ya existe)
 
 1. **Leé** el índice raíz, los índices de tipo y los specs existentes.
-2. **Mostrá un resumen** agrupado por tipo y status (`Accepted`, `Draft` con qué falta, `Deprecated`).
-3. **Preguntá si algún `Draft` está listo para completarse** — es lo más importante del update; sin esto los "lo definimos después" se pierden.
+2. **Mostrá un resumen** agrupado por tipo y status (`Inferred` pendiente de ratificar, `Accepted`, `Draft` con qué falta, `Deprecated`).
+3. **Preguntá si algún `Draft` está listo para completarse, o algún `Inferred` está listo para ratificar** — es lo más importante del update; sin esto los "lo definimos después" y los candidatos minados sin revisar se pierden.
 4. **Después preguntá qué más:**
    - **Completar un `Draft`** → recorrer sus secciones faltantes, `Status → Accepted`.
+   - **Ratificar un `Inferred`** → distinto de completar un `Draft`: el `Inferred` arrancó con secciones **pre-cargadas** por `development-spec-mine` desde evidencia as-built, no vacío. Revisá cada sección minada contra el comportamiento real (¿es la intención, o calcó un bug?), corregí lo que no sea la intención, escrubeá cualquier identificador interno volátil que mine haya dejado (ver vocabulario), agregá los escenarios/bordes que falten, y recién entonces `Status → Accepted`.
    - **Actualizar comportamiento (cambio menor)** → editar el spec. Git lleva el historial.
    - **Agregar una capability nueva** → tratarla con el procedimiento genérico + fila en el `INDEX.md` de su tipo (y en el raíz si el tipo es nuevo en el proyecto).
    - **Retirar una capability** → `Status → Deprecated` con link a su reemplazo; no borrar el archivo.

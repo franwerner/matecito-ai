@@ -1,6 +1,6 @@
-# 06 — Herramientas
+# 07 — Herramientas
 
-[← 05 Auto-mine](05-auto-mine.md) · [Índice](README.md) · Siguiente: [07 — Configuración →](07-configuracion.md)
+[← 06 Auto-mine de specs](06-auto-mine-spec.md) · [Índice](README.md) · Siguiente: [08 — Configuración →](08-configuracion.md)
 
 Las herramientas (MCP y CLI) se enganchan en las fases donde aportan. El CLI `matecito-ai` se ocupa de instalarlas y mantener el entorno sano; cada una se usa con su propio binario/servidor.
 

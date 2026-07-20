@@ -28,8 +28,9 @@ Cómo funciona el dominio **development** de matecito-ai de punta a punta: las f
 3. [03 — Las fases](03-fases.md) — qué hace cada fase, qué lee/escribe, qué herramienta usa.
 4. [04 — Decisiones y EDRs](04-decisiones-edr.md) — qué es un EDR, concerns vs EDR, y la tríada bootstrap/validate/mine.
 5. [05 — Auto-mine de EDRs](05-auto-mine.md) — detección de decisiones in-flow (`flagDecisionGaps`).
-6. [06 — Herramientas](06-herramientas.md) — codegraph, context7, drawio, Engram, proofshot.
-7. [07 — Configuración](07-configuracion.md) — `config.json`, scope, TUI.
+6. [06 — Auto-mine de specs](06-auto-mine-spec.md) — capability-specs `Inferred` desde código brownfield (`flagSpecMine`).
+7. [07 — Herramientas](07-herramientas.md) — codegraph, context7, drawio, Engram, proofshot.
+8. [08 — Configuración](08-configuracion.md) — `config.json`, scope, TUI.
 
 ## Principio rector
 

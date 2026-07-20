@@ -37,6 +37,7 @@ Leé `.matecito-ai/development-specs/INDEX.md`. Si no existe, no hay nada que va
 1. **Inventariá la estructura.** `find .matecito-ai/development-specs -name '*.md'`. Identificá el índice raíz, los índices de tipo (`<type>/INDEX.md`) y los specs (`<type>/<capability>.md`).
 2. **Leé cada spec.** El tipo sale de la carpeta; el status del header.
    - **Specs con `Status: Draft`** NO son fuente de verdad cerrada: no reportes como defecto las secciones esqueleto o los escenarios faltantes (se espera que falten); sí verificá coherencia contra los `Accepted` (un Draft que ya contradice a un Accepted es un hallazgo).
+   - **Specs con `Status: Inferred`** se tratan como `Draft` para completitud: no reportes secciones esqueleto ni escenarios faltantes como defecto (es un borrador no-confiable minado del código as-built, se espera que le falten hasta la ratificación humana). NO se sostienen al nivel de coherencia de un `Accepted`: una contradicción `Inferred`-vs-`Accepted` se capa en 🟡 WARNING ("posible drift as-built vs intención"), NUNCA 🔴 CRITICAL — ver `coherence-rules.md` → "Coherencia entre capabilities".
    - **`Deprecated`:** verificá que tenga link a su reemplazo (si aplica) y que el reemplazo exista.
 3. **Leé `coherence-rules.md`** (en esta misma skill) y aplicá cada chequeo.
 4. **Emití el reporte** agrupado por tipo y, dentro de cada tipo, por severidad; cerrá con hallazgos cross-capability.

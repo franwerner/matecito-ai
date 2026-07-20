@@ -130,6 +130,58 @@ func TestNormalize_FlagDecisionGapsMigrates(t *testing.T) {
 	}
 }
 
+func TestNormalize_FlagSpecMineMigrates(t *testing.T) {
+	// a legacy flat top-level flagSpecMine folds into development on load
+	dir := t.TempDir()
+	path := filepath.Join(dir, "config.json")
+	writeJSON(t, path, map[string]interface{}{"flagSpecMine": true})
+
+	cfg, err := agentmodel.Load(path)
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if p := cfg.DomainFlagSpecMine(agentmodel.DefaultDomain); p == nil || !*p {
+		t.Errorf("legacy flagSpecMine should migrate to development; got %v", p)
+	}
+	if cfg.FlagSpecMine != nil {
+		t.Error("legacy top-level flagSpecMine should be cleared after normalize")
+	}
+}
+
+func TestDomainFlagSpecMine_NilFalseTrue(t *testing.T) {
+	// nil/false/true precedence, mirroring DomainFlagDecisionGaps semantics
+	cfg := &agentmodel.Config{}
+	if p := cfg.DomainFlagSpecMine(agentmodel.DefaultDomain); p != nil {
+		t.Errorf("expected nil for unset flagSpecMine, got %v", p)
+	}
+
+	fals := false
+	cfg.SetDomainFlagSpecMine(agentmodel.DefaultDomain, &fals)
+	if p := cfg.DomainFlagSpecMine(agentmodel.DefaultDomain); p == nil || *p {
+		t.Errorf("expected explicit false, got %v", p)
+	}
+
+	tru := true
+	cfg.SetDomainFlagSpecMine(agentmodel.DefaultDomain, &tru)
+	if p := cfg.DomainFlagSpecMine(agentmodel.DefaultDomain); p == nil || !*p {
+		t.Errorf("expected explicit true, got %v", p)
+	}
+}
+
+func TestDomainFlagSpecMine_PerProjectVsGlobal(t *testing.T) {
+	// per-domain isolation: setting flagSpecMine on one domain must not leak into another
+	cfg := &agentmodel.Config{}
+	tru := true
+	cfg.SetDomainFlagSpecMine("development", &tru)
+
+	if p := cfg.DomainFlagSpecMine("development"); p == nil || !*p {
+		t.Errorf("expected true for development, got %v", p)
+	}
+	if p := cfg.DomainFlagSpecMine("design"); p != nil {
+		t.Errorf("expected nil for unrelated domain design, got %v", p)
+	}
+}
+
 // --- Validate ---
 
 func TestValidate_BadModelValue(t *testing.T) {

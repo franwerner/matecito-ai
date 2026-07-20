@@ -14,6 +14,7 @@
   "config": [
     { "key": "models", "type": "agent-models", "label": "Models per agent" },
     { "key": "strictTdd", "type": "bool", "label": "Strict TDD", "default": false },
-    { "key": "flagDecisionGaps", "type": "bool", "label": "Auto-mine EDR", "default": false }
+    { "key": "flagDecisionGaps", "type": "bool", "label": "Auto-mine EDR", "default": false },
+    { "key": "flagSpecMine", "type": "bool", "label": "Auto-mine spec", "default": false }
   ]
 }

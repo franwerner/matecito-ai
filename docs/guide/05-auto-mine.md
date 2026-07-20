@@ -1,6 +1,6 @@
 # 05 — Auto-mine de EDRs (`flagDecisionGaps`)
 
-[← 04 Decisiones y EDRs](04-decisiones-edr.md) · [Índice](README.md) · Siguiente: [06 — Herramientas →](06-herramientas.md)
+[← 04 Decisiones y EDRs](04-decisiones-edr.md) · [Índice](README.md) · Siguiente: [06 — Auto-mine de specs →](06-auto-mine-spec.md)
 
 > Esta página describe el auto-mine de **EDRs**, el decision record del dominio **development**. El mecanismo (detectar gaps in-flow, opt-in vía `flagDecisionGaps`, materializar `Inferred` con confirmación) es del núcleo; otro dominio lo aplica a su propio tipo de record (p. ej. auto-mine de DDR en design).
 

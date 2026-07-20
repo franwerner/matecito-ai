@@ -2,7 +2,7 @@
 
 # Capability — <nombre en lenguaje de dominio>
 
-- **Status:** <Draft | Accepted | Deprecated>
+- **Status:** <Inferred | Draft | Accepted | Deprecated>
 - **Date:** <YYYY-MM-DD>
 
 <!-- Header mínimo a propósito: el TIPO y el slug ya están en la ruta del archivo (`<type>/<capability>.md`) — no se repiten como propiedad. El historial lo lleva git. `Date` es la fecha del comportamiento vigente, no la de la última edición. Si Status es Deprecated, agregar una línea `**Reemplazado por:** [<capability>.md](<capability>.md)`. -->

@@ -85,6 +85,11 @@ After `sdd-tasks` and before `sdd-apply`, inspect `Review Workload Forecast`. If
 ## Decision-Gap Capture — development specifics
 The kernel owns the generic mine gate. In development the mining executor is `development-decisions-mine`; confirmed candidates are materialized as `[Inferred]` `.md` EDRs and the `.matecito-ai/edr/INDEX.md` is updated **once at the end**; the EDRs live ONLY as `.md`, never recorded in Engram.
 
+## Spec-Mine — development specifics
+The kernel owns the generic Spec-Mine Trigger (brownfield, `flagSpecMine`-gated, Mode A only). In development the spec-mining executor is `development-spec-mine`; confirmed candidates are materialized as capability-specs with `Status: Inferred` under `.matecito-ai/development-specs/<type>/<capability>.md` (type ∈ `flow` | `rule` | `lifecycle` | `process`) and the `.matecito-ai/development-specs/INDEX.md` is updated **once at the end**; the specs live ONLY as `.md`, never recorded in Engram — same as EDRs and capability-specs generally.
+
+**Asymmetry vs decision-mine (important):** an `Inferred` EDR is still enforced by `sdd-verify` (its EDR-compliance step does not filter by Status), but an `Inferred` capability-spec is **NOT** verified — `sdd-verify`'s durable-capability-spec check is scoped to `Status: Accepted`, so `Inferred` (like `Draft`) is skipped and is never a contract until a human ratifies it to `Accepted` (via `development-spec-bootstrap` update mode). This guardrail is what makes it safe to keep as-built-derived `Inferred` specs in the store: they are pending-ratification drafts, not the ratified intention.
+
 ## Capability-specs — development specifics
 The system's **behavior** (the WHAT) is captured as durable **capability-specs**: files under `.matecito-ai/development-specs/<type>/<capability>.md` (type ∈ `flow` | `rule` | `lifecycle` | `process`), versioned in git and **never recorded in Engram** — exactly like EDRs. Concept and templates in `~/.claude/references/spec/README.md` and `~/.claude/references/spec/templates/`.
 

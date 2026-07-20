@@ -1,6 +1,6 @@
-# 07 — Configuración
+# 08 — Configuración
 
-[← 06 Herramientas](06-herramientas.md) · [Índice](README.md)
+[← 07 Herramientas](07-herramientas.md) · [Índice](README.md)
 
 Los ajustes viven en archivos `config.json` y se editan desde la **TUI** (`matecito-ai`). Desde la migración a multi-dominio, la config está **organizada por dominio**: lo compartido arriba, y lo de cada área bajo `domainConfig.<dominio>`.
 

@@ -13,6 +13,7 @@ Cada chequeo tiene: **severidad** (CRITICAL / WARNING / SUGGESTION), una **condi
 - **[WARNING]** Un spec `Accepted` no tiene contenido en una de sus **secciones esqueleto** (según su tipo — ver la tabla en `SKILL.md`). Ej: un `flow` sin "Flujo principal", un `rule` sin "Reglas de negocio", un `lifecycle` sin "Entidades y estados".
 - **[WARNING]** Una capability listada en un `INDEX.md` (raíz o de tipo) no tiene archivo, o un spec-archivo no está listado en el índice de su tipo. Índices desincronizados.
 - **[NOTA — Draft]** Specs con `Status: Draft` NO cierran el comportamiento: no reportes secciones esqueleto ni escenarios faltantes como defecto (esperados en Draft). Sí aplican los chequeos de coherencia contra los `Accepted`.
+- **[NOTA — Inferred]** Specs con `Status: Inferred` se tratan como `Draft` para completitud: no reportes secciones esqueleto ni escenarios faltantes como defecto (es un borrador no-confiable minado del código as-built por `development-spec-mine`, se espera que le falten hasta la ratificación humana). Sí aplican los chequeos de coherencia contra los `Accepted`, pero con severidad capada — ver "Coherencia entre capabilities".
 
 ## Verificabilidad
 
@@ -26,6 +27,7 @@ Cada chequeo tiene: **severidad** (CRITICAL / WARNING / SUGGESTION), una **condi
 - **[CRITICAL]** Dos specs describen el **mismo comportamiento de forma contradictoria** (ej: un `flow` dice que ante X el sistema responde A, y otro spec dice que ante X responde B).
 - **[CRITICAL]** Una regla (`rule`) **prohíbe** lo que un `flow`/`process` **hace** (o al revés) → la regla y el flujo se contradicen.
 - **[CRITICAL]** Un escenario de una capability asume un comportamiento que el escenario de otra capability contradice.
+- **[EXCEPCIÓN — Inferred]** Si alguna de las dos capabilities en contradicción tiene `Status: Inferred`, la severidad de las tres reglas CRITICAL de arriba se **capa en 🟡 WARNING** ("posible drift as-built vs intención"), NUNCA en 🔴 CRITICAL: un `Inferred` es un borrador no-confiable minado del código, no una afirmación validada por una persona — escalarlo a CRITICAL penalizaría al humano por algo que la máquina minó, no que alguien afirmó.
 - **[WARNING]** Dos specs describen la **misma capability** con distinto nombre (duplicado) → consolidar en uno.
 - **[WARNING]** Un `flow`/`process` referencia una **entidad o estado** que ningún spec `lifecycle` (ni ninguna sección "Entidades y estados") define → estado colgado.
 - **[WARNING]** Un spec referencia una **transición de estado** que el `lifecycle` de esa entidad no contempla.
@@ -45,6 +47,7 @@ Cada chequeo tiene: **severidad** (CRITICAL / WARNING / SUGGESTION), una **condi
 - **[WARNING]** Un spec `Accepted` sin ningún escenario (ver también Verificabilidad) → no debería estar `Accepted`.
 - **[CRITICAL]** Un spec `Deprecated` con link a un reemplazo que no existe, o marcado `Deprecated` pero todavía referenciado como vigente por otro spec.
 - **[SUGGESTION]** Un spec `Draft` de larga data referenciado por el flujo como fuente de verdad → conviene completarlo a `Accepted` o quitar la dependencia.
+- **[SUGGESTION]** Un spec `Inferred` de larga data sin ratificar → conviene revisarlo con `development-spec-bootstrap` (modo update, caso "Ratificar un Inferred") antes de que el código diverja más del candidato minado.
 
 ## Integridad de la taxonomía
 

@@ -4,6 +4,8 @@ Boilerplate identical across all SDD phase skills. Sub-agents MUST load this alo
 
 Executor boundary: every SDD phase agent is an EXECUTOR, not an orchestrator. Do the phase work yourself. Do NOT launch sub-agents, do NOT call `delegate`/`task`, and do NOT bounce work back unless the phase skill explicitly says to stop and report a blocker.
 
+No self-invented defaults (absolute): if you hit a genuine decision or an open question that your inputs (brief / spec / design / tasks / confirmed scope + this phase's skill) do NOT resolve, do NOT pick a "most likely" default to keep going. Return `status: blocked` with the exact question so the orchestrator can put it to the user. A missing or unanswered question is NOT permission and NOT a default. This holds even in Automatic mode. (Executor-side of the kernel's "Open question = blocked, not permission" rule.)
+
 ## A. Skill Loading
 
 <!-- matecito-ai: el mecanismo de inyección (skill-registry / skill-resolver / Project Standards) fue removido de este ecosistema. Las fases cargan su propia skill directamente. -->

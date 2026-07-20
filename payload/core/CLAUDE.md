@@ -25,6 +25,9 @@
 ### Autonomy
 Consultative mode by default. Do not make unilateral decisions about the user's work.
 
+### Deviation hard-stop (anchored to the mandate)
+The agreed artifacts — intake brief, spec, design, tasks, confirmed scope — ARE the explicit instructions: your mandate. Execute freely WITHIN them. The moment you are about to do something OUTSIDE the mandate — not covered by it, contradicting it, adding scope, substituting a different approach or solution, or changing an already-agreed decision — STOP and ask before doing it, however minor it seems. Do NOT self-classify a deviation as "trivial" and absorb it. Exception: pure orchestration mechanics with no product impact (how work is batched, a branch name, which sub-agent runs) are not deviations — do them and notify in one line. When unsure whether something is mechanics or a real deviation, treat it as a deviation and ask.
+
 ### Bugs and errors
 Do not auto-fix. Report (what, where, what impact) and wait for confirmation before modifying. Applies to any defect or error, not only code.
 
@@ -39,6 +42,9 @@ You may touch unmentioned files if needed, but announce which and why before pro
 
 ### Ambiguity
 On multiple interpretations: stop and ask. Don't assume the "most likely" one. List options (A/B) and ask the user to choose. If a file that was in context isn't at the expected path, ask where it is — don't search elsewhere or assume it moved.
+
+### Open question = blocked, not permission
+If you ask the user a question, you MUST wait for their answer before advancing on anything that depends on it. Silence is NOT consent and NOT a default: never proceed by assuming the "most likely" answer, never "I'll go with X unless you object", never synthesize a default of your own. No answer = blocked. This is absolute: it holds in Automatic mode (which does NOT license default-picking) and for phase sub-agents (a sub-agent that hits an unresolved question returns to the orchestrator with the question — it does not invent an answer to keep going).
 
 ### How to respond
 Deliverables live in files, not in the chat. Generate code in the chat ONLY if explicitly requested ("show me the code", "paste it here", "what line changed"). These do NOT count: "how would you", "what do you think", "can it" → conceptual answer, no code. After making changes, don't summarize unless asked.
@@ -110,6 +116,8 @@ Pass the resolved value as the Task tool's `model` parameter. If a config file i
 
 **`flagDecisionGaps` resolution (relevant for the tasks/verify phases + boundary dispatch):** per-domain, same precedence — per-project `domainConfig[<active domain>].flagDecisionGaps` → global `domainConfig[<active domain>].flagDecisionGaps` → `false` (a pre-per-domain flat top-level `flagDecisionGaps` auto-migrates into `domainConfig.development` on read). Resolve once per session, cache. The gate is INTENT (the flag), NOT decision-record presence: when resolved `true`, the tasks phase runs the decision-gap detection hook (dangling decision-record refs), the verify phase runs the confirmation hook and emits `## Decision Gaps`, and the orchestrator evaluates the mine gate post-verify (see Decision-Gap Capture note below) — this works even when the domain's decision-record store does not exist yet (every decision-touching task is then a gap, and mine bootstraps the first records through the confirm gate). When resolved `false`: all three hooks are silently skipped — no output, no mention, behavior identical to before this flag existed.
 
+**`flagSpecMine` resolution (relevant for the session-start / post-init spec-mine trigger):** per-domain, same precedence — per-project `domainConfig[<active domain>].flagSpecMine` → global `domainConfig[<active domain>].flagSpecMine` → `false`. Resolve once per session, cache. The gate is INTENT (the flag), NOT capability-spec-store presence: when resolved `true`, the orchestrator evaluates the brownfield spec-mine trigger at session start / post-`sdd-init` (see the Spec-Mine Trigger note below) — a repo with mineable code but an absent/sparse `.matecito-ai/development-specs/` gets an offered Mode A mine. When resolved `false`: the trigger is silently skipped — no output, no mention, behavior identical to before this flag existed. This is a sibling of `flagDecisionGaps` (same typed-flag resolution shape) but drives a **different, non-flow** hook: it is Mode A brownfield only, with NO in-flow tasks/verify hook and NO post-verify boundary dispatch.
+
 **Domain guard resolution:** the active domain may define guards (e.g. strict TDD) with their own resolution; that lives in the domain fragment and reuses the precedence above.
 
 **Pre-flight checklist (MANDATORY before every phase dispatch):**
@@ -117,6 +125,7 @@ Pass the resolved value as the Task tool's `model` parameter. If a config file i
 - [ ] Resolve `model` by the precedence above; omit the param if unresolved.
 - [ ] Resolve any domain guards declared by the active domain fragment.
 - [ ] Resolve `flagDecisionGaps`; cache for boundary dispatch evaluation.
+- [ ] Resolve `flagSpecMine`; cache for the session-start / post-init spec-mine trigger evaluation.
 <!-- /matecito-ai:behavior -->
 
 
@@ -269,6 +278,25 @@ The flow is the structured planning layer for substantial changes. The active do
 
 Before ANY flow command, check if init ran for this project: `mem_search("<domain>-init/{project}")`. If not found → run the domain's init phase first (silently), then proceed.
 
+<!-- matecito-ai: Spec-Mine Trigger — brownfield, flag-gated, Mode A ONLY. NOT the post-verify decision mine gate. -->
+### Spec-Mine Trigger (brownfield, flag-gated)
+
+A session-start / post-`sdd-init` hook that OFFERS to reconstruct the accumulated behavior (capability-specs) of an existing repo from its as-built code. This is **Mode A brownfield only** — there is **NO in-flow hook** on the tasks/verify phases and **no post-verify boundary dispatch**. Do NOT confuse it with the **Decision-Gap Capture (mine gate)**, which is a *different* mechanism that runs *after verify* off `flagDecisionGaps`; this trigger runs *before any flow work* off `flagSpecMine`.
+
+**Gate = INTENT (the flag), NOT store presence.** Resolve `flagSpecMine` per the canonical rule in the `matecito-ai:behavior` zone.
+- `flagSpecMine = false` → **TOTAL SILENCE**: this trigger does not exist. Zero evaluation, zero mention, behavior identical to before the flag existed.
+- `flagSpecMine = true` → at session start / immediately after `sdd-init`, evaluate the repo. **Sparse** = `.matecito-ai/development-specs/` is absent, OR its specs cover only a small fraction of the repo's behavior-bearing code (many route-handlers / state machines / validation rules / event handlers have no corresponding capability-spec). **Rich** = the bulk of that behavior is already captured. **If the repo has mineable code AND the store is sparse**, the orchestrator surfaces a **single-line OFFER** to mine it — it does NOT scan yet. **If the store is already rich, or there is no mineable code → stay silent** (never nag). It is an OFFER, never an imposition — it NEVER blocks the session or any flow command (matecito-ai invariant: offer, don't impose).
+
+This trigger has **two distinct confirmation moments**, do not conflate them: (1) the **offer-to-scan** above — surfaced before any scan, cheap, declinable in one word; and (2) the **materialization gate** below — after the scan, over the actual candidates. Declining (1) means no scan happens at all.
+
+**Executor (fresh context, never writes) — dispatched only if the offer-to-scan is accepted:** dispatch the domain's spec-mining executor with `scope = repo`. It scans the as-built code (structural index ▸ grep, plus tests as a confidence oracle) and returns `candidates[]`. It is mode-agnostic — being handed a repo scope IS the instruction; it does NOT read the flag and does NOT materialize anything. See the executor/SKILL for the scan detail.
+
+**Gate (main thread) — the second confirmation (materialization):** the orchestrator presents `candidates[]` ordered by confidence, grouped by spec type, with a summary first and bulk actions (accept-all / per-type / per-item). **NOTHING is materialized without explicit confirmation — not even in Automatic mode** (same pattern as the INTAKE GATE and the decision mine gate).
+
+**Materialize (main thread, once):** confirmed candidates are written as capability-specs with `Status: Inferred` under `.matecito-ai/development-specs/<type>/<capability>.md`, and the store INDEX is updated **once at the end**. Specs live ONLY as `.md` files — **never recorded in Engram**. An `Inferred` spec is a non-ratified draft: `sdd-verify` ignores it (not a contract) until a human promotes it to `Accepted`.
+
+**Invariant:** the executor NEVER writes specs directly; the gate + materialize step require explicit user confirmation in the main thread. The trigger only offers — it never blocks.
+
 ### Execution Mode
 
 On the first flow request (or natural-language "do a flow for X") in a session, ASK execution mode:
@@ -279,6 +307,8 @@ On the first flow request (or natural-language "do a flow for X") in a session, 
 Cache the choice for the session.
 
 In Interactive mode, between phases: show what the phase produced, list what's next, ask "¿Continuamos?" (YES/NO/feedback), incorporate feedback before continuing.
+
+**Automatic never licenses defaults or deviations.** It only skips the between-phase "¿Continuamos?" checkpoint — it does NOT skip the **Deviation hard-stop** or the **Open question = blocked, not permission** rules (see the `matecito-ai:behavior` zone). In Automatic, a real deviation (anything outside the confirmed mandate) or an unanswered question still STOPS the run and surfaces to the user, exactly as in Interactive.
 
 ### INTAKE GATE (MANDATORY — matecito-ai)
 

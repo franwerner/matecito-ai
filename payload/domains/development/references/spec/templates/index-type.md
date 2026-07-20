@@ -10,7 +10,7 @@
 
 | Capacidad | Qué hace | Status | Spec |
 |---|---|---|---|
-| `<capability>` | <una línea del comportamiento> | <Draft \| Accepted \| Deprecated> | [`<capability>.md`](<capability>.md) |
+| `<capability>` | <una línea del comportamiento> | <Inferred \| Draft \| Accepted \| Deprecated> | [`<capability>.md`](<capability>.md) |
 
 ## Retiradas / reemplazadas
 

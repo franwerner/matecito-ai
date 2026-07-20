@@ -28,7 +28,7 @@ El humano decide; la IA ejecuta dentro de esas decisiones.
 
 - **Flujo SDD** — el andamio que lleva un pedido de lenguaje natural a código, por fases, con control humano. El esqueleto (base + add-ons, INTAKE GATE) es del núcleo; las fases `sdd-*` son de development. Ver [02](02-flujo-sdd.md) y [03](03-fases.md).
 - **Capa de decisiones** — EDRs + las skills `bootstrap` (capturar), `validate` (chequear) y `mine` (descubrir desde código). El concepto de decision record es del núcleo; el tipo concreto (EDR) es de development. Ver [04](04-decisiones-edr.md).
-- **Herramientas** — las declara cada dominio en su manifest (nada global): development usa Engram (memoria del núcleo), context7, codegraph, drawio y proofshot, enganchadas donde aportan. Ver [06](06-herramientas.md).
+- **Herramientas** — las declara cada dominio en su manifest (nada global): development usa Engram (memoria del núcleo), context7, codegraph, drawio y proofshot, enganchadas donde aportan. Ver [07](07-herramientas.md).
 
 ## Dónde encaja development
 

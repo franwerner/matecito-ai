@@ -45,6 +45,7 @@ type DomainConfig struct {
 	Models           map[string]string `json:"models,omitempty"`
 	StrictTdd        *bool             `json:"strictTdd,omitempty"`
 	FlagDecisionGaps *bool             `json:"flagDecisionGaps,omitempty"`
+	FlagSpecMine     *bool             `json:"flagSpecMine,omitempty"`
 	// Settings holds generic manifest-declared fields (enum/bool beyond the typed
 	// ones above), keyed by the field key. Lets a domain add config without a Go
 	// struct change.
@@ -52,9 +53,9 @@ type DomainConfig struct {
 }
 
 // Config holds the persisted configuration for matecito-ai.
-// StrictTdd and FlagDecisionGaps use pointers so that key-absent (nil) is
-// distinct from false — necessary for the per-project-vs-global precedence
-// resolution (spec R5.6/S8.5).
+// StrictTdd, FlagDecisionGaps and FlagSpecMine use pointers so that key-absent
+// (nil) is distinct from false — necessary for the per-project-vs-global
+// precedence resolution (spec R5.6/S8.5).
 type Config struct {
 	// Shared (cross-domain).
 	// Domains lists the area domains installed for this scope. Empty/absent
@@ -70,13 +71,14 @@ type Config struct {
 	Models           map[string]string `json:"models,omitempty"`
 	StrictTdd        *bool             `json:"strictTdd,omitempty"`
 	FlagDecisionGaps *bool             `json:"flagDecisionGaps,omitempty"`
+	FlagSpecMine     *bool             `json:"flagSpecMine,omitempty"`
 }
 
 // normalize folds legacy top-level Models/StrictTdd into DomainConfig[DefaultDomain]
 // and clears them, so consumers always see the nested (M7) shape and Save writes
 // only the new form. Idempotent.
 func (c *Config) normalize() {
-	if len(c.Models) == 0 && c.StrictTdd == nil && c.FlagDecisionGaps == nil {
+	if len(c.Models) == 0 && c.StrictTdd == nil && c.FlagDecisionGaps == nil && c.FlagSpecMine == nil {
 		return
 	}
 	dev := c.ensureDomain(DefaultDomain)
@@ -89,9 +91,13 @@ func (c *Config) normalize() {
 	if c.FlagDecisionGaps != nil && dev.FlagDecisionGaps == nil {
 		dev.FlagDecisionGaps = c.FlagDecisionGaps
 	}
+	if c.FlagSpecMine != nil && dev.FlagSpecMine == nil {
+		dev.FlagSpecMine = c.FlagSpecMine
+	}
 	c.Models = nil
 	c.StrictTdd = nil
 	c.FlagDecisionGaps = nil
+	c.FlagSpecMine = nil
 }
 
 func (c *Config) ensureDomain(domain string) *DomainConfig {
@@ -160,6 +166,22 @@ func (c *Config) DomainFlagDecisionGaps(domain string) *bool {
 // SetDomainFlagDecisionGaps sets the flagDecisionGaps flag for domain.
 func (c *Config) SetDomainFlagDecisionGaps(domain string, v *bool) {
 	c.ensureDomain(domain).FlagDecisionGaps = v
+}
+
+// DomainFlagSpecMine returns the flagSpecMine pointer for domain (nil if unset).
+func (c *Config) DomainFlagSpecMine(domain string) *bool {
+	if c == nil || c.DomainConfig == nil {
+		return nil
+	}
+	if dc := c.DomainConfig[domain]; dc != nil {
+		return dc.FlagSpecMine
+	}
+	return nil
+}
+
+// SetDomainFlagSpecMine sets the flagSpecMine flag for domain.
+func (c *Config) SetDomainFlagSpecMine(domain string, v *bool) {
+	c.ensureDomain(domain).FlagSpecMine = v
 }
 
 // DomainSetting returns a generic per-domain manifest field value (nil if unset).

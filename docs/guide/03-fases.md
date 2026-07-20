@@ -61,4 +61,4 @@ Cierra el cambio: persiste el reporte final con las observation IDs para trazabi
 
 ---
 
-Cada fase corre con su **modelo configurable** (ver [07](07-configuracion.md)). La resolución de modelo / Strict TDD / auto-mine la hace el **orquestador** antes de despachar, y se la pasa al sub-agente ya resuelta — el ejecutor no lee config.
+Cada fase corre con su **modelo configurable** (ver [08](08-configuracion.md)). La resolución de modelo / Strict TDD / auto-mine la hace el **orquestador** antes de despachar, y se la pasa al sub-agente ya resuelta — el ejecutor no lee config.

@@ -61,11 +61,12 @@ Esta regla la aplican por igual `development-spec-bootstrap` (al clasificar) y `
 
 Un capability-spec tiene ciclo de vida ligero:
 
+- **Inferred** — borrador no-confiable derivado del código as-built por `development-spec-mine`; candidato pendiente de ratificación humana, todavía no es fuente de verdad. Ver la salvaguarda abajo.
 - **Draft** — se está escribiendo o le faltan escenarios; todavía no es fuente de verdad.
 - **Accepted** — ratificado por una persona; el comportamiento descrito es el intencionado y el código se valida contra él.
 - **Deprecated** — la capacidad se retiró o se reemplazó; se conserva por trazabilidad (el reemplazo se linkea).
 
-A diferencia del EDR, un capability-spec **no** tiene estado `Inferred`: no se infiere comportamiento desde el código (eso calcaría la implementación actual —bugs incluidos— como si fuera la intención). El comportamiento lo define una persona.
+Al igual que el EDR, un capability-spec **puede** tener estado `Inferred`, con una salvaguarda estricta: un `Inferred` es un **borrador no-confiable** derivado del código as-built, NO la intención ratificada. No se infiere comportamiento *como si fuera la verdad* —eso calcaría la implementación actual, bugs incluidos—; se infiere como **candidato pendiente de ratificación humana**. Mientras esté `Inferred`, `sdd-verify` lo **ignora** (no es contrato): ese guardarraíl vuelve seguro tenerlo en el store. La intención la fija una persona al promoverlo a `Accepted` (vía `development-spec-bootstrap` modo update).
 
 ## Relación con el EDR
 

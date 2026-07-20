@@ -22,7 +22,7 @@ El comportamiento del sistema, capturado por **capacidad** y organizado por **ti
 | `lifecycle` | Máquinas de estado de una entidad (su ciclo de vida y transiciones) | [lifecycle/INDEX.md](lifecycle/INDEX.md) |
 | `process` | Comportamiento reactivo/de fondo, disparado por evento (reconciliación, jobs) | [process/INDEX.md](process/INDEX.md) |
 
-**Leyenda de status:** `Draft` = en escritura, no es fuente de verdad todavía · `Accepted` = ratificado, el código se valida contra él · `Deprecated` = capacidad retirada/reemplazada (se conserva por trazabilidad).
+**Leyenda de status:** `Inferred` = borrador no-confiable minado del código as-built, pendiente de ratificación humana · `Draft` = en escritura, no es fuente de verdad todavía · `Accepted` = ratificado, el código se valida contra él · `Deprecated` = capacidad retirada/reemplazada (se conserva por trazabilidad).
 
 ## Tipos sin uso en este proyecto
 
