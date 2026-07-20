@@ -29,6 +29,16 @@
 ## Language
 Code (variables, functions, classes, constants): English. Comments follow the `code-comments` skill (which also fixes their language as English).
 
+## Contract & definition shapes — never inferred
+When you are about to create or modify a **contract or definition** — a domain entity, a database model / migration / schema, an API request/response (DTO), a public/exported type, interface, or enum, an event payload, or a config schema — you MUST NOT infer its shape. Both **which properties it has** and **each property's type** are decisions the human owns; do not invent "obvious" fields or "most likely" types (an `id`, an `email`, a `createdAt`; `string` vs `uuid`; float vs integer minor units — these are decisions, not defaults).
+
+- **Artifact-pinned → execute.** If the shape is already fixed by an upstream artifact (spec, design, an EDR modeling policy, or the user's explicit request), that IS the mandate — implement it, do not re-ask. Only the un-pinned parts are open.
+- **Unspecified → ask, per whole contract.** Propose the FULL contract (all fields + their types) as one reviewable unit — never field-by-field. With several unspecified contracts, default to one at a time (they often depend on each other); tell the user how many there are and offer "one-by-one or all-at-once" so they set the pace.
+- **Where the answer lives.** The concrete shape (field names + types) belongs in the **code** (or the `design` artifact that materializes it) — NEVER copied into an EDR as a typed struct (that is a code calco; EDR reasoning stays conceptual). Only a **cross-cutting modeling policy** hidden in the answer ("identifiers are UUIDs", "money as integer minor units", "status as enums, not magic strings") may be captured as an EDR, expressed conceptually — and once captured it pins that part, so you stop re-asking it (per artifact-pinned). Offer to capture such a policy; never force it.
+- **Scope.** Targets shapes that persist, cross a boundary, or are public. A transient internal struct used within a single function is execution detail, not a contract — no need to ask.
+
+This is a specialization of the kernel's "Open question = blocked, not permission" for the high-stakes case of contracts, where inference is most tempting and most consequential (it propagates to DB, API, and tests).
+
 ## CodeGraph
 Code exploration prefers CodeGraph when `.codegraph/` exists (structural questions); grep for literal text or non-indexed files. The SDD fork assumes the `mcp__codegraph__*` prefix — verify the tool names (`codegraph_search`, `codegraph_explore`, `codegraph_impact`, etc.) match the real MCP registration.
 
