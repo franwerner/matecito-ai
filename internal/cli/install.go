@@ -36,6 +36,7 @@ Muestra el plan combinado antes de ejecutar. Se continúa ante errores de binari
 
 			syncOpts := sync.Options{
 				SelfVersion: version,
+				Resume:      sync.ResumeRequested(),
 				Stdin:       os.Stdin,
 				Stdout:      os.Stdout,
 				Stderr:      os.Stderr,
@@ -59,38 +60,42 @@ Muestra el plan combinado antes de ejecutar. Se continúa ante errores de binari
 				return nil
 			}
 
-			// Build a payload-source lookup for the plan display.
-			sourceByComponent := make(map[string]string, len(states))
-			for _, s := range states {
-				if s.PayloadSource != "" {
-					sourceByComponent[s.Name] = s.PayloadSource
+			// A resumed run already confirmed once in the original invocation —
+			// skip this command's bespoke plan/dry-run/confirm UI entirely.
+			if !syncOpts.Resume {
+				// Build a payload-source lookup for the plan display.
+				sourceByComponent := make(map[string]string, len(states))
+				for _, s := range states {
+					if s.PayloadSource != "" {
+						sourceByComponent[s.Name] = s.PayloadSource
+					}
 				}
-			}
 
-			// Mostrar plan combinado.
-			n := 1
-			fmt.Fprintln(os.Stdout, "Plan:")
-			for _, a := range activeSyncActions {
-				verb := "instalar"
-				if a.Kind == sync.ActionUpdate {
-					verb = "actualizar"
+				// Mostrar plan combinado.
+				n := 1
+				fmt.Fprintln(os.Stdout, "Plan:")
+				for _, a := range activeSyncActions {
+					verb := "instalar"
+					if a.Kind == sync.ActionUpdate {
+						verb = "actualizar"
+					}
+					fmt.Fprintf(os.Stdout, "  %d. %s — %s\n", n, a.Component, verb)
+					if src, ok := sourceByComponent[a.Component]; ok {
+						fmt.Fprintf(os.Stdout, "     payload: %s\n", src)
+					}
+					n++
 				}
-				fmt.Fprintf(os.Stdout, "  %d. %s — %s\n", n, a.Component, verb)
-				if src, ok := sourceByComponent[a.Component]; ok {
-					fmt.Fprintf(os.Stdout, "     payload: %s\n", src)
-				}
-				n++
-			}
 
-			if dryRun {
-				fmt.Fprintln(os.Stdout, "\n(dry-run) no se ejecutó nada.")
-				return nil
-			}
-
-			if !yes {
-				if !confirmInstall(os.Stdin, os.Stdout, "\n¿Ejecutar? [y/N]: ") {
-					fmt.Fprintln(os.Stdout, "Cancelado.")
+				if dryRun {
+					fmt.Fprintln(os.Stdout, "\n(dry-run) no se ejecutó nada.")
 					return nil
+				}
+
+				if !yes {
+					if !confirmInstall(os.Stdin, os.Stdout, "\n¿Ejecutar? [y/N]: ") {
+						fmt.Fprintln(os.Stdout, "Cancelado.")
+						return nil
+					}
 				}
 			}
 
@@ -98,6 +103,11 @@ Muestra el plan combinado antes de ejecutar. Se continúa ante errores de binari
 			syncOpts.Yes = true
 			syncOpts.PreDetected = states
 			syncResult := sync.Sync(syncOpts)
+
+			// CLI-only trigger: the engine never re-execs itself, so this is
+			// the one place a self-replace hands off to the new binary.
+			sync.FinishSelfReplace(os.Stdout, os.Stderr, syncResult.SelfReplaced)
+
 			if err := surfaceCodegraphError(syncResult); err != nil {
 				return err
 			}

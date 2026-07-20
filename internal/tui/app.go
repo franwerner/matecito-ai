@@ -46,10 +46,6 @@ type AppModel struct {
 	scope           agentmodel.Scope
 	syncOpts        pkgsync.Options
 	updateAvailable bool
-	// reexecRequested se setea cuando el binario fue auto-actualizado y hay que
-	// re-ejecutar. tui.Run lo lee del modelo final que devuelve p.Run() y hace
-	// el ReExec recién después, con la terminal ya restaurada por bubbletea.
-	reexecRequested bool
 }
 
 // NewAppModel builds the initial AppModel on the menu screen.
@@ -166,12 +162,6 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, m.child.Init()
 
 	case QuitMsg:
-		return m, tea.Quit
-
-	case ReExecMsg:
-		// Registrar el re-exec y salir limpio. El ReExec real corre en tui.Run
-		// después de p.Run(), cuando bubbletea ya restauró la terminal.
-		m.reexecRequested = true
 		return m, tea.Quit
 
 	case ToggleScopeMsg:

@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
-	"runtime"
 	"slices"
 	"strings"
 	"time"
@@ -14,7 +12,6 @@ import (
 	"github.com/franwerner/matecito-ai/internal/agentmodel"
 	"github.com/franwerner/matecito-ai/internal/check"
 	"github.com/franwerner/matecito-ai/internal/manifest"
-	"github.com/franwerner/matecito-ai/internal/render"
 	"github.com/franwerner/matecito-ai/internal/setup/deploy"
 	"github.com/franwerner/matecito-ai/internal/setup/install"
 )
@@ -51,6 +48,12 @@ type Options struct {
 	// para que Sync no vuelva a llamar a Detect y evitar el doble round-trip de red.
 	// Si es nil, Sync llama a Detect internamente como siempre.
 	PreDetected []ComponentState
+
+	// Resume is true when this run was launched by a self-replace
+	// re-exec/spawn (see ResumeRequested). It makes Sync skip the self
+	// action, auto-confirm, and suppress the plan print — while still
+	// streaming per-action progress.
+	Resume bool
 }
 
 func (o Options) timeout() time.Duration {
@@ -291,9 +294,8 @@ func Detect(opts Options) ([]ComponentState, error) {
 // Sync ejecuta el ciclo completo: Detect → PlanSync → ejecutar acciones
 // continue-on-error. Un fallo en un componente no cancela los demás.
 //
-// Si el binario matecito-ai fue reemplazado con éxito y el proceso corre en
-// una TTY Unix, intenta exec(2) para re-lanzarse con el nuevo binario.
-// En entornos no-TTY o Windows imprime un aviso y retorna sin exec.
+// Sync es un motor puro: nunca re-ejecuta el proceso. Solo reporta
+// result.SelfReplaced; el caller decide si dispara FinishSelfReplace.
 func Sync(opts Options) Result {
 	out := opts.stdout()
 	errOut := opts.stderr()
@@ -316,9 +318,19 @@ func Sync(opts Options) Result {
 
 	active := make([]SyncAction, 0, len(actions))
 	for _, a := range actions {
-		if a.Kind != ActionSkip {
-			active = append(active, a)
+		if a.Kind == ActionSkip {
+			continue
 		}
+		if opts.Resume && a.Component == "matecito-ai" {
+			// Resumed runs never self-update again: guarantees termination
+			// (no second re-exec trigger) even if latest-version fetch flakes.
+			continue
+		}
+		active = append(active, a)
+	}
+
+	if opts.Resume {
+		opts.Yes = true
 	}
 
 	if len(active) == 0 {
@@ -334,16 +346,19 @@ func Sync(opts Options) Result {
 		}
 	}
 
-	// Mostrar el plan antes de ejecutar (dry-run lo imprime y sale).
-	fmt.Fprintln(out, "Plan:")
-	for i, a := range active {
-		verb := "instalar"
-		if a.Kind == ActionUpdate {
-			verb = "actualizar"
-		}
-		fmt.Fprintf(out, "  %d. %s — %s\n", i+1, a.Component, verb)
-		if src, ok := sourceByComponent[a.Component]; ok {
-			fmt.Fprintf(out, "     payload: %s\n", src)
+	// Mostrar el plan antes de ejecutar (dry-run lo imprime y sale). Se omite
+	// en Resume: el usuario ya confirmó una vez en la corrida original.
+	if !opts.Resume {
+		fmt.Fprintln(out, "Plan:")
+		for i, a := range active {
+			verb := "instalar"
+			if a.Kind == ActionUpdate {
+				verb = "actualizar"
+			}
+			fmt.Fprintf(out, "  %d. %s — %s\n", i+1, a.Component, verb)
+			if src, ok := sourceByComponent[a.Component]; ok {
+				fmt.Fprintf(out, "     payload: %s\n", src)
+			}
 		}
 	}
 
@@ -428,22 +443,6 @@ func Sync(opts Options) Result {
 		} else {
 			fmt.Fprintln(out, "✓ OK")
 		}
-	}
-
-	// Re-exec solo si el binario fue reemplazado, el proceso es un TTY Unix y
-	// no hubo error en el propio paso de self-update.
-	if result.SelfReplaced && runtime.GOOS != "windows" && render.IsTTY(out) {
-		if execErr := ReExec(); execErr != nil {
-			fmt.Fprintf(errOut, "sync: re-exec falló: %v\n", execErr)
-		}
-		// Si ReExec retorna (no debería en Unix salvo error), continuamos.
-	} else if result.SelfReplaced {
-		// Entorno no-TTY o Windows: avisar al usuario que reinicie manualmente.
-		self, _ := exec.LookPath(os.Args[0])
-		if self == "" {
-			self = "matecito-ai"
-		}
-		fmt.Fprintf(out, "matecito-ai actualizado — re-ejecutá %s para usar la nueva versión.\n", self)
 	}
 
 	return result

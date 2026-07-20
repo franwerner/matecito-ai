@@ -28,8 +28,9 @@ type planReadyMsg struct {
 }
 
 // SyncModel ejecuta sync.Sync con opts.Yes=true y transmite la salida línea a
-// línea hacia la vista TUI. Al completar: si el binario fue reemplazado intenta
-// re-exec; si no, vuelve al menú automáticamente.
+// línea hacia la vista TUI. Al completar: si el binario fue reemplazado se
+// queda mostrando el aviso de reinicio manual (la TUI nunca se re-ejecuta a
+// sí misma); si no, vuelve al menú automáticamente.
 //
 // Cuando se entra manualmente (desde el menú), la pantalla primero muestra el
 // plan y espera confirmación (awaitingConfirm=true). "y"/"enter" ejecuta;
@@ -42,9 +43,8 @@ type SyncModel struct {
 	awaitingConfirm bool
 	planActions     []pkgsync.SyncAction
 	planStates      []pkgsync.ComponentState // retained to show per-component metadata (e.g. payload source) in the plan view
-	// selfReplaced indica que el binario fue actualizado y re-exec fue intentado.
-	// En Unix el proceso no debería llegar aquí (syscall.Exec reemplaza el proceso);
-	// en Windows o ante un error de exec, se muestra un aviso en pantalla.
+	// selfReplaced indica que el binario fue actualizado; la vista muestra el
+	// aviso de reinicio manual (la TUI nunca dispara el re-exec — solo el CLI).
 	selfReplaced bool
 }
 
@@ -128,11 +128,10 @@ func (m SyncModel) Update(msg tea.Msg) (nav.ChildModel, tea.Cmd) {
 		m.done = true
 		m.err = msg.err
 		if msg.result.SelfReplaced {
+			// The TUI never self-execs — stay here so the view keeps showing
+			// the restart message below instead of quitting the program.
 			m.selfReplaced = true
-			// No re-ejecutar inline: syscall.Exec reemplazaría el proceso ahora,
-			// antes de que bubbletea restaure la terminal, dejándola rota. Pedir
-			// salir vía ReExecMsg; tui.Run hace el ReExec después de p.Run().
-			return m, func() tea.Msg { return nav.ReExecMsg{} }
+			return m, nil
 		}
 		// Sin self-update: volver al menú automáticamente.
 		return m, func() tea.Msg { return nav.BackMsg{} }

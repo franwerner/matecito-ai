@@ -8,9 +8,10 @@ import (
 	"syscall"
 )
 
-// ReExec reemplaza el proceso actual por una nueva invocación del mismo binario
-// usando syscall.Exec (exec(2)). Solo se llama después de reemplazar el binario
-// en disco y cuando el proceso corre en una TTY Unix.
+// ReExec replaces the current process with a fresh invocation of the same
+// binary via syscall.Exec (exec(2)). It is called through reExecFn from
+// FinishSelfReplace after a successful self-replace, with no TTY condition —
+// it injects MATECITO_RESUME=1 into the replaced process's environment.
 //
 // Verifica que el ejecutable exista y sea ejecutable antes de intentar el exec.
 // Si la verificación falla retorna el error; el caller decide cómo manejarlo.
@@ -29,5 +30,5 @@ func ReExec() error {
 		return fmt.Errorf("ejecutable %s no tiene bit de ejecución", self)
 	}
 
-	return syscall.Exec(self, os.Args, os.Environ())
+	return syscall.Exec(self, os.Args, resumeEnv(os.Environ()))
 }

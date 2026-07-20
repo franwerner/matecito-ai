@@ -37,6 +37,7 @@ ejecutar. Se continúa ante errores por componente.`,
 				SelfVersion: version,
 				DryRun:      dryRun,
 				Yes:         yes,
+				Resume:      sync.ResumeRequested(),
 				Stdin:       os.Stdin,
 				Stdout:      os.Stdout,
 				Stderr:      os.Stderr,
@@ -44,6 +45,10 @@ ejecutar. Se continúa ante errores por componente.`,
 			}
 
 			result := sync.Sync(opts)
+
+			// CLI-only trigger: the engine never re-execs itself, so this is
+			// the one place a self-replace hands off to the new binary.
+			sync.FinishSelfReplace(os.Stdout, os.Stderr, result.SelfReplaced)
 
 			if result.HasErrors() {
 				return fmt.Errorf("update: uno o más componentes fallaron durante la sincronización")
