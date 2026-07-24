@@ -7,6 +7,7 @@ Las superficies de contrato del broker: qué recibe del MCP y qué emite a la UI
 | EDR | Status | Type | Consultá cuando... |
 |---|---|---|---|
 | [api-contract.md](api-contract.md) | Accepted | decision | tocás HTTP-in, WS-out, el envelope, la idempotencia o el registro de proyecto. |
+| [mcp-server.md](mcp-server.md) | Accepted | decision | tocás la superficie MCP cara a Claude: proceso in-process, transporte streamable HTTP, identidad por request (proyecto/change/sesión) o las tools de submit por fase. |
 
 ## No aplican en este dominio
 

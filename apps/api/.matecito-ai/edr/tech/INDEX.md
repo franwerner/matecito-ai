@@ -53,6 +53,7 @@ Registro vivo de las tecnologías concretas elegidas. Cada entrada apunta a un m
 | [golang.org/x/sync](golang-x-sync.md) | sin pinear | Grupo de goroutines con cancelación propagada para el lifecycle. |
 | [goose](goose.md) | sin pinear | Migraciones versionadas embebidas, aplicadas al arranque. |
 | [coder/websocket](coder-websocket.md) | sin pinear | WebSocket para el WS-out hacia la UI; valida Origin==Host por default. |
+| [SDK Go oficial de MCP](mcp-go-sdk.md) | sin pinear | SDK oficial de MCP para Go; soporta streamable HTTP para la superficie MCP cara a Claude. |
 
 ## Stdlib usada (sin entrada propia)
 
