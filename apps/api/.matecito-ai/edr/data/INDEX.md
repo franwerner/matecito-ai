@@ -8,6 +8,7 @@ Cómo se persiste y accede al estado del broker: el borde de acceso a datos y el
 |---|---|---|---|
 | [data-access.md](data-access.md) | Accepted | decision | tocás el store, agregás una query o una migración. |
 | [data-modeling.md](data-modeling.md) | Pending | decision | vas a definir el schema concreto de tablas del store. |
+| [storage-sync-model.md](storage-sync-model.md) | Accepted | decision | tocás la sincronización archivo↔base, el versionado content-addressable, o el deploy/compartir. |
 
 ## No aplican en este dominio
 
