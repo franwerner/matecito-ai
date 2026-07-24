@@ -1,0 +1,69 @@
+# Entorno de DESARROLLO con hot-reload. NO usar en producción.
+# Levanta el broker (Go) y la UI (Vite) con el código bind-mounteado y watchers
+# por POLLING, para que los cambios locales se sincronicen dentro de los contenedores
+# (los eventos de FS nativos no propagan de forma confiable en bind-mounts sobre WSL2/Docker).
+#
+# Uso:  docker compose -f docker-compose.dev.yaml up
+#
+# Prerequisitos (hoy greenfield — sin esto no levanta):
+#   - apps/api: go.mod + paquete ./cmd/broker (entrypoint del daemon).
+#   - apps/ui:  package.json con script "dev" + vite.config (proxy de /api y /ws al broker).
+#
+# Puertos elegidos para no colisionar (6002 lo usa el MCP drawio):
+#   - api -> 4300  (mismo puerto que el flag --port del EDR delivery/configuration)
+#   - ui  -> 5173  (default de Vite)
+
+name: matecito-dev
+
+services:
+  api:
+    image: golang:1.24-bookworm
+    working_dir: /app
+    # CompileDaemon con -polling: reconstruye y reinicia el binario ante cambios,
+    # detectados por sondeo (confiable en bind-mounts sobre WSL2/Docker).
+    command:
+      - sh
+      - -c
+      - >
+        go install github.com/githubnemo/CompileDaemon@latest &&
+        CompileDaemon
+        -polling
+        -polling-interval=400
+        -directory=.
+        -build='go build -o /tmp/broker ./cmd/broker'
+        -command='/tmp/broker --port 4300'
+    environment:
+      # el módulo aún no está bajo git como submódulo propio; evita que el build falle por VCS
+      GOFLAGS: -buildvcs=false
+    volumes:
+      - ./apps/api:/app
+      - go-mod-cache:/go/pkg/mod       # cache de módulos entre reinicios
+      - go-build-cache:/root/.cache/go-build
+    ports:
+      - "4300:4300"                     # HTTP-in + WS-out (mismo puerto)
+
+  ui:
+    image: node:22-bookworm
+    working_dir: /app
+    command:
+      - sh
+      - -c
+      - corepack enable && pnpm install && pnpm dev --host 0.0.0.0 --port 5173
+    environment:
+      # chokidar (el watcher de Vite) respeta estas env nativamente -> polling sin tocar vite.config
+      CHOKIDAR_USEPOLLING: "true"
+      CHOKIDAR_INTERVAL: "400"
+      # target al que el dev server de Vite debe proxear /api y /ws (se lee en vite.config)
+      VITE_API_TARGET: "http://api:4300"
+    volumes:
+      - ./apps/ui:/app
+      - ui-node-modules:/app/node_modules   # volumen propio: el bind-mount no pisa las deps del contenedor
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
+
+volumes:
+  go-mod-cache:
+  go-build-cache:
+  ui-node-modules:
