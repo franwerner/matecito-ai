@@ -48,7 +48,7 @@ services:
     command:
       - sh
       - -c
-      - corepack enable && pnpm install && pnpm dev --host 0.0.0.0 --port 5173
+      - corepack enable && pnpm install --store-dir=/app/.pnpm-store && pnpm dev --host 0.0.0.0 --port 5173
     environment:
       # chokidar (el watcher de Vite) respeta estas env nativamente -> polling sin tocar vite.config
       CHOKIDAR_USEPOLLING: "true"
@@ -58,6 +58,7 @@ services:
     volumes:
       - ./apps/ui:/app
       - ui-node-modules:/app/node_modules   # volumen propio: el bind-mount no pisa las deps del contenedor
+      - pnpm-store:/app/.pnpm-store          # el store de pnpm en un volumen, NO en el bind-mount (evita ensuciar el repo)
     ports:
       - "5173:5173"
     depends_on:
@@ -67,3 +68,4 @@ volumes:
   go-mod-cache:
   go-build-cache:
   ui-node-modules:
+  pnpm-store:
