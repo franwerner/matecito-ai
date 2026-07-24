@@ -67,11 +67,12 @@ var mcpRegistry = map[string]mcpDef{
 	"debugger":  {step: debuggerMCPStep},
 	"figma":     {step: figmaMCPStep},
 	"canva":     {step: canvaMCPStep},
+	"skillsmp":  {step: skillsmpMCPStep},
 }
 
 // defaultMCP is the development set, used only as a safety net when the active
 // MCP cannot be resolved from the environment.
-var defaultMCP = []string{"engram", "context7", "codegraph", "drawio"}
+var defaultMCP = []string{"engram", "context7", "codegraph", "drawio", "skillsmp"}
 
 // permissionPattern returns the auto-approve tool pattern for an MCP name: the
 // descriptor's override when set, otherwise the mcp__<name>__* convention.
@@ -574,6 +575,27 @@ func context7MCPStep(opts Options) Step {
 				return errors.New("claude no está en PATH")
 			}
 			return runIO(opts, "claude", "mcp", "add", "--scope", "user", "context7", "--", "npx", "-y", "@upstash/context7-mcp@latest")
+		},
+	}
+}
+
+// skillsmpMCPStep registers the official skillsmp remote MCP (http), the same
+// remote pattern as figmaMCPStep/canvaMCPStep. Registered without an API key —
+// the anonymous tier (50 req/day) is the default; the skill-discovery skill
+// tells the user how to optionally re-register with a key to raise the limit.
+func skillsmpMCPStep(opts Options) Step {
+	return Step{
+		Name: "skillsmp MCP (remote)",
+		Plan: "claude mcp add --transport http skillsmp https://skillsmp.com/mcp",
+		Check: func() bool {
+			_, ok := mcp.Find("skillsmp")
+			return !ok
+		},
+		Run: func() error {
+			if _, err := exec.LookPath("claude"); err != nil {
+				return errors.New("claude no está en PATH")
+			}
+			return runIO(opts, "claude", "mcp", "add", "--transport", "http", "skillsmp", "https://skillsmp.com/mcp")
 		},
 	}
 }

@@ -9,7 +9,7 @@
   "phases": ["intake", "explore", "propose", "brief", "system", "tasks", "produce", "verify", "archive"],
   "guards": ["visual-accessibility", "brand-consistency"],
   "explorationTool": "figma",
-  "mcp": ["engram", "figma", "canva"],
+  "mcp": ["engram", "figma", "canva", "skillsmp"],
   "binaries": ["engram"],
   "config": [
     { "key": "models", "type": "agent-models", "label": "Models per agent" },
