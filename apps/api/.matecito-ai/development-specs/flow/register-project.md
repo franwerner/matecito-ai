@@ -9,7 +9,7 @@ Dar de alta —o linkear— un proyecto en el store por su identidad estable, pa
 
 ## Actores
 
-- **El orquestador / Claude Code** — llama `register_project(path)`; la ruta llega del header `CLAUDE_PROJECT_DIR`.
+- **El orquestador / Claude Code** — llama `register_project(path)`; la ruta llega en el header `X-Project-Path` (que transporta el valor `${CLAUDE_PROJECT_DIR}`).
 - **Un usuario vía la UI** — registra un proyecto por una ruta explícita.
 
 ## Precondiciones
@@ -25,7 +25,7 @@ Dar de alta —o linkear— un proyecto en el store por su identidad estable, pa
    - **Hay `.id`** → ese es el `project-id` (un clon fresco ya lo trae, así que auto-linkea sin lookup).
    - **No hay `.id`** → no se genera un id a ciegas: con `find_project(name)` se busca en la base si ya existe un proyecto con ese nombre (por ejemplo, uno compartido o deployado). Si el usuario **confirma un match** → se **materializa `.id`** con ese `project-id` (LINK). Si **no hay match** o el proyecto es nuevo → se **genera un `project-id` nuevo** y se materializa `.id` (CREATE).
 4. Si es un alta (primera vez) → el daemon **suma el proyecto a su watch**, **descubre recursivamente todos los `.matecito-ai/`** bajo el toplevel (cada record se sub-identifica por su owning-root, la ruta relativa de su store) y hace el **build inicial del índice**.
-5. **Devuelve el proyecto**: su `project-id` estable y su estado.
+5. **Devuelve el proyecto**: su identidad estable, el `project-id`.
 
 ## Ramas / flujos alternativos
 

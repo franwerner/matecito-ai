@@ -53,6 +53,18 @@ Definir el ciclo de vida de un change —sus estados y qué lo mueve entre ellos
 - **WHEN** el usuario confirma la reactivación y se llama `change_status(active)`
 - **THEN** el change pasa a `active` y la operación puede reintentarse
 
+### Scenario: archive no cierra el change
+
+- **GIVEN** un change en estado `active`
+- **WHEN** se persiste el artefacto de la fase archive (submit de archive)
+- **THEN** el change sigue `active` (solo `change_status(closed)` lo cierra; ninguna fase lo hace como efecto lateral)
+
+### Scenario: no hay auto-reopen
+
+- **GIVEN** un change en estado `closed`
+- **WHEN** llega cualquier tool que no sea `change_status`
+- **THEN** el change sigue `closed` y la operación se rechaza con `change_closed` (solo `change_status(active)` lo reabre)
+
 ## Referencias
 
 - **EDR** → [`../../edr/delivery/deployment-topology.md`](../../edr/delivery/deployment-topology.md) — el daemon global único que aloja el store donde vive el estado del change.

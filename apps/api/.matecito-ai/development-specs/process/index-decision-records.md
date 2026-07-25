@@ -107,6 +107,12 @@ Mantener, por proyecto, un índice consultable del estado actual de los records 
 - **WHEN** el sistema los indexa
 - **THEN** se identifican distinto por su owning-root (`api` vs `ui`), sin colisión
 
+### Scenario: contenido compartido por hash, estado por rama
+
+- **GIVEN** el mismo contenido de un record presente en dos ramas
+- **WHEN** el sistema lo versiona
+- **THEN** se guarda **una sola versión** (deduplicada por hash), compartida por ambas ramas y por cualquier evento que la referencie; y borrar el `.md` en una rama **no elimina ese contenido** (solo marca el record `deleted` en esa `(proyecto, rama)`; la versión congelada y el contenido siguen resolviéndose desde otra rama/evento)
+
 ### Scenario: ref colgada marcada sin romper el índice
 
 - **GIVEN** un `.md` cuya relación apunta a un slug de record inexistente
