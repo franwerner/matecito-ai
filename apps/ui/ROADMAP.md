@@ -10,7 +10,7 @@ Construir sobre los primitives, siguiendo la referencia visual (`docs/visual/`):
 - [ ] ArtifactCard
 - [ ] DecisionCard
 - [ ] DiffView
-- [ ] SeverityTag
+- [x] SeverityTag
 - [ ] CanvasEdge
 - [ ] LabeledEdge
 - [ ] TimelineScrubber
