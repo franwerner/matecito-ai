@@ -1,0 +1,38 @@
+name: ci-broker
+
+on:
+  pull_request:
+    paths:
+      - 'apps/api/**'
+      - '.github/workflows/ci-broker.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  broker:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+          cache: true
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          working-directory: apps/api
+          args: --timeout=5m
+
+      - name: Test
+        run: go test ./...
+
+      - name: Build
+        run: go build ./...
