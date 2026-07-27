@@ -51,8 +51,8 @@ Before writing ANY code:
 <!-- matecito-ai: EDRs + context7 + codegraph before implementing — START -->
 5. **Read the applicable EDRs.** If `.matecito-ai/edr/` exists, the design's "EDR Alignment" section already lists the relevant EDRs. Read their **Reglas verificables** and treat them as hard constraints on your implementation (e.g. token TTLs, error format, validation location, layer dependencies). If the design flagged an EDR conflict or an uncaptured decision as a blocker, STOP and report — do not implement around it. If you capture or edit a decision into an EDR during apply, its reasoning (Contexto/Decisión/Consecuencias/Alternativas) follows the vocabulary rule — concepts, not volatile internal identifiers; those go in `## Alcance`/`## Reglas verificables` (see `~/.claude/references/edr/README.md` → "Dónde va cada nombre").
 6. **Use the available MCP tools while implementing:**
-   - **context7** — when you need current, accurate docs/APIs of a library or framework you're using, query context7 instead of guessing from memory (avoids outdated or hallucinated APIs).
-   - **codegraph** (only if `.codegraph/` exists) — before changing an existing symbol (function/class/method), run `codegraph_impact` on it to see what else depends on it, so you don't break callers. Use `codegraph_callers`/`codegraph_callees` to confirm call sites. For literal-text or non-indexed files, use grep as usual.
+   - **context7** — before writing a version into a manifest, adding a dependency, or writing config/API code for a library or framework, **load the `context7` skill and follow it**. It is the single source of truth for this (mandatory triggers, context7 as the only version source, and the hard "not found → report and block, never guess" rule) — do not rely on a summary here or on your own memory of versions and APIs.
+   - **codegraph** (only if `.codegraph/` exists) — before changing an existing symbol (function/class/method), ask the codegraph MCP for the impact/blast-radius of that symbol to see what else depends on it, so you don't break callers, and for its callers/callees to confirm call sites. For literal-text or non-indexed files, use grep as usual.
 <!-- matecito-ai: EDRs + context7 + codegraph before implementing — END -->
 
 #### Step 2a: Enforce Review Workload Decision
@@ -214,7 +214,7 @@ If none, say "None."}
 
 - ALWAYS read specs before implementing — specs are your acceptance criteria
 - ALWAYS follow the design decisions — don't freelance a different approach
-<!-- matecito-ai: respect the EDRs listed in the design's EDR Alignment; use context7 for library docs; run codegraph_impact before changing existing symbols (see Step 2) -->
+<!-- matecito-ai: respect the EDRs listed in the design's EDR Alignment; load the `context7` skill before writing library versions or APIs; ask the codegraph MCP for a symbol's impact before changing it (see Step 2) -->
 - ALWAYS respect the applicable EDRs (`.matecito-ai/edr/`) as hard constraints; if an EDR conflict/uncaptured decision was flagged as a blocker, STOP and report instead of coding around it
 - ALWAYS match existing code patterns and conventions in the project
 - If you discover the design is wrong or incomplete, NOTE IT in your return summary — don't silently deviate

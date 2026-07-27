@@ -88,6 +88,8 @@ El `kind` de cada candidato determina qué se lee durante el scan y qué secció
 | `event-handler` | codegraph (subscribers/webhooks/jobs) ▸ grep | `Flujo principal` (de proceso) | `process` |
 | `test-assertion` | tests (Given/When/Then arrange/act/assert) | `Escenarios` — y sube la confidence del kind que corrobora | — (oráculo) |
 
+> La columna «qué se lee» describe **qué preguntarle** a codegraph, no vistas ni tools separadas: el MCP expone una sola tool genérica que se dirige con la query. Resolvé su nombre registrado bajo el prefijo `mcp__codegraph__*` en el momento de uso.
+
 Reglas de llenado:
 
 - El candidato lleva `observado` (el QUÉ estructural/de comportamiento visto, sin el porqué) y `prevalencia` (cuando aplica, mostrada verbatim).
@@ -123,7 +125,7 @@ A diferencia de `development-decisions-mine`, spec-mine **no tiene Mode B**: cor
 
 1. **Referencia:** cargar la taxonomía de tipos de `development-spec-bootstrap` (READ-ONLY, fija: `flow`/`rule`/`lifecycle`/`process`) + la regla de clasificación de `~/.claude/references/spec/README.md` → «Cómo clasificar el tipo». `.matecito-ai/development-specs/` puede no existir — su ausencia significa "nada especificado todavía", no es un guard de salida.
 2. **Preflight codegraph:** ¿existe `.codegraph/`?
-   - Sí → codegraph como fuente primaria (routing tables, guard sites, entity enums, event subscribers).
+   - Sí → codegraph como fuente primaria (routing tables, guard sites, entity enums, event subscribers) — una sola tool genérica dirigida por query, no una vista por kind.
    - No → grep como fallback.
 3. **Executor escanea** → construye `candidates[]` con evidencia por kind, corroborada o no por `test-assertion`. **Dedup por-candidato:** listar `.matecito-ai/development-specs/<type>/*.md` existentes y chequear si el candidato ya está cubierto — si existe → saltar (o drift-check en re-run); si no existe → es un hueco → Inferred.
 4. **Discovery report** (ANTES de cualquier escritura):

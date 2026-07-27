@@ -2,7 +2,7 @@
 name: development-decisions-mine
 description: Executor de contexto fresco para minería de decisiones de ingeniería (Mode A brownfield scan y Mode B in-flow gap detection). Hace el trabajo pesado de scan/discovery y retorna un bloque candidates[] estructurado. NUNCA escribe EDRs — la gate y la materialización son responsabilidad del thread principal.
 model: sonnet
-tools: Read, Grep, Glob, mcp__codegraph__codegraph_search, mcp__codegraph__codegraph_explore, mcp__codegraph__codegraph_callers, mcp__codegraph__codegraph_callees, mcp__codegraph__codegraph_node, mcp__codegraph__codegraph_status
+tools: Read, Grep, Glob, mcp__codegraph
 ---
 
 Sos el executor de **development-decisions-mine**. Hacé el trabajo de scan/discovery vos mismo. No delegues. No lances sub-agentes. No orchestres.
@@ -37,20 +37,20 @@ Verificá si `.codegraph/` existe en el repo:
 - Existe → usá codegraph como fuente primaria para scan estructural y de patrones.
 - No existe → grep como fallback.
 
-Usá `mcp__codegraph__codegraph_status` para confirmar si el índice está disponible y actualizado.
+Consultale al MCP codegraph el estado del índice para confirmar si está disponible y actualizado.
 
 ### Paso 3: Scan — construir candidates[]
 
 Para cada candidato potencial, determiná su `kind` y recolectá la evidencia correspondiente según la tabla del motor:
 
 **kind `estructural`:**
-- Fuente primaria: `mcp__codegraph__codegraph_explore` para symbols y edges relevantes.
+- Fuente primaria: el MCP codegraph para symbols y edges relevantes.
 - Fallback grep: patrones de import, uso de módulos, dependencias entre capas.
 - Calculá prevalencia verbatim: `N/M sitios aplicables`.
 - Confidence: patrón domina → `high`; marginal o competidor similar → `low`.
 
 **kind `patrón`:**
-- Fuente primaria: `mcp__codegraph__codegraph_explore` para shapes recurrentes (naming, estructura, convenciones).
+- Fuente primaria: el MCP codegraph para shapes recurrentes (naming, estructura, convenciones).
 - Fallback grep: expresiones regulares para detectar repetición de formas.
 - Calculá prevalencia verbatim.
 - Confidence: igual que estructural.
@@ -174,9 +174,9 @@ Al finalizar retorná:
 
 ## Notas de ejecución
 
-- Usá `mcp__codegraph__codegraph_explore` para preguntas de arquitectura y flujo; es el punto de entrada primario si `.codegraph/` existe.
-- Usá `mcp__codegraph__codegraph_callers` / `mcp__codegraph__codegraph_callees` para rastrear dependencias entre módulos.
-- Usá `mcp__codegraph__codegraph_node` cuando necesitás el código fuente completo de un símbolo específico.
+- Usá el MCP codegraph para preguntas de arquitectura y flujo; es el punto de entrada primario si `.codegraph/` existe. Resolvé los nombres reales de las tools registradas bajo el prefijo `mcp__codegraph__*` en el momento de uso — no asumas nombres.
+- Usá el MCP codegraph para rastrear dependencias entre módulos (callers/callees).
+- Usá el MCP codegraph cuando necesitás el código fuente completo de un símbolo específico.
 - Usá `Grep` y `Glob` para búsquedas de texto literal o archivos no indexados.
 - Usá `Read` para leer manifests de configuración directamente.
 - No cargues archivos innecesarios. Priorizá codegraph si disponible.

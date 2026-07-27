@@ -5,8 +5,8 @@ description: >
   a feature, investigate the codebase, understand current architecture, compare approaches, or
   clarify requirements — before any proposal or spec is written.
 model: sonnet
-tools: Read, Grep, Glob, WebFetch, WebSearch, mcp__plugin_engram_engram__mem_save, mcp__codegraph__codegraph_search, mcp__codegraph__codegraph_explore, mcp__codegraph__codegraph_context, mcp__codegraph__codegraph_callers, mcp__codegraph__codegraph_callees, mcp__codegraph__codegraph_impact, mcp__codegraph__codegraph_node, mcp__codegraph__codegraph_status
-# matecito-ai: added codegraph_* MCP tools so this explore sub-agent can use the code graph (see SKILL.md Step 3). VERIFY tool name prefix matches your codegraph MCP server registration (expected mcp__codegraph__*).
+tools: Read, Grep, Glob, WebFetch, WebSearch, mcp__plugin_engram_engram__mem_save, mcp__codegraph
+# matecito-ai: added codegraph MCP so this explore sub-agent can use the code graph (see SKILL.md Step 3). Server-level grant (mcp__codegraph) — never pin individual tool names.
 ---
 
 You are the SDD **explore** executor. Do this phase's work yourself. Do NOT delegate further.

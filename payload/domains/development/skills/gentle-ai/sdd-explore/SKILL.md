@@ -64,12 +64,14 @@ Read relevant code to understand:
 
 Before exploring, check whether CodeGraph is initialized in this project: look for a `.codegraph/` directory at the project root. If it exists, the CodeGraph MCP tools are available and you MUST prefer them for STRUCTURAL questions, because they answer in one call what grep/Read would take dozens of file scans to reconstruct (fewer tool calls, fewer tokens, more context left for later phases).
 
-Use **CodeGraph** for questions about code STRUCTURE and RELATIONSHIPS:
-- `codegraph_search` — locate a symbol (function/class/method) by name.
-- `codegraph_explore` — understand how a feature works end to end / trace a flow across files. This sub-agent IS the dedicated explore context CodeGraph expects, so calling `codegraph_explore` here is correct (it returns full source sections — do NOT then re-read those files).
-- `codegraph_callers` / `codegraph_callees` — trace who calls what.
-- `codegraph_impact` — find the blast radius of changing a symbol (key for "what's affected").
-- `codegraph_context` — assemble relevant code for the topic.
+Use **CodeGraph** for questions about code STRUCTURE and RELATIONSHIPS — ask the codegraph MCP to:
+- Locate a symbol (function/class/method) by name.
+- Understand how a feature works end to end / trace a flow across files. This sub-agent IS the dedicated explore context CodeGraph expects, so asking for a full end-to-end trace here is correct (results return full source sections — do NOT then re-read those files).
+- Trace who calls what (callers / callees).
+- Find the blast radius of changing a symbol (key for "what's affected").
+- Assemble the relevant code for a topic.
+
+Resolve the actual registered tool names under the `mcp__codegraph__*` prefix at use time — the server may expose these capabilities through one tool or several; never assume names.
 
 Use **grep/glob/Read** when:
 - You are searching for LITERAL TEXT (a string, an env var name like `DATABASE_URL`, a TODO, an error message, a magic value).
@@ -80,13 +82,13 @@ If `.codegraph/` does NOT exist, explore with grep/glob/Read as usual. Optionall
 
 ```
 INVESTIGATE (codegraph-first when .codegraph/ exists):
-├── Locate entry points / symbols ........ codegraph_search  (fallback: grep)
-├── Trace how it works / data flow ....... codegraph_explore (fallback: read chain)
-├── Map callers / callees ................ codegraph_callers / codegraph_callees
-├── Identify affected blast radius ....... codegraph_impact  (fallback: grep usages)
+├── Locate entry points / symbols ........ codegraph MCP  (fallback: grep)
+├── Trace how it works / data flow ....... codegraph MCP  (fallback: read chain)
+├── Map callers / callees ................ codegraph MCP
+├── Identify affected blast radius ....... codegraph MCP  (fallback: grep usages)
 ├── Find literal text / config ........... grep / glob (codegraph does not index these)
 ├── Check existing tests ................. grep / glob
-└── Identify dependencies and coupling ... codegraph_callees / codegraph_impact
+└── Identify dependencies and coupling ... codegraph MCP
 ```
 <!-- matecito-ai: exploration tool policy (codegraph-first) — END -->
 

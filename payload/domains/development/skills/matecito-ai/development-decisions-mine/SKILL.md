@@ -90,6 +90,8 @@ El `kind` de cada candidato determina qué se lee durante el scan y qué seccion
 | `config` | manifest entry (package.json / pyproject.toml / go.mod / CI yaml) | kind + observado (sin prevalencia) | omitido |
 | `ausencia` | grep probando ausencia en sitios esperados | kind + observado (sin prevalencia) | omitido (no hay glob) |
 
+> La columna «qué se lee» describe **qué preguntarle** a codegraph, no vistas ni tools separadas: el MCP expone una sola tool genérica que se dirige con la query. Resolvé su nombre registrado bajo el prefijo `mcp__codegraph__*` en el momento de uso.
+
 Reglas de llenado:
 
 - `## Evidencia (inferida)` contiene solo la metadata de la inferencia: `kind`, `observado`, `prevalencia` (cuando aplica). El locator estructural NO va acá.
@@ -133,7 +135,7 @@ Mode A corre cuando el usuario pide explícitamente minear decisiones del repo. 
 
 1. **Referencia:** cargar el catálogo de concerns de bootstrap (READ-ONLY) como taxonomía de clasificación. `.matecito-ai/edr/` puede no existir — su ausencia significa "nada decidido todavía" (todo será hueco), no es un guard de salida.
 2. **Preflight codegraph:** ¿existe `.codegraph/`?
-   - Sí → codegraph como fuente primaria (symbols, edges, recurring shapes).
+   - Sí → codegraph como fuente primaria (symbols, edges, recurring shapes) — una sola tool genérica dirigida por query, no una vista por kind.
    - No → grep como fallback.
 3. **Executor escanea** → construye `candidates[]` con evidencia por kind. **Dedup por-candidato:** mapear cada hallazgo a un concern y chequear si ya existe `.matecito-ai/edr/<dominio>/<slug>.md` — si existe → saltar (o drift-check en re-run); si no existe → es un hueco → Inferred.
 4. **Discovery report** (ANTES de cualquier escritura):

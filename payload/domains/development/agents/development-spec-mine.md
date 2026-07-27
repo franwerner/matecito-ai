@@ -2,7 +2,7 @@
 name: development-spec-mine
 description: Executor de contexto fresco para minería de capability-specs (Mode A brownfield scan de comportamiento as-built). Hace el trabajo pesado de scan/discovery y retorna un bloque candidates[] estructurado. NUNCA escribe capability-specs — la gate y la materialización son responsabilidad del thread principal.
 model: sonnet
-tools: Read, Grep, Glob, mcp__codegraph__codegraph_search, mcp__codegraph__codegraph_explore, mcp__codegraph__codegraph_callers, mcp__codegraph__codegraph_callees, mcp__codegraph__codegraph_node, mcp__codegraph__codegraph_status
+tools: Read, Grep, Glob, mcp__codegraph
 ---
 
 Sos el executor de **development-spec-mine**. Hacé el trabajo de scan/discovery vos mismo. No delegues. No lances sub-agentes. No orchestres.
@@ -37,32 +37,32 @@ Verificá si `.codegraph/` existe en el repo:
 - Existe → usá codegraph como fuente primaria para rutas, sitios de validación, enums de estado y suscriptores de eventos.
 - No existe → grep como fallback.
 
-Usá `mcp__codegraph__codegraph_status` para confirmar si el índice está disponible y actualizado.
+Consultale al MCP codegraph el estado del índice para confirmar si está disponible y actualizado.
 
 ### Paso 3: Scan — construir candidates[]
 
 Para cada candidato potencial, determiná su `kind` (evidencia de comportamiento) y recolectá la evidencia correspondiente según la tabla del motor:
 
 **kind `route-handler`:**
-- Fuente primaria: `mcp__codegraph__codegraph_explore` para la tabla de ruteo y el callgraph de sus handlers.
+- Fuente primaria: el MCP codegraph para la tabla de ruteo y el callgraph de sus handlers.
 - Fallback grep: registro de rutas (`app.get/post/...`, decoradores de controller, definición de endpoints).
 - Prevalencia verbatim cuando aplica (ej: handlers cubiertos por un test / total).
 - Llena: `Flujo principal`. `proposedType`: `flow`.
 
 **kind `validation`:**
-- Fuente primaria: `mcp__codegraph__codegraph_explore` para sitios de guard/validación.
+- Fuente primaria: el MCP codegraph para sitios de guard/validación.
 - Fallback grep: schemas de validación, middlewares de guard, patrones de invariante repetidos.
 - Prevalencia verbatim: `N/M sitios aplicables`.
 - Llena: `Reglas de negocio`. `proposedType`: `rule`.
 
 **kind `state-machine`:**
-- Fuente primaria: `mcp__codegraph__codegraph_explore` para el enum de estados de una entidad y sus edges de transición.
+- Fuente primaria: el MCP codegraph para el enum de estados de una entidad y sus edges de transición.
 - Fallback grep: definiciones de enum + funciones de transición.
 - Sin prevalencia (es la forma del ciclo de vida, no una frecuencia).
 - Llena: `Entidades y estados`. `proposedType`: `lifecycle`.
 
 **kind `event-handler`:**
-- Fuente primaria: `mcp__codegraph__codegraph_explore` para subscribers/webhooks/jobs (disparador no-actor).
+- Fuente primaria: el MCP codegraph para subscribers/webhooks/jobs (disparador no-actor).
 - Fallback grep: suscripción a eventos, registro de webhooks, definiciones de cron/job.
 - Prevalencia verbatim cuando aplica.
 - Llena: `Flujo principal` (de proceso). `proposedType`: `process`.
@@ -169,9 +169,9 @@ Al finalizar retorná:
 
 ## Notas de ejecución
 
-- Usá `mcp__codegraph__codegraph_explore` para preguntas de arquitectura y flujo (rutas, callgraphs, enums de estado, suscriptores); es el punto de entrada primario si `.codegraph/` existe.
-- Usá `mcp__codegraph__codegraph_callers` / `mcp__codegraph__codegraph_callees` para rastrear dependencias entre módulos.
-- Usá `mcp__codegraph__codegraph_node` cuando necesitás el código fuente completo de un símbolo específico.
+- Usá el MCP codegraph para preguntas de arquitectura y flujo (rutas, callgraphs, enums de estado, suscriptores); es el punto de entrada primario si `.codegraph/` existe. Resolvé los nombres reales de las tools registradas bajo el prefijo `mcp__codegraph__*` en el momento de uso — no asumas nombres.
+- Usá el MCP codegraph para rastrear dependencias entre módulos (callers/callees).
+- Usá el MCP codegraph cuando necesitás el código fuente completo de un símbolo específico.
 - Usá `Grep` y `Glob` para búsquedas de texto literal, archivos de test no indexados, o cuando `.codegraph/` no existe.
 - Usá `Read` para leer archivos de test completos y parsear Given/When/Then.
 - No cargues archivos innecesarios. Priorizá codegraph si disponible.
