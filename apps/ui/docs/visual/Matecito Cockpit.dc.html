@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4249C4;text-decoration:none}
+a:hover{color:#3A41B0}
+.mc-canvas-scroll::-webkit-scrollbar{width:10px;height:10px}
+.mc-canvas-scroll::-webkit-scrollbar-thumb{background:#E1E7EE;border-radius:6px;border:2px solid #E8EEF4}
+@keyframes mc-pulse { 0%,100% { opacity:1; transform:scale(1) } 50% { opacity:.35; transform:scale(.7) } }
+</style>
+</helmet>
+<div style="height:100vh;min-height:760px;display:grid;grid-template-columns:60px 1fr;grid-template-rows:56px 1fr 74px;background:#E8EEF4;font-family:Nunito,sans-serif;color:#1A1D24;overflow:hidden">
+
+  <!-- HEADER (chrome cálido) -->
+  <header style="grid-column:1 / 3;grid-row:1;display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:#FFFFFF;border-bottom:1px solid #E1E7EE;z-index:5">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#C0EC38,#A8D92A);color:#16181C;font-family:Fredoka,sans-serif;font-weight:700;font-size:16px">m</span>
+      <span style="font-family:Fredoka,sans-serif;font-weight:600;font-size:18px">Matecito</span>
+      <span style="width:1px;height:22px;background:#E1E7EE;margin:0 4px"></span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#7A8694">corrida <span style="color:#1A1D24">#run-2f9a</span></span>
+      <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#4A6B0F;background:rgba(192,236,56,.28);border:1px solid rgba(168,217,42,.7);border-radius:999px;padding:3px 10px">
+        <span style="width:7px;height:7px;border-radius:50%;background:#8FB81E"></span>en vivo
+      </span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="display:inline-flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#95A0AE;background:#F1F5F9;border:1px solid #E1E7EE;border-radius:8px;padding:5px 10px"><span style="color:#5A6675">⌘K</span> comandos</span>
+      <button style="display:inline-flex;align-items:center;gap:7px;font-family:Nunito,sans-serif;font-size:12px;font-weight:700;color:#7A8694;background:#F1F5F9;border:1px solid #E1E7EE;border-radius:8px;padding:6px 11px;cursor:pointer">☀ Claro</button>
+    </div>
+  </header>
+
+  <!-- LEFT RAIL (chrome cálido) -->
+  <nav style="grid-column:1;grid-row:2 / 4;display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 0;background:#16181C;border-right:1px solid #E1E7EE;z-index:4">
+    <span style="display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:11px;background:#C0EC38;color:#16181C;font-size:17px" title="Canvas">◈</span>
+    <span style="display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:11px;color:#8A94A3;font-size:17px" title="Diffs">⤳</span>
+    <span style="display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:11px;color:#8A94A3;font-size:17px" title="Decisiones">◇</span>
+    <span style="display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:11px;color:#8A94A3;font-size:17px" title="Cola">☰</span>
+    <span style="margin-top:auto;display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:11px;color:#8A94A3;font-size:17px" title="Ajustes">⚙</span>
+  </nav>
+
+  <!-- CANVAS + INSPECTOR -->
+  <div style="grid-column:2;grid-row:2;display:grid;grid-template-columns:1fr 400px;min-height:0;overflow:hidden">
+
+    <!-- CANVAS (limpio) -->
+    <div class="mc-canvas-scroll" style="position:relative;overflow:auto;background:#E8EEF4;background-image:radial-gradient(circle,rgba(50,70,100,.10) 1px,transparent 1px);background-size:26px 26px">
+      <div style="position:absolute;top:14px;left:16px;z-index:3;display:flex;gap:8px;align-items:center">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#5A6675;background:rgba(255,255,255,.92);border:1px solid #E1E7EE;border-radius:7px;padding:4px 9px">árbol de agentes · 7 nodos</span>
+      </div>
+      <div style="position:absolute;bottom:14px;right:16px;z-index:3;display:flex;gap:4px;background:rgba(255,255,255,.92);border:1px solid #E1E7EE;border-radius:9px;padding:4px">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;color:#7A8694;font-size:15px;cursor:pointer">−</span>
+        <span style="display:inline-flex;align-items:center;justify-content:center;padding:0 6px;height:26px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#7A8694">100%</span>
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;color:#7A8694;font-size:15px;cursor:pointer">+</span>
+      </div>
+
+      <div style="position:relative;width:1320px;height:820px">
+        <!-- edges -->
+        <svg width="1320" height="820" style="position:absolute;inset:0;pointer-events:none">
+          <g fill="none" stroke="#4B54D4" stroke-width="2" stroke-opacity="0.42" stroke-linecap="round">
+            <path d="M260,375 C310,375 300,205 340,205"></path>
+            <path d="M260,375 C300,375 300,385 340,385"></path>
+            <path d="M260,375 C310,375 300,565 340,565"></path>
+            <path d="M576,385 C620,385 620,305 660,305"></path>
+            <path d="M576,385 C620,385 620,485 660,485"></path>
+            <path d="M576,565 C620,565 620,645 660,645"></path>
+            <path d="M896,305 C940,305 940,425 980,425"></path>
+            <path d="M896,485 C940,485 940,425 980,425"></path>
+          </g>
+          <g fill="#4B54D4">
+            <circle cx="340" cy="205" r="3.5"></circle><circle cx="340" cy="385" r="3.5"></circle><circle cx="340" cy="565" r="3.5"></circle>
+            <circle cx="660" cy="305" r="3.5"></circle><circle cx="660" cy="485" r="3.5"></circle><circle cx="660" cy="645" r="3.5"></circle>
+            <circle cx="980" cy="425" r="3.5"></circle>
+          </g>
+        </svg>
+        <!-- edge labels -->
+        <span style="position:absolute;left:300px;top:280px;transform:translate(-50%,-50%);font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#5A6675;background:#FFFFFF;border:1px solid #E1E7EE;border-radius:6px;padding:2px 7px">contexto</span>
+        <span style="position:absolute;left:618px;top:435px;transform:translate(-50%,-50%);font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#5A6675;background:#FFFFFF;border:1px solid #E1E7EE;border-radius:6px;padding:2px 7px">plan</span>
+        <span style="position:absolute;left:938px;top:455px;transform:translate(-50%,-50%);font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#5A6675;background:#FFFFFF;border:1px solid #E1E7EE;border-radius:6px;padding:2px 7px">diffs</span>
+
+        <!-- orchestrator (bigger) -->
+        <div style="position:absolute;left:60px;top:315px;width:200px">
+          <dc-import name="AgentNode" status="done" type="Orquestador" title="Orquestador" phase="raíz" mandate="Reparte el trabajo entre agentes." hint-size="100%,150px"></dc-import>
+        </div>
+        <!-- column A -->
+        <div style="position:absolute;left:340px;top:120px;width:236px"><dc-import name="AgentNode" status="done" type="Agente" title="Nodo 1" phase="Fase 01 · Análisis" mandate="Explora el repositorio y arma el contexto." hint-size="100%,170px"></dc-import></div>
+        <div style="position:absolute;left:340px;top:300px;width:236px"><dc-import name="AgentNode" status="done" type="Agente" title="Nodo 2" phase="Fase 02 · Plan" mandate="Propone el plan y las decisiones a ratificar." hint-size="100%,170px"></dc-import></div>
+        <div style="position:absolute;left:340px;top:480px;width:236px"><dc-import name="AgentNode" status="done" type="Agente" title="Nodo 3" phase="Fase 03 · Setup" mandate="Prepara el andamiaje del entorno." hint-size="100%,170px"></dc-import></div>
+        <!-- column B -->
+        <div style="position:absolute;left:660px;top:220px;width:236px;outline:2px solid #4B54D4;outline-offset:3px;border-radius:16px"><dc-import name="AgentNode" status="running" type="Agente" title="Nodo 4" phase="Fase 04 · Código" mandate="Implementa la validación de sesión." hint-size="100%,200px"></dc-import></div>
+        <div style="position:absolute;left:660px;top:400px;width:236px"><dc-import name="AgentNode" status="running" type="Agente" title="Nodo 5" phase="Fase 05 · Código" mandate="Escribe la capa de reintentos de red." hint-size="100%,200px"></dc-import></div>
+        <div style="position:absolute;left:660px;top:560px;width:236px"><dc-import name="AgentNode" status="waiting" type="Agente" title="Nodo 6" phase="Fase 06 · Tests" mandate="Cubre los cambios con pruebas." hint-size="100%,170px"></dc-import></div>
+        <!-- column C -->
+        <div style="position:absolute;left:980px;top:355px;width:236px"><dc-import name="AgentNode" status="waiting" type="Agente" title="Nodo 7" phase="Fase 07 · Revisión" mandate="Audita severidad y cumplimiento." hint-size="100%,170px"></dc-import></div>
+      </div>
+    </div>
+
+    <!-- INSPECTOR (drawer, limpio) -->
+    <aside style="border-left:1px solid #E1E7EE;background:#FFFFFF;display:flex;flex-direction:column;min-height:0">
+      <div style="padding:15px 18px 0;border-bottom:1px solid #E1E7EE;background:#FFFFFF">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+          <div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#95A0AE;text-transform:uppercase;letter-spacing:.06em">Nodo 4 · Fase 04</div>
+            <div style="font-family:Fredoka,sans-serif;font-weight:600;font-size:20px;margin-top:2px">Código</div>
+          </div>
+          <span style="display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:#4249C4;background:rgba(75,84,212,.1);border:1px solid rgba(75,84,212,.35);border-radius:999px;padding:3px 10px"><span style="width:7px;height:7px;border-radius:50%;background:#4B54D4"></span>en curso</span>
+        </div>
+        <div style="display:flex;gap:2px;margin-top:14px;overflow-x:auto">
+          <span style="padding:8px 11px;font-size:12.5px;font-weight:700;color:#1A1D24;border-bottom:2px solid #4B54D4;white-space:nowrap">Feed</span>
+          <span style="padding:8px 11px;font-size:12.5px;font-weight:600;color:#95A0AE;border-bottom:2px solid transparent;white-space:nowrap">Diffs</span>
+          <span style="padding:8px 11px;font-size:12.5px;font-weight:600;color:#95A0AE;border-bottom:2px solid transparent;white-space:nowrap">Decisiones</span>
+          <span style="padding:8px 11px;font-size:12.5px;font-weight:600;color:#95A0AE;border-bottom:2px solid transparent;white-space:nowrap">Specs</span>
+          <span style="padding:8px 11px;font-size:12.5px;font-weight:600;color:#95A0AE;border-bottom:2px solid transparent;white-space:nowrap">Herramientas</span>
+          <span style="padding:8px 11px;font-size:12.5px;font-weight:600;color:#95A0AE;border-bottom:2px solid transparent;white-space:nowrap">Resultado</span>
+        </div>
+      </div>
+
+      <div class="mc-canvas-scroll" style="flex:1;overflow-y:auto;padding:16px 18px 22px;display:flex;flex-direction:column;gap:18px;min-height:0">
+        <!-- live feed -->
+        <section>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+            <span style="width:7px;height:7px;border-radius:50%;background:#4B54D4;animation:mc-pulse 1.4s ease-in-out infinite"></span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:#95A0AE;font-weight:700">Feed de actividad</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:0;border-left:1px solid #E1E7EE;padding-left:14px;margin-left:3px">
+            <sc-for list="{{ feed }}" as="ev" hint-placeholder-count="4">
+              <div style="position:relative;padding:0 0 13px">
+                <span style="position:absolute;left:-18px;top:5px;width:7px;height:7px;border-radius:50%;background:{{ ev.color }};box-shadow:0 0 0 3px #FFFFFF"></span>
+                <div style="display:flex;align-items:baseline;gap:8px">
+                  <span style="font-size:12.5px;color:#2A3340;line-height:1.4">{{ ev.text }}</span>
+                </div>
+                <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#AAB4C0">{{ ev.time }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+
+        <!-- diff -->
+        <section>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:#95A0AE;font-weight:700;margin-bottom:9px">Diff escrito</div>
+          <dc-import name="DiffView" hint-size="100%,340px"></dc-import>
+        </section>
+
+        <!-- decision -->
+        <section>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:#95A0AE;font-weight:700;margin-bottom:9px">Decisión aplicada</div>
+          <dc-import name="DecisionCard" status="ratificada" hint-size="100%,180px"></dc-import>
+        </section>
+
+        <!-- artifact -->
+        <section>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:#95A0AE;font-weight:700;margin-bottom:9px">Artefacto producido</div>
+          <dc-import name="ArtifactCard" hint-size="100%,230px"></dc-import>
+        </section>
+      </div>
+    </aside>
+  </div>
+
+  <!-- TIMELINE (chrome cálido) -->
+  <div style="grid-column:2;grid-row:3">
+    <dc-import name="TimelineScrubber" hint-size="100%,74px"></dc-import>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1320,&quot;height&quot;:760},&quot;feed&quot;:{&quot;editor&quot;:null,&quot;default&quot;:[],&quot;tsType&quot;:&quot;{text:string,time:string,color:string}[]&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      feed: (this.props.feed && this.props.feed.length) ? this.props.feed : [
+        { text:'Leyó src/auth/session.ts y 3 archivos relacionados', time:'02:01', color:'#5B8DB8' },
+        { text:'Aplicó la decisión DEC-014 · Autenticación', time:'02:06', color:'#4B54D4' },
+        { text:'Escribió diff en session.ts (+2 / −1)', time:'02:10', color:'#6B8E4E' },
+        { text:'Marcó hallazgo crítico: token sin validar', time:'02:12', color:'#C4553D' },
+        { text:'Ejecutando la suite de pruebas de sesión…', time:'02:14', color:'#4B54D4' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

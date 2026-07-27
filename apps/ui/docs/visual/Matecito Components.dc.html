@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4249C4;text-decoration:none}
+a:hover{color:#3A41B0}
+</style>
+</helmet>
+<div style="min-height:100vh;background:#E8EEF4;font-family:Nunito,sans-serif;padding:40px 44px 72px;box-sizing:border-box">
+  <header style="max-width:1160px;margin:0 auto 40px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,#C0EC38,#A8D92A);color:#16181C;font-family:Fredoka,sans-serif;font-weight:700;font-size:18px">m</span>
+      <div>
+        <div style="font-family:Fredoka,sans-serif;font-weight:600;font-size:24px;color:#1A1D24;line-height:1">Matecito · Componentes base</div>
+        <div style="font-size:13px;color:#7A8694;margin-top:3px">Piezas reutilizables (§6) que construyen el cockpit · tema oscuro · <a href="Matecito Cockpit.dc.html">ver vista completa →</a></div>
+      </div>
+    </div>
+  </header>
+
+  <div style="max-width:1160px;margin:0 auto;display:flex;flex-direction:column;gap:34px">
+
+    <section>
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:14px">
+        <h2 style="margin:0;font-family:Fredoka,sans-serif;font-weight:600;font-size:16px;color:#1A1D24">Etiquetas de severidad</h2>
+        <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#95A0AE">SeverityTag</code>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E1E7EE;border-radius:14px;padding:22px;display:flex;flex-wrap:wrap;gap:14px;align-items:center">
+        <dc-import name="SeverityTag" level="critical" text="token sin validar" hint-size="200px,30px"></dc-import>
+        <dc-import name="SeverityTag" level="warning" text="dependencia obsoleta" hint-size="220px,30px"></dc-import>
+        <dc-import name="SeverityTag" level="suggestion" text="extraer a helper" hint-size="200px,30px"></dc-import>
+        <dc-import name="SeverityTag" level="success" text="cubierto por tests" hint-size="210px,30px"></dc-import>
+      </div>
+    </section>
+
+    <section>
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:14px">
+        <h2 style="margin:0;font-family:Fredoka,sans-serif;font-weight:600;font-size:16px;color:#1A1D24">Nodo de agente</h2>
+        <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#95A0AE">AgentNode</code>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px">
+        <dc-import name="AgentNode" status="running" type="Agente" title="Nodo 4 · Código" phase="Fase 04" mandate="Implementa la validación de sesión según la decisión ratificada." hint-size="100%,220px"></dc-import>
+        <dc-import name="AgentNode" status="done" type="Orquestador" title="Nodo 1 · Contexto" phase="Fase 01" mandate="Recopila el estado de la corrida y reparte el trabajo." hint-size="100%,220px"></dc-import>
+        <dc-import name="AgentNode" status="waiting" type="Agente" title="Nodo 7 · Revisión" phase="Fase 07" mandate="Espera los diffs para auditar severidad y cumplimiento." hint-size="100%,220px"></dc-import>
+      </div>
+    </section>
+
+    <section>
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:14px">
+        <h2 style="margin:0;font-family:Fredoka,sans-serif;font-weight:600;font-size:16px;color:#1A1D24">Arista etiquetada</h2>
+        <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#95A0AE">CanvasEdge</code>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E1E7EE;border-radius:14px;padding:14px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px">
+        <dc-import name="CanvasEdge" label="contexto" hint-size="100%,140px"></dc-import>
+        <dc-import name="CanvasEdge" label="plan → código" hint-size="100%,140px"></dc-import>
+        <dc-import name="CanvasEdge" label="hallazgos" hint-size="100%,140px"></dc-import>
+      </div>
+    </section>
+
+    <section>
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:14px">
+        <h2 style="margin:0;font-family:Fredoka,sans-serif;font-weight:600;font-size:16px;color:#1A1D24">Vista de diff</h2>
+        <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#95A0AE">DiffView</code>
+      </div>
+      <div style="max-width:520px"><dc-import name="DiffView" hint-size="100%,340px"></dc-import></div>
+    </section>
+
+    <section>
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:14px">
+        <h2 style="margin:0;font-family:Fredoka,sans-serif;font-weight:600;font-size:16px;color:#1A1D24">Tarjeta de decisión &amp; artefacto</h2>
+        <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#95A0AE">DecisionCard · ArtifactCard</code>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:start">
+        <dc-import name="DecisionCard" status="ratificada" hint-size="100%,180px"></dc-import>
+        <dc-import name="DecisionCard" status="borrador" id="DEC-021" title="Reintentos con backoff exponencial" summary="Las llamadas de red fallidas se reintentan hasta 3 veces con espera creciente." relations="1" hint-size="100%,180px"></dc-import>
+        <dc-import name="ArtifactCard" hint-size="100%,230px"></dc-import>
+      </div>
+    </section>
+
+    <section>
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:14px">
+        <h2 style="margin:0;font-family:Fredoka,sans-serif;font-weight:600;font-size:16px;color:#1A1D24">Scrubber de timeline</h2>
+        <code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#95A0AE">TimelineScrubber</code>
+      </div>
+      <div style="border:1px solid #E1E7EE;border-radius:14px;overflow:hidden"><dc-import name="TimelineScrubber" hint-size="100%,72px"></dc-import></div>
+    </section>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

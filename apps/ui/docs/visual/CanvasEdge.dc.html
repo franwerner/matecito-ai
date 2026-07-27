@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+</helmet>
+<div style="position:relative;width:100%;height:100%;min-height:130px;min-width:220px;font-family:Nunito,sans-serif">
+  <svg width="100%" height="100%" viewBox="0 0 240 130" preserveAspectRatio="none" style="position:absolute;inset:0;overflow:visible">
+    <path d="M10,104 C96,104 96,26 230,26" fill="none" stroke="#4B54D4" stroke-width="2" stroke-opacity="0.5" stroke-linecap="round"></path>
+    <circle cx="10" cy="104" r="4" fill="#4B54D4"></circle>
+    <path d="M226,22 L234,26 L226,30 Z" fill="#4B54D4"></path>
+  </svg>
+  <span style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);white-space:nowrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:#5A6675;background:#FFFFFF;border:1px solid #E1E7EE;border-radius:6px;padding:3px 9px">{{ label }}</span>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:260,&quot;height&quot;:150},&quot;label&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;contexto&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    return { label: this.props.label || 'contexto' };
+  }
+}
+</script>
+</body>
+</html>

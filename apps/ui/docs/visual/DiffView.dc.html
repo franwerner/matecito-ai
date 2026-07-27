@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+.mc-diff-scroll::-webkit-scrollbar{height:9px}
+.mc-diff-scroll::-webkit-scrollbar-thumb{background:#E1E7EE;border-radius:6px}
+.mc-diff-scroll > div{min-width:max-content}
+</style>
+</helmet>
+<div style="width:100%;box-sizing:border-box;background:#FFFFFF;border:1px solid #E1E7EE;border-radius:10px;overflow:hidden;font-family:Nunito,sans-serif">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 12px;background:#F1F5F9;border-bottom:1px solid #E1E7EE;flex-wrap:wrap">
+    <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#1A1D24;font-weight:500">{{ filename }}</span>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <sc-for list="{{ tags }}" as="tag" hint-placeholder-count="1">
+        <dc-import name="SeverityTag" level="{{ tag.level }}" text="{{ tag.text }}" hint-size="150px,26px"></dc-import>
+      </sc-for>
+    </div>
+  </div>
+  <div class="mc-diff-scroll" style="padding:6px 0;background:#F4F7FA;overflow-x:auto">
+    <sc-for list="{{ lines }}" as="line" hint-placeholder-count="5">
+      <div style="display:flex;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.75;background:{{ line.bg }};border-left:2px solid {{ line.bar }}">
+        <span style="width:36px;text-align:right;padding-right:9px;color:#AAB4C0;user-select:none;flex-shrink:0">{{ line.n }}</span>
+        <span style="width:15px;color:{{ line.sc }};user-select:none;flex-shrink:0">{{ line.sign }}</span>
+        <span style="color:#2A3340;white-space:pre;padding-right:10px">{{ line.text }}</span>
+      </div>
+    </sc-for>
+  </div>
+  <div style="padding:10px 12px;background:#FFFFFF;border-top:1px solid #E1E7EE">
+    <div style="font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:#95A0AE;font-weight:800;margin-bottom:4px">Justificación</div>
+    <div style="font-size:12.5px;color:#7A8694;line-height:1.5">{{ justification }}</div>
+    <sc-if value="{{ decisionRef }}" hint-placeholder-val="{{ true }}">
+      <div style="margin-top:10px;display:flex"><span style="display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#4249C4;background:rgba(75,84,212,.1);border:1px solid rgba(75,84,212,.35);border-radius:6px;padding:3px 9px;cursor:pointer">↩ remonta a {{ decisionRef }}</span></div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:460,&quot;height&quot;:330},&quot;filename&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;src/auth/session.ts&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;lines&quot;:{&quot;editor&quot;:null,&quot;default&quot;:[],&quot;tsType&quot;:&quot;{t:'add'|'del'|'ctx',n:string,text:string}[]&quot;},&quot;tags&quot;:{&quot;editor&quot;:null,&quot;default&quot;:[],&quot;tsType&quot;:&quot;{level:string,text:string}[]&quot;},&quot;justification&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;decisionRef&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;DEC-014 · Autenticación&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const styleMap = {
+      add: { bg:'#E8F3DC', bar:'#6B8E4E', sign:'+', sc:'#4A7A2E' },
+      del: { bg:'#FBE8E4', bar:'#C4553D', sign:'-', sc:'#B23A28' },
+      ctx: { bg:'transparent', bar:'transparent', sign:'\u00A0', sc:'#AAB4C0' }
+    };
+    const raw = (this.props.lines && this.props.lines.length) ? this.props.lines : [
+      { t:'ctx', n:'41', text:'function authenticate(user) {' },
+      { t:'del', n:'42', text:'  return user.token;' },
+      { t:'add', n:'42', text:'  if (!user.token) throw new AuthError("no token");' },
+      { t:'add', n:'43', text:'  return verify(user.token, SECRET);' },
+      { t:'ctx', n:'44', text:'}' }
+    ];
+    const lines = raw.map(l => ({ ...l, ...(styleMap[l.t] || styleMap.ctx) }));
+    return {
+      filename: this.props.filename || 'src/auth/session.ts',
+      lines,
+      tags: (this.props.tags && this.props.tags.length) ? this.props.tags : [{ level:'critical', text:'token sin validar' }],
+      justification: this.props.justification || 'El token se devolvía sin verificar su firma; se agrega validación previa para impedir sesiones falsificadas.',
+      decisionRef: this.props.decisionRef || 'DEC-014 · Autenticación'
+    };
+  }
+}
+</script>
+</body>
+</html>

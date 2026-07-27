@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="min-height:100vh;background:#FBF6EE;font-family:Nunito,sans-serif;color:#3A2A1F;padding:44px 48px 72px;box-sizing:border-box">
+  <div style="max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:30px">
+
+    <header style="display:flex;align-items:baseline;gap:12px">
+      <h1 style="margin:0;font-family:Fredoka,sans-serif;font-weight:600;font-size:26px">Matecito · Logotipos</h1>
+      <span style="font-size:13px;color:#6F5A4A">rebranding · marca + marca de app</span>
+    </header>
+
+    <!-- BRANDING: full lockup -->
+    <section>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#9a8571;font-weight:700;margin-bottom:12px">Marca — lockup horizontal</div>
+      <div style="background:#FFFFFF;border:1px solid #E8DCC8;border-radius:16px;padding:44px 48px;display:flex;align-items:center;gap:26px">
+        <div style="width:112px;height:118px;flex-shrink:0"><dc-import name="MatecitoMascot" hint-size="112px,118px"></dc-import></div>
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <div style="display:flex;align-items:flex-end;font-family:Fredoka,sans-serif;font-weight:600;font-size:58px;line-height:.9;letter-spacing:-.01em">
+            <span style="color:#2E2118">matecito</span><span style="color:#6F9417">-ai</span>
+          </div>
+          <svg width="150" height="18" viewBox="0 0 150 18" fill="none" style="margin-left:2px">
+            <path d="M92,10 L104,10 M114,10 L128,4 M128,4 L140,10" stroke="#6F9417" stroke-width="2" stroke-linecap="round"></path>
+            <circle cx="92" cy="10" r="2.6" fill="#6F9417"></circle>
+            <circle cx="109" cy="10" r="2.6" fill="#6F9417"></circle>
+            <circle cx="128" cy="4" r="2.6" fill="#6F9417"></circle>
+            <circle cx="141" cy="11" r="3.4" fill="#C0EC38" stroke="#A8D92A" stroke-width="1"></circle>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- BRANDING: dark surface -->
+    <section>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#9a8571;font-weight:700;margin-bottom:12px">Marca — sobre superficie oscura</div>
+      <div style="background:#16181C;border-radius:16px;padding:44px 48px;display:flex;align-items:center;gap:26px">
+        <div style="width:96px;height:102px;flex-shrink:0"><dc-import name="MatecitoMascot" hint-size="96px,102px"></dc-import></div>
+        <div style="display:flex;align-items:flex-end;font-family:Fredoka,sans-serif;font-weight:600;font-size:52px;line-height:.9;letter-spacing:-.01em">
+          <span style="color:#FBF6EE">matecito</span><span style="color:#C0EC38">-ai</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- UI MARK -->
+    <section>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#9a8571;font-weight:700;margin-bottom:12px">Marca de app (UI) — ícono + lockup compacto</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px">
+
+        <!-- app icon lime tile -->
+        <div style="background:#FFFDF7;border:1px solid #E8DCC8;border-radius:16px;padding:26px;display:flex;flex-direction:column;align-items:center;gap:14px">
+          <div style="width:88px;height:88px;border-radius:22px;background:#C0EC38;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;box-shadow:0 6px 18px -8px rgba(58,42,31,.4)">
+            <div style="width:76px;height:80px;margin-bottom:-6px"><dc-import name="MatecitoMascot" hint-size="76px,80px"></dc-import></div>
+          </div>
+          <span style="font-size:12px;color:#6F5A4A">Ícono de app · lima</span>
+        </div>
+
+        <!-- app icon dark tile -->
+        <div style="background:#FFFDF7;border:1px solid #E8DCC8;border-radius:16px;padding:26px;display:flex;flex-direction:column;align-items:center;gap:14px">
+          <div style="width:88px;height:88px;border-radius:22px;background:#16181C;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;box-shadow:0 6px 18px -8px rgba(58,42,31,.4)">
+            <div style="width:76px;height:80px;margin-bottom:-6px"><dc-import name="MatecitoMascot" hint-size="76px,80px"></dc-import></div>
+          </div>
+          <span style="font-size:12px;color:#6F5A4A">Ícono de app · oscuro</span>
+        </div>
+
+        <!-- monogram fallback -->
+        <div style="background:#FFFDF7;border:1px solid #E8DCC8;border-radius:16px;padding:26px;display:flex;flex-direction:column;align-items:center;gap:14px">
+          <div style="width:88px;height:88px;border-radius:22px;background:linear-gradient(135deg,#C0EC38,#A8D92A);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px -8px rgba(58,42,31,.4)">
+            <span style="font-family:Fredoka,sans-serif;font-weight:700;font-size:46px;color:#16181C;line-height:1">m</span>
+          </div>
+          <span style="font-size:12px;color:#6F5A4A">Monograma · favicon</span>
+        </div>
+
+        <!-- compact header lockup -->
+        <div style="background:#FFFDF7;border:1px solid #E8DCC8;border-radius:16px;padding:26px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px">
+          <div style="display:flex;align-items:center;gap:9px">
+            <div style="width:34px;height:36px"><dc-import name="MatecitoMascot" hint-size="34px,36px"></dc-import></div>
+            <span style="font-family:Fredoka,sans-serif;font-weight:600;font-size:22px;letter-spacing:-.01em"><span style="color:#2E2118">matecito</span><span style="color:#6F9417">-ai</span></span>
+          </div>
+          <span style="font-size:12px;color:#6F5A4A">Lockup de barra superior</span>
+        </div>
+
+      </div>
+    </section>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

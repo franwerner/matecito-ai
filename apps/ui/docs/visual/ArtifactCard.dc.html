@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+</helmet>
+<div style="width:100%;box-sizing:border-box;background:#FFFFFF;border:1px solid #E1E7EE;border-radius:10px;padding:14px 15px;font-family:Nunito,sans-serif">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px">
+    <span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:6px;background:#F1F5F9;border:1px solid #E1E7EE;color:#5A6675;font-family:'JetBrains Mono',monospace;font-size:12px">{{ glyph }}</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:#95A0AE;font-weight:700">{{ type }}</span>
+  </div>
+  <div style="font-family:Fredoka,sans-serif;font-weight:600;font-size:16px;color:#1A1D24;line-height:1.2">{{ title }}</div>
+  <div style="display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin-top:12px">
+    <sc-for list="{{ fields }}" as="field" hint-placeholder-count="3">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#95A0AE;white-space:nowrap">{{ field.label }}</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#2A3340;text-align:right">{{ field.value }}</span>
+    </sc-for>
+  </div>
+  <sc-if value="{{ hasRefs }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;padding-top:11px;border-top:1px solid #E1E7EE">
+      <sc-for list="{{ refs }}" as="ref" hint-placeholder-count="2">
+        <span style="display:inline-flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#4249C4;background:rgba(75,84,212,.1);border:1px solid rgba(75,84,212,.3);border-radius:6px;padding:2px 8px;cursor:pointer">↩ {{ ref }}</span>
+      </sc-for>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:320,&quot;height&quot;:230},&quot;type&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Artefacto&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;glyph&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;⌘&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;title&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Suite de pruebas de sesión&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;fields&quot;:{&quot;editor&quot;:null,&quot;default&quot;:[],&quot;tsType&quot;:&quot;{label:string,value:string}[]&quot;},&quot;refs&quot;:{&quot;editor&quot;:null,&quot;default&quot;:[],&quot;tsType&quot;:&quot;string[]&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const refs = (this.props.refs && this.props.refs.length) ? this.props.refs : ['DEC-014', 'src/auth/session.ts'];
+    return {
+      type: this.props.type || 'Artefacto',
+      glyph: this.props.glyph || '⌘',
+      title: this.props.title || 'Suite de pruebas de sesión',
+      fields: (this.props.fields && this.props.fields.length) ? this.props.fields : [
+        { label:'archivo', value:'session.test.ts' },
+        { label:'casos', value:'12 · 12 verdes' },
+        { label:'cobertura', value:'94%' }
+      ],
+      refs, hasRefs: refs.length > 0
+    };
+  }
+}
+</script>
+</body>
+</html>

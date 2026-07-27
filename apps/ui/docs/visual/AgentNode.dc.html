@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+@keyframes mc-pulse { 0%,100% { opacity:1; transform:scale(1) } 50% { opacity:.35; transform:scale(.7) } }
+</style>
+</helmet>
+<div style="width:100%;box-sizing:border-box;background:#FFFFFF;border:1.5px solid {{ ring }};border-radius:14px;padding:13px 14px;font-family:Nunito,sans-serif;box-shadow:{{ glow }}">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px">
+    <span style="display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:999px;background:rgba(75,84,212,.11);border:1px solid rgba(75,84,212,.4);color:#4249C4;font-size:11px;font-weight:700;letter-spacing:.02em">
+      <span style="width:6px;height:6px;border-radius:50%;background:#4B54D4"></span>{{ type }}
+    </span>
+    <span style="display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:#7A8694">
+      <span style="width:8px;height:8px;border-radius:50%;background:{{ dot }}"></span>{{ statusLabel }}
+    </span>
+  </div>
+  <div style="font-family:Fredoka,sans-serif;font-weight:600;font-size:17px;color:#1A1D24;line-height:1.15">{{ title }}</div>
+  <div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#95A0AE;margin-top:4px;text-transform:uppercase;letter-spacing:.06em">{{ phase }}</div>
+  <sc-if value="{{ mandate }}" hint-placeholder-val="{{ true }}">
+    <div style="font-size:12.5px;color:#7A8694;line-height:1.45;margin-top:9px">{{ mandate }}</div>
+  </sc-if>
+  <sc-if value="{{ hasTools }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:11px;padding-top:11px;border-top:1px solid #E1E7EE">
+      <sc-for list="{{ tools }}" as="tool" hint-placeholder-count="2">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#5A6675;background:#F1F5F9;border:1px solid #E1E7EE;border-radius:5px;padding:2px 7px">{{ tool }}</span>
+      </sc-for>
+    </div>
+  </sc-if>
+  <sc-if value="{{ running }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;align-items:center;gap:7px;margin-top:11px">
+      <span style="width:7px;height:7px;border-radius:50%;background:#4B54D4;animation:mc-pulse 1.4s ease-in-out infinite"></span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#4B54D4">escribiendo diff…</span>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:260,&quot;height&quot;:210},&quot;title&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Analista&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;type&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Agente&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;phase&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Fase 01&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;status&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;running&quot;,&quot;done&quot;,&quot;waiting&quot;],&quot;default&quot;:&quot;running&quot;,&quot;tsType&quot;:&quot;'running'|'done'|'waiting'&quot;},&quot;mandate&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Recopila el contexto de la corrida y define el alcance.&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;tools&quot;:{&quot;editor&quot;:null,&quot;default&quot;:[&quot;leer&quot;,&quot;buscar&quot;,&quot;indexar&quot;],&quot;tsType&quot;:&quot;string[]&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const status = this.props.status || 'running';
+    const smap = {
+      running: { label:'En curso',     dot:'#4B54D4', ring:'#4B54D4', glow:'0 0 0 1px rgba(75,84,212,.35), 0 10px 30px -14px rgba(75,84,212,.5)' },
+      done:    { label:'Completado',   dot:'#6B8E4E', ring:'#E1E7EE', glow:'0 6px 20px -14px rgba(30,45,70,.16)' },
+      waiting: { label:'En espera',    dot:'#D9963A', ring:'#E1E7EE', glow:'0 6px 20px -14px rgba(30,45,70,.16)' }
+    };
+    const s = smap[status] || smap.running;
+    const tools = this.props.tools || ['leer','escribir','buscar'];
+    return {
+      title: this.props.title || 'Agente',
+      type: this.props.type || 'Agente',
+      phase: this.props.phase || 'Fase',
+      mandate: this.props.mandate || '',
+      tools, hasTools: tools.length > 0,
+      statusLabel: s.label, dot: s.dot, ring: s.ring, glow: s.glow,
+      running: status === 'running'
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+</helmet>
+<div style="width:100%;box-sizing:border-box;display:flex;align-items:center;gap:18px;padding:13px 20px;background:#FFFFFF;border-top:1px solid #E1E7EE;font-family:Nunito,sans-serif">
+  <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+    <button style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;border:1px solid #A8D92A;background:#C0EC38;color:#16181C;font-size:13px;cursor:pointer;padding:0">▶</button>
+    <span style="font-family:Fredoka,sans-serif;font-size:12.5px;font-weight:600;color:#7A8694;white-space:nowrap">Reproducir corrida</span>
+  </div>
+  <div style="position:relative;flex:1;height:34px;display:flex;align-items:center">
+    <div style="position:absolute;left:0;right:0;height:3px;border-radius:2px;background:#E1E7EE"></div>
+    <div style="position:absolute;left:0;height:3px;border-radius:2px;background:linear-gradient(90deg,#4B54D4,#4249C4);width:{{ progress }}%"></div>
+    <sc-for list="{{ nodes }}" as="node" hint-placeholder-count="7">
+      <div style="position:absolute;top:50%;transform:translate(-50%,-50%);left:{{ node.left }}%;display:flex;flex-direction:column;align-items:center">
+        <span style="width:11px;height:11px;border-radius:50%;background:{{ node.fill }};border:2px solid #FFFFFF;box-shadow:0 0 0 1px {{ node.ring }}"></span>
+      </div>
+    </sc-for>
+    <div style="position:absolute;top:50%;transform:translate(-50%,-50%);left:{{ progress }}%;width:15px;height:15px;border-radius:50%;background:#FFFFFF;border:3px solid #4B54D4;box-shadow:0 2px 8px rgba(75,84,212,.4)"></div>
+  </div>
+  <span style="font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#95A0AE;white-space:nowrap;flex-shrink:0">{{ elapsed }} / {{ total }}</span>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:720,&quot;height&quot;:72},&quot;nodes&quot;:{&quot;editor&quot;:null,&quot;default&quot;:[],&quot;tsType&quot;:&quot;{state:'done'|'active'|'pending'}[]&quot;},&quot;progress&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:50,&quot;min&quot;:0,&quot;max&quot;:100,&quot;unit&quot;:&quot;%&quot;,&quot;tsType&quot;:&quot;number&quot;},&quot;elapsed&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;02:14&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;total&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;04:30&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const raw = (this.props.nodes && this.props.nodes.length) ? this.props.nodes : [
+      { state:'done' }, { state:'done' }, { state:'done' }, { state:'active' },
+      { state:'pending' }, { state:'pending' }, { state:'pending' }
+    ];
+    const cmap = {
+      done:    { fill:'#6B8E4E', ring:'rgba(107,142,78,.5)' },
+      active:  { fill:'#4B54D4', ring:'rgba(75,84,212,.7)' },
+      pending: { fill:'#CBD4DE', ring:'rgba(203,212,222,.9)' }
+    };
+    const n = raw.length;
+    const nodes = raw.map((x, i) => ({ left: n > 1 ? (i / (n - 1)) * 100 : 50, ...(cmap[x.state] || cmap.pending) }));
+    return {
+      nodes,
+      progress: this.props.progress != null ? this.props.progress : 50,
+      elapsed: this.props.elapsed || '02:14',
+      total: this.props.total || '04:30'
+    };
+  }
+}
+</script>
+</body>
+</html>
