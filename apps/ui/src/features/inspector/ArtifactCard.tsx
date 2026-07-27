@@ -54,7 +54,7 @@ export function ArtifactCard({ glyph, type, title, fields, refs }: ArtifactCardP
               variant="outline"
               className="gap-[5px] border-primary/30 bg-primary/10 px-2 py-0.5 font-mono text-[10.5px] text-accent-foreground"
             >
-              ↩ {ref}
+              <span aria-hidden="true">↩</span> {ref}
             </Badge>
           ))}
         </div>

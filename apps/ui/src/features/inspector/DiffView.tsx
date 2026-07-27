@@ -104,7 +104,7 @@ export function DiffView({ filename, lines, tags, justification, decisionRef }: 
               variant="outline"
               className="cursor-pointer gap-1.5 border-primary/35 bg-primary/10 px-[9px] py-0.5 font-mono text-[11px] text-accent-foreground"
             >
-              ↩ remonta a {decisionRef}
+              <span aria-hidden="true">↩</span> remonta a {decisionRef}
             </Badge>
           </div>
         ) : null}
