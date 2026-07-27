@@ -240,6 +240,25 @@
 
   --color-timeline-pending: var(--timeline-pending);
   --color-timeline-pending-border: var(--timeline-pending-border);
+
+  /* AgentNode's running activity cue (`animate-mc-pulse` utility). */
+  --animate-mc-pulse: mc-pulse 1.4s ease-in-out infinite;
+}
+
+/*
+ * AgentNode's running indicator pulses by default; `motion-reduce:animate-none`
+ * on the element covers prefers-reduced-motion (frontend/accessibility.md).
+ */
+@keyframes mc-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.7);
+  }
 }
 
 @layer base {

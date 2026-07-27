@@ -93,7 +93,10 @@ export function AgentNode({ type, title, phase, status, mandate, tools }: AgentN
       ) : null}
       {config.showActivityIndicator ? (
         <div className="mt-[11px] flex items-center gap-[7px]">
-          <span aria-hidden="true" className="size-[7px] rounded-full bg-agent-running" />
+          <span
+            aria-hidden="true"
+            className="animate-mc-pulse motion-reduce:animate-none size-[7px] rounded-full bg-agent-running"
+          />
           <span className="font-mono text-[10.5px] text-agent-running">escribiendo diff…</span>
         </div>
       ) : null}
