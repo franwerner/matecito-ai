@@ -65,6 +65,73 @@
   --font-display: 'Fredoka', ui-sans-serif, system-ui, sans-serif;
   --font-sans: 'Nunito', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /*
+   * Semantic state tokens — 5 closed sets shared by domain components
+   * (features/**). Named by meaning, never by color, so a future dark
+   * theme flips only this block. LabeledEdge's dark palette is the one
+   * exception: it is invariant across themes, so it stays local to its
+   * own module instead of living here (see LabeledEdge component).
+   */
+
+  /* Severity: critical / warning / suggestion / success (SeverityTag, DiffView tags) */
+  --severity-critical: #fbeae6;
+  --severity-critical-foreground: #b23a28;
+  --severity-critical-border: #c4553d;
+
+  --severity-warning: #fbf1dc;
+  --severity-warning-foreground: #9a6b15;
+  --severity-warning-border: #d9963a;
+
+  --severity-suggestion: #e6f0f7;
+  --severity-suggestion-foreground: #2f6c97;
+  --severity-suggestion-border: #5b8db8;
+
+  --severity-success: #eaf1e2;
+  --severity-success-foreground: #4a6b33;
+  --severity-success-border: #6b8e4e;
+
+  /* Agent status: running / done / waiting (AgentNode) */
+  --agent-running: #4b54d4;
+  --agent-running-border: #4b54d4;
+
+  --agent-done: #6b8e4e;
+  --agent-done-border: #e1e7ee;
+
+  --agent-waiting: #d9963a;
+  --agent-waiting-border: #e1e7ee;
+
+  /* Decision status: borrador / ratificada (DecisionCard) */
+  --decision-borrador: #fbf1dc;
+  --decision-borrador-foreground: #9a6b15;
+  --decision-borrador-border: rgba(217, 150, 58, 0.4);
+
+  --decision-ratificada: #eaf1e2;
+  --decision-ratificada-foreground: #4a6b33;
+  --decision-ratificada-border: rgba(107, 142, 78, 0.45);
+
+  /* Diff line type: add / del / ctx (DiffView) */
+  --diff-add: #e8f3dc;
+  --diff-add-foreground: #4a7a2e;
+  --diff-add-border: #6b8e4e;
+
+  --diff-del: #fbe8e4;
+  --diff-del-foreground: #b23a28;
+  --diff-del-border: #c4553d;
+
+  --diff-ctx: transparent;
+  --diff-ctx-foreground: #aab4c0;
+  --diff-ctx-border: transparent;
+
+  /* Timeline node state: done / active / pending (TimelineScrubber) */
+  --timeline-done: #6b8e4e;
+  --timeline-done-border: rgba(107, 142, 78, 0.5);
+
+  --timeline-active: #4b54d4;
+  --timeline-active-border: rgba(75, 84, 212, 0.7);
+
+  --timeline-pending: #cbd4de;
+  --timeline-pending-border: rgba(203, 212, 222, 0.9);
 }
 
 @theme inline {
@@ -105,6 +172,60 @@
   --font-display: var(--font-display);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
+
+  --color-severity-critical: var(--severity-critical);
+  --color-severity-critical-foreground: var(--severity-critical-foreground);
+  --color-severity-critical-border: var(--severity-critical-border);
+
+  --color-severity-warning: var(--severity-warning);
+  --color-severity-warning-foreground: var(--severity-warning-foreground);
+  --color-severity-warning-border: var(--severity-warning-border);
+
+  --color-severity-suggestion: var(--severity-suggestion);
+  --color-severity-suggestion-foreground: var(--severity-suggestion-foreground);
+  --color-severity-suggestion-border: var(--severity-suggestion-border);
+
+  --color-severity-success: var(--severity-success);
+  --color-severity-success-foreground: var(--severity-success-foreground);
+  --color-severity-success-border: var(--severity-success-border);
+
+  --color-agent-running: var(--agent-running);
+  --color-agent-running-border: var(--agent-running-border);
+
+  --color-agent-done: var(--agent-done);
+  --color-agent-done-border: var(--agent-done-border);
+
+  --color-agent-waiting: var(--agent-waiting);
+  --color-agent-waiting-border: var(--agent-waiting-border);
+
+  --color-decision-borrador: var(--decision-borrador);
+  --color-decision-borrador-foreground: var(--decision-borrador-foreground);
+  --color-decision-borrador-border: var(--decision-borrador-border);
+
+  --color-decision-ratificada: var(--decision-ratificada);
+  --color-decision-ratificada-foreground: var(--decision-ratificada-foreground);
+  --color-decision-ratificada-border: var(--decision-ratificada-border);
+
+  --color-diff-add: var(--diff-add);
+  --color-diff-add-foreground: var(--diff-add-foreground);
+  --color-diff-add-border: var(--diff-add-border);
+
+  --color-diff-del: var(--diff-del);
+  --color-diff-del-foreground: var(--diff-del-foreground);
+  --color-diff-del-border: var(--diff-del-border);
+
+  --color-diff-ctx: var(--diff-ctx);
+  --color-diff-ctx-foreground: var(--diff-ctx-foreground);
+  --color-diff-ctx-border: var(--diff-ctx-border);
+
+  --color-timeline-done: var(--timeline-done);
+  --color-timeline-done-border: var(--timeline-done-border);
+
+  --color-timeline-active: var(--timeline-active);
+  --color-timeline-active-border: var(--timeline-active-border);
+
+  --color-timeline-pending: var(--timeline-pending);
+  --color-timeline-pending-border: var(--timeline-pending-border);
 }
 
 @layer base {
