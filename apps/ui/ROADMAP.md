@@ -11,7 +11,7 @@ Construir sobre los primitives, siguiendo la referencia visual (`docs/visual/`):
 - [ ] DecisionCard
 - [ ] DiffView
 - [x] SeverityTag
-- [ ] CanvasEdge
+- [x] CanvasEdge
 - [ ] LabeledEdge
 - [ ] TimelineScrubber
 
