@@ -48,9 +48,13 @@
 
   --secondary: #c0ec38;
   --secondary-foreground: #16181c;
+  --secondary-border: #a8d92a;
 
   --muted: #f1f5f9;
   --muted-foreground: #5b6571;
+
+  /* Sunken surface — recessed background for code/data display within a card (DiffView's line body). */
+  --surface-sunken: #f4f7fa;
 
   --accent: #eef0fc;
   --accent-foreground: #4249c4;
@@ -71,6 +75,7 @@
   --chrome-meta: #95a0ae;
   --chrome-body: #7a8694;
   --chrome-strong: #5a6675;
+  --chrome-value: #2a3340;
 
   --font-display: 'Fredoka', ui-sans-serif, system-ui, sans-serif;
   --font-sans: 'Nunito', ui-sans-serif, system-ui, sans-serif;
@@ -159,9 +164,12 @@
 
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary-border: var(--secondary-border);
 
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+
+  --color-surface-sunken: var(--surface-sunken);
 
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
@@ -186,6 +194,7 @@
   --color-chrome-meta: var(--chrome-meta);
   --color-chrome-body: var(--chrome-body);
   --color-chrome-strong: var(--chrome-strong);
+  --color-chrome-value: var(--chrome-value);
 
   --color-severity-critical: var(--severity-critical);
   --color-severity-critical-foreground: var(--severity-critical-foreground);

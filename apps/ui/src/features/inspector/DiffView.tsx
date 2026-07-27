@@ -68,7 +68,7 @@ export function DiffView({ filename, lines, tags, justification, decisionRef }: 
           </div>
         ) : null}
       </div>
-      <div className="overflow-x-auto bg-[#F4F7FA] py-1.5">
+      <div className="overflow-x-auto bg-surface-sunken py-1.5">
         <div className="min-w-max">
           {lines.map((line, index) => {
             const style = DIFF_LINE_STYLES[line.type]
@@ -81,13 +81,13 @@ export function DiffView({ filename, lines, tags, justification, decisionRef }: 
                   style.barClassName,
                 )}
               >
-                <span className="w-9 shrink-0 pr-[9px] text-right text-[#AAB4C0] select-none">
+                <span className="text-diff-ctx-foreground w-9 shrink-0 pr-[9px] text-right select-none">
                   {line.lineNumber}
                 </span>
                 <span className={cn('w-[15px] shrink-0 select-none', style.signClassName)}>
                   {style.sign}
                 </span>
-                <span className="pr-2.5 whitespace-pre text-[#2A3340]">{line.text}</span>
+                <span className="text-chrome-value pr-2.5 whitespace-pre">{line.text}</span>
               </div>
             )
           })}

@@ -40,7 +40,9 @@ export function ArtifactCard({ glyph, type, title, fields, refs }: ArtifactCardP
             <span className="text-chrome-meta font-mono text-[11px] whitespace-nowrap">
               {field.label}
             </span>
-            <span className="text-right font-mono text-[11.5px] text-[#2A3340]">{field.value}</span>
+            <span className="text-chrome-value text-right font-mono text-[11.5px]">
+              {field.value}
+            </span>
           </Fragment>
         ))}
       </div>

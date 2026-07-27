@@ -84,7 +84,7 @@ export function TimelineScrubber({
           size="icon"
           onClick={onPlayToggle}
           aria-label={isPlaying ? 'Pausar corrida' : 'Reproducir corrida'}
-          className="size-[34px] rounded-[10px] border border-[#A8D92A] p-0 text-[13px]"
+          className="border-secondary-border size-[34px] rounded-[10px] border p-0 text-[13px]"
         >
           <span aria-hidden="true">{isPlaying ? '❚❚' : '▶'}</span>
         </Button>
