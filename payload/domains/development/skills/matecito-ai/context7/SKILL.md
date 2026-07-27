@@ -20,7 +20,7 @@ This skill deliberately names **capabilities, not literal tool names** — tool 
 
 Before first use in a session, confirm the actual registered tool names under the prefix (from the session's tool list, or via ToolSearch). Use whatever names are registered — if they differ from what you remember, the registration wins.
 
-**Absent MCP → silent degradation.** If no context7 prefix is registered, skip this skill silently: no error, no mention. Fall back to the package manager's own resolution (install without hand-writing a version — `npm install pkg` / `go get pkg@latest` resolve current versions natively) rather than writing a remembered version number.
+**Absent MCP → silent degradation.** If no context7 prefix is registered, skip this skill silently: no error, no mention. Resolve versions through the ecosystem's remote lookup alone (see below), or let the package manager resolve them (`npm install pkg` / `go get pkg@latest`) — never from a remembered version number.
 
 ## Hard triggers — consult BEFORE acting
 
@@ -33,7 +33,7 @@ Before first use in a session, confirm the actual registered tool names under th
 | Migrate a library across versions | Breaking changes, migration guide |
 | Debug a library-specific error | Known issues, changed behavior between versions |
 
-The first two are **mandatory**: no dependency is added and no version is pinned without resolving it first (or falling back to native package-manager resolution when the MCP is absent).
+The first two are **mandatory**: no dependency is added and no version is pinned without resolving it through context7 first and then corroborating it (see below).
 
 ## Version choice rules
 
@@ -41,13 +41,37 @@ The first two are **mandatory**: no dependency is added and no version is pinned
 - **Existing dependency** → the repo's manifest/lockfile wins for consistency. Do NOT silently upgrade an already-pinned version — an upgrade is a scope change: surface it and ask.
 - **Peer/engine constraints** → check the manifest's engine/runtime pins (e.g. `engines.node`) before picking a version the runtime can't run.
 
-## Not found → report, NEVER guess
+## Corroborate with the ecosystem's remote lookup
 
-context7 is the ONLY version source — there is no secondary lookup (no registry queries, no "let the package manager decide", no docs sites). If context7 returns nothing relevant for the requested library, or resolves it but yields no concrete version:
+context7's docs are a snapshot and can lag the registry, so a version taken from it alone may already be stale. After context7 gives you a candidate, **corroborate it against the ecosystem's own remote lookup** — then apply the resolution rule below.
 
-- **NEVER** write a version inferred from training memory, from a "similar" library, or from what "sounds right". A guessed version is worse than no version.
-- **NEVER** substitute another source on your own initiative.
-- **STOP and report it explicitly**: state that nothing related to that specific library was found in context7, show what you queried, and ask the user how to proceed.
+**Identify the ecosystem from the manifest present**, and use its lookup command:
+
+| Manifest | Remote lookup |
+| --- | --- |
+| `package.json` | `npm view <pkg> version` (or the project's package manager equivalent) |
+| `go.mod` | `go list -m -versions <module>` |
+| `pyproject.toml` / `requirements.txt` | `pip index versions <pkg>` |
+| `Cargo.toml` | `cargo info <crate>` |
+| `Gemfile` | `gem list -r -e <gem>` |
+| `composer.json` | `composer show -a <pkg>` |
+
+**The number NEVER comes from what is installed locally.** Installed state (`node_modules`, `npm ls`, `pip show`, `go.sum`, any lockfile) tells you what IS there, not what is current — it is not an answer to "which version should I pin". Only context7 or the ecosystem's **remote** lookup may produce the number.
+
+**Resolution:**
+
+- **Both agree** → write it.
+- **They differ** → write the ecosystem's version **only if it is greater** than context7's; if it is lower or equal, keep context7's. Either way, note the discrepancy in one line.
+- **context7 empty, ecosystem resolves it** → write the ecosystem's version and state that context7 did not have the library.
+- **No lookup tool available** for that ecosystem (toolchain absent) → context7's version stands; say it was not corroborated.
+
+## Not found in ANY source → report, NEVER guess
+
+If neither context7 nor the ecosystem's remote lookup finds the requested library (or its specific version):
+
+- **NEVER** write a version inferred from training memory, from a "similar" library, from a lockfile, or from what "sounds right". A guessed version is worse than no version.
+- **NEVER** invent a third source to fill the gap.
+- **STOP and report it explicitly**: state that nothing was found for that specific library, show what you queried in each source, and ask the user how to proceed.
 - This is blocking: no manifest edit happens for that dependency until the user answers. The rest of the task may continue if independent.
 
 ## What context7 is NOT for
@@ -60,8 +84,9 @@ Applies wherever code or manifests are written: `sdd-apply`, the `direct` lane, 
 
 ## Self-check (before touching a manifest or library API)
 
-1. Am I about to write a **version number**? → resolved via context7? If not → stop.
-1b. Did context7 come up empty for this library or its version? → report "nothing found for <lib> in context7" and wait — never guess, never switch to another source.
-2. Am I writing **config/API code** for a library that moves fast? → queried current docs?
-3. Is the MCP absent? → degrade silently; never hand-write a remembered version.
-4. Is this business logic or a general concept? → context7 does not apply.
+1. Am I about to write a **version number**? → came from context7 or the ecosystem's remote lookup? If from neither → stop.
+2. Did I corroborate context7's candidate against the ecosystem's remote lookup, taking the greater of the two?
+3. Am I reading the number off installed state (`node_modules`, `npm ls`, `pip show`, `go.sum`, a lockfile)? → that is not a source; go query remotely.
+4. Did BOTH sources come up empty? → report what you queried in each and wait — never guess.
+5. Am I writing **config/API code** for a library that moves fast? → queried current docs?
+6. Is this business logic or a general concept? → context7 does not apply.
