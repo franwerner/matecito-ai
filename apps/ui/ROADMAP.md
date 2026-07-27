@@ -7,7 +7,7 @@ Estado: la base est√° cerrada (cambio SDD `ui-base-components`, archivado): cat√
 Construir sobre los primitives, siguiendo la referencia visual (`docs/visual/`):
 
 - [x] AgentNode
-- [ ] ArtifactCard
+- [x] ArtifactCard
 - [ ] DecisionCard
 - [ ] DiffView
 - [x] SeverityTag
