@@ -13,7 +13,7 @@ Construir sobre los primitives, siguiendo la referencia visual (`docs/visual/`):
 - [x] SeverityTag
 - [x] CanvasEdge
 - [x] LabeledEdge
-- [ ] TimelineScrubber
+- [x] TimelineScrubber
 
 Van bajo `src/features/` según `structure/architecture-style.md`. Sin pantallas todavía.
 
