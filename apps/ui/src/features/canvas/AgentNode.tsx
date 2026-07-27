@@ -65,7 +65,7 @@ export function AgentNode({ type, title, phase, status, mandate, tools }: AgentN
           <span aria-hidden="true" className="size-1.5 rounded-full bg-primary" />
           {type}
         </Badge>
-        <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#7A8694]">
+        <span className="text-chrome-body inline-flex items-center gap-1.5 text-[11px] font-bold">
           <span aria-hidden="true" className={cn('size-2 rounded-full', config.dotClassName)} />
           {config.label}
         </span>
@@ -73,18 +73,18 @@ export function AgentNode({ type, title, phase, status, mandate, tools }: AgentN
       <div className="font-display text-[17px] leading-[1.15] font-semibold text-card-foreground">
         {title}
       </div>
-      <div className="mt-1 font-mono text-[10.5px] tracking-[.06em] text-[#95A0AE] uppercase">
+      <div className="text-chrome-meta mt-1 font-mono text-[10.5px] tracking-[.06em] uppercase">
         {phase}
       </div>
       {mandate ? (
-        <div className="mt-[9px] text-[12.5px] leading-[1.45] text-[#7A8694]">{mandate}</div>
+        <div className="text-chrome-body mt-[9px] text-[12.5px] leading-[1.45]">{mandate}</div>
       ) : null}
       {hasTools ? (
         <div className="mt-[11px] flex flex-wrap gap-[5px] border-t border-border pt-[11px]">
           {tools?.map((tool) => (
             <span
               key={tool}
-              className="rounded-[5px] border border-border bg-muted px-[7px] py-0.5 font-mono text-[10.5px] text-[#5A6675]"
+              className="text-chrome-strong rounded-[5px] border border-border bg-muted px-[7px] py-0.5 font-mono text-[10.5px]"
             >
               {tool}
             </span>

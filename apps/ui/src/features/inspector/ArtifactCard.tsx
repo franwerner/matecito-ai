@@ -23,11 +23,11 @@ export function ArtifactCard({ glyph, type, title, fields, refs }: ArtifactCardP
       <div className="mb-[9px] flex items-center gap-2">
         <span
           aria-hidden="true"
-          className="inline-flex size-6 items-center justify-center rounded-[6px] border border-border bg-muted font-mono text-xs text-[#5A6675]"
+          className="text-chrome-strong inline-flex size-6 items-center justify-center rounded-[6px] border border-border bg-muted font-mono text-xs"
         >
           {glyph}
         </span>
-        <span className="font-mono text-[10.5px] font-bold tracking-[.06em] text-[#95A0AE] uppercase">
+        <span className="text-chrome-meta font-mono text-[10.5px] font-bold tracking-[.06em] uppercase">
           {type}
         </span>
       </div>
@@ -37,7 +37,7 @@ export function ArtifactCard({ glyph, type, title, fields, refs }: ArtifactCardP
       <div className="mt-3 grid grid-cols-[auto_1fr] gap-x-[14px] gap-y-[6px]">
         {fields.map((field) => (
           <Fragment key={field.label}>
-            <span className="font-mono text-[11px] whitespace-nowrap text-[#95A0AE]">
+            <span className="text-chrome-meta font-mono text-[11px] whitespace-nowrap">
               {field.label}
             </span>
             <span className="text-right font-mono text-[11.5px] text-[#2A3340]">{field.value}</span>

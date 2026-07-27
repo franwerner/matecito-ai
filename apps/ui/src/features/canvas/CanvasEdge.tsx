@@ -40,7 +40,7 @@ export function CanvasEdge({ label }: CanvasEdgeProps) {
         />
         <path d={CANVAS_EDGE_ARROW_PATH} className="fill-primary" />
       </svg>
-      <span className="border-border bg-card absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-md border px-2.5 py-[3px] font-mono text-[11px] whitespace-nowrap text-[#5A6675]">
+      <span className="text-chrome-strong border-border bg-card absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-md border px-2.5 py-[3px] font-mono text-[11px] whitespace-nowrap">
         {label}
       </span>
     </div>

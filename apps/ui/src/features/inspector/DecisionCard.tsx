@@ -36,7 +36,7 @@ export function DecisionCard({ id, title, status, summary, relations }: Decision
   return (
     <div className="w-full rounded-[10px] border border-border bg-card p-[14px_15px] font-sans">
       <div className="mb-2 flex items-center justify-between gap-[10px]">
-        <span className="font-mono text-[10.5px] tracking-[.03em] text-[#95A0AE]">{id}</span>
+        <span className="text-chrome-meta font-mono text-[10.5px] tracking-[.03em]">{id}</span>
         <Badge
           variant="outline"
           className={cn('gap-1.5 px-[9px] py-[3px] text-[11px]', config.pillClassName)}
@@ -49,10 +49,10 @@ export function DecisionCard({ id, title, status, summary, relations }: Decision
         {title}
       </div>
       {summary ? (
-        <div className="mt-[7px] text-[12.5px] leading-[1.5] text-[#7A8694]">{summary}</div>
+        <div className="text-chrome-body mt-[7px] text-[12.5px] leading-[1.5]">{summary}</div>
       ) : null}
       <div className="mt-3 flex items-center gap-2 border-t border-border pt-[11px]">
-        <span className="inline-flex items-center gap-1.5 font-mono text-[11px] text-[#5A6675]">
+        <span className="text-chrome-strong inline-flex items-center gap-1.5 font-mono text-[11px]">
           <span aria-hidden="true" className="text-primary">
             ◇
           </span>
