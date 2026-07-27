@@ -1,0 +1,121 @@
+@import 'tailwindcss';
+
+/* Self-hosted variable fonts (latin subset) — no runtime CDN, per delivery/deployment-topology.md. */
+@font-face {
+  font-family: 'Fredoka';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('./fonts/fredoka-variable-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('./fonts/nunito-variable-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('./fonts/jetbrains-mono-variable-latin.woff2') format('woff2');
+}
+
+/*
+ * Light theme tokens (only theme in this batch — no `.dark`, no toggle).
+ * Values taken from the rendered mockups (docs/visual/*.dc.html), not from Visual.md §4.
+ * Role-based CSS variable names so a future dark theme can override this block
+ * without touching any primitive.
+ */
+:root {
+  --radius: 0.625rem;
+
+  --background: #e8eef4;
+  --foreground: #1a1d24;
+
+  --card: #ffffff;
+  --card-foreground: #1a1d24;
+
+  --popover: #ffffff;
+  --popover-foreground: #1a1d24;
+
+  --primary: #4b54d4;
+  --primary-foreground: #ffffff;
+
+  --secondary: #c0ec38;
+  --secondary-foreground: #16181c;
+
+  --muted: #f1f5f9;
+  --muted-foreground: #5b6571;
+
+  --accent: #eef0fc;
+  --accent-foreground: #4249c4;
+
+  --destructive: #bf523a;
+  --destructive-foreground: #ffffff;
+
+  --border: #e1e7ee;
+  --input: #e1e7ee;
+  --ring: #4b54d4;
+
+  --font-display: 'Fredoka', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Nunito', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-full: 9999px;
+
+  --font-display: var(--font-display);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+    outline-color: var(--color-ring);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+  }
+}
