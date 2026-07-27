@@ -127,9 +127,9 @@ Mantener, por proyecto, un índice consultable del estado actual de los records 
 
 ## Referencias
 
-- **EDR** → [`../../edr/data/storage-sync-model.md`](../../edr/data/storage-sync-model.md) — el modelo de almacenamiento y sincronización: base self-contained con el contenido versionado, archivo canónico para editar, write-through más watch, y el scoping por `(proyecto, rama)`.
-- **EDR** → [`../../edr/data/data-access.md`](../../edr/data/data-access.md) — el borde de persistencia (Repository) donde viven la escritura del índice y de las versiones.
-- **EDR** → [`../../edr/data/data-modeling.md`](../../edr/data/data-modeling.md) — (Pending) el store de versiones content-addressable y el pin de la versión referenciada por un evento.
-- **EDR** → [`../../edr/contracts/api-contract.md`](../../edr/contracts/api-contract.md) — la superficie de lectura de la UI que consume el índice y la versión exacta que aplicó un evento.
+- **EDR** → [`../../../apps/api/.matecito-ai/edr/data/storage-sync-model.md`](../../../apps/api/.matecito-ai/edr/data/storage-sync-model.md) — el modelo de almacenamiento y sincronización: base self-contained con el contenido versionado, archivo canónico para editar, write-through más watch, y el scoping por `(proyecto, rama)`.
+- **EDR** → [`../../../apps/api/.matecito-ai/edr/data/data-access.md`](../../../apps/api/.matecito-ai/edr/data/data-access.md) — el borde de persistencia (Repository) donde viven la escritura del índice y de las versiones.
+- **EDR** → [`../../../apps/api/.matecito-ai/edr/data/data-modeling.md`](../../../apps/api/.matecito-ai/edr/data/data-modeling.md) — (Pending) el store de versiones content-addressable y el pin de la versión referenciada por un evento.
+- **EDR** → [`../../../apps/api/.matecito-ai/edr/contracts/api-contract.md`](../../../apps/api/.matecito-ai/edr/contracts/api-contract.md) — la superficie de lectura de la UI que consume el índice y la versión exacta que aplicó un evento.
 - **Rule** → [`../rule/event-scoping.md`](../rule/event-scoping.md) — cómo se scopea el índice y las versiones por proyecto.
 - **Flow** → [`../flow/submit-phase-artifact.md`](../flow/submit-phase-artifact.md) — el flujo que pinea la versión vigente de un EDR/spec al persistir el evento.

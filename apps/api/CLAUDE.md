@@ -17,11 +17,6 @@ Para crear, actualizar o revisar decisiones de ingeniería (incluyendo agregar/c
 
 ## Comportamiento del sistema (capability-specs)
 
-El comportamiento de este proyecto —qué hace ante cada situación— está en `.matecito-ai/development-specs/`, **organizado por tipo** (`flow` / `rule` / `lifecycle` / `process`).
+El comportamiento del sistema vive a **nivel de proyecto** (root), no en este sub-app: `<repo-root>/.matecito-ai/development-specs/`, organizado por tipo (`flow` / `rule` / `lifecycle` / `process`). El broker implementa varias de esas capabilities; su contrato del *qué hace* se lee desde ahí.
 
-**Antes de escribir código o tests que implementen o modifiquen un comportamiento (un flujo, una regla de negocio, un ciclo de vida, un proceso):**
-1. Abrí `.matecito-ai/development-specs/INDEX.md` (índice raíz) e identificá el **tipo** relevante a tu tarea.
-2. Abrí `.matecito-ai/development-specs/<type>/INDEX.md` y leé el capability-spec de lo que vas a tocar — es el contrato del *qué hace*, con sus escenarios verificables.
-3. Si hay contradicción entre tu plan y un spec `Accepted`: pará y preguntale al usuario.
-
-Los specs dicen *qué hace* el sistema; el *por qué* de cada elección técnica vive en `.matecito-ai/edr/` y el *cómo* literal en el código. Para definir, actualizar o validar comportamiento, usá `development-spec-bootstrap` (y `development-spec-validate` para chequear coherencia).
+**Antes de implementar o modificar un comportamiento** (un flujo, una regla, un ciclo de vida, un proceso): leé `<repo-root>/.matecito-ai/development-specs/INDEX.md` y el spec correspondiente. Si tu plan contradice un spec `Accepted`, pará y preguntale al usuario. Los specs dicen *qué hace*; el *por qué* técnico vive en los EDRs de este sub-app (`.matecito-ai/edr/`) y el *cómo* en el código. Para definir/validar comportamiento: `development-spec-bootstrap` / `development-spec-validate`.

@@ -112,10 +112,10 @@ Recibir el artefacto estructurado que produce una fase del flujo SDD, validarlo 
 
 ## Referencias
 
-- **EDR** → [`../../edr/contracts/mcp-server.md`](../../edr/contracts/mcp-server.md) — la superficie MCP, las tools de submit por fase y la identidad por request.
-- **EDR** → [`../../edr/contracts/api-contract.md`](../../edr/contracts/api-contract.md) — separa esta superficie de escritura (MCP) de la de lectura de la UI.
-- **EDR** → [`../../edr/data/data-modeling.md`](../../edr/data/data-modeling.md) — cómo se modela y persiste el evento en el event-log.
-- **EDR** → [`../../edr/runtime/error-handling.md`](../../edr/runtime/error-handling.md) — por qué la respuesta de error es `{error, code}` sin internals y dónde van los detalles internos.
+- **EDR** → [`../../../apps/api/.matecito-ai/edr/contracts/mcp-server.md`](../../../apps/api/.matecito-ai/edr/contracts/mcp-server.md) — la superficie MCP, las tools de submit por fase y la identidad por request.
+- **EDR** → [`../../../apps/api/.matecito-ai/edr/contracts/api-contract.md`](../../../apps/api/.matecito-ai/edr/contracts/api-contract.md) — separa esta superficie de escritura (MCP) de la de lectura de la UI.
+- **EDR** → [`../../../apps/api/.matecito-ai/edr/data/data-modeling.md`](../../../apps/api/.matecito-ai/edr/data/data-modeling.md) — cómo se modela y persiste el evento en el event-log.
+- **EDR** → [`../../../apps/api/.matecito-ai/edr/runtime/error-handling.md`](../../../apps/api/.matecito-ai/edr/runtime/error-handling.md) — por qué la respuesta de error es `{error, code}` sin internals y dónde van los detalles internos.
 - **Lifecycle** → [`../lifecycle/change.md`](../lifecycle/change.md) — el guard `change_closed`.
 - **Rule** → [`../rule/event-scoping.md`](../rule/event-scoping.md) — cómo se resuelve el (proyecto, change) del contexto.
 - **Process** → [`../process/index-decision-records.md`](../process/index-decision-records.md) — el indexado y versionado del EDR/spec, y cómo se resuelve y congela la versión vigente que este flujo pinea.

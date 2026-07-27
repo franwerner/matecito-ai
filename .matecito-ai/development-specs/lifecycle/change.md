@@ -67,6 +67,6 @@ Definir el ciclo de vida de un change —sus estados y qué lo mueve entre ellos
 
 ## Referencias
 
-- **EDR** → [`../../edr/delivery/deployment-topology.md`](../../edr/delivery/deployment-topology.md) — el daemon global único que aloja el store donde vive el estado del change.
-- **EDR** → [`../../edr/contracts/mcp-server.md`](../../edr/contracts/mcp-server.md) — la tool `change_status` y el error `change_closed`.
+- **EDR** → [`../../../apps/api/.matecito-ai/edr/delivery/deployment-topology.md`](../../../apps/api/.matecito-ai/edr/delivery/deployment-topology.md) — el daemon global único que aloja el store donde vive el estado del change.
+- **EDR** → [`../../../apps/api/.matecito-ai/edr/contracts/mcp-server.md`](../../../apps/api/.matecito-ai/edr/contracts/mcp-server.md) — la tool `change_status` y el error `change_closed`.
 - **Rule** → [`../rule/event-scoping.md`](../rule/event-scoping.md) — cómo se identifica el change sobre el que se aplica el guard.

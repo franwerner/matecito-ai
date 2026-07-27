@@ -119,8 +119,8 @@ Dar de alta —o linkear— un proyecto en el store por su identidad estable, pa
 
 ## Referencias
 
-- **EDR** → [`../../edr/contracts/mcp-server.md`](../../edr/contracts/mcp-server.md) — las tools `register_project` y `find_project`, y que la identidad del proyecto es el `project-id` del `.id`, no el path.
-- **EDR** → [`../../edr/data/storage-sync-model.md`](../../edr/data/storage-sync-model.md) — el `.id` commiteado como identidad portable y la base que keyea por `project-id`.
-- **EDR** → [`../../edr/delivery/deployment-topology.md`](../../edr/delivery/deployment-topology.md) — el daemon global único que aloja el watch y el store.
+- **EDR** → [`../../../apps/api/.matecito-ai/edr/contracts/mcp-server.md`](../../../apps/api/.matecito-ai/edr/contracts/mcp-server.md) — las tools `register_project` y `find_project`, y que la identidad del proyecto es el `project-id` del `.id`, no el path.
+- **EDR** → [`../../../apps/api/.matecito-ai/edr/data/storage-sync-model.md`](../../../apps/api/.matecito-ai/edr/data/storage-sync-model.md) — el `.id` commiteado como identidad portable y la base que keyea por `project-id`.
+- **EDR** → [`../../../apps/api/.matecito-ai/edr/delivery/deployment-topology.md`](../../../apps/api/.matecito-ai/edr/delivery/deployment-topology.md) — el daemon global único que aloja el watch y el store.
 - **Rule** → [`../rule/event-scoping.md`](../rule/event-scoping.md) — el proyecto identificado por `project-id` y el scoping branch-independiente de su registración.
 - **Process** → [`../process/index-decision-records.md`](../process/index-decision-records.md) — el watch y el índice que arranca la registración, y el owning-root de los records.

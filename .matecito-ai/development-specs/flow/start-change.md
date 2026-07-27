@@ -103,7 +103,7 @@ Dar de alta o continuar un change sobre la rama actual y registrar el mapeo rama
 
 ## Referencias
 
-- **EDR** → [`../../edr/contracts/mcp-server.md`](../../edr/contracts/mcp-server.md) — la tool `start_change`, la identidad por request y el registro del mapeo rama↔nombre.
-- **EDR** → [`../../edr/delivery/deployment-topology.md`](../../edr/delivery/deployment-topology.md) — el daemon global único y el invariante change↔worktree↔rama.
+- **EDR** → [`../../../apps/api/.matecito-ai/edr/contracts/mcp-server.md`](../../../apps/api/.matecito-ai/edr/contracts/mcp-server.md) — la tool `start_change`, la identidad por request y el registro del mapeo rama↔nombre.
+- **EDR** → [`../../../apps/api/.matecito-ai/edr/delivery/deployment-topology.md`](../../../apps/api/.matecito-ai/edr/delivery/deployment-topology.md) — el daemon global único y el invariante change↔worktree↔rama.
 - **Rule** → [`../rule/event-scoping.md`](../rule/event-scoping.md) — cómo se deriva el change de la rama (modelo M1) y el fallback sin rama.
 - **Lifecycle** → [`../lifecycle/change.md`](../lifecycle/change.md) — el guard `change_closed`.

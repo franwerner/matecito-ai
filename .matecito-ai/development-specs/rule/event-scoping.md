@@ -21,7 +21,7 @@ Definir cómo cada evento —venga de una tool MCP o del canal de hooks— se as
 - Los dos canales —hooks (mecánico) y MCP (semántico)— se scopean con la misma (proyecto, change) y se juntan en la vista de la corrida.
 - El scoping nunca depende del `Mcp-Session-Id` del protocolo MCP: Claude Code no lo reenvía al servidor.
 - **Owning-root de los records:** dentro de un proyecto (repo), los records EDR/spec se **sub-identifican por su `owning-root`** (la carpeta padre directa de su `.matecito-ai/`), porque un monorepo puede tener varios `.matecito-ai/`. Ver [`../process/index-decision-records.md`](../process/index-decision-records.md).
-- **Scoping por rama de todo lo que refleja el repo:** todo lo que refleja contenido del repo (que varía por rama) se scopea por `(proyecto, rama)` — los eventos y changes, y los records EDR/spec (su índice, status, `active`/`deleted` y versión vigente). El **proyecto es el contenedor branch-independiente**: solo su registración y el watch son project-level. El **contenido de versiones** es content-addressable, **compartido entre ramas por hash** (no se scopea por rama). Ver [`../../edr/data/storage-sync-model.md`](../../edr/data/storage-sync-model.md).
+- **Scoping por rama de todo lo que refleja el repo:** todo lo que refleja contenido del repo (que varía por rama) se scopea por `(proyecto, rama)` — los eventos y changes, y los records EDR/spec (su índice, status, `active`/`deleted` y versión vigente). El **proyecto es el contenedor branch-independiente**: solo su registración y el watch son project-level. El **contenido de versiones** es content-addressable, **compartido entre ramas por hash** (no se scopea por rama). Ver [`../../../apps/api/.matecito-ai/edr/data/storage-sync-model.md`](../../../apps/api/.matecito-ai/edr/data/storage-sync-model.md).
 
 ## Escenarios
 
@@ -69,6 +69,6 @@ Definir cómo cada evento —venga de una tool MCP o del canal de hooks— se as
 
 ## Referencias
 
-- **EDR** → [`../../edr/contracts/mcp-server.md`](../../edr/contracts/mcp-server.md) — el modelo de identidad por request: header de proyecto, change derivado de la rama, session como atributo, e independencia del `Mcp-Session-Id`.
+- **EDR** → [`../../../apps/api/.matecito-ai/edr/contracts/mcp-server.md`](../../../apps/api/.matecito-ai/edr/contracts/mcp-server.md) — el modelo de identidad por request: header de proyecto, change derivado de la rama, session como atributo, e independencia del `Mcp-Session-Id`.
 - **Process** → [`../process/index-decision-records.md`](../process/index-decision-records.md) — la identidad de los records por slug + owning-root en monorepos con varios `.matecito-ai/`.
-- **EDR** → [`../../edr/data/storage-sync-model.md`](../../edr/data/storage-sync-model.md) — el modelo de almacenamiento y sincronización: archivo canónico para editar, base espejo con versiones content-addressable, y el scoping por `(proyecto, rama)` de lo que refleja el repo.
+- **EDR** → [`../../../apps/api/.matecito-ai/edr/data/storage-sync-model.md`](../../../apps/api/.matecito-ai/edr/data/storage-sync-model.md) — el modelo de almacenamiento y sincronización: archivo canónico para editar, base espejo con versiones content-addressable, y el scoping por `(proyecto, rama)` de lo que refleja el repo.
