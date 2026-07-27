@@ -1,5 +1,6 @@
 import { Fragment } from 'react'
 
+import { cn } from '@/shared/lib/cn'
 import { Badge } from '@/shared/ui'
 
 export interface ArtifactCardField {
@@ -13,10 +14,16 @@ export interface ArtifactCardProps {
   title: string
   fields: ArtifactCardField[]
   refs?: string[]
+  onRefClick?: (ref: string) => void
 }
 
-export function ArtifactCard({ glyph, type, title, fields, refs }: ArtifactCardProps) {
+export function ArtifactCard({ glyph, type, title, fields, refs, onRefClick }: ArtifactCardProps) {
   const hasRefs = Boolean(refs?.length)
+  // Only actionable — and only styled/semantically interactive — when a callback is actually wired.
+  const refClassName = cn(
+    'gap-[5px] border-primary/30 bg-primary/10 px-2 py-0.5 font-mono text-[10.5px] text-accent-foreground',
+    onRefClick && 'cursor-pointer',
+  )
 
   return (
     <div className="w-full rounded-[10px] border border-border bg-card p-[14px_15px] font-sans">
@@ -48,15 +55,19 @@ export function ArtifactCard({ glyph, type, title, fields, refs }: ArtifactCardP
       </div>
       {hasRefs ? (
         <div className="mt-3 flex flex-wrap gap-[6px] border-t border-border pt-[11px]">
-          {refs?.map((ref) => (
-            <Badge
-              key={ref}
-              variant="outline"
-              className="gap-[5px] border-primary/30 bg-primary/10 px-2 py-0.5 font-mono text-[10.5px] text-accent-foreground"
-            >
-              <span aria-hidden="true">↩</span> {ref}
-            </Badge>
-          ))}
+          {refs?.map((ref) =>
+            onRefClick ? (
+              <Badge key={ref} asChild variant="outline" className={refClassName}>
+                <button type="button" onClick={() => onRefClick(ref)}>
+                  <span aria-hidden="true">↩</span> {ref}
+                </button>
+              </Badge>
+            ) : (
+              <Badge key={ref} variant="outline" className={refClassName}>
+                <span aria-hidden="true">↩</span> {ref}
+              </Badge>
+            ),
+          )}
         </div>
       ) : null}
     </div>
