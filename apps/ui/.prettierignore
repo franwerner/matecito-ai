@@ -1,0 +1,8 @@
+dist
+node_modules
+.pnpm-store
+docs
+pnpm-lock.yaml
+src/app/fonts
+.matecito-ai
+CLAUDE.md
