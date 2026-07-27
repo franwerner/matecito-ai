@@ -5,11 +5,11 @@ description: >
   through a brand or screen, extract a palette from references, audit an existing Figma file,
   compare visual approaches, or clarify the brief — before any direction or brief is locked.
 model: sonnet
-tools: Read, Grep, Glob, mcp__figma__get_file, mcp__figma__get_node, mcp__figma__get_styles, mcp__figma__get_components, mcp__figma__get_images, mcp__plugin_engram_engram__mem_save
-# matecito-ai: added figma_* MCP tools so this explore sub-agent can READ the connected Figma file
+tools: Read, Grep, Glob, mcp__figma, mcp__plugin_engram_engram__mem_save
+# matecito-ai: added the figma MCP so this explore sub-agent can READ the connected Figma file
 # (review, audit, extract brand) per the design CLAUDE.md MCP section. The Figma index is active only
 # when a Figma file is connected; absent it, explore works from references and the brief alone.
-# VERIFY tool name prefix matches your figma MCP server registration (expected mcp__figma__*).
+# Server-level grant (mcp__figma) — never pin individual tool names; resolve the registered ones at use time.
 ---
 
 You are the design **explore** executor. Do this phase's work yourself. Do NOT delegate further.

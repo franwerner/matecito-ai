@@ -93,10 +93,12 @@ El `kind` de cada candidato determina qué se lee del archivo Figma durante el s
 
 | kind | qué se lee | llena `## Evidencia (inferida)` | llena `## Alcance` |
 |---|---|---|---|
-| `token` | `get_styles` / variables del `get_file` — un style o variable **nombrado** (`Primary/500`, `Heading/H1`) | kind + observado + prevalencia | la lista de tokens / frames que gobierna |
-| `component` | `get_components` — un componente o set de variantes | kind + observado + prevalencia | el set de componentes / frames que lo instancian |
-| `pattern` | `get_file` / `get_node` — un valor o estilo **repetido sin nombrar** (mismo hex/px a mano) | kind + observado + prevalencia | los frames donde se repite |
+| `token` | los styles y variables **nombrados** del archivo — un style o variable con nombre (`Primary/500`, `Heading/H1`) | kind + observado + prevalencia | la lista de tokens / frames que gobierna |
+| `component` | los componentes y sets de variantes | kind + observado + prevalencia | el set de componentes / frames que lo instancian |
+| `pattern` | la estructura del archivo o el detalle de un nodo — un valor o estilo **repetido sin nombrar** (mismo hex/px a mano) | kind + observado + prevalencia | los frames donde se repite |
 | `absence` | scan probando ausencia en sitios esperados (no hay color styles, no hay text styles, etc.) | kind + observado (sin prevalencia) | omitido (no hay locator) |
+
+> La columna «qué se lee» describe **qué pedirle** al MCP figma, no nombres de tools: resolvé los nombres registrados bajo el prefijo `mcp__figma__*` en el momento de uso.
 
 Reglas de llenado:
 
@@ -142,7 +144,7 @@ Mode A corre cuando el usuario pide explícitamente minear decisiones de diseño
 
 1. **Referencia:** cargar el catálogo de design concerns de bootstrap (READ-ONLY) como taxonomía de clasificación. `.matecito-ai/ddr/` puede no existir — su ausencia significa "nada decidido todavía" (todo será hueco), no es un guard de salida.
 2. **Preflight Figma:** ¿hay un archivo Figma conectado vía el MCP figma?
-   - Sí → Figma como fuente primaria (`get_styles`, `get_components`, `get_file`/`get_node`).
+   - Sí → Figma como fuente primaria (styles y variables nombrados, componentes y sets de variantes, estructura del archivo y detalle de nodo) — pedido por capacidad, no por nombre de tool.
    - No → no hay fuente de evidencia fuerte → `status: silenced`. Canva no cuenta (no expone tokens).
 3. **Executor escanea** → construye `candidates[]` con evidencia por kind. **Dedup por-candidato:** mapear cada hallazgo a un concern y chequear si ya existe `.matecito-ai/ddr/<surface>/<slug>.md` — si existe → saltar (o drift-check en re-run); si no existe → es un hueco → Inferred.
 4. **Discovery report** (ANTES de cualquier escritura):

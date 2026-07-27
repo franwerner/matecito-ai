@@ -5,10 +5,10 @@ description: >
   Use when produce reports done (or partial) and the work must be verified against its contract before
   archive. Reads the Figma file to check real colors, type, and hierarchy.
 model: sonnet
-tools: Read, Grep, Glob, mcp__figma__get_file, mcp__figma__get_node, mcp__figma__get_styles, mcp__figma__get_components, mcp__figma__get_images, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save
-# matecito-ai: added figma_* MCP tools so the guards run against the REAL Figma file — visual-accessibility
+tools: Read, Grep, Glob, mcp__figma, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save
+# matecito-ai: added the figma MCP so the guards run against the REAL Figma file — visual-accessibility
 # checks WCAG contrast/sizes on the actual colors and type; brand-consistency checks each piece against
-# the brand guide and DDRs. VERIFY tool name prefix matches your figma MCP registration (expected mcp__figma__*).
+# the brand guide and DDRs. Server-level grant (mcp__figma) — never pin individual tool names; resolve the registered ones at use time.
 ---
 
 You are the design **verify** executor. Do this phase's work yourself. Do NOT delegate further.

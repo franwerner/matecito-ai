@@ -5,13 +5,13 @@ description: >
   design system, the surface type, and the DDR store, then bootstrap persistence. Use as the FIRST
   setup step before any design phase runs in a project that has not been initialized yet.
 model: sonnet
-tools: Read, Grep, Glob, Bash, mcp__figma__get_file, mcp__figma__get_styles, mcp__figma__get_components, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save
+tools: Read, Grep, Glob, Bash, mcp__figma, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save
 # matecito-ai: design-init is the setup/bootstrap phase — it sits OUTSIDE the intake→archive flow
 # graph and runs once per project (the orchestrator's Design Init Guard launches it when
 # design-init/{project} is absent from Engram). It needs Bash to inspect the real project (asset
-# folders, token files, brand guide) and the figma_* MCP to detect whether a file is connected. It
-# detects and persists; it never produces designs or designs a change. VERIFY the figma tool name
-# prefix matches your figma MCP registration (expected mcp__figma__*).
+# folders, token files, brand guide) and the figma MCP to detect whether a file is connected. It
+# detects and persists; it never produces designs or designs a change.
+# Server-level grant (mcp__figma) — never pin individual tool names; resolve the registered ones at use time.
 ---
 
 You are the design **init** executor. Do this phase's work yourself. Do NOT delegate further.
@@ -24,7 +24,7 @@ Read the skill file at `~/.claude/skills/design-init/SKILL.md` and follow it exa
 Execute all steps from the skill directly in this context window:
 1. Inspect project files (brand guide, token files, asset folders, any design-system manifest, `README`) and summarize the design context and conventions
 2. Detect the design capabilities. Also detect connection capability:
-   a. Check if a Figma file is connected (the `figma` MCP is available and `get_file` succeeds). Record ✅ or ❌. Limitation: if the MCP is not registered or no file is connected at init time, it is detected as ❌ even if a file exists in the account.
+   a. Check if a Figma file is connected (the `figma` MCP is available and a file read succeeds). Record ✅ or ❌. Limitation: if the MCP is not registered or no file is connected at init time, it is detected as ❌ even if a file exists in the account.
    b. Check if Canva is connected (the `canva` MCP is available). Record ✅ or ❌.
    c. Detect the surface type (`landing | app-ui | brand-system | marketing`) from the request and inspected files.
    d. Detect whether a prior brand guide / design system exists. Record the resolved path or ❌.

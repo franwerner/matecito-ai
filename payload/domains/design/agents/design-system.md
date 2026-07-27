@@ -5,10 +5,10 @@ description: >
   each choice. Use when a direction is chosen and the system must be fixed before assets are
   produced. Reads and writes DDRs (Design Decision Records).
 model: opus
-tools: Read, Edit, Write, Grep, Glob, mcp__figma__get_file, mcp__figma__get_node, mcp__figma__get_styles, mcp__figma__get_components, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save
-# matecito-ai: added figma_* MCP tools so this phase can READ the connected Figma file's existing
+tools: Read, Edit, Write, Grep, Glob, mcp__figma, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save
+# matecito-ai: added the figma MCP so this phase can READ the connected Figma file's existing
 # styles/components when locking the system. NO drawio tools — design deliverables are visual, not
-# diagram exports. VERIFY tool name prefix matches your figma MCP registration (expected mcp__figma__*).
+# diagram exports. Server-level grant (mcp__figma) — never pin individual tool names; resolve the registered ones at use time.
 ---
 
 You are the design **system** executor. Do this phase's work yourself. Do NOT delegate further.
