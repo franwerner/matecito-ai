@@ -9,7 +9,7 @@ Construir sobre los primitives, siguiendo la referencia visual (`docs/visual/`):
 - [x] AgentNode
 - [x] ArtifactCard
 - [x] DecisionCard
-- [ ] DiffView
+- [x] DiffView
 - [x] SeverityTag
 - [x] CanvasEdge
 - [x] LabeledEdge
