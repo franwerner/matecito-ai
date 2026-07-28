@@ -61,8 +61,8 @@ Mecanismo para que el flujo renderice artefactos **sin** el MCP (preservar "offe
 ### Q10 — Reconciliación multi-sesión
 El JSON vivo es **por sesión**, pero un change puede cruzar varias. La verdad durable persiste, pero cómo se **reengancha el overlay vivo** al retomar un change en otra sesión no está resuelto.
 - **Estado:** Resuelta
-- **Resolución:** **Disuelto por Q11** — la SQLite ya es **persistente y per-proyecto**, así que un change que cruza sesiones sigue appendeando al mismo store; no hay overlay que reenganchar. Lo único que queda: una sesión nueva **identifica el change por lo que ya existe** (`change-name` / rama de git / estado de flujo en `.matecito-ai/`) y **continúa en su fila**; si no hay change activo, es uno nuevo. No se inventa un identificador nuevo.
-- **Actualización (2026-07-23):** con el store global (ver Q11 actualizada), la SQLite deja de ser per-proyecto: es **única y compartida en `~/.matecito-ai/`**. La identidad del change pasa a **`project_id + change-name`/rama** (el proyecto se registra por su ruta). La reconciliación multi-sesión sigue válida, ahora scopeada por proyecto.
+- **Resolución:** **Disuelto por Q11** — la SQLite ya es **persistente y per-proyecto**, así que un change que cruza sesiones sigue appendeando al mismo store; no hay overlay que reenganchar. Lo único que queda: una sesión nueva **identifica el change por su rama de git** y **continúa en su fila**; si no hay change activo, es uno nuevo. No se inventa un identificador nuevo.
+- **Actualización (2026-07-23):** con el store global (ver Q11 actualizada), la SQLite deja de ser per-proyecto: es **única y compartida en `~/.matecito-ai/`**. La identidad del change pasa a **`project_id` + rama** (el proyecto se registra por su ruta). La reconciliación multi-sesión sigue válida, ahora scopeada por proyecto.
 
 ## Emergentes (surgieron durante la resolución)
 

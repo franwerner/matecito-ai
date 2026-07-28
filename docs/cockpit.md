@@ -77,10 +77,10 @@ Tres capas, cada una con un dueño claro:
 ```
 
 - **Canónico externo:** los EDRs/specs siguen en `.md`, el código en git, la **memoria semántica en Engram**. Matecito UI **no reemplaza** nada de esto.
-- **Store estructurado (SQLite):** el corazón de Matecito UI. Autocontenida (un archivo, sin server aparte, sin infra pesada). El **event-log** (Q1) es una tabla `events`; el estado derivado son queries/vistas → timeline, diff v1→v2 y `supersedes` salen gratis, y ahora **consultables** por la UI. **Persistente** (no efímero): un change sobrevive entre sesiones, **identificado por su `change-name`/rama** — una sesión nueva continúa en la misma fila (Q10). **Indexa (no mueve)** los EDR/spec `.md` — mismo patrón que `codegraph` indexa código que vive en archivos: `.md` canónico, índice consultable en la DB; si divergen, gana el `.md` (se re-indexa).
+- **Store estructurado (SQLite):** el corazón de Matecito UI. Autocontenida (un archivo, sin server aparte, sin infra pesada). El **event-log** (Q1) es una tabla `events`; el estado derivado son queries/vistas → timeline, diff v1→v2 y `supersedes` salen gratis, y ahora **consultables** por la UI. **Persistente** (no efímero): un change sobrevive entre sesiones, **identificado por su rama** — una sesión nueva continúa en la misma fila (Q10). **Indexa (no mueve)** los EDR/spec `.md` — mismo patrón que `codegraph` indexa código que vive en archivos: `.md` canónico, índice consultable en la DB; si divergen, gana el `.md` (se re-indexa).
 - **Broker (mini-API):** único escritor de la SQLite (evita el split-brain AI+UI; SQLite en WAL da 1 escritor + N lectores). La AI escribe vía MCP→API; la UI vía HTTP→API.
 
-> **Actualización (2026-07-23) — store global, no per-proyecto.** El store pasó a **instancia única global**: **un daemon broker único por máquina** + **una SQLite única en `~/.matecito-ai/`** compartida entre todos los proyectos (revierte el "per-proyecto" de Q10/Q11). Cada proyecto se **registra por su ruta** (vía MCP o UI) y toda la data se scopea por `project_id`; la identidad del change pasa a `project_id + change-name`/rama. El invariante único-escritor se mantiene porque hay **un solo proceso** escribiendo. Las decisiones de arquitectura del broker viven como EDRs en `apps/api/.matecito-ai/edr/`.
+> **Actualización (2026-07-23) — store global, no per-proyecto.** El store pasó a **instancia única global**: **un daemon broker único por máquina** + **una SQLite única en `~/.matecito-ai/`** compartida entre todos los proyectos (revierte el "per-proyecto" de Q10/Q11). Cada proyecto se **registra por su ruta** (vía MCP o UI) y toda la data se scopea por `project_id`; la identidad del change pasa a `project_id` + rama. El invariante único-escritor se mantiene porque hay **un solo proceso** escribiendo. Las decisiones de arquitectura del broker viven como EDRs en `apps/api/.matecito-ai/edr/`.
 
 > **Actualización (2026-07-24) — contenido versionado, no solo índice.** El broker no solo **indexa** la proyección de los EDR/spec: guarda su **contenido versionado** (copy-on-write lazy). Un evento pinea la versión **vigente** al persistir; una versión solo se **congela/forkea** cuando el `.md` cambia y ya estaba referenciada (si no, update-in-place). Así la UI muestra un EDR/spec en la **versión exacta que aplicó cada evento**, aun si después se editó o borró — sin versiones de más. El `.md` sigue canónico para editar (git). Detalle en los capability-specs `index-decision-records` / `submit-phase-artifact`.
 
@@ -249,7 +249,7 @@ FASE 3 — El norte: escritura (§7)
 - C1. Schema de tablas: `events` (log), `changes`, `agents`, `artifacts`, `code_refs`, `decisions_index` (EDR/spec) + relaciones.
 - C2. Vistas/queries que derivan el estado para la lectura.
 - C3. Re-indexado de EDR/spec `.md` (file-watch; gana el `.md`).
-- C4. Identidad del change por `change-name`/rama; sesión nueva continúa en su fila (Q10).
+- C4. Identidad del change por (proyecto, rama); sesión nueva continúa en su fila (Q10).
 
 **D · mini-API (broker)**
 - D1. Único escritor de la SQLite (WAL); endpoints de escritura (MCP) y lectura (UI).
