@@ -49,7 +49,9 @@ Registro vivo de las tecnologías concretas elegidas. Cada entrada apunta a un m
 ### Otros
 | Tech | Versión | Por qué |
 |---|---|---|
-| [golangci-lint](golangci-lint.md) | sin pinear | Enforcer del estilo por encima de gofmt + go vet. |
+| [golangci-lint](golangci-lint.md) | v2.12.2 | Enforcer del estilo por encima de gofmt + go vet. |
+| [go-arch-lint](go-arch-lint.md) | v1.16.0 | Vuelve ejecutable el grafo de dependencias entre componentes; lo no declarado está prohibido. |
+| [gofumpt](gofumpt.md) | v0.11.0 | Formato estricto sin opciones: el estilo deja de ser discutible. |
 | [golang.org/x/sync](golang-x-sync.md) | sin pinear | Grupo de goroutines con cancelación propagada para el lifecycle. |
 | [atlas](atlas.md) | v1.2.3 | Migraciones versionadas derivadas del schema en código, embebidas y aplicadas al arranque. |
 | [github.com/google/uuid](google-uuid.md) | v1.6.0 | Genera los UUID v7 que el modelado fija como clave primaria; la stdlib no los ofrece. |

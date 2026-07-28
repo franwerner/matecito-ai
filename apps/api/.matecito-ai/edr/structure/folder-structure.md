@@ -22,8 +22,9 @@ El broker es un módulo Go propio: tiene su `go.mod` bajo `apps/api`. El layout 
 
 ## Reglas verificables
 
-- **[manual]** cada componente vive en su propio paquete bajo `internal/`.
+- **[tool: go-arch-lint]** cada componente vive en su propio paquete bajo `internal/` y está declarado en el grafo; un paquete que no pertenece a ningún componente declarado rompe el gate.
 - **[manual]** el entrypoint del daemon vive en `cmd/broker`.
+- **[tool: go-arch-lint]** el entrypoint es el único componente que puede depender de los tres componentes de primer nivel a la vez; ningún componente de primer nivel depende de otro salvo hacia el borde de persistencia.
 
 ## Alternativas consideradas
 
