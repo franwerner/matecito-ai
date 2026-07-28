@@ -14,3 +14,11 @@ Los specs dicen *qué hace* el sistema; el *por qué* de cada elección técnica
 ## Decisiones de ingeniería (EDRs)
 
 Las decisiones técnicas viven **por sub-app**, junto al código que gobiernan: `apps/api/.matecito-ai/edr/` (broker/MCP), `apps/ui/.matecito-ai/edr/` (UI). Antes de tocar arquitectura, capas, errores, datos, transporte o convenciones de un sub-app, leé sus EDRs (empezando por su `edr/INDEX.md`) y su `CLAUDE.md`.
+
+## Cómo implementar sobre el payload (`payload/docs/`)
+
+El `payload/` es lo que matecito-ai **despliega** en la máquina del usuario (agentes, skills, references, fragmentos de dominio). Implementar ahí tiene reglas propias que no se deducen del código: qué entrega un dominio, cómo se aplanan los directorios al desplegar, y por qué una ruta que funciona en este repo se rompe en el del usuario.
+
+**Antes de crear o modificar cualquier cosa bajo `payload/`** —un dominio, un agente, una skill, una reference— abrí `payload/docs/INDEX.md` y leé la guía que corresponda. El índice dice cuándo consultar cada una.
+
+Ojo con el modo de falla típico: probar dentro de este repo esconde los errores de ruta, porque acá `payload/` existe y afuera no.
