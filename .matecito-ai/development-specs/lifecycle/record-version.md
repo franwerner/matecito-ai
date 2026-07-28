@@ -1,7 +1,7 @@
 # Capability — Ciclo de vida de la versión de un record
 
 - **Status:** Accepted
-- **Date:** 2026-07-27
+- **Date:** 2026-07-28
 
 ## Propósito
 
@@ -10,7 +10,7 @@ Definir el ciclo de vida de una versión de record (EDR/spec) —sus estados y q
 ## Entidades y estados
 
 - **Versión de un record** — una foto del contenido y la proyección de un `.md` de record (EDR/spec) en un momento dado. Estados:
-  - **`actual`** — la versión vigente del record; es la que resuelve cualquier referencia nueva y la que se actualiza en el lugar cuando el `.md` cambia sin estar congelada ni apuntada por otra rama.
+  - **`actual`** — la versión vigente del record en su rama; es la que resuelve cualquier referencia nueva y la que se actualiza en el lugar cuando el `.md` cambia sin estar congelada.
   - **`congelada`** — inmutable para siempre; una versión congelada nunca vuelve a `actual` ni se modifica.
 
   Transición: `actual → congelada`, disparada por **la primera vez que un evento la referencia** (el pin). No hay transición inversa.
@@ -18,9 +18,10 @@ Definir el ciclo de vida de una versión de record (EDR/spec) —sus estados y q
 ## Reglas de negocio
 
 - La referencia de un evento resuelve siempre a la **versión actual** del record, de forma implícita al momento de persistir — el agente nunca manda una versión. Al quedar referenciada, esa versión se **congela**.
-- Al cambiar el `.md`, hay **dos razones** independientes por las que la versión actual no se puede tocar: que ya esté **congelada** (referenciada por al menos un evento) **o** que **otra rama la esté apuntando** (misma versión compartida por hash). Si se da **cualquiera** de las dos, se hace **fork**: se crea una **nueva versión actual** desde el `.md` cambiado, para la rama que cambió, y la versión previa queda **intacta** para quien la referencia o la apunta. El **update-in-place** —actualizar el contenido de esa misma versión, sin bump— procede **solo si** la versión no está congelada **y** ninguna otra rama la apunta.
+- Al cambiar el `.md`, hay **una sola razón** por la que la versión actual no se puede tocar: que ya esté **congelada** (referenciada por al menos un evento). Si lo está, se hace **fork**: se crea una **nueva versión actual** desde el `.md` cambiado, para la rama que cambió, y la congelada queda **intacta** para los eventos que la referencian. Si no lo está, se hace **update-in-place**: se actualiza el contenido de esa misma versión, sin bump.
+- **Las versiones no se comparten entre ramas.** Cada `(record, rama)` tiene su propia versión, aun cuando dos ramas tengan contenido idéntico: lo que se comparte y se deduplica es el **contenido**, no la versión. Por eso una edición en una rama nunca puede alterar lo que resuelve otra, y ninguna rama depende del estado de versión de otra.
 - Las versiones **congeladas sobreviven a todo**: a cambios posteriores del `.md` y a su borrado; los eventos que las referencian las siguen resolviendo siempre.
-- El contenido de las versiones es **content-addressable y compartido entre ramas por hash** (deduplicado); el estado del record (`active`/`deleted`) se scopea por rama, pero una versión congelada no pertenece a ninguna rama.
+- El **contenido** de las versiones es **content-addressable y compartido entre ramas por hash** (deduplicado); la **versión** en cambio es propia de cada rama. El estado del record (`active`/`deleted`) se scopea por rama, y una versión congelada no pertenece a ninguna: sobrevive por sí misma para los eventos que la referencian.
 
 ## Escenarios
 
@@ -32,7 +33,7 @@ Definir el ciclo de vida de una versión de record (EDR/spec) —sus estados y q
 
 ### Scenario: update-in-place sin referencia
 
-- **GIVEN** un record cuya versión actual no está referenciada por ningún evento y a la que ninguna otra rama apunta
+- **GIVEN** un record cuya versión actual no está referenciada por ningún evento
 - **WHEN** su `.md` cambia
 - **THEN** el contenido de esa misma versión se actualiza en el lugar, sin crear una versión nueva
 
@@ -42,11 +43,11 @@ Definir el ciclo de vida de una versión de record (EDR/spec) —sus estados y q
 - **WHEN** su `.md` cambia
 - **THEN** se crea una nueva versión `actual` desde el `.md` cambiado, la congelada queda intacta y las referencias existentes siguen resolviendo a la congelada
 
-### Scenario: fork al cambiar una versión compartida con otra rama
+### Scenario: dos ramas con contenido idéntico no comparten versión
 
-- **GIVEN** dos ramas que resuelven a la **misma versión actual** de un record —una sola versión compartida porque su contenido es idéntico— que no está congelada
-- **WHEN** el `.md` cambia en una de las dos ramas
-- **THEN** se crea una nueva versión `actual` desde el `.md` cambiado para esa rama, y la otra rama sigue resolviendo a la versión original con su contenido intacto
+- **GIVEN** un record cuyo `.md` es idéntico en dos ramas
+- **WHEN** el `.md` cambia en una de las dos
+- **THEN** cada rama tiene su propia versión `actual` apuntando al mismo contenido deduplicado, el cambio afecta solo a la versión de la rama que cambió, y la otra sigue resolviendo la suya con su contenido intacto
 
 ### Scenario: la congelada sobrevive al borrado
 

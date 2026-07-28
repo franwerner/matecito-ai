@@ -1,7 +1,7 @@
 # Capability — Indexar y versionar los EDR/spec records
 
 - **Status:** Accepted
-- **Date:** 2026-07-27
+- **Date:** 2026-07-28
 
 ## Propósito
 
@@ -27,7 +27,7 @@ Mantener, por proyecto, un índice consultable del estado actual de los records 
    - **Watch (out-of-band) + sync:** ante un cambio hecho por fuera del daemon (edición a mano, `git checkout`/`merge`), el file-watch re-espeja el `.md` a la base; su ventana asíncrona se puede cerrar on-demand con el comando de sync/reindex.
 2. El sistema lee el `.md` disparado.
 3. Extrae la **proyección** (id/slug, tipo, status, refs/relaciones a otros records) y el **contenido**.
-4. Aplica el versionado **copy-on-write lazy**, según el estado de la versión actual (gobernado por el ciclo de vida de la versión de record, que este proceso aplica pero no define): update-in-place solo si esa versión no está congelada **y** ninguna otra rama la apunta; en cualquier otro caso —congelada por un evento, o apuntada por otra rama— fork a una nueva versión actual para la rama que cambió.
+4. Aplica el versionado **copy-on-write lazy**, según el estado de la versión actual **de esa rama** (gobernado por el ciclo de vida de la versión de record, que este proceso aplica pero no define): update-in-place si esa versión no está congelada; si está congelada por un evento, fork a una nueva versión actual para la rama que cambió.
 5. Actualiza el índice (upsert) apuntando a la versión actual del record, con su proyección al día.
 
 ## Casos borde
@@ -44,7 +44,7 @@ Mantener, por proyecto, un índice consultable del estado actual de los records 
 - El `.md` es la fuente de verdad para editar. Si el índice o el contenido versionado divergen del `.md`, gana el `.md`: se re-indexa (con posible nueva versión según la regla de bump).
 - **El AI lee de los archivos** (el contenido actual, local; el versionado es transparente para su lectura) y escribe por el daemon; **la UI lee de la base** (índice, versiones, historia). El contenido versionado se guarda en la base, no se deriva de git.
 - El versionado de las versiones —cuándo se congela una versión, update-in-place vs fork, la inmutabilidad y supervivencia de las congeladas— lo gobierna el **ciclo de vida de la versión de record** ([`../lifecycle/record-version.md`](../lifecycle/record-version.md)); este proceso lo aplica, no lo define.
-- El **índice/estado** de un record (que existe, su status, `active`/`deleted` y su versión vigente) se scopea por **`(proyecto, rama)`** — cada rama guarda su estado en la base, no se deriva de git, así el `active`/`deleted` **no flip-flopea** al cambiar de rama. El **contenido de versiones** es content-addressable y se **comparte entre ramas por hash** (no se scopea por rama). El proyecto es el contenedor branch-independiente: solo su registración y el watch son project-level.
+- El **índice/estado** de un record (que existe, su status, `active`/`deleted` y su versión vigente) se scopea por **`(proyecto, rama)`** — cada rama guarda su estado en la base, no se deriva de git, así el `active`/`deleted` **no flip-flopea** al cambiar de rama. El **contenido de versiones** es content-addressable y se **comparte entre ramas por hash** (no se scopea por rama); la **versión** en cambio es propia de cada rama. El proyecto es el contenedor branch-independiente: solo su registración y el watch son project-level.
 - **Identidad del record en monorepo (owning-root):** un monorepo puede contener varios `.matecito-ai/` (uno por app). El **ID de un record** es su slug + su **`owning-root`**, donde `owning-root` = el nombre de la **carpeta padre directa** que contiene ese `.matecito-ai/`. El daemon **deriva el owning-root del path** del archivo al indexar. Ejemplos: `.matecito-ai/` en la raíz del repo → owning-root = la raíz del proyecto; `apps/api/.matecito-ai/` → owning-root = `api`; `apps/ui/.matecito-ai/` → owning-root = `ui`. Así dos records con el mismo slug bajo `.matecito-ai/` distintos **no colisionan**.
 
 ## Entidades y estados
@@ -101,7 +101,7 @@ Mantener, por proyecto, un índice consultable del estado actual de los records 
 
 - **GIVEN** el mismo contenido de un record presente en dos ramas
 - **WHEN** el sistema lo versiona
-- **THEN** se guarda **una sola versión** (deduplicada por hash), compartida por ambas ramas y por cualquier evento que la referencie; y borrar el `.md` en una rama **no elimina ese contenido** (solo marca el record `deleted` en esa `(proyecto, rama)`; la versión congelada y el contenido siguen resolviéndose desde otra rama/evento)
+- **THEN** el contenido se guarda **una sola vez** (deduplicado por hash) y lo comparten ambas ramas y cualquier evento que lo referencie, mientras que **cada rama tiene su propia versión** apuntando a ese contenido; y borrar el `.md` en una rama **no elimina ese contenido** (solo marca el record `deleted` en esa `(proyecto, rama)`; la versión congelada y el contenido siguen resolviéndose desde otra rama/evento)
 
 ### Scenario: ref colgada marcada sin romper el índice
 
