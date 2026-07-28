@@ -23,5 +23,13 @@ func parseStoreTime(s string) (time.Time, error) {
 // nowStoreTime stamps a column that has no schema-level default (last_seen_at
 // on project_paths) with the same convention every other timestamp uses.
 func nowStoreTime() string {
-	return time.Now().UTC().Format(rfc3339Milli)
+	return formatStoreTime(time.Now())
+}
+
+// formatStoreTime renders t in the same TEXT convention every timestamp
+// column uses (R2) — the inverse of parseStoreTime. Used where the caller
+// supplies the instant itself (events.occurred_at can be an earlier, caller-
+// given time — R6's late-arriving event) instead of "now".
+func formatStoreTime(t time.Time) string {
+	return t.UTC().Format(rfc3339Milli)
 }

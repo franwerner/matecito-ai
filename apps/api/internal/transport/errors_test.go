@@ -48,7 +48,7 @@ func TestWriteError_NeverLeaksInternals(t *testing.T) {
 }
 
 func TestNewMux_UnmatchedRouteUsesErrorBoundary(t *testing.T) {
-	mux := NewMux(StoreStatus)
+	mux := NewMux(alwaysOK)
 	req := httptest.NewRequest(http.MethodGet, "/does-not-exist", nil)
 	rec := httptest.NewRecorder()
 	mux.ServeHTTP(rec, req)

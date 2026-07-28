@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/franwerner/matecito-ai/apps/api/internal/store"
@@ -105,6 +106,156 @@ func TestOpen_CreatesSchemaFromScratch(t *testing.T) {
 	}
 }
 
+// entityTables returns the migrated database's real entity tables —
+// everything except SQLite's own internal tables and Atlas's
+// atlas_schema_revisions bookkeeping table, which is tooling state, not
+// part of the 11-table domain schema (see revisions.go). Walking this
+// instead of a hand-written list is the point of R2/R15's tests below: a
+// future table that forgets a required column fails on its own, without
+// anyone remembering to add an assertion for it.
+func entityTables(t *testing.T, db *sql.DB) []string {
+	t.Helper()
+	return queryNames(t, db, `SELECT name FROM sqlite_master
+		WHERE type = 'table' AND name NOT LIKE 'sqlite_%' AND name != 'atlas_schema_revisions'
+		ORDER BY name`)
+}
+
+// tableNotNullColumns reports, for every column table actually has, whether
+// it is declared NOT NULL — read from the real schema via PRAGMA
+// table_info, not asserted from a hand-written expectation.
+func tableNotNullColumns(ctx context.Context, t *testing.T, db *sql.DB, table string) map[string]bool {
+	t.Helper()
+	rows, err := db.QueryContext(ctx, fmt.Sprintf(`PRAGMA table_info(%q)`, table))
+	if err != nil {
+		t.Fatalf("table_info(%s): %v", table, err)
+	}
+	defer rows.Close()
+
+	notNull := make(map[string]bool)
+	for rows.Next() {
+		var cid, notnull, pk int
+		var name, ctype string
+		var dflt sql.NullString
+		if err := rows.Scan(&cid, &name, &ctype, &notnull, &dflt, &pk); err != nil {
+			t.Fatalf("scan table_info(%s): %v", table, err)
+		}
+		notNull[name] = notnull == 1
+	}
+	if err := rows.Err(); err != nil {
+		t.Fatalf("rows: %v", err)
+	}
+	return notNull
+}
+
+func requireNotNullColumn(t *testing.T, notNull map[string]bool, table, column string) {
+	t.Helper()
+	present, exists := notNull[column]
+	if !exists {
+		t.Fatalf("table %s has no column %q", table, column)
+	}
+	if !present {
+		t.Fatalf("table %s.%s is nullable, want NOT NULL", table, column)
+	}
+}
+
+// requireForeignKeyOn reads the real schema via PRAGMA foreign_key_list and
+// fails unless table declares a foreign key from column to
+// targetTable — not asserted from a hand-written expectation.
+func requireForeignKeyOn(ctx context.Context, t *testing.T, db *sql.DB, table, column, targetTable string) {
+	t.Helper()
+	rows, err := db.QueryContext(ctx, fmt.Sprintf(`PRAGMA foreign_key_list(%q)`, table))
+	if err != nil {
+		t.Fatalf("foreign_key_list(%s): %v", table, err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var id, seq int
+		var refTable, from, to, onUpdate, onDelete, match string
+		if err := rows.Scan(&id, &seq, &refTable, &from, &to, &onUpdate, &onDelete, &match); err != nil {
+			t.Fatalf("scan foreign_key_list(%s): %v", table, err)
+		}
+		if from == column && refTable == targetTable {
+			return
+		}
+	}
+	if err := rows.Err(); err != nil {
+		t.Fatalf("rows: %v", err)
+	}
+	t.Fatalf("table %s has no foreign key on %q referencing %q", table, column, targetTable)
+}
+
+// TestOpen_EveryEntityTableHasTimestamps covers R2's "toda tabla lleva sus
+// timestamps" by walking the migrated schema's real tables (entityTables)
+// instead of a hand-written list: a future table added without
+// created_at/updated_at fails this test on its own.
+func TestOpen_EveryEntityTableHasTimestamps(t *testing.T) {
+	ctx := context.Background()
+	dir := t.TempDir()
+
+	st, err := store.Open(ctx, dir, testMachineID)
+	if err != nil {
+		t.Fatalf("Open: %v", err)
+	}
+	defer st.Close()
+
+	raw := openRaw(t, dir)
+	tables := entityTables(t, raw)
+	if len(tables) == 0 {
+		t.Fatal("entityTables returned none — the walk itself is broken")
+	}
+
+	for _, table := range tables {
+		t.Run(table, func(t *testing.T) {
+			cols := tableNotNullColumns(ctx, t, raw, table)
+			requireNotNullColumn(t, cols, table, "created_at")
+			requireNotNullColumn(t, cols, table, "updated_at")
+			if table == "events" {
+				requireNotNullColumn(t, cols, table, "occurred_at")
+			}
+		})
+	}
+}
+
+// TestOpen_EveryContentTableHasProjectID covers R15's "toda tabla de
+// contenido tiene su columna de proyecto" by walking the migrated schema's
+// real tables (entityTables), excluding only `projects` itself — the
+// container, not a content table — so a future content table added
+// without project_id fails this test on its own instead of depending on
+// someone remembering to list it.
+func TestOpen_EveryContentTableHasProjectID(t *testing.T) {
+	ctx := context.Background()
+	dir := t.TempDir()
+
+	st, err := store.Open(ctx, dir, testMachineID)
+	if err != nil {
+		t.Fatalf("Open: %v", err)
+	}
+	defer st.Close()
+
+	raw := openRaw(t, dir)
+	tables := entityTables(t, raw)
+
+	var checked int
+	for _, table := range tables {
+		if table == "projects" {
+			continue // the container itself, not a content table (R15).
+		}
+		checked++
+		t.Run(table, func(t *testing.T) {
+			cols := tableNotNullColumns(ctx, t, raw, table)
+			requireNotNullColumn(t, cols, table, "project_id")
+			requireForeignKeyOn(ctx, t, raw, table, "project_id", "projects")
+		})
+	}
+	// R15 names exactly ten content tables; this also catches the walk
+	// silently checking nothing (e.g. an empty exclusion swallowing every
+	// table).
+	if checked != 10 {
+		t.Fatalf("checked %d content tables, want 10 (all entity tables except projects)", checked)
+	}
+}
+
 // TestOpen_IdempotentOnAlreadyMigrated covers the R1 "arranque idempotente"
 // scenario: re-opening an already-migrated database applies nothing new.
 func TestOpen_IdempotentOnAlreadyMigrated(t *testing.T) {
@@ -132,6 +283,55 @@ func TestOpen_IdempotentOnAlreadyMigrated(t *testing.T) {
 	}
 	if applied != 1 {
 		t.Fatalf("applied revisions = %d, want 1 (migration file count)", applied)
+	}
+}
+
+// TestOpen_DivergentRevisionHistoryFailsAndIdentifiesMigration covers R1's
+// "migración fallida aborta el arranque", claims (1) and (2): startup fails,
+// and the error identifies the migration that failed.
+//
+// The simulated state is a database already migrated on another machine,
+// then synced here with a revision history that no longer matches this
+// binary's embedded migration set (storage-sync-model: the database is a
+// deployable, shareable artifact, so this divergence is the realistic
+// failure mode — not a hand-planted foreign object, which Atlas's own
+// "clean database" precondition would reject before ever touching a
+// migration statement, per a real dead end explored and discarded first).
+// Renaming the applied revision's version to one absent from the embedded
+// directory makes Atlas treat the one real migration file as still
+// pending; re-running it against the schema that is, in fact, already
+// there produces a genuine SQL-level failure — not a fabricated corrupt
+// file.
+func TestOpen_DivergentRevisionHistoryFailsAndIdentifiesMigration(t *testing.T) {
+	ctx := context.Background()
+	dir := t.TempDir()
+
+	st, err := store.Open(ctx, dir, testMachineID)
+	if err != nil {
+		t.Fatalf("first Open: %v", err)
+	}
+	if err := st.Close(); err != nil {
+		t.Fatalf("Close: %v", err)
+	}
+
+	// Simulate a database synced from elsewhere whose revision history
+	// doesn't match this binary's one embedded migration
+	// (20260728013142_create_broker_schema.sql): rename the already-applied
+	// revision to a version this binary has never heard of.
+	const embeddedVersion = "20260728013142"
+	raw := openRaw(t, dir)
+	if _, err := raw.ExecContext(ctx,
+		`UPDATE atlas_schema_revisions SET version = '19700101000000' WHERE version = ?`, embeddedVersion,
+	); err != nil {
+		t.Fatalf("simulate divergent revision history: %v", err)
+	}
+
+	_, err = store.Open(ctx, dir, testMachineID)
+	if err == nil {
+		t.Fatal("expected Open to fail against a diverged revision history, got nil error")
+	}
+	if !strings.Contains(err.Error(), embeddedVersion) {
+		t.Fatalf("error does not identify the failing migration version %q: %v", embeddedVersion, err)
 	}
 }
 

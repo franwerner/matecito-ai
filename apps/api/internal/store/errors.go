@@ -28,4 +28,23 @@ var (
 	// ErrPathAlreadyBound is returned when a (machine_id, root_path) is
 	// already bound to a different project.
 	ErrPathAlreadyBound = errors.New("store: path bound elsewhere")
+
+	// ErrInvalidContentHash is returned when a hash string does not carry
+	// the algorithm tag this store understands, shaped like a real digest
+	// (R7: "sha256:<hex minúscula>", constructed and validated in one
+	// place).
+	ErrInvalidContentHash = errors.New("store: invalid content hash")
+
+	// ErrInvalidNoteTransition is returned when a caller asks for an
+	// iteration-note status change its current status does not allow
+	// (R10: pending -> delivered -> resolved, never backwards, never
+	// skipped). This is the write-edge enforcement the spec deferred to
+	// Batch 3 instead of a trigger.
+	ErrInvalidNoteTransition = errors.New("store: invalid iteration note transition")
+
+	// ErrNoteNotDeletable is returned when a physical delete is attempted
+	// on an iteration note that is not `pending` (R11: the only physical
+	// DELETE this store exposes). Same write-edge enforcement as
+	// ErrInvalidNoteTransition.
+	ErrNoteNotDeletable = errors.New("store: iteration note not deletable")
 )

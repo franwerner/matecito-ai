@@ -209,3 +209,54 @@ func TestChangeNameUnique_RawInsertRejected(t *testing.T) {
 		t.Fatal("expected a UNIQUE(project_id, name) violation, got nil error")
 	}
 }
+
+// TestChangeBranchNotNull_RawInsertRejected covers R5's "no hay change sin
+// rama": the database itself rejects a change with a null or absent branch
+// — no sentinel, no admitted null — exercised with raw SQL against the
+// migrated database, bypassing the Repository and the generated client
+// (R13: constraint rejections are exercised with raw SQL, not through the
+// Repository, since the guarantee lives in the database, not in this
+// binary).
+func TestChangeBranchNotNull_RawInsertRejected(t *testing.T) {
+	ctx := context.Background()
+	dir := t.TempDir()
+	st, err := store.Open(ctx, dir, testMachineID)
+	if err != nil {
+		t.Fatalf("Open: %v", err)
+	}
+	t.Cleanup(func() {
+		if err := st.Close(); err != nil {
+			t.Fatalf("Close: %v", err)
+		}
+	})
+
+	raw := openRaw(t, dir)
+	fx := seedFixtures(ctx, t, raw)
+
+	cases := []struct {
+		name  string
+		query string
+	}{
+		{
+			name: "branch explicitly null",
+			query: `INSERT INTO changes
+				(id, created_at, updated_at, branch, name, status, project_id)
+				VALUES ('bad-change-null-branch', ?, ?, NULL, 'null-branch-change', 'active', ?)`,
+		},
+		{
+			name: "branch column omitted",
+			query: `INSERT INTO changes
+				(id, created_at, updated_at, name, status, project_id)
+				VALUES ('bad-change-no-branch', ?, ?, 'no-branch-change', 'active', ?)`,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := raw.ExecContext(ctx, tc.query, ts, ts, fx.projectID)
+			if err == nil {
+				t.Fatal("expected a NOT NULL violation on changes.branch, got nil error")
+			}
+		})
+	}
+}

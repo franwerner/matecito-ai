@@ -10,22 +10,26 @@ type healthResponse struct {
 	Store   string `json:"store"`
 }
 
-// StoreStatus is the Phase 1 stub for the persistence health field (spec
-// Stub C): there is no real store yet — Phase 2 wires SQLite + migrations —
-// so it always reports "ok" and health never depends on a real store.
-func StoreStatus() string {
-	return "ok"
-}
+// healthOK is the one Store value that reports the broker ready (R14):
+// anything else — unavailable, migrating, outdated — is a 503.
+const healthOK = "ok"
 
 // HealthHandler reports the process as up (the handler only runs while the
-// process is alive) plus storeStatus(), injected so Phase 2 can swap in the
-// real store's status without changing this handler.
+// process is alive) plus storeStatus(), injected so the caller supplies the
+// real persistence status without this handler depending on the store
+// package directly (Stub C, observability/health-checks: local check only).
+// Responds 200 only when storeStatus() is "ok"; any other value is 503, per
+// R14.
 func HealthHandler(storeStatus func() string) http.HandlerFunc {
 	return func(w http.ResponseWriter, _ *http.Request) {
+		status := storeStatus()
 		w.Header().Set("Content-Type", "application/json")
+		if status != healthOK {
+			w.WriteHeader(http.StatusServiceUnavailable)
+		}
 		_ = json.NewEncoder(w).Encode(healthResponse{
 			Process: "ok",
-			Store:   storeStatus(),
+			Store:   status,
 		})
 	}
 }

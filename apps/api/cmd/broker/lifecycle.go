@@ -56,10 +56,11 @@ func run(ctx context.Context, args []string, getenv func(string) string, stdout 
 		return 1
 	}
 
-	// Stub C (transport.StoreStatus) still always reports "ok" here — Phase
-	// 2 Batch 4 wires the real store-derived health status; Batch 1 only
-	// opens and migrates the store.
-	srv := transport.New(fmt.Sprintf(":%d", cfg.Port), transport.StoreStatus)
+	// Stub C: the health status is a local, on-demand check against the
+	// already-open store (observability/health-checks) — no external
+	// dependency, and no separate readiness state to track here.
+	storeStatus := func() string { return string(st.StoreStatus(ctx)) }
+	srv := transport.New(fmt.Sprintf(":%d", cfg.Port), storeStatus)
 	if err := srv.Listen(); err != nil {
 		logger.Error("broker failed to bind", "err", err)
 		return 1
