@@ -10,7 +10,7 @@ No hay suite de tests (read-first, single-dev), así que los gates que bloquean 
 
 ## Decisión
 
-Gates que bloquean merge: **ESLint + Prettier + `tsc --noEmit`** (sin tests, no hay suite). Pre-commit con **husky + lint-staged** (los mismos checks sobre lo staged). CI en **GitHub Actions** sobre PR. Gate extra: los **tipos generados por Kubb deben estar en sync con el OpenAPI** del broker (falla si quedaron desactualizados).
+Gates que bloquean merge: **ESLint + Prettier + `tsc --noEmit`** (sin tests, no hay suite). Pre-commit con **husky + lint-staged a nivel root del monorepo** (los mismos checks sobre lo staged de la UI; el hook vive en el root del repo y rutea por config más cercana — la config de la UI sigue en su `package.json`). CI en **GitHub Actions** sobre PR. Gate extra: los **tipos generados por Kubb deben estar en sync con el OpenAPI** del broker (falla si quedaron desactualizados).
 
 ## Reglas verificables
 

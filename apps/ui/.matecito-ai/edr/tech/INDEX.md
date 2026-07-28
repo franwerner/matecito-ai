@@ -75,10 +75,15 @@ Registro vivo de las tecnologías concretas elegidas. Cada entrada apunta a un m
 | [ESLint](eslint.md)                                 | sin pinear | Enforcer de las convenciones de código; gate de merge.                                        |
 | [Prettier](prettier.md)                             | sin pinear | Formateador; su diff bloquea el merge.                                                        |
 | [eslint-plugin-jsx-a11y](eslint-plugin-jsx-a11y.md) | sin pinear | Chequeo de accesibilidad en dev-time; falla el build.                                         |
-| [husky](husky.md)                                   | sin pinear | Hooks de git para los checks en pre-commit.                                                   |
-| [lint-staged](lint-staged.md)                       | sin pinear | Corre los checks solo sobre los archivos staged.                                              |
 | [cmdk](cmdk.md)                                     | sin pinear | Primitive headless de comando/búsqueda; base de la paleta ⌘K (instalado, primitive diferido). |
 | [lucide-react](lucide-react.md)                     | sin pinear | Set de íconos SVG del component base y del resto de la UI.                                    |
+
+## Históricas
+
+| Tech                          | Status     | Reemplazo                                                                 |
+| ----------------------------- | ---------- | ------------------------------------------------------------------------- |
+| [husky](husky.md)             | Superseded | Pasó a nivel root del monorepo (`<repo-root>/.matecito-ai/edr/tech/`).    |
+| [lint-staged](lint-staged.md) | Superseded | Pasó a nivel root; la config de la UI en su `package.json` sigue viva.    |
 
 ## Nota
 
