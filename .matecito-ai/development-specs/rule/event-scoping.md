@@ -1,7 +1,7 @@
 # Capability — Scoping de eventos a (proyecto, change)
 
 - **Status:** Accepted
-- **Date:** 2026-07-24
+- **Date:** 2026-07-27
 
 ## Propósito
 
@@ -15,7 +15,8 @@ Definir cómo cada evento —venga de una tool MCP o del canal de hooks— se as
 ## Reglas de negocio
 
 - **Proyecto** ← se identifica por el **`project-id` estable** de `<git-toplevel>/.matecito-ai/.id` (commiteado, machine-independent: sobrevive a mover o renombrar el repo y sirve deployado), **no por el path local**. El header `X-Project-Path: ${CLAUDE_PROJECT_DIR}` de la request MCP (y el `cwd` para los hooks) es el **lookup por-máquina** que el daemon **resuelve a ese `project-id`**.
-- **Change** (modelo M1) ← se deriva de la rama git → key (proyecto, rama); sin rama, es el "change actual del proyecto" (fallback). El sub-agente nunca provee el change.
+- **Change** (modelo M1) ← se deriva de la rama git → key (proyecto, rama), **siempre**. No hay otra key: un change está sujeto a una rama. El sub-agente nunca provee el change.
+- **Rama obligatoria:** sin rama no hay change posible, y **toda tool de escritura se rechaza con `branch_required`** (incluida `change_status`). El único caso real "sin rama" es un **detached HEAD**; un repo git recién inicializado **sin commits sí tiene rama usable** (su rama existe como nombre aunque todavía no tenga ref) y se usa normalmente como key. El guard **no** alcanza a las otras superficies: la lectura de la UI sigue sirviendo historial y la ingesta mecánica sigue descartando en silencio.
 - **Session** ← el session id de Claude Code es un **atributo** del evento (llega por los hooks), no forma parte de la clave de scoping.
 - **Invariante:** un change = un worktree = una rama. La concurrencia se resuelve por worktrees, que son directorios de proyecto distintos.
 - Los dos canales —hooks (mecánico) y MCP (semántico)— se scopean con la misma (proyecto, change) y se juntan en la vista de la corrida.
@@ -37,11 +38,17 @@ Definir cómo cada evento —venga de una tool MCP o del canal de hooks— se as
 - **WHEN** el sistema scopea un evento
 - **THEN** el change se deriva de la rama, resolviendo a la key (proyecto, rama)
 
-### Scenario: fallback sin rama
+### Scenario: sin rama (detached HEAD) → rechazo
 
-- **GIVEN** un proyecto sin rama git
+- **GIVEN** un proyecto en detached HEAD, es decir sin rama activa
+- **WHEN** una tool de escritura pide scopear un evento
+- **THEN** el sistema no resuelve ningún change y rechaza la escritura con `branch_required`
+
+### Scenario: repo git sin commits (unborn branch)
+
+- **GIVEN** un repo git recién inicializado, sin commits todavía, cuya rama existe solo como nombre
 - **WHEN** el sistema scopea un evento
-- **THEN** el change se resuelve al "change actual del proyecto" (key por proyecto)
+- **THEN** usa ese nombre de rama como key (proyecto, rama) con normalidad — no es un caso de rechazo
 
 ### Scenario: session como atributo
 

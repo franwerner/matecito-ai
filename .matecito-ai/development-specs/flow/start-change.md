@@ -1,7 +1,7 @@
 # Capability — Iniciar o continuar un change
 
 - **Status:** Accepted
-- **Date:** 2026-07-24
+- **Date:** 2026-07-27
 
 ## Propósito
 
@@ -14,13 +14,13 @@ Dar de alta o continuar un change sobre la rama actual y registrar el mapeo rama
 ## Precondiciones
 
 - El proyecto está registrado.
-- Si hay una rama git, la key del change es (proyecto, rama); si no hay rama, se requiere un `change-name` explícito como fallback.
+- El proyecto está sobre una rama git: la key del change es siempre (proyecto, rama).
 
 ## Flujo principal
 
 1. El orquestador llama `start_change(change-name, [branch])`.
 2. El sistema identifica el proyecto a partir del contexto de la request (header de proyecto).
-3. Resuelve la identidad del change: con rama, la key es (proyecto, rama); sin rama, la key es (proyecto) y el `change-name` pasa a ser el "change actual del proyecto".
+3. Resuelve la identidad del change: la key es (proyecto, rama).
 4. Busca si el change ya existe para esa key: si existe, lo continúa (no lo duplica); si no existe, lo da de alta con el nombre y registra el mapeo.
 5. Devuelve el change (su identidad y su estado).
 
@@ -28,7 +28,7 @@ Dar de alta o continuar un change sobre la rama actual y registrar el mapeo rama
 
 - **El change ya existe para la misma key** → lo continúa; no crea uno nuevo ni duplica.
 - **El proyecto no está registrado** → se rechaza con `project_not_registered`.
-- **No hay rama ni `change-name`** → se rechaza con `change_name_required`.
+- **El proyecto no está sobre una rama** (detached HEAD) → se rechaza con `branch_required`.
 - **Conflicto de nombre** (la rama ya está mapeada a otro `change-name`) → se rechaza con `change_name_conflict` y no cambia nada.
 - **El change target está `closed`** → se rechaza con `change_closed` (guard del ciclo de vida del change).
 
@@ -39,7 +39,7 @@ Dar de alta o continuar un change sobre la rama actual y registrar el mapeo rama
 
 ## Reglas de negocio
 
-- Un change se identifica por la key (proyecto, rama) cuando hay rama; por (proyecto) con el `change-name` como change actual cuando no la hay (fallback).
+- Un change se identifica siempre por la key (proyecto, rama); sin rama no hay change posible.
 - El mapeo rama↔nombre-de-change se registra una sola vez, al alta; un intento posterior de mapear la misma rama a un nombre distinto es un conflicto y se rechaza.
 - Invariante de identidad: un change = un worktree = una rama (modelo M1).
 
@@ -47,7 +47,7 @@ Dar de alta o continuar un change sobre la rama actual y registrar el mapeo rama
 
 - **Proyecto no registrado** → `project_not_registered`.
 - **Rama ya mapeada a otro nombre** → `change_name_conflict`.
-- **Sin rama ni change-name** → `change_name_required`.
+- **Proyecto sin rama (detached HEAD)** → `branch_required`.
 - **Change cerrado** → `change_closed`.
 - La forma de error es `{error, code}`, estricta, sin internals.
 
@@ -65,23 +65,17 @@ Dar de alta o continuar un change sobre la rama actual y registrar el mapeo rama
 - **WHEN** una sesión nueva sobre la misma rama llama `start_change`
 - **THEN** el sistema continúa el mismo change y no crea ni duplica otro
 
-### Scenario: alta sin rama (fallback)
-
-- **GIVEN** un proyecto registrado sin rama git y un `change-name` explícito
-- **WHEN** el orquestador llama `start_change(change-name)`
-- **THEN** el sistema da de alta el change con la key (proyecto) y el `change-name` como change actual del proyecto
-
 ### Scenario: conflicto de nombre
 
 - **GIVEN** una rama ya mapeada a un `change-name`
 - **WHEN** el orquestador llama `start_change` con un `change-name` distinto para esa misma rama
 - **THEN** el sistema responde `change_name_conflict` y no cambia nada
 
-### Scenario: sin rama ni nombre
+### Scenario: proyecto sin rama (detached HEAD)
 
-- **GIVEN** un proyecto registrado sin rama git y sin `change-name`
-- **WHEN** el orquestador llama `start_change`
-- **THEN** el sistema responde `change_name_required`
+- **GIVEN** un proyecto registrado en detached HEAD, es decir sin rama activa
+- **WHEN** el orquestador llama `start_change(change-name)`
+- **THEN** el sistema responde `branch_required` y no da de alta ningún change
 
 ### Scenario: proyecto no registrado
 
@@ -105,5 +99,5 @@ Dar de alta o continuar un change sobre la rama actual y registrar el mapeo rama
 
 - **EDR** → [`../../../apps/api/.matecito-ai/edr/contracts/mcp-server.md`](../../../apps/api/.matecito-ai/edr/contracts/mcp-server.md) — la tool `start_change`, la identidad por request y el registro del mapeo rama↔nombre.
 - **EDR** → [`../../../apps/api/.matecito-ai/edr/delivery/deployment-topology.md`](../../../apps/api/.matecito-ai/edr/delivery/deployment-topology.md) — el daemon global único y el invariante change↔worktree↔rama.
-- **Rule** → [`../rule/event-scoping.md`](../rule/event-scoping.md) — cómo se deriva el change de la rama (modelo M1) y el fallback sin rama.
+- **Rule** → [`../rule/event-scoping.md`](../rule/event-scoping.md) — cómo se deriva el change de la rama (modelo M1) y el rechazo `branch_required` sin rama.
 - **Lifecycle** → [`../lifecycle/change.md`](../lifecycle/change.md) — el guard `change_closed`.

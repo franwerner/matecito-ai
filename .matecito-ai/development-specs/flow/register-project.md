@@ -1,7 +1,7 @@
 # Capability — Registrar (o linkear) un proyecto
 
 - **Status:** Accepted
-- **Date:** 2026-07-24
+- **Date:** 2026-07-27
 
 ## Propósito
 
@@ -16,11 +16,12 @@ Dar de alta —o linkear— un proyecto en el store por su identidad estable, pa
 
 - El daemon está corriendo.
 - La ruta resuelve a un directorio existente.
+- La ruta está dentro de un repo git (matecito requiere git).
 
 ## Flujo principal
 
 1. El actor llama `register_project(path)`.
-2. El sistema **normaliza la ruta**: la vuelve absoluta, resuelve symlinks y limpia los segmentos `.`/`..`. Luego resuelve el **toplevel de git** (`git rev-parse --show-toplevel`) como raíz del proyecto; si la ruta no está en un repo git, la carpeta misma es la raíz (fallback no-git).
+2. El sistema **normaliza la ruta**: la vuelve absoluta, resuelve symlinks y limpia los segmentos `.`/`..`. Luego resuelve la **raíz del repo git (su toplevel)** como raíz del proyecto; si la ruta no resuelve a un toplevel git, se rechaza con `not_a_git_repo`.
 3. **Resuelve la identidad** del proyecto vía `<toplevel>/.matecito-ai/.id`, el archivo commiteado que porta el `project-id` estable:
    - **Hay `.id`** → ese es el `project-id` (un clon fresco ya lo trae, así que auto-linkea sin lookup).
    - **No hay `.id`** → no se genera un id a ciegas: con `find_project(name)` se busca en la base si ya existe un proyecto con ese nombre (por ejemplo, uno compartido o deployado). Si el usuario **confirma un match** → se **materializa `.id`** con ese `project-id` (LINK). Si **no hay match** o el proyecto es nuevo → se **genera un `project-id` nuevo** y se materializa `.id` (CREATE).
@@ -33,6 +34,7 @@ Dar de alta —o linkear— un proyecto en el store por su identidad estable, pa
 - **Sin `.id` y con match confirmado** → materializa `.id` con el `project-id` existente y linkea el checkout (LINK).
 - **Sin `.id` y sin match** → genera un `project-id` nuevo, materializa `.id` (CREATE).
 - **Ruta inexistente o que no es un directorio** → se rechaza con `invalid_path`.
+- **Ruta que no resuelve a un toplevel git** → se rechaza con `not_a_git_repo`.
 
 ## Casos borde
 
@@ -40,7 +42,6 @@ Dar de alta —o linkear— un proyecto en el store por su identidad estable, pa
 - **Registración anidada** (por ejemplo registrar `apps/api` con la raíz ya registrada) → el toplevel de git resuelve al **mismo proyecto**; no crea uno nuevo. El `.matecito-ai/` de `apps/api` es un owning-root dentro del proyecto, no un proyecto aparte.
 - **Ruta válida sin `.matecito-ai/` todavía** → se registra igual; el watch queda armado e indexa cuando el `.matecito-ai/` aparezca.
 - **Cambio de ruta** (mover o renombrar el repo) → el `.id` commiteado sobrevive al movimiento → la ruta nueva se re-mapea al mismo `project-id`, mismo proyecto.
-- **Fallback no-git** → sin repo git, la carpeta misma es el proyecto, con un id local.
 
 ## Reglas de negocio
 
@@ -53,6 +54,7 @@ Dar de alta —o linkear— un proyecto en el store por su identidad estable, pa
 ## Errores de cara al actor
 
 - **Ruta inexistente o que no es un directorio** → `invalid_path`.
+- **Ruta que no está en un repo git** → `not_a_git_repo`.
 - La forma de error es `{error, code}`, estricta, sin internals. En caso de éxito, la operación devuelve el proyecto.
 
 ## Escenarios
@@ -110,6 +112,12 @@ Dar de alta —o linkear— un proyecto en el store por su identidad estable, pa
 - **GIVEN** un proyecto registrado cuyo repo se mueve o renombra
 - **WHEN** el actor registra la ruta nueva
 - **THEN** el `.id` commiteado mantiene el `project-id` y la ruta nueva se re-mapea al mismo proyecto
+
+### Scenario: alta en carpeta sin repo git → rechazo
+
+- **GIVEN** una ruta válida que no pertenece a ningún repo git
+- **WHEN** el actor llama `register_project(path)`
+- **THEN** el sistema responde `not_a_git_repo` y no registra ningún proyecto ni materializa `.id`
 
 ### Scenario: descubrimiento recursivo multi-store
 

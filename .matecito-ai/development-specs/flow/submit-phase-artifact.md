@@ -1,7 +1,7 @@
 # Capability — Enviar el artefacto de una fase
 
 - **Status:** Accepted
-- **Date:** 2026-07-24
+- **Date:** 2026-07-27
 
 ## Propósito
 
@@ -31,6 +31,7 @@ Recibir el artefacto estructurado que produce una fase del flujo SDD, validarlo 
 
 - **La validación del artefacto falla** → se rechaza con `validation_failed` y no se persiste nada.
 - **El proyecto no está registrado** → se rechaza con `project_not_registered`.
+- **El proyecto no está sobre una rama** (detached HEAD) → se rechaza con `branch_required`.
 - **No hay change iniciado para el contexto** → se rechaza con `change_not_started`.
 - **El change target está `closed`** → se rechaza con `change_closed` (guard del ciclo de vida del change); el actor le avisa al usuario y le pregunta si lo reactiva.
 
@@ -50,6 +51,7 @@ Recibir el artefacto estructurado que produce una fase del flujo SDD, validarlo 
 
 - **Artefacto inválido para su fase** → `validation_failed`.
 - **Proyecto no registrado** → `project_not_registered`.
+- **Proyecto sin rama (detached HEAD)** → `branch_required`.
 - **Change no iniciado** → `change_not_started`.
 - **Change cerrado** → `change_closed`.
 - La forma de error de cara al actor es `{error, code}`, sin stack ni internals; los detalles internos van al log, no a la respuesta. Un envío exitoso devuelve el artefacto renderizado a su forma canónica.
@@ -73,6 +75,12 @@ Recibir el artefacto estructurado que produce una fase del flujo SDD, validarlo 
 - **GIVEN** un contexto cuyo proyecto no fue registrado previamente
 - **WHEN** el agente envía un artefacto
 - **THEN** el sistema responde `project_not_registered` y no persiste nada
+
+### Scenario: proyecto sin rama (detached HEAD)
+
+- **GIVEN** un proyecto registrado en detached HEAD, es decir sin rama activa
+- **WHEN** el agente envía un artefacto
+- **THEN** el sistema responde `branch_required` y no persiste nada
 
 ### Scenario: sin change iniciado
 
@@ -104,6 +112,12 @@ Recibir el artefacto estructurado que produce una fase del flujo SDD, validarlo 
 - **WHEN** el agente envía un artefacto sobre ese change
 - **THEN** el sistema responde `change_closed`, no persiste nada, y el actor le avisa al usuario y le pregunta si desea reactivar el change
 
+### Scenario: append-only — los eventos previos quedan intactos
+
+- **GIVEN** un change con eventos ya persistidos en su event-log
+- **WHEN** el agente envía un artefacto válido nuevo
+- **THEN** los eventos previos quedan intactos (ni reescritos ni borrados) y el nuevo se appendea al final del log
+
 ### Scenario: pin de la versión del EDR/spec referenciado
 
 - **GIVEN** un artefacto que referencia un EDR/spec en su versión vigente
@@ -118,4 +132,5 @@ Recibir el artefacto estructurado que produce una fase del flujo SDD, validarlo 
 - **EDR** → [`../../../apps/api/.matecito-ai/edr/runtime/error-handling.md`](../../../apps/api/.matecito-ai/edr/runtime/error-handling.md) — por qué la respuesta de error es `{error, code}` sin internals y dónde van los detalles internos.
 - **Lifecycle** → [`../lifecycle/change.md`](../lifecycle/change.md) — el guard `change_closed`.
 - **Rule** → [`../rule/event-scoping.md`](../rule/event-scoping.md) — cómo se resuelve el (proyecto, change) del contexto.
-- **Process** → [`../process/index-decision-records.md`](../process/index-decision-records.md) — el indexado y versionado del EDR/spec, y cómo se resuelve y congela la versión vigente que este flujo pinea.
+- **Lifecycle** → [`../lifecycle/record-version.md`](../lifecycle/record-version.md) — el ciclo de vida de la versión de record: el pin de este flujo dispara la transición `actual → congelada`.
+- **Process** → [`../process/index-decision-records.md`](../process/index-decision-records.md) — el indexado que mantiene la versión vigente que este flujo pinea.
