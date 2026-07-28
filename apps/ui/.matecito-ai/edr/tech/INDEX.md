@@ -78,13 +78,6 @@ Registro vivo de las tecnologías concretas elegidas. Cada entrada apunta a un m
 | [cmdk](cmdk.md)                                     | sin pinear | Primitive headless de comando/búsqueda; base de la paleta ⌘K (instalado, primitive diferido). |
 | [lucide-react](lucide-react.md)                     | sin pinear | Set de íconos SVG del component base y del resto de la UI.                                    |
 
-## Históricas
-
-| Tech                          | Status     | Reemplazo                                                                 |
-| ----------------------------- | ---------- | ------------------------------------------------------------------------- |
-| [husky](husky.md)             | Superseded | Pasó a nivel root del monorepo (`<repo-root>/.matecito-ai/edr/tech/`).    |
-| [lint-staged](lint-staged.md) | Superseded | Pasó a nivel root; la config de la UI en su `package.json` sigue viva.    |
-
 ## Nota
 
 **Dependabot** no es un paquete sino un servicio de GitHub (PRs automáticos de seguridad para las deps npm): se documenta en security/dependency-scanning, no como entrada de este catálogo.
