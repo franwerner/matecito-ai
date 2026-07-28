@@ -1,4 +1,4 @@
-# Guía — rutas desplegadas
+# Referenciar rutas desplegadas
 
 Lo que vive en `payload/` es **fuente**; lo que se ejecuta vive en `~/.claude/`.
 Un agente o una skill corre en el repo **del usuario**, donde `payload/` no existe.
@@ -11,14 +11,18 @@ Un agente o una skill corre en el repo **del usuario**, donde `payload/` no exis
 
 | En el repo | En la máquina del usuario |
 | --- | --- |
-| `domains/<id>/agents/<x>.md` | `~/.claude/agents/<x>.md` |
-| `domains/<id>/skills/<group>/<x>/SKILL.md` | `~/.claude/skills/<x>/SKILL.md` |
-| `domains/<id>/references/<...>` | `~/.claude/references/<...>` |
-| `domains/<id>/CLAUDE.md` | `~/.claude/matecito-ai/domains/<id>.md` |
+| `payload/domains/<id>/agents/<x>.md` | `~/.claude/agents/<x>.md` |
+| `payload/domains/<id>/skills/<group>/<x>/SKILL.md` | `~/.claude/skills/<x>/SKILL.md` |
+| `payload/domains/<id>/references/<...>` | `~/.claude/references/<...>` |
+| `payload/domains/<id>/CLAUDE.md` | `~/.claude/matecito-ai/domains/<id>.md` |
+| `payload/shared/<component>/<...>` | igual que su equivalente de dominio |
 
 La capa `<group>` bajo `skills/` es organizativa y se descarta en el deploy
-(detalle completo en [`README.md`](README.md)). Por eso la ruta desplegada de una
-skill **nunca** incluye ni el dominio ni el grupo.
+(detalle completo en [`../domains/README.md`](../domains/README.md)). Por eso la
+ruta desplegada de una skill **nunca** incluye ni el dominio ni el grupo.
+
+`payload/docs/` —donde vive este archivo— es documentación del repo: **no se
+despliega** y nadie la lee en runtime.
 
 ## Cómo referenciar cada cosa
 
