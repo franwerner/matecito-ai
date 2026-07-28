@@ -12,12 +12,15 @@ El broker es un daemon local con pocos parámetros (puerto, ubicación de la per
 
 Los defaults viven en el código y se overridean con flags al ejecutar el comando (puerto, ubicación de la persistencia, etc.) y variables de entorno, usando solo la librería estándar, sin librería de config ni archivo. La configuración es independiente del broker: si más adelante se embebe en el CLI, el CLI le pasa los flags. Al arranque se validan los valores (puerto válido, ubicación de la persistencia escribible) y se aborta con un mensaje claro si alguno es inválido. Por el modelo global, la ubicación default de la persistencia es el home compartido (`~/.matecito-ai/`), no un directorio dentro del repo.
 
+Lo que el daemon crea en esa ubicación queda **restringido a su dueño**: el directorio de persistencia sin acceso para terceros, y el identificador de máquina legible y escribible solo por el dueño. El sistema es single-user por diseño, así que no hay caso de uso para que otro usuario de la misma máquina lea el trabajo indexado; el default permisivo del lenguaje sería una concesión sin contraparte.
+
 ## Reglas verificables
 
 - **[manual]** el broker arranca con defaults, sin config externa.
 - **[manual]** los flags al ejecutar el comando overridean los defaults (puerto, ubicación de la persistencia).
 - **[manual]** la config se valida al startup y aborta con mensaje claro si un valor es inválido.
 - **[manual]** la ubicación default de la persistencia es el home compartido (`~/.matecito-ai/`).
+- **[tool: gosec]** el directorio de persistencia se crea sin acceso para terceros y el identificador de máquina sin acceso para grupo ni terceros; aflojar cualquiera de los dos rompe el gate de lint.
 
 ## Alternativas consideradas
 

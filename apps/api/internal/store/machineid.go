@@ -36,7 +36,7 @@ func EnsureMachineID(persistDir string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("store: generate machine id: %w", err)
 	}
-	if err := os.WriteFile(path, []byte(id.String()+"\n"), 0o644); err != nil {
+	if err := os.WriteFile(path, []byte(id.String()+"\n"), 0o600); err != nil {
 		return "", fmt.Errorf("store: write %s: %w", path, err)
 	}
 	return id.String(), nil

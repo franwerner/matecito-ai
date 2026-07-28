@@ -116,13 +116,13 @@ func validatePort(portStr string) (int, error) {
 // permission-bit check alone would miss a non-directory path blocking the
 // location and can be bypassed by a root process.
 func validatePersistDir(dir string) error {
-	if err := os.MkdirAll(dir, 0o755); err != nil {
-		return fmt.Errorf("%w: %q: %v", ErrPersistDirNotWritable, dir, err)
+	if err := os.MkdirAll(dir, 0o750); err != nil {
+		return fmt.Errorf("%w: %q: %w", ErrPersistDirNotWritable, dir, err)
 	}
 
 	probe, err := os.CreateTemp(dir, ".broker-write-test-*")
 	if err != nil {
-		return fmt.Errorf("%w: %q: %v", ErrPersistDirNotWritable, dir, err)
+		return fmt.Errorf("%w: %q: %w", ErrPersistDirNotWritable, dir, err)
 	}
 	probePath := probe.Name()
 	_ = probe.Close()
