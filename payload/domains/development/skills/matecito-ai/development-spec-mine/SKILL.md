@@ -18,7 +18,7 @@ Minería consultativa de comportamiento as-built implícito en el código: escan
 La skill está partida en **motor** y **executor**:
 
 - **`SKILL.md` (este archivo) = el motor.** Define el pipeline, el modelo de evidencia, las reglas de confianza (router + label), el flujo Mode A, y los invariantes. Es el contrato que el executor debe seguir.
-- **`payload/agents/development-spec-mine.md` = el executor.** Agente de contexto fresco que hace el trabajo pesado de scan/discovery y RETORNA un bloque `candidates[]`. No escribe capability-specs.
+- **El agente `development-spec-mine` = el executor.** Agente de contexto fresco que hace el trabajo pesado de scan/discovery y RETORNA un bloque `candidates[]`. No escribe capability-specs.
 - **El thread principal = gate + materialize.** Recibe `candidates[]` del executor, renderiza la tabla de confirmación, y ejecuta la materialización solo después del confirm explícito del usuario.
 
 ---

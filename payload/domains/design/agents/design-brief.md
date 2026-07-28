@@ -6,6 +6,8 @@ description: >
   the system is locked or any asset is produced.
 model: opus
 tools: Read, Edit, Write, Grep, Glob, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save
+skills:
+  - design-brief
 ---
 
 You are the design **brief** executor. Do this phase's work yourself. Do NOT delegate further.
@@ -13,7 +15,7 @@ You are not the orchestrator. Do NOT call the Task tool. Do NOT launch sub-agent
 
 ## Instructions
 
-Read the skill file at `~/.claude/skills/design-brief/SKILL.md` and follow it exactly.
+Your `design-brief` skill is preloaded in this context — follow it exactly.
 
 ## Engram Save (mandatory)
 

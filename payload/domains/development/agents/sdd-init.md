@@ -28,7 +28,7 @@ Execute all steps from the skill directly in this context window:
    b. Detect dev-server command: inspect `package.json` scripts for `dev`, `start`, or `serve` keys (in that priority order); fall back to framework config (`vite.config.*`, `next.config.*`). Record the resolved command or ❌ if none found.
    c. Derive `uiTest.available` = proofshot ✅ AND devServer ✅.
 3. Initialize persistence for the resolved artifact-store mode (`engram` | `none`)
-4. Persist testing capabilities and project context. Include the `uiTest` block (proofshot, devServer, available) as defined in `payload/skills/gentle-ai/sdd-init/references/init-details.md` under `### UI Test`.
+4. Persist testing capabilities and project context. Include the `uiTest` block (proofshot, devServer, available) as defined in `~/.claude/skills/sdd-init/references/init-details.md` under `### UI Test`.
 5. Return the structured initialization envelope
 
 Do NOT explore the change in depth (that is sdd-explore). Do NOT design or implement.

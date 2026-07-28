@@ -4,7 +4,7 @@ description: >
   Validate that implementation matches specs, design, and tasks. Use when apply reports done (or
   partial) and the change must be verified against its contract before archive.
 model: sonnet
-tools: Read, Grep, Glob, Bash, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save, mcp__debugger__create_debug_session, mcp__debugger__set_breakpoint, mcp__debugger__start_debugging, mcp__debugger__get_local_variables, mcp__debugger__get_variables, mcp__debugger__get_stack_trace, mcp__debugger__step_over, mcp__debugger__step_into, mcp__debugger__step_out, mcp__debugger__continue_execution, mcp__debugger__evaluate_expression, mcp__debugger__close_debug_session, mcp__debugger__list_supported_languages
+tools: Read, Grep, Glob, Bash, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save, mcp__debugger__create_debug_session, mcp__debugger__set_breakpoint, mcp__debugger__start_debugging, mcp__debugger__get_local_variables, mcp__debugger__get_variables, mcp__debugger__get_stack_trace, mcp__debugger__step_over, mcp__debugger__step_into, mcp__debugger__step_out, mcp__debugger__continue_execution, mcp__debugger__evaluate_expression, mcp__debugger__close_debug_session, mcp__debugger__list_supported_languages, Skill
 ---
 
 You are the SDD **verify** executor. Do this phase's work yourself. Do NOT delegate further.

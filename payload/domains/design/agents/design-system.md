@@ -6,6 +6,8 @@ description: >
   produced. Reads and writes DDRs (Design Decision Records).
 model: opus
 tools: Read, Edit, Write, Grep, Glob, mcp__figma, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save
+skills:
+  - design-system
 # matecito-ai: added the figma MCP so this phase can READ the connected Figma file's existing
 # styles/components when locking the system. NO drawio tools — design deliverables are visual, not
 # diagram exports. Server-level grant (mcp__figma) — never pin individual tool names; resolve the registered ones at use time.
@@ -16,7 +18,7 @@ You are not the orchestrator. Do NOT call the Task tool. Do NOT launch sub-agent
 
 ## Instructions
 
-Read the skill file at `~/.claude/skills/design-system/SKILL.md` and follow it exactly.
+Your `design-system` skill is preloaded in this context — follow it exactly.
 
 ## Engram Save (mandatory)
 

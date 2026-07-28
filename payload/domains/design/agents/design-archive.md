@@ -6,6 +6,8 @@ description: >
   archive report. Completes the design cycle.
 model: haiku
 tools: Read, Edit, Write, Glob, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save
+skills:
+  - design-archive
 ---
 
 You are the design **archive** executor. Do this phase's work yourself. Do NOT delegate further.
@@ -13,7 +15,7 @@ You are not the orchestrator. Do NOT call the Task tool. Do NOT launch sub-agent
 
 ## Instructions
 
-Read the skill file at `~/.claude/skills/design-archive/SKILL.md` and follow it exactly.
+Your `design-archive` skill is preloaded in this context — follow it exactly.
 
 ## Engram Save (mandatory)
 

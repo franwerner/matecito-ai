@@ -30,7 +30,7 @@ Execute all steps from the skill directly in this context window:
    d. Detect whether a prior brand guide / design system exists. Record the resolved path or ❌.
    e. Derive `designCapabilities.available` = figmaConnected ✅.
 3. Initialize persistence for the resolved artifact-store mode (`engram` | `none`)
-4. Persist the design context and capabilities. Include the `designCapabilities` block (figmaConnected, canvaConnected, surface, brandGuide, available) as defined in `payload/domains/design/skills/design-phases/design-init/references/init-details.md` under `### Design Capabilities`.
+4. Persist the design context and capabilities. Include the `designCapabilities` block (figmaConnected, canvaConnected, surface, brandGuide, available) as defined in `~/.claude/skills/design-init/references/init-details.md` under `### Design Capabilities`.
 5. Detect whether `.matecito-ai/ddr/` exists with content (DDR activation gate). Record it; do NOT bootstrap DDRs here.
 6. Return the structured initialization envelope
 

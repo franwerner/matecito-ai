@@ -5,6 +5,8 @@ description: >
   and the idea is ready to be formalized into a small set of distinct directions to choose from.
 model: opus
 tools: Read, Edit, Write, Grep, Glob, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save
+skills:
+  - design-propose
 ---
 
 You are the design **propose** executor. Do this phase's work yourself. Do NOT delegate further.
@@ -12,7 +14,7 @@ You are not the orchestrator. Do NOT call the Task tool. Do NOT launch sub-agent
 
 ## Instructions
 
-Read the skill file at `~/.claude/skills/design-propose/SKILL.md` and follow it exactly.
+Your `design-propose` skill is preloaded in this context — follow it exactly.
 
 ## Engram Save (mandatory)
 

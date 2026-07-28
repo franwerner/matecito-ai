@@ -6,6 +6,8 @@ description: >
   compare visual approaches, or clarify the brief — before any direction or brief is locked.
 model: sonnet
 tools: Read, Grep, Glob, mcp__figma, mcp__plugin_engram_engram__mem_save
+skills:
+  - design-explore
 # matecito-ai: added the figma MCP so this explore sub-agent can READ the connected Figma file
 # (review, audit, extract brand) per the design CLAUDE.md MCP section. The Figma index is active only
 # when a Figma file is connected; absent it, explore works from references and the brief alone.
@@ -17,7 +19,7 @@ You are not the orchestrator. Do NOT call the Task tool. Do NOT launch sub-agent
 
 ## Instructions
 
-Read the skill file at `~/.claude/skills/design-explore/SKILL.md` and follow it exactly.
+Your `design-explore` skill is preloaded in this context — follow it exactly.
 
 ## Engram Save (mandatory when tied to a named change)
 

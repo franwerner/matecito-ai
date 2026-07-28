@@ -18,7 +18,7 @@ Minería consultativa de decisiones de ingeniería implícitas en el código: es
 La skill está partida en **motor** y **executor**:
 
 - **`SKILL.md` (este archivo) = el motor.** Define el pipeline, el modelo de evidencia, las reglas de confianza (router + label), los flujos de Mode A y Mode B, y los invariantes. Es el contrato que el executor debe seguir.
-- **`payload/agents/development-decisions-mine.md` = el executor.** Agente de contexto fresco que hace el trabajo pesado de scan/discovery y RETORNA un bloque `candidates[]`. No escribe EDRs. El executor sirve tanto Mode A como Mode B.
+- **El agente `development-decisions-mine` = el executor.** Agente de contexto fresco que hace el trabajo pesado de scan/discovery y RETORNA un bloque `candidates[]`. No escribe EDRs. El executor sirve tanto Mode A como Mode B.
 - **El thread principal = gate + materialize.** Recibe `candidates[]` del executor, renderiza la tabla de confirmación, y ejecuta la materialización solo después del confirm explícito del usuario.
 
 ---

@@ -6,6 +6,8 @@ description: >
   archive. Reads the Figma file to check real colors, type, and hierarchy.
 model: sonnet
 tools: Read, Grep, Glob, mcp__figma, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save
+skills:
+  - design-verify
 # matecito-ai: added the figma MCP so the guards run against the REAL Figma file — visual-accessibility
 # checks WCAG contrast/sizes on the actual colors and type; brand-consistency checks each piece against
 # the brand guide and DDRs. Server-level grant (mcp__figma) — never pin individual tool names; resolve the registered ones at use time.
@@ -16,7 +18,7 @@ You are not the orchestrator. Do NOT call the Task tool. Do NOT launch sub-agent
 
 ## Instructions
 
-Read the skill file at `~/.claude/skills/design-verify/SKILL.md` and follow it exactly.
+Your `design-verify` skill is preloaded in this context — follow it exactly.
 
 ## Engram Save (mandatory)
 

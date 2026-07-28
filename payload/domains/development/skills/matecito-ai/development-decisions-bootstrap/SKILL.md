@@ -230,7 +230,7 @@ Si el usuario quiere un tema que no está en el catálogo:
 1. Tratalo con el procedimiento genérico, haciéndole 2-3 preguntas para extraer qué decide, opciones y qué materializar.
 2. **Asignale un dominio canónico.** Mirá el "criterio de pertenencia" en cada `concerns/<dominio>/INDEX.md` para decidir dónde encaja (incluí los reservados: `lifecycle`, `integration`, `privacy`, `release`, `domain-logic`, `compliance`, `ux-product`). No inventés un dominio nuevo. Si genuinamente no encaja en ninguno, es señal de que falta un dominio en la taxonomía — eso es una decisión de catálogo, avisале al usuario, no lo resuelvas en el repo.
 3. **Asignale un `type`** (`decision` / `convention` / `policy`).
-4. Materializá el EDR en `.matecito-ai/edr/<dominio>/<slug>.md`. Una fase custom es **siempre solo para este proyecto**: no toques el catálogo `concerns/` (es read-only, se deploya desde el repo matecito-ai). Si el concern merece sumarse al catálogo para todos los proyectos, eso se hace editando `payload/skills/.../concerns/` en el repo matecito-ai (ver "Ratchet"), no desde acá.
+4. Materializá el EDR en `.matecito-ai/edr/<dominio>/<slug>.md`. Una fase custom es **siempre solo para este proyecto**: no toques el catálogo `concerns/` (es read-only, se deploya desde el repo matecito-ai). Si el concern merece sumarse al catálogo para todos los proyectos, eso se hace editando `payload/domains/development/skills/.../concerns/` en el repo matecito-ai (ver "Ratchet"), no desde acá.
 
 ---
 

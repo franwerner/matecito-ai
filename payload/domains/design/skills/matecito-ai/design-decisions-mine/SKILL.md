@@ -18,7 +18,7 @@ Minería consultativa de decisiones de diseño implícitas en el archivo Figma: 
 La skill está partida en **motor** y **executor**:
 
 - **`SKILL.md` (este archivo) = el motor.** Define el pipeline, el modelo de evidencia, las reglas de confianza (router + label), los flujos de Mode A y Mode B, y los invariantes. Es el contrato que el executor debe seguir.
-- **`payload/agents/design-decisions-mine.md` = el executor.** Agente de contexto fresco que hace el trabajo pesado de scan/discovery sobre el archivo Figma (read-only) y RETORNA un bloque `candidates[]`. No escribe DDRs. El executor sirve tanto Mode A como Mode B.
+- **El agente `design-decisions-mine` = el executor.** Agente de contexto fresco que hace el trabajo pesado de scan/discovery sobre el archivo Figma (read-only) y RETORNA un bloque `candidates[]`. No escribe DDRs. El executor sirve tanto Mode A como Mode B.
 - **El thread principal = gate + materialize.** Recibe `candidates[]` del executor, renderiza la tabla de confirmación, y ejecuta la materialización solo después del confirm explícito del usuario.
 
 ---

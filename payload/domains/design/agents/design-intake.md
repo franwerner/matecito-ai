@@ -8,6 +8,8 @@ description:
   undecided brand questions before exploration begins.
 model: sonnet
 tools: Read, Grep, Glob, mcp__plugin_engram_engram__mem_save
+skills:
+  - design-intake
 # matecito-ai: design-intake is the entry phase of the design flow. It structures the raw request and
 # produces a brief-intake artifact that design-explore consumes. It reads DDRs only to catch early
 # blockers; it does NOT inspect the Figma file or explore references (that is design-explore's job).
@@ -18,7 +20,7 @@ You are not the orchestrator. Do NOT call the Task tool. Do NOT launch sub-agent
 
 ## Instructions
 
-Read the skill file at `~/.claude/skills/design-intake/SKILL.md` and follow it exactly.
+Your `design-intake` skill is preloaded in this context — follow it exactly.
 
 ## Engram Save (mandatory when tied to a named change)
 

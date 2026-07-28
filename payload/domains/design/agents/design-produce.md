@@ -6,6 +6,8 @@ description: >
   locked visual system. Marks tasks complete as it goes.
 model: sonnet
 tools: Read, Edit, Write, Glob, Grep, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save, mcp__plugin_engram_engram__mem_update
+skills:
+  - design-produce
 # matecito-ai: design deliverables are visual (Figma frames, brand guides, exported assets). This
 # phase records WHAT was produced and where as markdown progress; the visual work itself lives in
 # Figma / exported files. No code, no codegraph, no diagram tools.
@@ -16,7 +18,7 @@ You are not the orchestrator. Do NOT call the Task tool. Do NOT launch sub-agent
 
 ## Instructions
 
-Read the skill file at `~/.claude/skills/design-produce/SKILL.md` and follow it exactly.
+Your `design-produce` skill is preloaded in this context — follow it exactly.
 
 ## Engram Save (mandatory)
 
