@@ -33,7 +33,7 @@ Los DDRs custom project-local viven igual bajo una surface canónica (`.matecito
 
 - **[WARNING]** DDR `Accepted` sin sección "Decisión" con contenido concreto (valores chequeables contra Figma).
 - **[WARNING]** DDR `Pending` o `Deferred` sin razón ni trigger/condición de revisión.
-- **[CRITICAL]** DDR `Superseded` sin link "Reemplazado por", o el DDR linkeado no existe. *(El link puede ser intra-surface `<slug>.md` o cross-surface `../<surface>/<slug>.md`; verificá ambos.)*
+- **[WARNING]** DDR con `Status: Superseded`. Ese status está deprecado — es un hallazgo de migración: el usuario borra el registro si ya no aplica, o lo deja `Accepted` si sigue vigente. El validador solo reporta; nunca borra ni modifica el archivo.
 - **[WARNING]** Una fila `Not Applicable` en el INDEX de una surface sin razón.
 
 ### Verificabilidad

@@ -16,5 +16,5 @@ Registro vivo de las tecnologías elegidas **a nivel repo** (afectan a todos los
 ## Mantenimiento
 
 - **Agregar tech:** crear `<nombre>.md`, sumar fila en la categoría.
-- **Reemplazar tech:** marcar el viejo `Superseded`, crear el nuevo, sacar del INDEX el viejo.
+- **Reemplazar tech:** borrar el archivo viejo y su fila del INDEX, crear el nuevo — git conserva el historial del archivo borrado.
 - **Actualizar versión:** editar el archivo, anotar en Notas si hay breaking changes.

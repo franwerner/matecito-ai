@@ -18,4 +18,4 @@ Cómo se observa el broker: logging estructurado y health checks.
 | metrics | Daemon local sin agregador de métricas. |
 | tracing | Daemon local, sin tracing distribuido. |
 
-**Leyenda de status:** `Accepted` · `Pending` · `Not Applicable` · `Deferred` · `Superseded`.
+**Leyenda de status:** `Accepted` · `Pending` · `Not Applicable` · `Deferred`.

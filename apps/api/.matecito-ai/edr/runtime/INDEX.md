@@ -18,4 +18,4 @@ Cómo se comporta el broker en ejecución: manejo de errores, concurrencia y res
 |---|---|
 | caching | El estado derivado sale de queries sobre el event-log; no hay capa de cache. |
 
-**Leyenda de status:** `Accepted` · `Pending` · `Not Applicable` · `Deferred` · `Superseded`.
+**Leyenda de status:** `Accepted` · `Pending` · `Not Applicable` · `Deferred`.

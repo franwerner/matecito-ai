@@ -2,7 +2,7 @@
 
 # DDR — <título>
 
-- **Status:** <Inferred | Accepted | Pending | Deferred | Superseded>
+- **Status:** <Inferred | Accepted | Pending | Deferred>
 - **Type:** <decision | convention | policy>
 - **Date:** <YYYY-MM-DD>
 - **Applied principle:** <Opcional. Solo si la decisión mapea a un principle del catálogo canónico en `~/.claude/references/design-principles/`. Formato: `<Nombre> — <1 línea de por qué este principle>`. Ej: `Contrast — la jerarquía de la paleta se apoya en diferencia de luminancia, no de tono`. Si no aplica, omitir la línea completa.>
@@ -27,12 +27,6 @@
 - Pending: indicá el trigger esperado ("cuando llegue X").
 - Deferred: fecha o condición de revisión.>
 (Los `Not Applicable` no usan este template — viven como fila en el INDEX de la surface.)
--->
-
-<!-- Si Status es Superseded, agregar:
-## Reemplazado por
-[<slug-del-nuevo>.md](<slug-del-nuevo>.md) — <1 línea de por qué cambió la decisión>
-(Si el DDR nuevo está en otra surface, usar ruta relativa: [../<otra-surface>/<slug>.md](../<otra-surface>/<slug>.md))
 -->
 
 ## Consecuencias
@@ -75,14 +69,14 @@ Locator **a nivel sistema** —styles, sets de componentes o frames estables, no
 
 ## Relacionados
 
-<!-- Opcional. Links tipados a otros DDRs. Tipos: `depende-de`, `refina`, `relacionado-con`. Para reemplazos usar la sección "Reemplazado por" de arriba, no esta. Misma surface: ruta corta `<slug>.md`; otra surface: ruta relativa `../<surface>/<slug>.md`. Omitir la sección si no hay vínculos. -->
+<!-- Opcional. Links tipados a otros DDRs. Tipos: `depende-de`, `refina`, `relacionado-con`. Misma surface: ruta corta `<slug>.md`; otra surface: ruta relativa `../<surface>/<slug>.md`. Omitir la sección si no hay vínculos. -->
 
 - `depende-de` → [<slug>.md](<slug>.md) — <1 línea>
 - `relacionado-con` → [../<surface>/<slug>.md](../<surface>/<slug>.md) — <1 línea>
 
 <!--
 Notas del contrato (no van en el DDR generado):
-- No hay sección `Historial`. El historial de ediciones lo lleva git; la evolución de decisiones se ve en la cadena de `Superseded`.
+- No hay sección `Historial`. El historial de ediciones y la evolución de decisiones los lleva git.
 - Header en inglés (`Status`, `Type`, `Date`, `Applied principle`); nombres de sección y prosa en español.
 - `Inferred` llena solo header + `## Evidencia (inferida)` + `## Alcance` (cuando el kind tiene locator). `## Contexto`, `## Decisión`, `## Consecuencias`, `## Alternativas consideradas`, `## Reglas verificables` quedan vacías hasta la ratificación.
 -->

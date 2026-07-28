@@ -17,4 +17,4 @@ Cómo se organiza y estiliza el código del broker: estilo de arquitectura, layo
 | Concern | Razón |
 |---|---|
 
-**Leyenda de status:** `Accepted` · `Pending` · `Not Applicable` · `Deferred` · `Superseded`.
+**Leyenda de status:** `Accepted` · `Pending` · `Not Applicable` · `Deferred`.

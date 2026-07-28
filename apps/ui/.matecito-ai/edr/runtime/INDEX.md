@@ -19,4 +19,4 @@ Manejo de errores y resiliencia de la UI en ejecución.
 | background-jobs | La UI no corre jobs en background. |
 | caching | Sin capa de cache propia; la cache es la de TanStack Query. |
 
-**Leyenda de status:** `Accepted` · `Pending` · `Not Applicable` · `Deferred` · `Superseded`.
+**Leyenda de status:** `Accepted` · `Pending` · `Not Applicable` · `Deferred`.

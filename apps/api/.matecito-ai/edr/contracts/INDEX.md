@@ -18,4 +18,4 @@ Las superficies de contrato del broker: qué recibe del MCP y qué emite a la UI
 | cli | El broker no expone una CLI pública; su contrato son las dos superficies HTTP/WS. |
 | library | El broker no es una librería consumida como API; se embebe como binario. |
 
-**Leyenda de status:** `Accepted` · `Pending` · `Not Applicable` · `Deferred` · `Superseded`.
+**Leyenda de status:** `Accepted` · `Pending` · `Not Applicable` · `Deferred`.

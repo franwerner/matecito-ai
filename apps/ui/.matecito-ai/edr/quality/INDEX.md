@@ -17,4 +17,4 @@ Atributos de calidad de la UI: performance e internacionalización.
 |---|---|
 | scalability | Single-user local; sin escala horizontal. |
 
-**Leyenda de status:** `Accepted` · `Pending` · `Not Applicable` · `Deferred` · `Superseded`.
+**Leyenda de status:** `Accepted` · `Pending` · `Not Applicable` · `Deferred`.

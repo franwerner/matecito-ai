@@ -18,4 +18,4 @@ Cómo se configura, testea, empaqueta y despliega el broker.
 | Concern | Razón |
 |---|---|
 
-**Leyenda de status:** `Accepted` · `Pending` · `Not Applicable` · `Deferred` · `Superseded`.
+**Leyenda de status:** `Accepted` · `Pending` · `Not Applicable` · `Deferred`.

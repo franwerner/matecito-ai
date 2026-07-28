@@ -20,7 +20,7 @@ Las decisiones de diseño están organizadas por **surface**. Este índice te di
 | `<surface>` | <una línea> | [<surface>/INDEX.md](<surface>/INDEX.md) |
 | ... | | |
 
-**Leyenda de status:** `Accepted` = vigente · `Pending` = decidir más adelante · `Not Applicable` = decidido que no aplica · `Deferred` = postergado con condición · `Superseded` = reemplazado por otro DDR · `Inferred` = borrador minado de Figma, sin porqué (ratificar vía `design-decisions-bootstrap` modo update).
+**Leyenda de status:** `Accepted` = vigente · `Pending` = decidir más adelante · `Not Applicable` = decidido que no aplica · `Deferred` = postergado con condición · `Inferred` = borrador minado de Figma, sin porqué (ratificar vía `design-decisions-bootstrap` modo update).
 
 > Para DDRs `Pending`/`Deferred`, leé la sección "Razón de omisión / aplazamiento" del archivo; para los `Not Applicable`, la razón está en la sección "No aplican" del INDEX de la surface (o "Surfaces sin uso" del raíz). **No asumas que la falta de decisión es un olvido** — está documentada.
 
@@ -36,7 +36,6 @@ Las decisiones de diseño están organizadas por **surface**. Este índice te di
 ## Estado y mantenimiento
 
 - Última actualización: <YYYY-MM-DD>
-- **Actualizar una decisión (cambio menor):** editá el DDR. El historial lo lleva git.
-- **Cambiar una decisión (cambio de fondo):** creá un DDR nuevo en la misma surface, marcá el viejo `Superseded` con link al nuevo. No edites la decisión vieja en el lugar.
+- **Actualizar una decisión:** editá el DDR en el lugar, sea cambio menor o de fondo. El historial lo lleva git.
 - **Decisión nueva:** creá el DDR en su surface y sumá la fila al índice de esa surface (y, si la surface es nueva en la pieza, a este índice raíz).
 - **Ratificar un `Inferred`:** vía `design-decisions-bootstrap` modo update — entrevistá el porqué, llená Contexto/Decisión/Alternativas/Consecuencias, descartá `## Evidencia (inferida)`, pasá a `Accepted`.

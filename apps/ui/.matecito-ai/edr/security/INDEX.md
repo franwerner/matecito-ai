@@ -21,4 +21,4 @@ Validación de la entrada del broker y escaneo de dependencias de la UI.
 | cors | La UI se sirve same-origin desde el broker; sin request cross-origin. |
 | secrets-management | Sin secretos del lado cliente. |
 
-**Leyenda de status:** `Accepted` · `Pending` · `Not Applicable` · `Deferred` · `Superseded`.
+**Leyenda de status:** `Accepted` · `Pending` · `Not Applicable` · `Deferred`.

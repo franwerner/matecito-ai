@@ -20,4 +20,4 @@
 | <slug> | <1 línea: por qué no aplica> |
 | ... | |
 
-**Leyenda de status:** `Accepted` · `Pending` · `Not Applicable` · `Deferred` · `Superseded` · `Inferred`.
+**Leyenda de status:** `Accepted` · `Pending` · `Not Applicable` · `Deferred` · `Inferred`.

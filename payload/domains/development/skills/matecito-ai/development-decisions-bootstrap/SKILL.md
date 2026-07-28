@@ -213,7 +213,6 @@ Conjunto cerrado, así el INDEX y las revisiones futuras son consistentes:
 - **`Pending`** — Sabemos que hay que decidirlo, todavía no es el momento. Incluye trigger ("cuando…") si se conoce.
 - **`Not Applicable`** — Decisión consciente de que este tema no aplica. Lleva razón obligatoria.
 - **`Deferred`** — Postergado deliberadamente con fecha o condición de revisión.
-- **`Superseded`** — Reemplazado por otro EDR. Lleva referencia al que lo sustituye.
 
 ### Dónde se registra cada status
 
@@ -332,7 +331,7 @@ Los templates de estructura de EDR son el **contrato canónico** y viven en la r
 | Índice de tech (`edr/tech/INDEX.md`) | `~/.claude/references/edr/templates/tech-index.md` |
 | `CLAUDE.md` raíz | [`templates/claude-md.md`](templates/claude-md.md) |
 
-Notas del contrato del EDR (también en `~/.claude/references/edr/templates/edr.md`): **no hay sección `Historial`** (lo lleva git; la evolución se ve en la cadena de `Superseded`); **links entre EDRs** — dentro del mismo dominio ruta corta (`<slug>.md`), entre dominios ruta relativa (`../<dominio>/<slug>.md`).
+Notas del contrato del EDR (también en `~/.claude/references/edr/templates/edr.md`): **no hay sección `Historial`** (lo lleva git); **links entre EDRs** — dentro del mismo dominio ruta corta (`<slug>.md`), entre dominios ruta relativa (`../<dominio>/<slug>.md`).
 
 ### Paso 4: Escribir y reportar
 
@@ -365,11 +364,10 @@ Notas del contrato del EDR (también en `~/.claude/references/edr/templates/edr.
 5. **Después preguntá qué más quiere hacer:**
    - **Resolver un Pending/Deferred** → recorrer las preguntas de esa fase, cambiar Status a `Accepted`, llenar contenido.
    - **Ratificar un `Inferred`** → entrevistar por el porqué, llenar Contexto/Decisión/Alternativas/Consecuencias, descartar `## Evidencia (inferida)`, `Status → Accepted`.
-   - **Actualizar una decisión (cambio menor)** → editar el EDR. Git lleva el historial.
-   - **Cambiar una decisión (cambio de fondo)** → crear EDR nuevo en el mismo dominio, marcar el viejo `Superseded` con link al nuevo. No editar la decisión vieja en el lugar.
+   - **Actualizar una decisión** (cambio menor o de fondo) → editar el EDR en el lugar. Git lleva el historial.
    - **Agregar una decisión nueva** no cubierta → crear EDR en su dominio + fila en el índice de ese dominio (y en el raíz si el dominio es nuevo en el proyecto).
    - **Cambiar un `Not Applicable` a `Pending`/`Accepted`** → el contexto del proyecto cambió (ej: el script chico creció a app multiusuario y ahora sí hay auth). Sacá la fila de la sección "No aplican" del INDEX del dominio (o "Dominios sin uso" del raíz) y creá el EDR-archivo con el nuevo status y contenido; creá la carpeta del dominio si no existía.
-   - **Agregar/cambiar/quitar una tecnología** → editar `tech/INDEX.md` y el archivo en `tech/<nombre>.md`. Si reemplazás, el viejo queda `Superseded` apuntando al nuevo.
+   - **Agregar/cambiar/quitar una tecnología** → editar `tech/INDEX.md` y el archivo en `tech/<nombre>.md`. Si reemplazás, borrá el archivo viejo y su fila del INDEX — git conserva el historial del archivo borrado.
    - **Rehacer todo desde cero** → confirmación doble. Antes de sobrescribir, mover el directorio a `.matecito-ai/edr.old.<timestamp>/`.
 6. Para actualizar/agregar, recorré solo las fases relevantes — no rehagas todo el cuestionario.
 7. **Después de cualquier cambio, mantené los índices coherentes:** actualizá el índice del dominio afectado y, si agregaste o vaciaste un dominio, el índice raíz.
@@ -396,7 +394,6 @@ Desde ese momento, todo bootstrap futuro lo considera, y el modo update lo ofrec
 - ❌ Crear un EDR-archivo por cada `Not Applicable` → los N/A viven como fila en el INDEX del dominio, no como archivo; solo se justifican las desviaciones de la matriz.
 - ❌ Preguntar el motivo de cada N/A por separado → clasificar en bloque, una sola pasada, con razón templada por tipo de proyecto.
 - ❌ Confundir "no decidido aún" (`Pending`) con "decidido que no aplica" (`Not Applicable`) → son status distintos.
-- ❌ Editar una decisión de fondo en el lugar → para cambios de decisión, supersede (EDR nuevo + viejo `Superseded`). Cambios menores sí se editan; git lleva el historial.
 - ❌ Mantener una tabla `Historial` manual → es redundante con git y se pudre.
 - ❌ Inventar reglas no discutidas con el usuario en la materialización → todo lo que va al EDR fue confirmado.
 - ❌ Reglas vagas tipo "tratá de no acoplar capas" → siempre verificable: paths, globs, ejemplos.

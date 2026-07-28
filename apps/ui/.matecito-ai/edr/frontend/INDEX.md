@@ -11,4 +11,4 @@ Accesibilidad, acceso a datos, estilos/theming y ruteo de la UI.
 | [styling.md](styling.md) | Accepted | decision | escribís estilos, tocás el theming dual o el component base. |
 | [routing.md](routing.md) | Accepted | decision | agregás/cambiás una ruta, estado deep-linkable o prefetch de snapshot. |
 
-**Leyenda de status:** `Accepted` · `Pending` · `Not Applicable` · `Deferred` · `Superseded`.
+**Leyenda de status:** `Accepted` · `Pending` · `Not Applicable` · `Deferred`.

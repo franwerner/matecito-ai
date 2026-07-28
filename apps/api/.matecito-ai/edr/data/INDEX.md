@@ -17,4 +17,4 @@ Cómo se persiste y accede al estado del broker: el borde de acceso a datos y el
 | Concern | Razón |
 |---|---|
 
-**Leyenda de status:** `Accepted` · `Pending` · `Not Applicable` · `Deferred` · `Superseded`.
+**Leyenda de status:** `Accepted` · `Pending` · `Not Applicable` · `Deferred`.

@@ -18,7 +18,7 @@ Un EDR **no es**: una tarea, un criterio de verificación, una señal/TODO, cód
 
 > La definición canónica y agnóstica de flujo vive en [`references/edr/README.md`](../../payload/references/edr/README.md); la **estructura** del archivo está en `references/edr/templates/`. Cualquier skill la consume; no la redefine.
 
-**Estados** (un EDR no es estático): `Inferred` (borrador: el QUÉ, sin el porqué) → `Accepted` (ratificado por una persona, con el porqué); más `Pending`/`Deferred` (aplazados) y `Superseded` (reemplazado).
+**Estados** (un EDR no es estático): `Inferred` (borrador: el QUÉ, sin el porqué) → `Accepted` (ratificado por una persona, con el porqué); más `Pending`/`Deferred` (aplazados).
 
 Dónde viven: `.matecito-ai/edr/<dominio>/<slug>.md`, agrupados por dominio, con índices (`INDEX.md` raíz + por dominio). **Nunca en Engram.**
 

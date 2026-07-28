@@ -2,7 +2,7 @@
 
 # EDR — <título>
 
-- **Status:** <Inferred | Accepted | Pending | Deferred | Superseded>
+- **Status:** <Inferred | Accepted | Pending | Deferred>
 - **Type:** <decision | convention | policy>
 - **Date:** <YYYY-MM-DD>
 - **Applied pattern:** <Opcional. Solo si la decisión mapea a un patrón del catálogo canónico en `~/.claude/references/design-patterns/`. Formato: `<Nombre> — <1 línea de por qué este patrón>`. Ej: `Repository — necesitamos swap SQLite↔Postgres en tests sin tocar dominio`. Si no aplica, omitir la línea completa.>
@@ -29,12 +29,6 @@
 - Pending: indicá el trigger esperado ("cuando llegue X").
 - Deferred: fecha o condición de revisión.>
 (Los `Not Applicable` no usan este template — viven como fila en el INDEX del dominio.)
--->
-
-<!-- Si Status es Superseded, agregar:
-## Reemplazado por
-[<slug-del-nuevo>.md](<slug-del-nuevo>.md) — <1 línea de por qué cambió la decisión>
-(Si el EDR nuevo está en otro dominio, usar ruta relativa: [../<otro-dominio>/<slug>.md](../<otro-dominio>/<slug>.md))
 -->
 
 <!-- Si Status es Inferred (EDR minado por development-decisions-mine desde el código, NO decidido aún por un humano), agregar esta sección. Es TRANSITORIA: al promoverse a Accepted vía bootstrap, se elimina (git conserva la traza). El humano completa Contexto/Decisión/Consecuencias; mine NUNCA infiere el porqué — solo registra el qué observado.
@@ -76,14 +70,14 @@ Globs **a nivel convención** —patrones estructurales estables, no archivos co
 
 ## Relacionados
 
-<!-- Opcional. Links tipados a otros EDRs. Tipos: `depende-de`, `refina`, `relacionado-con`. Para reemplazos usar la sección "Reemplazado por" de arriba, no esta. Mismo dominio: ruta corta `<slug>.md`; otro dominio: ruta relativa `../<dominio>/<slug>.md`. Omitir la sección si no hay vínculos. -->
+<!-- Opcional. Links tipados a otros EDRs. Tipos: `depende-de`, `refina`, `relacionado-con`. Mismo dominio: ruta corta `<slug>.md`; otro dominio: ruta relativa `../<dominio>/<slug>.md`. Omitir la sección si no hay vínculos. -->
 
 - `depende-de` → [<slug>.md](<slug>.md) — <1 línea>
 - `relacionado-con` → [../<dominio>/<slug>.md](../<dominio>/<slug>.md) — <1 línea>
 
 <!--
 Notas del contrato (no van en el EDR generado):
-- No hay sección `Historial`. El historial de ediciones lo lleva git; la evolución de decisiones se ve en la cadena de `Superseded`.
+- No hay sección `Historial`. El historial de ediciones y la evolución de decisiones los lleva git.
 - Header en inglés (`Status`, `Type`, `Date`, `Applied pattern`); nombres de sección y prosa en español.
 - Self-check antes de dar por escrito el EDR: releé Contexto/Decisión/Consecuencias/Alternativas y por cada nombre de clase/método/columna/archivo/error interno, convertilo en un glob (`## Alcance`) o una regla (`## Reglas verificables`), o reformulá la frase en términos de concepto. Chequeá además que no haya anotaciones de edición inline ni nombres de slice/ticket/roadmap en la prosa. Excepción: tecnología/librería y contrato público. Guía completa (test + tabla mal→bien): `~/.claude/references/edr/README.md` → "Dónde va cada nombre".
 -->

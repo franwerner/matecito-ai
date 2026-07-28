@@ -20,4 +20,4 @@ Configuración, empaquetado/despliegue, gates de calidad, documentación y featu
 |---|---|
 | testing-strategy | Decisión consciente de no formalizar una suite de tests en esta etapa (read-first, un dev). |
 
-**Leyenda de status:** `Accepted` · `Pending` · `Not Applicable` · `Deferred` · `Superseded`.
+**Leyenda de status:** `Accepted` · `Pending` · `Not Applicable` · `Deferred`.

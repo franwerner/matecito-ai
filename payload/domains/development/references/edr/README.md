@@ -49,7 +49,7 @@ La regla "el razonamiento va en conceptos" no prohíbe nombrar lo concreto; regu
 
 **Dos formas prohibidas** (mismo mal: el razonamiento calca la implementación, así que cada cambio de código obliga a parchear la prosa):
 
-- **EDR-como-changelog.** Anotaciones de edición inline en la prosa — "(actualizada `<fecha>`)", "(renombrado tras el refactor de la capa X)". La evolución la lleva git; un cambio de fondo es un EDR nuevo + el viejo `Superseded`, no un parche entre paréntesis.
+- **EDR-como-changelog.** Anotaciones de edición inline en la prosa — "(actualizada `<fecha>`)", "(renombrado tras el refactor de la capa X)". La evolución la lleva git; el remedio es editar el EDR en el lugar y sacar la anotación inline, no un parche entre paréntesis.
 - **Anclar a nombres de planificación efímeros.** Slices, tickets, fases de roadmap, nombres de milestone en el razonamiento. Envejecen en semanas y no significan nada para quien lee el EDR después. El Contexto expresa el condicionante (qué cambió, por qué hace falta decidir), no cómo se llamaba el trabajo que lo trajo.
 
 ## Estados (un EDR no es estático)

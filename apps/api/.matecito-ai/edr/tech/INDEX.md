@@ -65,5 +65,5 @@ Estas piezas de la librería estándar de Go se usan pero no meritan un mini-EDR
 ## Mantenimiento
 
 - **Agregar tech:** crear `<nombre>.md`, sumar fila en la categoría.
-- **Reemplazar tech:** marcar el viejo `Superseded`, crear el nuevo, sacar del INDEX el viejo (o moverlo a "Históricas").
+- **Reemplazar tech:** borrar el archivo viejo y su fila del INDEX, crear el nuevo — git conserva el historial del archivo borrado.
 - **Actualizar versión:** editar el archivo, anotar en Notas si hay breaking changes.

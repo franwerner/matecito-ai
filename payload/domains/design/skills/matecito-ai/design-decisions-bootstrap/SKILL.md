@@ -183,7 +183,6 @@ Conjunto cerrado, así el INDEX y las revisiones futuras son consistentes:
 - **`Pending`** — Sabemos que hay que decidirlo, todavía no es el momento. Incluye trigger ("cuando…") si se conoce.
 - **`Not Applicable`** — Decisión consciente de que este tema no aplica. Lleva razón obligatoria.
 - **`Deferred`** — Postergado deliberadamente con fecha o condición de revisión.
-- **`Superseded`** — Reemplazado por otro DDR. Lleva referencia al que lo sustituye.
 - **`Inferred`** — Borrador minado del archivo Figma por `design-decisions-mine`: tiene el QUÉ y la evidencia, pero el PORQUÉ vacío. No es una decisión ratificada hasta que el modo update lo entrevista y lo pasa a `Accepted`.
 
 ### Dónde se registra cada status
@@ -250,7 +249,7 @@ Los templates de estructura de DDR son el **contrato canónico** y viven en la r
 | Índice raíz (`ddr/INDEX.md`) | `~/.claude/references/ddr/templates/index-root.md` |
 | Índice de surface (`ddr/<surface>/INDEX.md`) | `~/.claude/references/ddr/templates/index-surface.md` |
 
-Notas del contrato del DDR (también en `~/.claude/references/ddr/templates/ddr.md`): **no hay sección `Historial`** (lo lleva git; la evolución se ve en la cadena de `Superseded`); **links entre DDRs** — dentro de la misma surface ruta corta (`<slug>.md`), entre surfaces ruta relativa (`../<surface>/<slug>.md`).
+Notas del contrato del DDR (también en `~/.claude/references/ddr/templates/ddr.md`): **no hay sección `Historial`** (lo lleva git); **links entre DDRs** — dentro de la misma surface ruta corta (`<slug>.md`), entre surfaces ruta relativa (`../<surface>/<slug>.md`).
 
 > A diferencia de development, design NO tiene catálogo de tecnologías (`tech/`) ni escribe un `CLAUDE.md` raíz.
 
@@ -279,8 +278,7 @@ Notas del contrato del DDR (también en `~/.claude/references/ddr/templates/ddr.
 5. **Después preguntá qué más quiere hacer:**
    - **Resolver un Pending/Deferred** → recorrer las preguntas de esa fase, cambiar Status a `Accepted`, llenar contenido.
    - **Ratificar un `Inferred`** → entrevistar por el porqué, llenar Contexto/Decisión/Alternativas/Consecuencias + Reglas verificables, descartar `## Evidencia (inferida)`, `Status → Accepted`.
-   - **Actualizar una decisión (cambio menor)** → editar el DDR. Git lleva el historial.
-   - **Cambiar una decisión (cambio de fondo)** → crear DDR nuevo en la misma surface, marcar el viejo `Superseded` con link al nuevo. No editar la decisión vieja en el lugar.
+   - **Actualizar una decisión** (cambio menor o de fondo) → editar el DDR en el lugar. Git lleva el historial.
    - **Agregar una decisión nueva** no cubierta → crear DDR en su surface + fila en el índice de esa surface (y en el raíz si la surface es nueva en la pieza).
    - **Cambiar un `Not Applicable` a `Pending`/`Accepted`** → el contexto de la pieza cambió (ej: el asset one-off creció a sistema reutilizable y ahora sí hay biblioteca de componentes). Sacá la fila de la sección "No aplican" del INDEX de la surface (o "Surfaces sin uso" del raíz) y creá el DDR-archivo con el nuevo status y contenido; creá la carpeta de la surface si no existía.
    - **Rehacer todo desde cero** → confirmación doble. Antes de sobrescribir, mover el directorio a `.matecito-ai/ddr.old.<timestamp>/`.
@@ -309,7 +307,6 @@ Desde ese momento, todo bootstrap futuro lo considera, y el modo update lo ofrec
 - ❌ Crear un DDR-archivo por cada `Not Applicable` → los N/A viven como fila en el INDEX de la surface, no como archivo; solo se justifican las desviaciones de la matriz.
 - ❌ Preguntar el motivo de cada N/A por separado → clasificar en bloque, una sola pasada, con razón templada por tipo de pieza.
 - ❌ Confundir "no decidido aún" (`Pending`) con "decidido que no aplica" (`Not Applicable`) → son status distintos.
-- ❌ Editar una decisión de fondo en el lugar → para cambios de decisión, supersede (DDR nuevo + viejo `Superseded`). Cambios menores sí se editan; git lleva el historial.
 - ❌ Promover un `Inferred` a `Accepted` sin entrevistar el porqué → eso es lo que lo convierte en decisión; un Inferred promovido a dedo es una decisión inventada.
 - ❌ Dejar la sección `## Evidencia (inferida)` en un DDR ya ratificado → es transitoria; al pasar a `Accepted` se descarta (git conserva la traza).
 - ❌ Mantener una tabla `Historial` manual → es redundante con git y se pudre.
