@@ -8,7 +8,15 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"time"
 )
+
+// readHeaderTimeout caps how long a client may take to send its request
+// headers. Generous for localhost — it exists to reclaim connections from
+// clients that died mid-request (runtime/resilience), not to fend off an
+// attacker. The write and idle budgets stay unset until the WS-out exists
+// and can inform them.
+const readHeaderTimeout = 5 * time.Second
 
 // Server wraps the broker's single HTTP boundary: the mux, its bound
 // listener, and lifecycle control (Listen/Serve/Shutdown), kept separate so
@@ -23,8 +31,11 @@ type Server struct {
 // any unmatched route through the transport error boundary.
 func New(addr string, storeStatus func() string) *Server {
 	return &Server{
-		httpServer: &http.Server{Handler: NewMux(storeStatus)},
-		addr:       addr,
+		httpServer: &http.Server{
+			Handler:           NewMux(storeStatus),
+			ReadHeaderTimeout: readHeaderTimeout,
+		},
+		addr: addr,
 	}
 }
 
