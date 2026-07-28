@@ -32,7 +32,7 @@ El humano decide; la IA ejecuta dentro de esas decisiones.
 
 ## Dónde encaja development
 
-development es **uno** de los dominios del ecosistema; convive con otros (`design`, …) bajo el mismo núcleo. Agregar un dominio nuevo es **implementar el contrato de área** —`manifest.json` + un fragmento `CLAUDE.md`— sin tocar el núcleo (ver [cómo se arma un dominio](../../payload/domains/README.md)). Por eso esta guía habla de SDD, EDR y codegraph: son el *binding* de development, no el ecosistema entero.
+development es **uno** de los dominios del ecosistema; convive con otros (`design`, …) bajo el mismo núcleo. Agregar un dominio nuevo es **implementar el contrato de área** —`manifest.json` + un fragmento `CLAUDE.md`— sin tocar el núcleo (ver [cómo se arma un dominio](../../payload/docs/build-a-domain.md)). Por eso esta guía habla de SDD, EDR y codegraph: son el *binding* de development, no el ecosistema entero.
 
 ## Qué NO es
 

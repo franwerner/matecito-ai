@@ -1,7 +1,8 @@
-# Dominios de área
+# Armar un dominio
 
-Cada subdirectorio acá es un **dominio de área** (development, design, …) — un plugin
-sobre el kernel agnóstico de dominio en `../core/`. Un dominio entrega:
+Cada subdirectorio de `payload/domains/` es un **dominio de área** (development,
+design, …) — un plugin sobre el kernel agnóstico de dominio en `payload/core/`.
+Un dominio entrega:
 
 ```
 domains/<id>/

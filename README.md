@@ -37,7 +37,7 @@ Un **dominio** es un área de trabajo: un plugin sobre el núcleo. Se eligen e i
 | **development** | Desarrollo de software con SDD sobre un repo de código. | [README](payload/domains/development/README.md) |
 | **design** | Diseño visual full-spectrum (marca + UI/UX + prototipos + guías). No toca código. | [README](payload/domains/design/README.md) |
 
-Agregar un dominio nuevo (marketing, video, contable, …) es **implementar el contrato de área**, sin tocar el núcleo — ver [cómo se arma un dominio](payload/domains/README.md).
+Agregar un dominio nuevo (marketing, video, contable, …) es **implementar el contrato de área**, sin tocar el núcleo — ver [cómo se arma un dominio](payload/docs/build-a-domain.md).
 
 ## Componentes
 
@@ -156,7 +156,7 @@ La config de un dominio solo aparece si el dominio está **activo**.
 
 ## Documentación
 
-- **Dominios:** [development](payload/domains/development/README.md) · [design](payload/domains/design/README.md) · [cómo armar un dominio](payload/domains/README.md)
+- **Dominios:** [development](payload/domains/development/README.md) · [design](payload/domains/design/README.md) · [cómo armar un dominio](payload/docs/build-a-domain.md)
 - [Guía profunda del flujo SDD](docs/guide/README.md) — el dominio **development** de punta a punta: fases, herramientas y la capa de decisiones (bootstrap / validate / mine).
 - [PRD](docs/PRD.md) — documento de producto del ecosistema.
 - [Guía: agregar una dependencia](docs/workflow-dependecy.md) — cómo integrar una pieza nueva al ecosistema.

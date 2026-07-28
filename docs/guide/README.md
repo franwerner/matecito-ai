@@ -2,7 +2,7 @@
 
 Cómo funciona el dominio **development** de matecito-ai de punta a punta: las fases del SDD, cómo se conectan con las herramientas y skills, cómo se pasa la información entre fases, y la capa de decisiones (EDRs) con `bootstrap`, `validate` y `mine`.
 
-> **Dónde encaja.** matecito-ai es un **microkernel**: un núcleo agnóstico (orquestación, flujo estructurado, gate humano, memoria) más **un plugin por área** (`development`, `design`, …). Esta guía profundiza el dominio **development** — desarrollo de software con SDD sobre un repo de código. El núcleo y el resto de los dominios están en el [README raíz](../../README.md) y en el [contrato de área](../../payload/domains/README.md). Lo que sigue es el *binding concreto* de development; el esqueleto (fases base + add-ons, INTAKE GATE, modelo por agente) lo aporta el núcleo, los nombres y herramientas los aporta este dominio.
+> **Dónde encaja.** matecito-ai es un **microkernel**: un núcleo agnóstico (orquestación, flujo estructurado, gate humano, memoria) más **un plugin por área** (`development`, `design`, …). Esta guía profundiza el dominio **development** — desarrollo de software con SDD sobre un repo de código. El núcleo y el resto de los dominios están en el [README raíz](../../README.md) y en el [contrato de área](../../payload/docs/build-a-domain.md). Lo que sigue es el *binding concreto* de development; el esqueleto (fases base + add-ons, INTAKE GATE, modelo por agente) lo aporta el núcleo, los nombres y herramientas los aporta este dominio.
 
 ## Mapa del dominio
 

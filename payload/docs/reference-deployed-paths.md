@@ -18,7 +18,7 @@ Un agente o una skill corre en el repo **del usuario**, donde `payload/` no exis
 | `payload/shared/<component>/<...>` | igual que su equivalente de dominio |
 
 La capa `<group>` bajo `skills/` es organizativa y se descarta en el deploy
-(detalle completo en [`../domains/README.md`](../domains/README.md)). Por eso la
+(detalle completo en [`build-a-domain.md`](build-a-domain.md)). Por eso la
 ruta desplegada de una skill **nunca** incluye ni el dominio ni el grupo.
 
 `payload/docs/` —donde vive este archivo— es documentación del repo: **no se
