@@ -31,4 +31,4 @@ Adoptamos el modelo de concurrencia idiomático de Go: goroutines, channels y co
 
 ## Relacionados
 
-- `relacionado-con` → [../data/data-access.md](../data/data-access.md) — la frontera transaccional se apoya en este único escritor.
+- `relacionado-con` → [../data/data-access-entity-framework.md](../data/data-access-entity-framework.md) — la frontera transaccional se apoya en este único escritor.

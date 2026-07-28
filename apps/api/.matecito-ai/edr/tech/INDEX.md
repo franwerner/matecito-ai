@@ -24,7 +24,7 @@ Registro vivo de las tecnologías concretas elegidas. Cada entrada apunta a un m
 ### ORM / Acceso a datos
 | Tech | Versión | Por qué |
 |---|---|---|
-| [sqlc](sqlc.md) | sin pinear | Queries type-safe generadas desde SQL a mano, sin ORM. |
+| [ent](ent.md) | v0.14.6 | Schema definido una sola vez en código, con el acceso a datos type-safe generado desde ahí. |
 
 ### Testing
 | Tech | Versión | Por qué |
@@ -51,13 +51,14 @@ Registro vivo de las tecnologías concretas elegidas. Cada entrada apunta a un m
 |---|---|---|
 | [golangci-lint](golangci-lint.md) | sin pinear | Enforcer del estilo por encima de gofmt + go vet. |
 | [golang.org/x/sync](golang-x-sync.md) | sin pinear | Grupo de goroutines con cancelación propagada para el lifecycle. |
-| [goose](goose.md) | sin pinear | Migraciones versionadas embebidas, aplicadas al arranque. |
+| [atlas](atlas.md) | v1.2.3 | Migraciones versionadas derivadas del schema en código, embebidas y aplicadas al arranque. |
+| [github.com/google/uuid](google-uuid.md) | v1.6.0 | Genera los UUID v7 que el modelado fija como clave primaria; la stdlib no los ofrece. |
 | [coder/websocket](coder-websocket.md) | sin pinear | WebSocket para el WS-out hacia la UI; valida Origin==Host por default. |
 | [SDK Go oficial de MCP](mcp-go-sdk.md) | sin pinear | SDK oficial de MCP para Go; soporta streamable HTTP para la superficie MCP cara a Claude. |
 
 ## Stdlib usada (sin entrada propia)
 
-Estas piezas de la librería estándar de Go se usan pero no meritan un mini-EDR (no hubo elección entre alternativas): `slog` (logging estructurado, ver observability/logging), `database/sql` (ejecución de queries, ver data/data-access), `testing` (framework de tests, ver delivery/testing-strategy), `flag` y `os` (config por flags/env, ver delivery/configuration), `embed` (migraciones y bundle de la UI embebidos, ver data/data-access y delivery/deployment-topology), `net/http` (ServeMux del HTTP-in, sobre el que corre huma, ver contracts/api-contract).
+Estas piezas de la librería estándar de Go se usan pero no meritan un mini-EDR (no hubo elección entre alternativas): `slog` (logging estructurado, ver observability/logging), `database/sql` (ejecución de queries, ver data/data-access-entity-framework), `testing` (framework de tests, ver delivery/testing-strategy), `flag` y `os` (config por flags/env, ver delivery/configuration), `embed` (migraciones y bundle de la UI embebidos, ver data/data-access-entity-framework y delivery/deployment-topology), `net/http` (ServeMux del HTTP-in, sobre el que corre huma, ver contracts/api-contract).
 
 ## Mantenimiento
 

@@ -12,10 +12,11 @@ El broker persiste dos cosas de naturaleza distinta: el estado runtime del cockp
 
 El contenido versionado de los records vive en la base de datos, **content-addressable con dedup por hash** (no se duplica el contenido repetido). Se descarta apoyarse en git como store de versiones: git vive local en cada máquina y un servidor compartido no tiene el checkout de nadie, así que usar git como store bloquearía el deploy/compartir. La base de datos es el artefacto **portable y deployable**, self-contained.
 
-Hay dos tipos de dato, cada uno con un único dueño:
+Hay tres tipos de dato, cada uno con un único dueño:
 
 - **Records (los `.md` de decisión y comportamiento):** el **archivo (git) es canónico para editar**; la base de datos es **espejo más versiones**.
 - **Eventos y estado runtime:** **viven solo en la base y la base es canónica** (nunca fueron archivos).
+- **Fotos de código (los diffs del cockpit):** el mismo principio de no depender de git se extiende al código que un change toca — las vistas de diff de la UI **no** se derivan de git (ni commits, ni ramas, ni disciplina de commit exigida al flujo): el broker captura **fotos del contenido completo** de cada archivo en los bordes de cada batch de apply, en el mismo store content-addressable (dedup por hash), y los diffs se **derivan on demand** comparando fotos (o una foto contra el disco). Se descartó almacenar solo deltas/líneas cambiadas: un patch guardado se desalinea con el drift, no renderiza contexto y las cadenas de patches son frágiles; los estados completos hacen toda vista siempre computable. Las fotos son self-contained: sobreviven a rebase, ramas borradas y sirven deployado.
 
 La sincronización tiene dos caminos:
 
@@ -37,11 +38,15 @@ La **identidad del proyecto es el `project-id` de `<git-toplevel>/.matecito-ai/.
 - **[manual]** la base es self-contained y deployable: un servidor puede servir features, eventos e historia sin git ni los archivos locales.
 - **[manual]** la identidad del proyecto es el `project-id` de `<git-toplevel>/.matecito-ai/.id` (commiteado, viaja con el repo); la base keyea por `project-id`, nunca por el path local.
 - **[manual]** los eventos y el estado runtime viven solo en la base.
+- **[manual]** las vistas de diff de código se derivan de las fotos del store (o de una foto contra el disco), nunca de git; los diffs no se almacenan.
+- **[manual]** las fotos de código son contenido completo por archivo, en los bordes de batch, en el store content-addressable (dedup por hash).
 
 ## Alternativas consideradas
 
 - **Git como store de versiones:** descartado; git es local a cada máquina y un servidor compartido no tiene el checkout de nadie, así que bloquearía el deploy/compartir.
 - **Base canónica total, con los archivos como export puro:** descartado; rompe editar los records a mano, la operación git-native y la conciencia de rama.
+- **Diffs de código derivados de git (merge-base/commits por batch):** descartado; exige disciplina de commits por batch, se rompe con rebase/ramas borradas y no funciona deployado sin checkout. Las fotos content-addressable dan lo mismo sin esas dependencias.
+- **Almacenar solo deltas/líneas cambiadas de código:** descartado; frágil ante drift (los patches se desalinean), sin contexto para renderizar, y las vistas colapsadas dependen de cadenas de patches que no pueden fallar.
 
 ## Consecuencias
 
@@ -51,7 +56,7 @@ La **identidad del proyecto es el `project-id` de `<git-toplevel>/.matecito-ai/.
 
 ## Relacionados
 
-- `relacionado-con` → [data-access.md](data-access.md) — el borde de persistencia donde viven la escritura del espejo y de las versiones.
-- `relacionado-con` → [data-modeling.md](data-modeling.md) — (Pending) las tablas de versiones, el pin y el scoping concretos.
+- `relacionado-con` → [data-access-entity-framework.md](data-access-entity-framework.md) — el borde de persistencia donde viven la escritura del espejo y de las versiones.
+- `relacionado-con` → [data-modeling.md](data-modeling.md) — las convenciones de schema (IDs, borrado, idempotencia por hash, envelope) que aterrizan este modelo.
 - `relacionado-con` → [../contracts/api-contract.md](../contracts/api-contract.md) — la superficie de lectura de la UI que consume la base (queries, grafo, historia, versiones).
 - `relacionado-con` → [../contracts/mcp-server.md](../contracts/mcp-server.md) — la identidad por request y el scoping por proyecto/rama de los eventos.

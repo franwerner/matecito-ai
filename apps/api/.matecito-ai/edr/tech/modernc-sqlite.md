@@ -16,4 +16,4 @@ Driver de SQLite en Go puro (sin cgo): mantiene trivial la cross-compilación y 
 
 ## Notas
 
-Usada en: data/data-access.
+Usada en: data/data-access-entity-framework.
