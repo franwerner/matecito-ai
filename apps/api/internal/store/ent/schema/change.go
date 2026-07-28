@@ -1,3 +1,6 @@
+// Package schema is the single definition of the broker's tables: the
+// migrations and the data-access code are both derived from it
+// (data-access-entity-framework).
 package schema
 
 import (
