@@ -22,13 +22,14 @@ const shutdownTimeout = 5 * time.Second
 func run(ctx context.Context, args []string, getenv func(string) string, stdout io.Writer) int {
 	cfg, err := config.Load(args, getenv)
 	if err != nil {
-		fmt.Fprintf(stdout, "broker: invalid configuration: %v\n", err)
+		_, _ = fmt.Fprintf(stdout, "broker: invalid configuration: %v\n", err)
 		return 1
 	}
 
 	logger := newLogger(cfg, stdout)
 
-	if _, err := store.EnsureMachineID(cfg.PersistDir); err != nil {
+	machineID, err := store.EnsureMachineID(cfg.PersistDir)
+	if err != nil {
 		logger.Error("machine id setup failed", "err", err)
 		return 1
 	}
@@ -36,7 +37,7 @@ func run(ctx context.Context, args []string, getenv func(string) string, stdout 
 	// R1/R14: the daemon must not serve with an unmigrated or partially
 	// migrated schema, so opening (and migrating) the store happens before
 	// anything else can bind or check readiness.
-	st, err := store.Open(ctx, cfg.PersistDir)
+	st, err := store.Open(ctx, cfg.PersistDir, machineID)
 	if err != nil {
 		logger.Error("store open/migrate failed", "err", err)
 		return 1

@@ -17,6 +17,11 @@ import (
 // — the exact convention created_at/updated_at/occurred_at must follow.
 const ts = "2026-01-01T00:00:00.000Z"
 
+// testMachineID stands in for the daemon's own persisted machine_id
+// (store.EnsureMachineID) — these tests only care about schema/migration
+// behavior, not the value itself.
+const testMachineID = "test-machine"
+
 // openRaw opens a second, completely independent connection to the same
 // database file store.Open just migrated — no Ent, no store package code —
 // so tests exercise the database itself (delivery/testing-strategy: SQLite
@@ -59,7 +64,7 @@ func TestOpen_CreatesSchemaFromScratch(t *testing.T) {
 	ctx := context.Background()
 	dir := t.TempDir()
 
-	st, err := store.Open(ctx, dir)
+	st, err := store.Open(ctx, dir, testMachineID)
 	if err != nil {
 		t.Fatalf("Open: %v", err)
 	}
@@ -106,7 +111,7 @@ func TestOpen_IdempotentOnAlreadyMigrated(t *testing.T) {
 	ctx := context.Background()
 	dir := t.TempDir()
 
-	st1, err := store.Open(ctx, dir)
+	st1, err := store.Open(ctx, dir, testMachineID)
 	if err != nil {
 		t.Fatalf("first Open: %v", err)
 	}
@@ -114,7 +119,7 @@ func TestOpen_IdempotentOnAlreadyMigrated(t *testing.T) {
 		t.Fatalf("close first: %v", err)
 	}
 
-	st2, err := store.Open(ctx, dir)
+	st2, err := store.Open(ctx, dir, testMachineID)
 	if err != nil {
 		t.Fatalf("second Open: %v", err)
 	}
@@ -136,7 +141,7 @@ func TestOpen_IdempotentOnAlreadyMigrated(t *testing.T) {
 func TestForeignKeysEnforced(t *testing.T) {
 	ctx := context.Background()
 	dir := t.TempDir()
-	st, err := store.Open(ctx, dir)
+	st, err := store.Open(ctx, dir, testMachineID)
 	if err != nil {
 		t.Fatalf("Open: %v", err)
 	}
@@ -163,7 +168,7 @@ type fixtures struct {
 	eventID         string
 }
 
-func seedFixtures(t *testing.T, ctx context.Context, db *sql.DB) fixtures {
+func seedFixtures(ctx context.Context, t *testing.T, db *sql.DB) fixtures {
 	t.Helper()
 	fx := fixtures{
 		projectID:       "project-1",
@@ -205,14 +210,14 @@ func seedFixtures(t *testing.T, ctx context.Context, db *sql.DB) fixtures {
 func TestCheckConstraintsRejectRawInserts(t *testing.T) {
 	ctx := context.Background()
 	dir := t.TempDir()
-	st, err := store.Open(ctx, dir)
+	st, err := store.Open(ctx, dir, testMachineID)
 	if err != nil {
 		t.Fatalf("Open: %v", err)
 	}
 	defer st.Close()
 
 	raw := openRaw(t, dir)
-	fx := seedFixtures(t, ctx, raw)
+	fx := seedFixtures(ctx, t, raw)
 
 	cases := []struct {
 		name  string
@@ -288,14 +293,14 @@ func TestCheckConstraintsRejectRawInserts(t *testing.T) {
 func TestCheckConstraintsAllowValidRows(t *testing.T) {
 	ctx := context.Background()
 	dir := t.TempDir()
-	st, err := store.Open(ctx, dir)
+	st, err := store.Open(ctx, dir, testMachineID)
 	if err != nil {
 		t.Fatalf("Open: %v", err)
 	}
 	defer st.Close()
 
 	raw := openRaw(t, dir)
-	fx := seedFixtures(t, ctx, raw)
+	fx := seedFixtures(ctx, t, raw)
 
 	// A note anchored to change only (no event, no file, no range) —
 	// the least anchored valid shape.

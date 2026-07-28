@@ -1,6 +1,6 @@
 // Package store is the broker's persistence boundary: the Ent-defined
-// schema, its derived and embedded migrations, and (from Batch 2 on) the
-// narrow Repository — per structure/folder-structure and
+// schema, its derived and embedded migrations, and the narrow Repository
+// (Reader + Writer) — per structure/folder-structure and
 // data/data-access-entity-framework.
 package store
 
@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/franwerner/matecito-ai/apps/api/internal/store/ent"
+	_ "github.com/franwerner/matecito-ai/apps/api/internal/store/ent/runtime" // wires schema defaults/hooks (DefaultFunc, UpdateDefault) into the generated field descriptors — required before any Create/Update, per ent's generated runtime package.
 	"github.com/franwerner/matecito-ai/apps/api/internal/store/migrations"
 
 	atlas "ariga.io/atlas/sql/migrate"
@@ -26,21 +27,31 @@ import (
 // persist-dir (storage-sync-model: one self-contained, deployable store).
 const dbFileName = "broker.db"
 
-// Store owns the broker's single SQLite connection. Batch 1 only opens and
-// migrates it; the narrow Repository boundary (write side / read side) that
-// wraps Client is Batch 2 — see data/data-access-entity-framework.
-type Store struct {
-	Client *ent.Client
-	db     *sql.DB
+// Engine is the concrete Repository implementation: it owns the broker's
+// single SQLite connection, the generated Ent client, and the single writer
+// goroutine.
+type Engine struct {
+	// Unexported so the generated client stays a store-internal detail
+	// (data-access-entity-framework): reaching it from outside would bypass
+	// the writer goroutine and the transactional boundary.
+	client *ent.Client
+
+	db        *sql.DB
+	writer    *writer
+	machineID string
 }
+
+var _ Repository = (*Engine)(nil)
 
 // Open opens (creating if absent) the database under persistDir, enables
 // foreign-key enforcement — SQLite ignores FKs by default and the generated
 // client does not change that (ROADMAP-2 gotcha #1) — and applies every
 // pending embedded migration before returning. Returns a wrapped error
 // without serving on any failure (R1, R14): the daemon must not run with an
-// unmigrated or partially migrated schema.
-func Open(ctx context.Context, persistDir string) (*Store, error) {
+// unmigrated or partially migrated schema. machineID scopes every
+// project_paths lookup/bind to this machine (R4) — the caller resolves it
+// once via EnsureMachineID before calling Open.
+func Open(ctx context.Context, persistDir, machineID string) (*Engine, error) {
 	dbPath := filepath.Join(persistDir, dbFileName)
 	dsn := fmt.Sprintf("file:%s?_pragma=foreign_keys(1)", dbPath)
 
@@ -58,13 +69,20 @@ func Open(ctx context.Context, persistDir string) (*Store, error) {
 	}
 
 	drv := entsql.OpenDB(dialect.SQLite, db)
-	return &Store{Client: ent.NewClient(ent.Driver(drv)), db: db}, nil
+	client := ent.NewClient(ent.Driver(drv))
+	return &Engine{
+		client:    client,
+		db:        db,
+		writer:    newWriter(client),
+		machineID: machineID,
+	}, nil
 }
 
-// Close releases the underlying connection (closing the Ent client closes
-// the wrapped *sql.DB too).
-func (s *Store) Close() error {
-	return s.Client.Close()
+// Close stops the writer goroutine and releases the underlying connection
+// (closing the Ent client closes the wrapped *sql.DB too).
+func (e *Engine) Close() error {
+	e.writer.close()
+	return e.client.Close()
 }
 
 // migrateUp applies every pending file from the embedded migration

@@ -71,13 +71,25 @@ Deja la base creable desde cero y migrada al arrancar. Sin lógica de dominio to
 
 Establece el patrón de Repository que los batches siguientes replican.
 
-- [ ] Borde de persistencia (Repository) según `edr/data/data-access-entity-framework`: interfaz angosta, sin filtrar hacia adentro los tipos generados ni los de la base.
-- [ ] Traducción de errores del store al modelo de errores interno de la Fase 1 (sin exponer internals; el borde HTTP ya los mapea a `{error, code}`).
-- [ ] Manejo de transacción del único escritor (el daemon es global y único por máquina).
-- [ ] Repository de `projects`: alta, lookup por `project-id`, búsqueda por nombre (varios resultados posibles), baja lógica a `inactive`.
-- [ ] Repository de `project_paths`: alta, resolución de path canónico → `project-id` por máquina, transición de la fila vieja a `stale` al mover el repo.
-- [ ] Repository de `changes`: alta/continuación por `(project_id, branch)`, transición `active` ↔ `closed`, rechazo de nombre duplicado en el proyecto.
-- [ ] Tests de integración con SQLite real (sin mocks): alta y lookup de proyecto, path por máquina, repo movido, continuación de change sobre la misma rama, unicidad de nombre de change.
+- [x] Borde de persistencia (Repository) según `edr/data/data-access-entity-framework`: interfaz angosta, sin filtrar hacia adentro los tipos generados ni los de la base. `Reader`/`Writer`/`Store` en `internal/store/repository.go`; `Open` ahora devuelve `*Engine` (renombrado del `Store` de Batch 1, que colisionaba de nombre con la interfaz angosta acordada) y solo se consume a través de esas tres interfaces — nada fuera de `internal/store` puede nombrar `*Engine` ni el cliente generado.
+- [x] Traducción de errores del store al modelo de errores interno de la Fase 1 (sin exponer internals; el borde HTTP ya los mapea a `{error, code}`). Sentinels en `internal/store/errors.go` (`ErrNotFound`, `ErrChangeNameTaken`, `ErrBranchTaken`, `ErrPathAlreadyBound`); `internal/transport/errors.go` los mapea a `not_found` / `change_name_conflict` / `path_already_bound`.
+- [x] Manejo de transacción del único escritor (el daemon es global y único por máquina). `internal/store/writer.go`: una goroutine (`writer.run`) alimentada por channel (`cmds chan writeCmd`), cada comando corre dentro de su propia transacción Ent (`execTx`); los métodos de `Writer` son síncronos vía `submit[T]`, que encola y espera la respuesta.
+- [x] Repository de `projects`: alta, lookup por `project-id`, búsqueda por nombre (varios resultados posibles), baja lógica a `inactive`. `internal/store/projects.go`.
+- [x] Repository de `project_paths`: alta, resolución de path canónico → `project-id` por máquina, transición de la fila vieja a `stale` al mover el repo. `internal/store/paths.go`; `BindProjectPathCmd.PreviousRootPath` (campo derivado, ver nota abajo) dispara la transición a `stale` en la misma escritura.
+- [x] Repository de `changes`: alta/continuación por `(project_id, branch)`, transición `active` ↔ `closed`, rechazo de nombre duplicado en el proyecto. `internal/store/changes.go`; `ErrChangeNameTaken` cubre tanto el re-mapeo de rama (chequeo de aplicación) como la violación del índice único `(project_id, name)` (chequeo de base, vía `translateChangeConstraint`).
+- [x] Tests de integración con SQLite real (sin mocks): alta y lookup de proyecto, path por máquina, repo movido, continuación de change sobre la misma rama, unicidad de nombre de change. `internal/store/projects_test.go`, `paths_test.go`, `changes_test.go` — todos contra SQLite real vía `store.Open`, sin mocks; el rechazo de nombre duplicado se ejercita también con SQL crudo (`TestChangeNameUnique_RawInsertRejected`), salteando el Repository.
+
+### Nota — decisiones de Batch 2 no pineadas explícitamente
+
+Ninguna contradice el spec ni un EDR `Accepted`; se documentan porque no estaban fijadas letra por letra en el contrato de arranque. Las dos primeras se resolvieron con el usuario después del batch.
+
+1. **Nombres del borde**: el contrato de arranque nombraba `Store` a la interfaz angosta, pero Batch 1 ya usaba ese nombre para el struct concreto. Quedó **`Engine`** para el struct y **`Repository`** para la interfaz: evita el stutter `store.Store` que Go desaconseja y alinea el nombre con el `Applied pattern: Repository` del EDR de acceso a datos. `Open` devuelve `*Engine` — con el cliente generado ya privado, lo único que expone de más sobre la interfaz es `Close()`, que pertenece al dueño del ciclo de vida, no al borde de datos.
+2. **`MoveProjectPath` como operación propia**: el escenario "el repo se mueve" (R4) y el de "dos worktrees" se ven idénticos desde la base — aparece un path nuevo para un `project-id` existente. Distinguirlos exige mirar el filesystem, así que es el llamador quien decide. Se expresa con **dos comandos distintos** (`BindProjectPath` da de alta, `MoveProjectPath` da de alta y retira el anterior en la misma escritura) en vez de un campo opcional que cambia el comportamiento del mismo comando según venga vacío o lleno.
+3. **`ResolveProjectPath` solo resuelve filas `active`**: una fila `stale` es historia, no un mapeo vigente; resolverla devolvería un project-id para un path que la base ya no considera el canónico.
+4. **`RegisterProject` idempotente no actualiza `name`**: reinvocarlo con el mismo `ID` y un `Name` distinto devuelve la fila existente sin tocarla — evita que una llamada "idempotente" pise un nombre ya confirmado.
+5. **Código público `path_already_bound`**: el spec nombra `change_name_conflict` como ejemplo pero no da un código explícito para `ErrPathAlreadyBound`; se derivó siguiendo la misma convención de nombres (`snake_case` del sentinel).
+6. **`ErrBranchTaken` sin código propio**: es la traducción defensiva del índice único `(project_id, branch)` — `StartChange` ya revisa la fila existente antes de escribir, así que en operación normal no debería dispararse; el borde HTTP lo mapea al mismo `change_name_conflict` que `ErrChangeNameTaken`.
+7. **`internal/store/ent/runtime` requiere import en blanco**: sin `_ "internal/store/ent/runtime"`, cualquier `Create`/`Update` vía el cliente generado paniquea con `ent: uninitialized project.DefaultCreatedAt (forgotten import ent/runtime?)` — Batch 1 nunca lo necesitó porque sus tests usaban SQL crudo, no el cliente Ent. Agregado en `store.go` (import con comentario explicando el porqué).
 
 ## Batch 3 — Event-log, contenido y notas
 
