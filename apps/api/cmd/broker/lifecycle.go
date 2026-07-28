@@ -7,16 +7,18 @@ import (
 	"time"
 
 	"github.com/franwerner/matecito-ai/apps/api/internal/config"
+	"github.com/franwerner/matecito-ai/apps/api/internal/store"
 	"github.com/franwerner/matecito-ai/apps/api/internal/transport"
 )
 
 const shutdownTimeout = 5 * time.Second
 
 // run wires the broker's lifecycle in the order runtime/error-handling and
-// contracts/mcp-server require: config -> logger -> MCP availability check
-// -> transport, with clean shutdown on ctx cancellation. args/getenv/stdout
-// are injected so main() owns the only process-global wiring (os.Args,
-// os.Getenv, real OS signals) and this function stays testable.
+// contracts/mcp-server require: config -> logger -> store (open + migrate)
+// -> MCP availability check -> transport, with clean shutdown on ctx
+// cancellation. args/getenv/stdout are injected so main() owns the only
+// process-global wiring (os.Args, os.Getenv, real OS signals) and this
+// function stays testable.
 func run(ctx context.Context, args []string, getenv func(string) string, stdout io.Writer) int {
 	cfg, err := config.Load(args, getenv)
 	if err != nil {
@@ -26,6 +28,26 @@ func run(ctx context.Context, args []string, getenv func(string) string, stdout 
 
 	logger := newLogger(cfg, stdout)
 
+	if _, err := store.EnsureMachineID(cfg.PersistDir); err != nil {
+		logger.Error("machine id setup failed", "err", err)
+		return 1
+	}
+
+	// R1/R14: the daemon must not serve with an unmigrated or partially
+	// migrated schema, so opening (and migrating) the store happens before
+	// anything else can bind or check readiness.
+	st, err := store.Open(ctx, cfg.PersistDir)
+	if err != nil {
+		logger.Error("store open/migrate failed", "err", err)
+		return 1
+	}
+	defer func() {
+		if err := st.Close(); err != nil {
+			logger.Error("store close error", "err", err)
+		}
+	}()
+	logger.Info("store opened and migrated")
+
 	// contracts/mcp-server: the daemon verifies MCP availability before it
 	// ever opens the transport boundary (Stub B in Phase 1 — always ok).
 	if err := transport.CheckMCPAvailability(ctx); err != nil {
@@ -33,6 +55,9 @@ func run(ctx context.Context, args []string, getenv func(string) string, stdout 
 		return 1
 	}
 
+	// Stub C (transport.StoreStatus) still always reports "ok" here — Phase
+	// 2 Batch 4 wires the real store-derived health status; Batch 1 only
+	// opens and migrates the store.
 	srv := transport.New(fmt.Sprintf(":%d", cfg.Port), transport.StoreStatus)
 	if err := srv.Listen(); err != nil {
 		logger.Error("broker failed to bind", "err", err)

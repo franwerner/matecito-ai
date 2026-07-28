@@ -20,7 +20,7 @@ Contratos: `edr/structure/*`, `edr/runtime/error-handling`, `edr/delivery/config
 
 ## Fase 2 — Store (schema + borde de persistencia)
 
-Contratos: `edr/data/data-modeling`, `edr/data/data-access`, `edr/data/storage-sync-model`. Tech: modernc sqlite + sqlc + goose.
+Contratos: `edr/data/data-modeling`, `edr/data/data-access-entity-framework`, `edr/data/storage-sync-model`. Tech: modernc sqlite + Ent + Atlas. Desglose detallado en [`ROADMAP-2.md`](ROADMAP-2.md).
 
 - [ ] Migraciones goose con el schema inicial:
   - [ ] `projects` (UUID v7, identidad por `project-id`, lookup de paths por máquina, estado activo/inactivo).
@@ -31,7 +31,7 @@ Contratos: `edr/data/data-modeling`, `edr/data/data-access`, `edr/data/storage-s
   - [ ] Índice/proyección de records por `(proyecto, rama)` con owning-root y soft-delete.
   - [ ] Notas de iteración (estados `pendiente`/`entregada`/`resuelta`, anclaje change/evento/archivo+rango).
 - [ ] Timestamps `created_at`/`updated_at` en todas las tablas; sin DELETE físico (excepción: notas `pendientes`).
-- [ ] Borde de persistencia (Repository) según `edr/data/data-access`; queries con sqlc.
+- [ ] Borde de persistencia (Repository) según `edr/data/data-access-entity-framework`; schema definido en código y migraciones derivadas de él.
 - [ ] Tests de integración con SQLite real (temporal/memoria), sin mocks (`edr/delivery/testing-strategy`).
 
 ## Fase 3 — Identidad y registro de proyectos
@@ -39,11 +39,11 @@ Contratos: `edr/data/data-modeling`, `edr/data/data-access`, `edr/data/storage-s
 Contrato: `specs/flow/register-project`, `specs/rule/event-scoping`, `edr/contracts/mcp-server`.
 
 - [ ] Superficie MCP esqueleto: streamable HTTP in-process (SDK Go oficial), scoping por header `X-Project-Path`, derivación server-side del change por rama.
-- [ ] Normalización canónica de rutas (absoluta, symlinks, `.`/`..`) y resolución del toplevel git; fallback no-git (la carpeta es la raíz, mismo mecanismo `.id`).
+- [ ] Normalización canónica de rutas (absoluta, symlinks, `.`/`..`) y resolución del toplevel git; si la ruta no resuelve a un toplevel git, rechazo `not_a_git_repo`.
 - [ ] Resolución de identidad: `.id` presente → auto-link; ausente → `find_project(name)` + confirmación → LINK o CREATE materializando `.id`.
-- [ ] Tool `register_project` idempotente + errores `invalid_path`.
+- [ ] Tool `register_project` idempotente + errores `invalid_path` y `not_a_git_repo`.
 - [ ] Descubrimiento recursivo de `.matecito-ai/` (owning-roots) y alta del watch.
-- [ ] Tests: escenarios del spec (create, link, auto-link, idempotente, anidada, cambio de ruta, no-git).
+- [ ] Tests: escenarios del spec (create, link, auto-link, idempotente, anidada, cambio de ruta, rechazo no-git).
 
 ## Fase 4 — Changes y event-log (escritura MCP)
 
@@ -52,6 +52,7 @@ Contratos: `specs/flow/start-change`, `specs/flow/submit-phase-artifact`, `specs
 - [ ] Tool `start_change` (alta/continuación, mapeo rama↔nombre).
 - [ ] Tool `change_status` (`active` ↔ `closed`, única vía de transición).
 - [ ] Guard `change_closed` en toda tool de escritura salvo `change_status`.
+- [ ] Guard `branch_required` en toda tool de escritura, `change_status` incluida (rama derivada con `git symbolic-ref --short HEAD`; repo sin commits = rama usable, detached HEAD = rechazo).
 - [ ] Tools `submit_<fase>` (×8) con validación de schema por fase; rechazo `validation_failed` todo-o-nada.
 - [ ] Append al event-log con posición monótona, idempotencia por hash, sin validación de orden de fases.
 - [ ] Pin implícito de la versión vigente de EDR/spec referenciados (congela la versión — `lifecycle/record-version`).
