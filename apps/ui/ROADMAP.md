@@ -19,7 +19,7 @@ Van bajo `src/features/` según `structure/architecture-style.md`. Sin pantallas
 
 ## 2. Pantallas compuestas
 
-- [ ] Shell del cockpit (layout, rail, header) — referencia `Matecito Cockpit.dc.html`
+- [x] Shell del cockpit (layout, rail, header) — referencia `Matecito Cockpit.dc.html`
 - [ ] Pantalla de componentes / galería — referencia `Matecito Components.dc.html`
 - [ ] Routing con TanStack Router (ya instalado)
 
