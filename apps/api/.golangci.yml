@@ -1,0 +1,79 @@
+version: "2"
+
+run:
+  timeout: 5m
+
+linters:
+  # standard = errcheck, govet, ineffassign, staticcheck, unused
+  default: standard
+  enable:
+    - bodyclose
+    - depguard
+    - errorlint
+    - gosec
+    - misspell
+    - revive
+    - rowserrcheck
+    - sqlclosecheck
+
+  settings:
+    errcheck:
+      # sqlclosecheck already enforces that these get closed; what errcheck
+      # wants here is an explicit discard of a Close error nobody can act on.
+      exclude-functions:
+        - (*database/sql.Rows).Close
+        - (*database/sql.Stmt).Close
+        - (*github.com/franwerner/matecito-ai/apps/api/internal/store.Engine).Close
+
+    depguard:
+      rules:
+        # go-arch-lint owns the component graph and the vendor rules, but it
+        # does not govern the standard library. These two rules cover the gap.
+        std-sql-outside-store:
+          list-mode: lax
+          files:
+            - "!**/internal/store/**"
+          deny:
+            - pkg: database/sql
+              desc: raw database access belongs in internal/store; use the store's Repository
+        weak-rand:
+          list-mode: lax
+          files:
+            - $all
+          deny:
+            - pkg: math/rand$
+              desc: use math/rand/v2
+
+  exclusions:
+    generated: strict
+    rules:
+      # Fields/Edges/Mixin/Annotations implement ent's schema interface; a
+      # doc-comment on them could only restate the method name, which
+      # code-comments forbids. The rest of the repo still requires them.
+      - path: internal/store/ent/schema/
+        linters:
+          - revive
+        text: "^exported:"
+
+      # Tests drive the daemon's own server over a variable URL and write
+      # fixtures into t.TempDir(); neither is the untrusted input gosec
+      # is looking for.
+      - path: _test\.go
+        linters:
+          - gosec
+
+      # The machine-id path is built by the daemon from its own persist-dir,
+      # never from request input.
+      - path: internal/store/machineid\.go
+        linters:
+          - gosec
+        text: "G304"
+
+formatters:
+  enable:
+    - gofumpt
+  settings:
+    gofumpt:
+      module-path: github.com/franwerner/matecito-ai/apps/api
+  exclusions:
+    generated: strict
