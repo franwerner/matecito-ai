@@ -41,7 +41,7 @@ func TestRun_ServesHealthAndShutsDownCleanly(t *testing.T) {
 	}()
 
 	healthURL := fmt.Sprintf("http://127.0.0.1:%d/health", port)
-	if err := waitForHealth(healthURL, 2*time.Second); err != nil {
+	if err := waitForHealth(healthURL, 10*time.Second); err != nil {
 		cancel()
 		t.Fatalf("broker never became healthy: %v", err)
 	}
@@ -90,6 +90,9 @@ func freePort(t *testing.T) int {
 	return ln.Addr().(*net.TCPAddr).Port
 }
 
+// waitForHealth polls until the daemon answers, so the timeout only bounds
+// how long a slow startup is tolerated — opening and migrating the store
+// before the bind makes that far from instant on a loaded machine.
 func waitForHealth(url string, timeout time.Duration) error {
 	deadline := time.Now().Add(timeout)
 	var lastErr error
