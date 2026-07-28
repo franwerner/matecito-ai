@@ -20,7 +20,7 @@ Definir el ciclo de vida de un change —sus estados y qué lo mueve entre ellos
 - La transición de estado ocurre únicamente vía la tool `change_status(status)`; es explícita, nunca un efecto lateral de otra tool.
 - No hay auto-close: archivar el change no lo cierra por sí solo.
 - No hay auto-reopen: un change `closed` solo vuelve a `active` con una llamada explícita a `change_status(active)`.
-- **Guard `change_closed`:** cualquier tool que opere sobre un change `closed` (por ejemplo `start_change` o `submit_<fase>`) se rechaza con `change_closed`, informando que está cerrado. La tool `change_status` es la excepción: es la única que puede operar sobre un change `closed`, para reabrirlo.
+- **Guard `change_closed` — alcance: la superficie de escritura MCP.** Cualquier tool que opere sobre un change `closed` (por ejemplo `start_change` o `submit_<fase>`) se rechaza con `change_closed`, informando que está cerrado. La tool `change_status` es la excepción: es la única tool que puede operar sobre un change `closed`, para reabrirlo. El guard **no** alcanza a las otras superficies: la lectura de la UI sirve changes `closed` (historial), y la ingesta mecánica ante un change `closed` descarta en silencio (no rechaza).
 - Ante un `change_closed`, el actor (Claude) le avisa al usuario y le pregunta si lo reactiva; la reactivación es explícita vía `change_status(active)`.
 
 ## Errores de cara al actor
