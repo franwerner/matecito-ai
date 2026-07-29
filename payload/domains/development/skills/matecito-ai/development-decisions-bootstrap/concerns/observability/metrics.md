@@ -2,7 +2,6 @@
 name: metrics
 depth: light
 domain: observability
-type: decision
 source: SRE (RED method · USE method)
 ---
 
@@ -48,7 +47,7 @@ Librería de instrumentación si se elige una concreta (ej: `prometheus-client.m
 
 EDR `metrics` materializado según el template `~/.claude/references/edr/templates/edr.md`. La **Decisión** captura: modelo elegido (RED / USE / negocio / ninguno), formato de exposición (Prometheus pull / OTLP push / cloud-native), destino de almacenamiento, y las métricas concretas iniciales si se definieron (ej: `http_requests_total`, `http_request_duration_seconds`, `db_pool_connections_active`).
 
-**Reglas verificables** (cada una con su mecanismo al inicio):
+**Reglas verificables** (cada una con su cobertura al inicio):
 
 - **[manual]** si se eligió RED: cada endpoint expone Rate, Errors y Duration; no hay endpoints instrumentados ad-hoc fuera del modelo.
 - **[manual]** las métricas se exponen en el formato decidido (ej: endpoint `/metrics` Prometheus u OTLP), no en formatos mezclados.

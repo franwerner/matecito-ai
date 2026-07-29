@@ -4,11 +4,11 @@ Cómo se organiza y estiliza el código del broker: estilo de arquitectura, layo
 
 ## EDRs en este dominio
 
-| EDR | Status | Type | Consultá cuando... |
-|---|---|---|---|
-| [architecture-style.md](architecture-style.md) | Accepted | decision | vas a introducir una capa, una interfaz o una abstracción interna. |
-| [folder-structure.md](folder-structure.md) | Accepted | convention | agregás un componente o no sabés dónde va un paquete nuevo. |
-| [code-conventions.md](code-conventions.md) | Accepted | convention | configurás tooling de estilo o dudás del formato/linting. |
+| EDR | Status | Consultá cuando... |
+|---|---|---|
+| [architecture-style.md](architecture-style.md) | Accepted | vas a introducir una capa, una interfaz o una abstracción interna. |
+| [folder-structure.md](folder-structure.md) | Accepted | agregás un componente o no sabés dónde va un paquete nuevo. |
+| [code-conventions.md](code-conventions.md) | Accepted | configurás tooling de estilo o dudás del formato/linting. |
 
 ## No aplican en este dominio
 

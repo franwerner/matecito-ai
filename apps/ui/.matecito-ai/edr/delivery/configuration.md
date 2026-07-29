@@ -1,7 +1,6 @@
 # EDR — Configuración
 
 - **Status:** Accepted
-- **Type:** convention
 - **Date:** 2026-07-23
 
 ## Contexto
@@ -14,9 +13,9 @@ La UI se sirve embebida en el binario del broker (same-origin), así que en prod
 
 ## Reglas verificables
 
-- **[tool: zod]** la configuración se valida contra un schema Zod al arranque y aborta claro si falta o está mal.
+- **[auto]** la configuración se valida contra un schema Zod al arranque y aborta claro si falta o está mal.
 - **[manual]** en producción los endpoints son relativos (same-origin).
-- **[tool: gitignore]** el `.env` local está ignorado; el `.env.example` se commitea.
+- **[auto]** el `.env` local está ignorado; el `.env.example` se commitea.
 
 ## Relacionados
 

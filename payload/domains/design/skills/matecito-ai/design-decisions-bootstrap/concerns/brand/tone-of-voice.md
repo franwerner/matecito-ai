@@ -2,7 +2,6 @@
 name: tone-of-voice
 depth: light
 domain: brand
-type: convention
 source: práctica clásica de brand voice / content design · guías de marca
 ---
 
@@ -41,7 +40,7 @@ Una o dos, según haga falta.
 
 DDR `tone-of-voice` materializado según el template `~/.claude/references/ddr/templates/ddr.md`. La **Decisión** captura: los atributos de voz con su opuesto, y la tabla de do/don't con ejemplos concretos del producto.
 
-**Reglas verificables** (cada una con su mecanismo al inicio):
+**Reglas verificables** (cada una con su cobertura al inicio):
 
 - **[manual]** el copy de cada pieza es coherente con los atributos de voz declarados; un atributo violado (ej: texto informal cuando se decidió "no informal") es un hallazgo.
 - **[manual]** los textos no caen en los "don't" enumerados (ej: jerga prohibida, mayúsculas de grito, exclamaciones múltiples).

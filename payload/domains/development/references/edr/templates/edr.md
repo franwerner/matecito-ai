@@ -3,7 +3,6 @@
 # EDR — <título>
 
 - **Status:** <Inferred | Accepted | Pending | Deferred>
-- **Type:** <decision | convention | policy>
 - **Date:** <YYYY-MM-DD>
 - **Applied pattern:** <Opcional. Solo si la decisión mapea a un patrón del catálogo canónico en `~/.claude/references/design-patterns/`. Formato: `<Nombre> — <1 línea de por qué este patrón>`. Ej: `Repository — necesitamos swap SQLite↔Postgres en tests sin tocar dominio`. Si no aplica, omitir la línea completa.>
 
@@ -44,7 +43,7 @@ El locator estructural NO va en esta sección: para kind `estructural`/`patrón`
 
 ## Alcance
 
-<!-- Opcional. Incluir SOLO en decisiones espaciales/estructurales (típicamente los dominios structure / folder-structure / layers-and-dependencies). Omitir la sección entera si la decisión no gobierna ubicación de código (ej. una política de rate limiting). -->
+<!-- Opcional. Incluir SOLO en decisiones espaciales/estructurales (típicamente los dominios structure / folder-structure / layers-and-dependencies). Omitir la sección entera si la decisión no gobierna ubicación de código (ej. una política de reintentos ante fallos transitorios). -->
 
 Globs **a nivel convención** —patrones estructurales estables, no archivos concretos— que esta decisión gobierna. El validador chequea que sigan matcheando algo; si dejan de matchear, es drift a resolver (el código se movió o la decisión quedó obsoleta).
 
@@ -53,11 +52,11 @@ Globs **a nivel convención** —patrones estructurales estables, no archivos co
 
 ## Reglas verificables
 
-<!-- Solo si Accepted. Cada regla es una aserción chequeable con valores concretos, no un adjetivo vago. Marcá el mecanismo de verificación al inicio de cada una:
-- [tool: <herramienta/comando>] → lo enforced una herramienta (linter, dependency-cruiser, type-check, test).
+<!-- Solo si Accepted. Cada regla es una aserción chequeable escrita en lenguaje natural: precisa, no un adjetivo vago ("tratá de", "idealmente", "en lo posible"). NO nombres la herramienta — cuál la chequea vive en la config del linter/CI, y espejarla acá se desincroniza en silencio. Marcá al inicio solo la COBERTURA:
+- [auto] → hoy hay un check automático que la atrapa (linter, type-check, test, gate de CI).
 - [manual] → hoy solo se verifica en revisión humana, no hay check automático. -->
 
-- **[tool: <herramienta>]** <regla concreta con valores>. Ej: **[tool: dependency-cruiser]** ningún import desde `domain/**` hacia `infra/**`.
+- **[auto]** <regla precisa>. Ej: **[auto]** ningún import desde `domain/**` hacia `infra/**`.
 - **[manual]** <regla que hoy solo se chequea en review>.
 
 ## Alternativas consideradas
@@ -78,6 +77,6 @@ Globs **a nivel convención** —patrones estructurales estables, no archivos co
 <!--
 Notas del contrato (no van en el EDR generado):
 - No hay sección `Historial`. El historial de ediciones y la evolución de decisiones los lleva git.
-- Header en inglés (`Status`, `Type`, `Date`, `Applied pattern`); nombres de sección y prosa en español.
+- Header en inglés (`Status`, `Date`, `Applied pattern`); nombres de sección y prosa en español.
 - Self-check antes de dar por escrito el EDR: releé Contexto/Decisión/Consecuencias/Alternativas y por cada nombre de clase/método/columna/archivo/error interno, convertilo en un glob (`## Alcance`) o una regla (`## Reglas verificables`), o reformulá la frase en términos de concepto. Chequeá además que no haya anotaciones de edición inline ni nombres de slice/ticket/roadmap en la prosa. Excepción: tecnología/librería y contrato público. Guía completa (test + tabla mal→bien): `~/.claude/references/edr/README.md` → "Dónde va cada nombre".
 -->

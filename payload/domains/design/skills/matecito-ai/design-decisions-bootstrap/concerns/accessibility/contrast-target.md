@@ -2,7 +2,6 @@
 name: contrast-target
 depth: light
 domain: accessibility
-type: policy
 source: WCAG 2.2 (W3C — contrast minimum 1.4.3 / 1.4.11)
 ---
 
@@ -42,11 +41,11 @@ Una o dos, según haga falta.
 
 DDR `contrast-target` materializado según el template `~/.claude/references/ddr/templates/ddr.md`. La **Decisión** captura: el nivel WCAG objetivo (AA/AAA) y los ratios mínimos concretos por tipo de contenido (texto normal, texto grande, UI no textual).
 
-**Reglas verificables** (cada una con su mecanismo al inicio):
+**Reglas verificables** (cada una con su cobertura al inicio):
 
-- **[tool: contrast]** todo texto normal contra su fondo cumple el ratio del nivel decidido (AA → ≥ 4.5:1; AAA → ≥ 7:1).
-- **[tool: contrast]** todo texto grande (≥ 18.66px bold o ≥ 24px) cumple el ratio reducido (AA → ≥ 3:1; AAA → ≥ 4.5:1).
-- **[tool: contrast]** los elementos de UI no textuales y bordes de foco cumplen ≥ 3:1 contra su entorno (WCAG 1.4.11).
-- **[tool: contrast]** los estados de componente que comunican información (placeholder, disabled, error) cumplen el ratio aplicable a su rol.
+- **[auto]** todo texto normal contra su fondo cumple el ratio del nivel decidido (AA → ≥ 4.5:1; AAA → ≥ 7:1).
+- **[auto]** todo texto grande (≥ 18.66px bold o ≥ 24px) cumple el ratio reducido (AA → ≥ 3:1; AAA → ≥ 4.5:1).
+- **[auto]** los elementos de UI no textuales y bordes de foco cumplen ≥ 3:1 contra su entorno (WCAG 1.4.11).
+- **[auto]** los estados de componente que comunican información (placeholder, disabled, error) cumplen el ratio aplicable a su rol.
 
 Si se eligió "sin objetivo formal por ahora", el DDR va con `Status: Pending` indicando el trigger esperado; en ese caso no lleva Reglas verificables exigibles.

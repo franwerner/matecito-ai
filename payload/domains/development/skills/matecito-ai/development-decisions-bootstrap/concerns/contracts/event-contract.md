@@ -2,7 +2,6 @@
 name: event-contract
 depth: light
 domain: contracts
-type: decision
 source: arc42 §8 (cross-cutting concepts) · CloudEvents spec v1.0
 ---
 
@@ -46,7 +45,7 @@ EDR `event-contract` materializado según `~/.claude/references/edr/templates/ed
 - **Contexto**: por qué un evento sin schema versionado es un contrato implícito que rompe consumidores sin aviso, y qué aporta un envelope estándar (CloudEvents) para routing, logging y tracing.
 - **Decisión**: formato de schema y herramienta de validación (JSON Schema, Avro, Protobuf, CloudEvents), convención de naming de tipos de evento (ej. `order.created.v1`), estrategia de versionado (versión en el tipo vs campo de versión en el payload), política de idempotencia del consumidor (deduplicación por `eventId`, operaciones naturalmente idempotentes, o exactly-once del broker), y política de backward compatibility.
 - **Reglas verificables** (cada una con su mecanismo):
-  - `[tool: schema-validation]` todo evento publicado valida contra su schema registrado.
+  - `[auto]` todo evento publicado valida contra su schema registrado.
   - `[manual]` los tipos de evento siguen la convención de naming decidida, con la versión incluida.
   - `[manual]` un evento duplicado no produce efectos dobles, según la estrategia de idempotencia elegida.
   - `[manual]` los cambios solo agregan campos opcionales; los campos eliminados o renombrados solo ocurren en una versión major.

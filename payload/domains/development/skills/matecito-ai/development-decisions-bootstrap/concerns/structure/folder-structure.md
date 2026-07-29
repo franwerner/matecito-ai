@@ -2,7 +2,6 @@
 name: folder-structure
 depth: light
 domain: structure
-type: convention
 source: práctica clásica de convenciones de proyecto · arc42 §8 (conceptos transversales)
 ---
 
@@ -45,6 +44,6 @@ Confirmar: ¿sufijo obligatorio por tipo o sin sufijo? El **casing** de esos nom
 EDR `folder-structure` materializado según `~/.claude/references/edr/templates/edr.md`. Debe contener:
 
 - **Contexto** y **Decisión**: criterio de organización dentro de cada capa (por tipo técnico vs por feature vs híbrido), las convenciones de nombres por tipo de artefacto (clase y archivo), y si los sufijos son obligatorios o no. Conservá los ejemplos concretos de paths: `src/application/users/create_user.py`, `src/domain/user.py`, `src/infrastructure/db/user_repository.py`.
-- **Reglas verificables**: cada **sufijo de rol** como aserción chequeable con su mecanismo al inicio. Ej: `[tool: <linter/naming check>]` sufijo `*.routes.ts` obligatorio en handlers HTTP; `[tool: <linter>]` cada tipo de artefacto lleva su sufijo. El **casing** NO va acá — es de `code-conventions`.
+- **Reglas verificables**: cada **sufijo de rol** como aserción chequeable con su cobertura al inicio. Ej: `[auto]` sufijo `*.routes.ts` obligatorio en handlers HTTP; `[auto]` cada tipo de artefacto lleva su sufijo. El **casing** NO va acá — es de `code-conventions`.
 - **Alcance**: como decisión estructural, incluí los globs **a nivel convención** que la decisión gobierna (ej: `src/**/<feature>/`, `src/**/*.routes.ts`, `src/domain/**`). Patrones estables, no archivos concretos.
 - **Relacionados** (opcional): vinculá con `architecture-style` y `layers-and-dependencies` como decisiones de las que esta depende, y `relacionado-con` → `code-conventions` (que fija el casing de los nombres cuyos sufijos define esta fase).

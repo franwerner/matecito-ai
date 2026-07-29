@@ -8,9 +8,9 @@ Un concern nuevo va en `foundation` si trata sobre un **token o escala base reut
 
 ## Concerns en esta surface
 
-| Concern | Prof. | Type | Qué decide |
-|---|---|---|---|
-| [color-palette](color-palette.md) | deep | decision | La paleta de color del sistema: primarios, secundarios, semánticos y neutros, expresada como color styles nombrados. |
-| [design-tokens](design-tokens.md) | light | decision | Si las decisiones visuales se expresan como tokens nombrados (Figma Variables / styles) y con qué taxonomía de nombres. |
-| [spacing-grid](spacing-grid.md) | light | convention | La escala de espaciado base (step y unidad) que gobierna paddings, gaps y márgenes en todo el sistema. |
-| [type-scale](type-scale.md) | deep | decision | La escala tipográfica: familias, ratio modular, pesos y los text styles nombrados que la materializan. |
+| Concern | Prof. | Qué decide |
+|---|---|---|
+| [color-palette](color-palette.md) | deep | La paleta de color del sistema: primarios, secundarios, semánticos y neutros, expresada como color styles nombrados. |
+| [design-tokens](design-tokens.md) | light | Si las decisiones visuales se expresan como tokens nombrados (Figma Variables / styles) y con qué taxonomía de nombres. |
+| [spacing-grid](spacing-grid.md) | light | La escala de espaciado base (step y unidad) que gobierna paddings, gaps y márgenes en todo el sistema. |
+| [type-scale](type-scale.md) | deep | La escala tipográfica: familias, ratio modular, pesos y los text styles nombrados que la materializan. |

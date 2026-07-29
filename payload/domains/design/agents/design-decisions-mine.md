@@ -89,7 +89,6 @@ Para cada candidato:
 - **Dedup:** chequeá si ya existe `.matecito-ai/ddr/<proposedSurface>/<proposedSlug>.md`. Si existe → salteá el candidato (o drift-check en Paso 6 si corrés sobre Inferred existentes). Si no existe → es un hueco real.
 - **Sin concern (`concern: null`):** marcá `catalog_gap_flags` (advisory) Y bajá la confianza — sin un concern que lo ancle, no estás seguro de que sea una decisión que merezca DDR. Salvo evidencia muy fuerte, va a `open_questions`, no a `candidates[]`.
 - `proposedSlug`: kebab-case descriptivo del concern.
-- `proposedType`: `decision` (trade-off real), `convention` (acuerdo de estilo), o `policy` (regla verificable).
 
 ### Paso 6: Detección de drift (solo si hay DDRs Inferred existentes)
 
@@ -138,7 +137,6 @@ Resumen: draftearían Inferred: N / preguntas abiertas → bootstrap: M / posibl
     "concern": "color-palette",
     "proposedSurface": "foundation",
     "proposedSlug": "color-palette",
-    "proposedType": "decision",
     "lowSignalReason": null
   }
 ]

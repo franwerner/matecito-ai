@@ -8,6 +8,6 @@ Un concern nuevo va en `components` si trata sobre una **pieza reutilizable** (c
 
 ## Concerns en esta surface
 
-| Concern | Prof. | Type | Qué decide |
-|---|---|---|---|
-| [component-library](component-library.md) | deep | decision | Qué componentes son reutilizables, su nivel de atomicidad y cómo se modelan variantes y estados como componentes nombrados en Figma. |
+| Concern | Prof. | Qué decide |
+|---|---|---|
+| [component-library](component-library.md) | deep | Qué componentes son reutilizables, su nivel de atomicidad y cómo se modelan variantes y estados como componentes nombrados en Figma. |

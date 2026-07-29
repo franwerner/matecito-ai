@@ -1,7 +1,6 @@
 # EDR — Feature flags
 
 - **Status:** Pending
-- **Type:** decision
 - **Date:** 2026-07-23
 
 ## Razón de omisión / aplazamiento

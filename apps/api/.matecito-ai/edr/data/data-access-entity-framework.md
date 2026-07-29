@@ -1,7 +1,6 @@
 # EDR — Acceso a datos con entity framework
 
 - **Status:** Accepted
-- **Type:** decision
 - **Date:** 2026-07-28
 - **Applied pattern:** Repository — aislar el borde de persistencia detrás de una interfaz angosta, para que el código generado por el framework quede como detalle del store y los tests corran contra una base real sin acoplar la lógica.
 

@@ -39,9 +39,12 @@ Dominios reservados (aparecen solo si el proyecto los pobló vía ratchet): `lif
 - **[WARNING]** EDR `Pending` o `Deferred` sin razón ni trigger.
 - **[WARNING]** EDR con `Status: Superseded`. Ese status está deprecado — es un hallazgo de migración: el usuario borra el registro si ya no aplica, o lo deja `Accepted` si sigue vigente. El validador solo reporta; nunca borra ni modifica el archivo.
 - **[WARNING]** EDR `Not Applicable` sin razón.
+- **[SUGGESTION]** EDR `Accepted` con "Alternativas consideradas" con contenido pero sin "Consecuencias", o al revés → asimetría: si hubo alternativas que evaluar, hay trade-offs que anotar (y viceversa).
+- **[SUGGESTION]** EDR `Accepted` que solo tiene "Contexto" y "Decisión" — sin `Alcance`, `Reglas verificables`, "Alternativas consideradas" ni "Consecuencias" → no ancla nada ni registra trade-off; revisar si decidió algo o es prosa.
 
 ### Verificabilidad
 
+- **[WARNING]** EDR `Accepted` con la sección `## Reglas verificables` **presente pero vacía** (sin ítems, o solo el comentario del template) → completala con las reglas que la decisión impone, u omití la sección entera. Una sección abierta y vacía no declara nada. *(Omitirla es legítimo: hay decisiones que no se pueden violar en silencio — una elección de tecnología aparece en el manifest.)*
 - **[WARNING]** `layers-and-dependencies` `Accepted` con reglas en prosa vaga en vez de globs/paths verificables.
 - **[SUGGESTION]** Lenguaje vago ("tratá de no", "en lo posible", "idealmente", "evitar cuando se pueda") en las reglas de un EDR `Accepted`.
 
@@ -57,17 +60,11 @@ Dominios reservados (aparecen solo si el proyecto los pobló vía ratchet): `lif
 - **[WARNING]** Un EDR está listado en el índice raíz (`.matecito-ai/edr/INDEX.md`) pero su dominio no tiene `INDEX.md`, o viceversa (índice de dominio sin entrada en el raíz). Índices desincronizados.
 - **[SUGGESTION]** Un dominio tiene `INDEX.md` pero ningún EDR (carpeta de dominio vacía en la salida). Limpiar la carpeta o el índice.
 
-### Coherencia del campo `type`
-
-- **[SUGGESTION]** Un EDR marcado `type: convention` o `type: policy` tiene una sección "Alternativas consideradas" sustanciosa → quizá es en realidad una `decision`; revisar el type.
-- **[SUGGESTION]** Un EDR marcado `type: decision` y `Accepted` sin "Alternativas consideradas" ni "Consecuencias" → una decisión sin trade-offs documentados es sospechosa; o falta contenido o es en realidad una convention.
-- **[WARNING]** Un EDR `type: policy` `Accepted` sin "Reglas verificables" accionables → una política sin reglas accionables no se puede cumplir ni chequear.
-
 ### Trazabilidad a código (sección `Alcance`)
 
 - **[WARNING]** Un EDR con sección `Alcance` cuyos globs no matchean ningún archivo del repo → drift: el código se movió o la decisión quedó obsoleta. *(Requiere acceso al árbol de archivos del proyecto; si no está disponible, marcar como "no verificable".)*
 - **[SUGGESTION]** Un EDR estructural (`structure` / `folder-structure` / `layers-and-dependencies`) `Accepted` sin sección `Alcance` → una decisión espacial sin globs de alcance no es verificable; considerar agregarlos.
-- **[SUGGESTION]** Una regla bajo "Reglas verificables" sin marca de mecanismo (`[tool: ...]` o `[manual]`) → no queda claro cómo se chequea; agregar el mecanismo.
+- **[SUGGESTION]** Una regla bajo "Reglas verificables" sin marca de cobertura al inicio (`[auto]` o `[manual]`) → no queda claro si hay algo automático cuidándola; agregar la marca.
 
 ---
 

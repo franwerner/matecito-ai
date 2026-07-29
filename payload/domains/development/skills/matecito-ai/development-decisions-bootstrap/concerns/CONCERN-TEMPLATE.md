@@ -6,11 +6,10 @@ El valor de largo plazo de la skill es que **nunca se vuelva a olvidar un tema**
 
 ---
 
-## Antes de escribir: 3 decisiones
+## Antes de escribir: 2 decisiones
 
 1. **Dominio canónico.** ¿A qué dominio pertenece? Mirá el "criterio de pertenencia" en cada `concerns/<dominio>/INDEX.md`. La taxonomía es **cerrada** (10 activos + 7 reservados); no inventes un dominio nuevo. Si genuinamente no encaja en ninguno, es señal de que falta un dominio en la taxonomía — eso es una decisión de catálogo aparte (tocar el motor + `concerns/INDEX.md`), no algo que se resuelve metiéndolo a la fuerza.
 2. **Profundidad.** `deep` (cuestionario propio de 3-5 preguntas, para decisiones grandes con condicionales) o `light` (1-2 preguntas, para temas acotados). Referencia: `runtime/error-handling.md` es `deep`; `runtime/caching.md` es `light`.
-3. **Type.** `decision` (alternativas y trade-offs reales) · `convention` (acuerdo de estilo, sin gran dilema) · `policy` (regla verificable, a menudo de seguridad/operación).
 
 ---
 
@@ -23,7 +22,6 @@ Copiá esta estructura. Las secciones marcadas (opcional) se incluyen solo si ap
 name: <slug-en-kebab-case>
 depth: <deep | light>
 domain: <dominio canónico>
-type: <decision | convention | policy>
 source: <taxonomía/estándar de origen: ISO/IEC 25010, 12-factor, arc42 §N, OWASP ASVS §N, SRE, etc.>
 ---
 
@@ -61,7 +59,7 @@ Una por turno. Para cada una: línea de "por qué importa", opciones con default
 ## Qué materializar
 
 EDR `<name>` materializado según el template canónico [`templates/edr.md`](~/.claude/references/edr/templates/edr.md). Especificá qué campos concretos y verificables debe contener:
-- **Reglas verificables:** nombrá las reglas como valores concretos (no adjetivos vagos), cada una con su mecanismo de verificación al inicio: `[tool: <herramienta>]` o `[manual]`.
+- **Reglas verificables:** nombrá las reglas como valores concretos (no adjetivos vagos), cada una con su cobertura al inicio: `[auto]` o `[manual]`.
 - **Alcance** (solo concerns espaciales/estructurales): los globs a nivel convención —patrones estables, no archivos concretos— que la decisión gobierna.
 - **Relacionados** (si aplica): vínculos tipados esperados con otros EDRs.
 ```
@@ -77,7 +75,7 @@ Estas reglas protegen el patrón de la skill. Romperlas degrada el catálogo con
 - ❌ **No pinees versiones de tecnologías.** Mal: "usá FastAPI 0.115". La versión la decide el usuario y vive en el catálogo `tech/`, no hardcodeada en el concern. Las tecnologías se nombran solo **como ejemplos ilustrativos** de una opción (ej: "proveedor externo (Auth0, Keycloak, Cognito)").
 - ❌ **No prescribas una tecnología.** El concern ofrece opciones abstractas con ejemplos; el usuario elige y eso se registra en `tech/`. El concern no dice "usá Redis" — dice "cache distribuido (Redis/Memcached)" como una opción entre otras.
 - ❌ **No escribas opciones sin default ni sin "no sé, recomendame".** Toda pregunta ofrece un default razonado y la salida "no sé, recomendame" para quien no tiene opinión.
-- ❌ **No uses lenguaje vago en "Qué materializar".** Mal: "manejá bien los errores". Bien: reglas verificables con valores concretos (ej: "access token 15min, refresh 7d con rotación"), cada una con su mecanismo `[tool: <herramienta>]` o `[manual]`. Lo que va al EDR tiene que ser chequeable.
+- ❌ **No uses lenguaje vago en "Qué materializar".** Mal: "manejá bien los errores". Bien: reglas verificables con valores concretos (ej: "access token 15min, refresh 7d con rotación"), cada una con su cobertura `[auto]` o `[manual]`. Lo que va al EDR tiene que ser chequeable.
 - ❌ **No dupliques contenido de otra fase.** Si una decisión ya la captura otro concern, referencialo, no lo repitas.
 
 ---
@@ -86,7 +84,7 @@ Estas reglas protegen el patrón de la skill. Romperlas degrada el catálogo con
 
 Antes de guardar el concern, verificá:
 
-- [ ] Frontmatter completo: `name`, `depth`, `domain`, `type`, `source`.
+- [ ] Frontmatter completo: `name`, `depth`, `domain`, `source`.
 - [ ] `domain` es uno de los canónicos y coincide con la carpeta donde va el archivo.
 - [ ] Tiene las 3 secciones núcleo: `## Qué decide`, `## Preguntas`, `## Qué materializar`.
 - [ ] Cada pregunta tiene línea de "por qué importa", default marcado, y "no sé, recomendame".
@@ -94,7 +92,7 @@ Antes de guardar el concern, verificá:
 - [ ] **Cero bloques de código** (salvo que la fase sea de artefacto-output, y aun así sin config hardcodeada).
 - [ ] **Cero versiones pineadas** de tecnologías.
 - [ ] Las tecnologías aparecen solo como ejemplos entre paréntesis, no como imposición.
-- [ ] "Qué materializar" describe reglas verificables con valores concretos (no adjetivos vagos), cada una con su mecanismo `[tool]`/`[manual]`; si el concern es estructural, pide la sección `Alcance` con globs.
+- [ ] "Qué materializar" describe reglas verificables con valores concretos (no adjetivos vagos), cada una con su cobertura `[auto]`/`[manual]`; si el concern es estructural, pide la sección `Alcance` con globs.
 - [ ] Si hay condicionales o dependencias → están en "Notas de lógica".
 - [ ] Si puede involucrar una tecnología → está la sección "Tech a registrar".
 

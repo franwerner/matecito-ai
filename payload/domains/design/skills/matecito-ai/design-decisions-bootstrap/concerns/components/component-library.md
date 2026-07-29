@@ -2,7 +2,6 @@
 name: component-library
 depth: deep
 domain: components
-type: decision
 source: Atomic Design (Brad Frost) · Material Design (components) · Figma component/variant model
 ---
 
@@ -59,12 +58,12 @@ Una por turno. Para cada una: línea de "por qué importa", opciones con default
 
 DDR `component-library` materializado según el template `~/.claude/references/ddr/templates/ddr.md`. La **Decisión** captura: el nivel de atomicidad, la lista de componentes reutilizables nombrados, cómo se modelan variantes (variant properties concretas) y estados.
 
-**Reglas verificables** (cada una con su mecanismo al inicio):
+**Reglas verificables** (cada una con su cobertura al inicio):
 
-- **[tool: figma]** cada pieza reutilizable enumerada existe como un componente (o component set) nombrado en el archivo; no hay piezas reutilizables como grupos sueltos copiados.
-- **[tool: figma]** las variantes se modelan como variant properties del component set (ej: `Button` con `variant`, `size`, `state`), no como componentes duplicados ad-hoc.
-- **[tool: figma]** los estados interactivos decididos existen como valores de la property `state`; no falta ningún estado declarado en la Decisión.
-- **[tool: figma]** los fills/textos/spacings del componente referencian styles nombrados de `foundation`, no valores crudos inline.
+- **[auto]** cada pieza reutilizable enumerada existe como un componente (o component set) nombrado en el archivo; no hay piezas reutilizables como grupos sueltos copiados.
+- **[auto]** las variantes se modelan como variant properties del component set (ej: `Button` con `variant`, `size`, `state`), no como componentes duplicados ad-hoc.
+- **[auto]** los estados interactivos decididos existen como valores de la property `state`; no falta ningún estado declarado en la Decisión.
+- **[auto]** los fills/textos/spacings del componente referencian styles nombrados de `foundation`, no valores crudos inline.
 - **[manual]** una instancia del componente no tiene overrides que contradigan la decisión (ej: un Button con color fuera de la paleta).
 
 **Alcance:** la lista de componentes y component sets nombrados que forman la biblioteca (`Button`, `Input`, `Card`, …) — el ancla de drift contra Figma.

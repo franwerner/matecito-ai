@@ -1,7 +1,6 @@
 # EDR — Manejo de errores
 
 - **Status:** Accepted
-- **Type:** decision
 - **Date:** 2026-07-23
 
 ## Contexto

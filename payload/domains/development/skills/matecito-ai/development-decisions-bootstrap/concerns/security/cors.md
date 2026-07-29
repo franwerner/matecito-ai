@@ -2,7 +2,6 @@
 name: cors
 depth: light
 domain: security
-type: policy
 source: OWASP ASVS v4 §14.5 (HTTP Request Header Validation)
 ---
 
@@ -37,7 +36,7 @@ EDR `cors` materializado según `~/.claude/references/edr/templates/edr.md`. Est
 - **Decisión**: lista de orígenes permitidos (o el criterio de allowlist dinámico), si se permiten credenciales, métodos y headers habilitados, y dónde se configura (middleware de la app vs config del reverse proxy).
 - **Reglas verificables** (cada una con su mecanismo):
   - `[manual]` el header `Access-Control-Allow-Origin` solo refleja orígenes presentes en la lista explícita (o en el allowlist validado en código); nunca `*` cuando se permiten credenciales.
-  - `[tool: test]` una request cross-origin desde un origen fuera del allowlist no recibe headers CORS permisivos.
+  - `[auto]` una request cross-origin desde un origen fuera del allowlist no recibe headers CORS permisivos.
   - `[manual]` `Access-Control-Allow-Credentials: true` solo coexiste con orígenes explícitos, nunca con `*`.
 - **Alternativas consideradas**: origen dinámico reflejado, `*` sin credenciales, y por qué se descartaron o limitaron.
 - **Consecuencias**: orígenes que quedan habilitados y el riesgo de exposición si el allowlist crece sin control.

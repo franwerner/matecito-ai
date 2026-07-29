@@ -2,7 +2,6 @@
 name: logging
 depth: light
 domain: observability
-type: policy
 source: 12-factor (XI: logs) · production-readiness
 ---
 
@@ -60,7 +59,7 @@ Librería de logging elegida (ej: `structlog.md`, `pino.md`, `zerolog.md`, `wins
 
 EDR `logging` materializado según el template `~/.claude/references/edr/templates/edr.md`. La **Decisión** captura: formato elegido (JSON estructurado / texto / mixto por entorno), niveles disponibles, la política de correlación (`request-id` o `trace-id`, dónde se genera y cómo se propaga) y la librería elegida (registrada también como tech).
 
-**Reglas verificables** (cada una con su mecanismo al inicio):
+**Reglas verificables** (cada una con su cobertura al inicio):
 
 - **[manual]** nunca se loggean passwords, tokens ni PII en ningún nivel.
 - **[manual]** todo log de error incluye el stack trace completo.

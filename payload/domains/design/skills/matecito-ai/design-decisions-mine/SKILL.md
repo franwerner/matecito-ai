@@ -218,7 +218,7 @@ El ejecutor es `scope → candidates[]` y NO escala por sí mismo; el escalado l
 Después del confirm en el gate, para cada candidato aceptado:
 
 1. Leer `~/.claude/references/ddr/templates/ddr.md` (READ-ONLY).
-2. Completar el header: `Status: Inferred`, `Type: <proposedType>`, `Date: <hoy>`.
+2. Completar el header: `Status: Inferred`, `Date: <hoy>`.
 3. Dejar `## Contexto`, `## Decisión`, `## Consecuencias`, `## Alternativas consideradas` **vacíos** (el humano los completa al promover a Accepted).
 4. Llenar `## Evidencia (inferida)` con `kind`, `observado`, `prevalencia` (si aplica para el kind).
 5. Para `token`/`component`/`pattern`: llenar `## Alcance` con el locator (lista de tokens / frames / set de componentes).
@@ -240,7 +240,6 @@ Después del confirm en el gate, para cada candidato aceptado:
   "concern": "<concern-slug del catálogo> | null",
   "proposedSurface": "foundation | components | layout | brand | accessibility",
   "proposedSlug": "<kebab-case>",
-  "proposedType": "decision | convention | policy",
   "lowSignalReason": "descripción si confidence es low | null"
 }
 ```

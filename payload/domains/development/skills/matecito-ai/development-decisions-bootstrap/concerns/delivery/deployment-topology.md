@@ -2,7 +2,6 @@
 name: deployment-topology
 depth: light
 domain: delivery
-type: decision
 source: 12-factor (factor VI: processes, factor IX: disposability)
 ---
 
@@ -39,5 +38,5 @@ Dónde y cómo corre la aplicación en producción: unidad de ejecución, cantid
 EDR `deployment-topology` materializado según `~/.claude/references/edr/templates/edr.md`. Debe contener:
 
 - **Contexto** y **Decisión**: unidad de ejecución elegida (container / serverless / VM / PaaS), cantidad de instancias prevista, si el proceso es stateless o no, y la consecuencia directa sobre cómo se guarda estado de sesión o cache.
-- **Reglas verificables**: las invariantes operacionales como aserciones con su mecanismo al inicio. Ej: `[manual]` el proceso no guarda estado de sesión en memoria; sesión y cache viven en un store externo; `[tool: <test/health check>]` el proceso arranca y queda listo sin dependencias de instancia local. Conservá los valores concretos (unidad, nº de instancias, stateless/stateful).
+- **Reglas verificables**: las invariantes operacionales como aserciones con su cobertura al inicio. Ej: `[manual]` el proceso no guarda estado de sesión en memoria; sesión y cache viven en un store externo; `[auto]` el proceso arranca y queda listo sin dependencias de instancia local. Conservá los valores concretos (unidad, nº de instancias, stateless/stateful).
 - **Relacionados** (opcional): vinculá con `caching` (dónde vive el estado externo) y `configuration` (config por entorno) si aplican.

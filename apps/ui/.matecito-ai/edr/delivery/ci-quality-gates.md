@@ -1,7 +1,6 @@
 # EDR — Gates de calidad y CI
 
 - **Status:** Accepted
-- **Type:** policy
 - **Date:** 2026-07-23
 
 ## Contexto
@@ -14,11 +13,11 @@ Gates que bloquean merge: **ESLint + Prettier + `tsc --noEmit`** (sin tests, no 
 
 ## Reglas verificables
 
-- **[tool: eslint]** el merge se bloquea si el linter reporta errores.
-- **[tool: prettier]** se bloquea si hay diff de formato.
-- **[tool: tsc --noEmit]** se bloquea ante errores de tipos.
-- **[tool: husky/lint-staged]** los mismos checks corren en local antes del commit.
-- **[tool: ci]** el PR falla si los tipos generados por Kubb quedaron desincronizados del OpenAPI.
+- **[auto]** el merge se bloquea si el linter reporta errores.
+- **[auto]** se bloquea si hay diff de formato.
+- **[auto]** se bloquea ante errores de tipos.
+- **[auto]** los mismos checks corren en local antes del commit.
+- **[auto]** el PR falla si los tipos generados por Kubb quedaron desincronizados del OpenAPI.
 
 ## Relacionados
 

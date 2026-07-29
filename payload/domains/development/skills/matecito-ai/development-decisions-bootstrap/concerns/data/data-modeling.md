@@ -2,7 +2,6 @@
 name: data-modeling
 depth: light
 domain: data
-type: decision
 source: práctica clásica de modelado de datos
 ---
 
@@ -54,7 +53,7 @@ Una o dos, según haga falta.
 
 EDR `data-modeling` materializado según el template `~/.claude/references/edr/templates/edr.md`. La **Decisión** captura: tipo de ID elegido y su justificación (autoincrement / UUID v4 / UUID v7 / ULID-CUID2), la política de borrado (físico vs soft delete con razón), la convención de timestamps, y la estrategia de multitenancy si aplica.
 
-**Reglas verificables** (cada una con su mecanismo al inicio):
+**Reglas verificables** (cada una con su cobertura al inicio):
 
 - **[manual]** toda tabla usa el tipo de ID decidido como clave primaria; no se mezclan tipos de ID entre entidades sin justificación en el EDR.
 - **[manual]** si se eligieron timestamps estándar: toda tabla lleva `created_at` y `updated_at` NOT NULL.

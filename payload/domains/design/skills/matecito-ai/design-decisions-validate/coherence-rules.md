@@ -35,14 +35,16 @@ Los DDRs custom project-local viven igual bajo una surface canónica (`.matecito
 - **[WARNING]** DDR `Pending` o `Deferred` sin razón ni trigger/condición de revisión.
 - **[WARNING]** DDR con `Status: Superseded`. Ese status está deprecado — es un hallazgo de migración: el usuario borra el registro si ya no aplica, o lo deja `Accepted` si sigue vigente. El validador solo reporta; nunca borra ni modifica el archivo.
 - **[WARNING]** Una fila `Not Applicable` en el INDEX de una surface sin razón.
+- **[SUGGESTION]** DDR `Accepted` con "Alternativas consideradas" con contenido pero sin "Consecuencias", o al revés → asimetría: si hubo alternativas que evaluar, hay trade-offs que anotar (y viceversa).
+- **[SUGGESTION]** DDR `Accepted` que solo tiene "Contexto" y "Decisión" — sin `Alcance`, `Reglas verificables`, "Alternativas consideradas" ni "Consecuencias" → no ancla nada ni registra trade-off; revisar si decidió algo o es prosa.
 
 ### Verificabilidad
 
-> Esta es la columna vertebral del sistema de diseño: una `## Reglas verificables` solo vale si se puede chequear contra Figma. Cada regla debe ser una aserción con **valores concretos** (hex, ratio de contraste, escala/pasos, px, nombres de tokens/styles/componentes) y su **mecanismo** al inicio (`[tool: figma]`, `[tool: contrast]`, `[manual]`).
+> Esta es la columna vertebral del sistema de diseño: una `## Reglas verificables` solo vale si se puede chequear contra Figma. Cada regla debe ser una aserción con **valores concretos** (hex, ratio de contraste, escala/pasos, px, nombres de tokens/styles/componentes) y su **cobertura** al inicio (`[auto]` / `[manual]`).
 
 - **[WARNING]** DDR `Accepted` con sección `## Reglas verificables` vacía o ausente → una decisión de diseño sin reglas chequeables no se puede verificar contra Figma.
 - **[WARNING]** Una regla bajo `## Reglas verificables` formulada como **adjetivo vago** en vez de un valor concreto chequeable (ej: "colores armoniosos", "buen contraste", "tipografía legible", "espaciado consistente") → no es chequeable contra Figma. Debe ser un valor: hex (`#2563EB`), ratio (`≥ 4.5:1`), escala (`50–900, 10 pasos`), px (`8px base`), o nombre de token/style/componente (`Primary/500`).
-- **[SUGGESTION]** Una regla bajo `## Reglas verificables` sin marca de mecanismo al inicio (`[tool: figma]` / `[tool: contrast]` / `[manual]`) → no queda claro cómo se chequea; agregar el mecanismo.
+- **[SUGGESTION]** Una regla bajo `## Reglas verificables` sin marca de cobertura al inicio (`[auto]` / `[manual]`) → no queda claro si hay algo automático cuidándola; agregar la marca.
 - **[SUGGESTION]** Lenguaje vago de obligatoriedad ("tratá de", "en lo posible", "idealmente", "evitar cuando se pueda", "preferiblemente") en las reglas de un DDR `Accepted` → ablanda la regla hasta volverla no-chequeable.
 
 ### Integridad de la taxonomía
@@ -50,12 +52,6 @@ Los DDRs custom project-local viven igual bajo una surface canónica (`.matecito
 - **[CRITICAL]** Existe una carpeta bajo `.matecito-ai/ddr/` que no es una surface canónica (`foundation` · `components` · `layout` · `brand` · `accessibility`). La taxonomía es cerrada; una surface nueva es decisión de catálogo, no de proyecto.
 - **[WARNING]** Un DDR está listado en el índice raíz (`.matecito-ai/ddr/INDEX.md`) pero su surface no tiene `INDEX.md`, o viceversa (índice de surface con un DDR que no figura en el raíz). Índices desincronizados.
 - **[SUGGESTION]** Una surface tiene `INDEX.md` pero ningún DDR-archivo (carpeta de surface vacía en la salida). Limpiar la carpeta o el índice, o listar la surface como "sin uso" en el raíz.
-
-### Coherencia del campo `Type`
-
-- **[SUGGESTION]** Un DDR marcado `Type: convention` o `Type: policy` tiene una sección "Alternativas consideradas" sustanciosa → quizá es en realidad una `decision`; revisar el type.
-- **[SUGGESTION]** Un DDR marcado `Type: decision` y `Accepted` sin "Alternativas consideradas" ni "Consecuencias" → una decisión sin trade-offs documentados es sospechosa; o falta contenido o es en realidad una convention.
-- **[WARNING]** Un DDR `Type: policy` `Accepted` sin "Reglas verificables" accionables → una política sin reglas chequeables contra Figma no se puede cumplir ni verificar.
 
 ### Trazabilidad a Figma (sección `Alcance`)
 

@@ -2,7 +2,6 @@
 name: color-palette
 depth: deep
 domain: foundation
-type: decision
 source: Material Design (color system) · W3C Design Tokens (color)
 ---
 
@@ -61,12 +60,12 @@ Una por turno. Para cada una: línea de "por qué importa", opciones con default
 
 DDR `color-palette` materializado según el template `~/.claude/references/ddr/templates/ddr.md`. La **Decisión** captura: los roles elegidos, los valores hex concretos de cada color de rol, la escala de tints/shades, y si hay dark mode.
 
-**Reglas verificables** (cada una con su mecanismo al inicio):
+**Reglas verificables** (cada una con su cobertura al inicio):
 
-- **[tool: figma]** cada color de la paleta existe como un color style nombrado en el archivo (`Primary/500`, `Neutral/100`, `Error/500`); no hay colores de rol aplicados como valor suelto.
-- **[tool: figma]** el hex de cada color style coincide exactamente con el valor enumerado en la Decisión (ej: `Primary/500` = `#2563EB`).
-- **[tool: figma]** todo fill/stroke de un elemento de UI referencia un color style de la paleta, no un hex inline fuera de la lista.
-- **[tool: contrast]** los pares texto/fondo definidos cumplen el ratio mínimo decidido en `contrast-target` (delegado a ese DDR).
+- **[auto]** cada color de la paleta existe como un color style nombrado en el archivo (`Primary/500`, `Neutral/100`, `Error/500`); no hay colores de rol aplicados como valor suelto.
+- **[auto]** el hex de cada color style coincide exactamente con el valor enumerado en la Decisión (ej: `Primary/500` = `#2563EB`).
+- **[auto]** todo fill/stroke de un elemento de UI referencia un color style de la paleta, no un hex inline fuera de la lista.
+- **[auto]** los pares texto/fondo definidos cumplen el ratio mínimo decidido en `contrast-target` (delegado a ese DDR).
 - **[manual]** si hay dark mode: cada token semántico resuelve a un valor válido en ambos modos.
 
 **Alcance:** la lista de color styles nombrados que componen la paleta (`Primary/*`, `Neutral/*`, `Error/*`, …) — el ancla que `mine`/`verify` usan para detectar drift contra Figma.

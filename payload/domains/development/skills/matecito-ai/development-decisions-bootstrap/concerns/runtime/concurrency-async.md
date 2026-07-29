@@ -2,7 +2,6 @@
 name: concurrency-async
 depth: light
 domain: runtime
-type: decision
 source: 12-factor (VIII: concurrency)
 ---
 
@@ -47,10 +46,10 @@ Si elige un runtime async con librería concreta (ej: `asyncio`, `tokio`, `trio`
 
 EDR `concurrency-async` materializado según el template `~/.claude/references/edr/templates/edr.md`. La **Decisión** captura: modelo elegido (síncrono directo / async nativo / threads / workers de proceso), la razón basada en el tipo de carga esperada (I/O-bound vs CPU-bound), la política de mezcla sync/async si aplica (async puro vs pragmático) y la tech concreta si se registró.
 
-**Reglas verificables** (cada una con su mecanismo al inicio):
+**Reglas verificables** (cada una con su cobertura al inicio):
 
 - **[manual]** si se eligió async puro: ningún llamado bloqueante corre directo en el event loop; todo lo síncrono se delega a un executor/threadpool.
-- **[tool: linter]** si el ecosistema tiene reglas de async sin esperar (ej: `no-floating-promises` / `await` faltante), están activas y sin excepciones sin justificar.
+- **[auto]** si el ecosistema tiene reglas de async sin esperar (ej: `no-floating-promises` / `await` faltante), están activas y sin excepciones sin justificar.
 - **[manual]** el modelo elegido es consistente con el tipo de carga declarado (I/O-bound → async/threads; CPU-bound pesado → workers de proceso).
 
 **Relacionados:** vincular con `background-jobs` cuando los workers de proceso materializan también el modelo de jobs.

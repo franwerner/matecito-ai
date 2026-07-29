@@ -2,7 +2,6 @@
 name: resilience
 depth: light
 domain: runtime
-type: decision
 source: SRE (site reliability engineering)
 ---
 
@@ -46,7 +45,7 @@ Si se elige una librería de resiliencia concreta, registrarla en el catálogo `
 
 EDR `resilience` materializado según el template `~/.claude/references/edr/templates/edr.md`. La **Decisión** captura: política elegida (solo timeout / timeout+retry con backoff / timeout+retry+circuit breaker / sin política), los valores concretos si se definieron (timeout en ms, max retries, backoff base, umbral del circuit breaker) y la librería de resiliencia si aplica.
 
-**Reglas verificables** (cada una con su mecanismo al inicio):
+**Reglas verificables** (cada una con su cobertura al inicio):
 
 - **[manual]** toda llamada externa saliente (DB, API tercera, cola) tiene un timeout explícito; ninguna espera indefinidamente. Ej: timeout de 5s en todas las llamadas HTTP salientes.
 - **[manual]** los retries usan backoff exponencial con un tope de reintentos definido; no hay retries fijos sin backoff que amplifiquen la carga sobre un servicio caído.

@@ -1,7 +1,6 @@
 # EDR — Accesibilidad
 
 - **Status:** Accepted
-- **Type:** decision
 - **Date:** 2026-07-23
 
 ## Contexto
@@ -18,7 +17,7 @@ Los primitives de Radix (vía shadcn) aportan la base accesible: manejo de foco,
 
 ## Reglas verificables
 
-- **[tool: eslint-plugin-jsx-a11y]** todo elemento interactivo expone un nombre accesible; el lint falla el build si falta.
+- **[auto]** todo elemento interactivo expone un nombre accesible; el lint falla el build si falta.
 - **[manual]** el contraste AA se valida sobre los pares reales texto/fondo de cada tema.
 - **[manual]** el color nunca es el único portador de significado: las severidades se acompañan de texto o ícono.
 - **[manual]** navegación completa por teclado con foco visible en los flujos críticos.

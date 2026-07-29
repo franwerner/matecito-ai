@@ -2,7 +2,6 @@
 name: logo-usage
 depth: light
 domain: brand
-type: policy
 source: práctica clásica de brand guidelines (logo usage / clear space) · guías de identidad
 ---
 
@@ -41,10 +40,10 @@ Una o dos, según haga falta.
 
 DDR `logo-usage` materializado según el template `~/.claude/references/ddr/templates/ddr.md`. La **Decisión** captura: las variantes válidas del logo, la regla de cuándo usar cada una, el clear space (en múltiplos concretos), el tamaño mínimo en px, y los usos prohibidos enumerados.
 
-**Reglas verificables** (cada una con su mecanismo al inicio):
+**Reglas verificables** (cada una con su cobertura al inicio):
 
-- **[tool: figma]** cada variante del logo existe como un componente nombrado (`Logo/FullColor`, `Logo/Mono`, `Logo/Negative`); no hay logos pegados como imagen suelta sin variante.
-- **[tool: figma]** ninguna instancia del logo está por debajo del tamaño mínimo en px decidido.
+- **[auto]** cada variante del logo existe como un componente nombrado (`Logo/FullColor`, `Logo/Mono`, `Logo/Negative`); no hay logos pegados como imagen suelta sin variante.
+- **[auto]** ninguna instancia del logo está por debajo del tamaño mínimo en px decidido.
 - **[manual]** el clear space alrededor del logo respeta el múltiplo declarado; ningún elemento invade esa zona.
 - **[manual]** no aparece ninguno de los usos prohibidos enumerados (logo deformado, recoloreado fuera de la paleta, sobre fondo de bajo contraste).
 

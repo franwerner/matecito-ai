@@ -9,7 +9,7 @@ Entrevista al usuario para capturar las decisiones de ingeniería del proyecto �
 
 El objetivo es que las decisiones queden **registradas y verificables**, no implícitas en la cabeza del autor. Eso le permite a Claude (y a cualquier nuevo dev) trabajar respetando las convenciones sin volver a preguntarlas.
 
-> **Nota sobre "EDR".** Usamos el término en sentido amplio: el catálogo cubre *decisiones* (con trade-offs reales), *convenciones* (acuerdos de estilo) y *políticas* (reglas verificables). El campo `type` de cada fase lo refleja. No todo lo que se captura es "arquitectura" en sentido estricto, pero todo merece quedar escrito, fechado y justificado — que es lo que aporta el formato EDR.
+> **Nota sobre "EDR".** Usamos el término en sentido amplio: el catálogo cubre *decisiones* (con trade-offs reales), *convenciones* (acuerdos de estilo) y *políticas* (reglas verificables), sin distinguirlas con una etiqueta. No todo lo que se captura es "arquitectura" en sentido estricto, pero todo merece quedar escrito, fechado y justificado — que es lo que aporta el formato EDR.
 
 ---
 
@@ -186,7 +186,7 @@ Este es el procedimiento genérico del motor. Vale para cualquier fase, sea del 
 5. **Confirmá** la decisión antes de seguir.
 6. Si el archivo tiene **"Tech a registrar"** y se eligió una tecnología concreta, creá su mini-EDR en `tech/` en el momento (ver "Catálogo de tecnologías").
 6b. **Si la decisión corresponde a un patrón canónico** del catálogo en `~/.claude/references/design-patterns/` (típicamente fases de los dominios `structure`, `runtime`, `data`), preguntá UNA vez cuál patrón aplica y registralo en el EDR como `**Applied pattern:** <Nombre> — <1 línea de por qué>`. No fuerces: si la decisión no es un patrón (ej. una convención de naming, una política de rate limiting), omití este paso. El catálogo se consulta por nombre, sin link en el EDR — el pointer a la ubicación está en el `CLAUDE.md` del proyecto.
-7. **Materializá el EDR** en `.matecito-ai/edr/<dominio>/<name>.md`, con el `type` del frontmatter en su encabezado, según la sección "Qué materializar" del archivo.
+7. **Materializá el EDR** en `.matecito-ai/edr/<dominio>/<name>.md`, según la sección "Qué materializar" del archivo.
 
 Si la fase estaba recomendada pero el usuario la sacó, o no aplica: no la trates, pero dejá su registro — `Not Applicable` como fila en el INDEX del dominio; `Pending`/`Deferred` como EDR-archivo con su razón. Ver "Cómo manejar fases omitidas".
 
@@ -228,8 +228,7 @@ Si el usuario quiere un tema que no está en el catálogo:
 
 1. Tratalo con el procedimiento genérico, haciéndole 2-3 preguntas para extraer qué decide, opciones y qué materializar.
 2. **Asignale un dominio canónico.** Mirá el "criterio de pertenencia" en cada `concerns/<dominio>/INDEX.md` para decidir dónde encaja (incluí los reservados: `lifecycle`, `integration`, `privacy`, `release`, `domain-logic`, `compliance`, `ux-product`). No inventés un dominio nuevo. Si genuinamente no encaja en ninguno, es señal de que falta un dominio en la taxonomía — eso es una decisión de catálogo, avisале al usuario, no lo resuelvas en el repo.
-3. **Asignale un `type`** (`decision` / `convention` / `policy`).
-4. Materializá el EDR en `.matecito-ai/edr/<dominio>/<slug>.md`. Una fase custom es **siempre solo para este proyecto**: no toques el catálogo `concerns/` (es read-only, se deploya desde el repo matecito-ai). Si el concern merece sumarse al catálogo para todos los proyectos, eso se hace editando `payload/domains/development/skills/.../concerns/` en el repo matecito-ai (ver "Ratchet"), no desde acá.
+3. Materializá el EDR en `.matecito-ai/edr/<dominio>/<slug>.md`. Una fase custom es **siempre solo para este proyecto**: no toques el catálogo `concerns/` (es read-only, se deploya desde el repo matecito-ai). Si el concern merece sumarse al catálogo para todos los proyectos, eso se hace editando `payload/domains/development/skills/.../concerns/` en el repo matecito-ai (ver "Ratchet"), no desde acá.
 
 ---
 
@@ -343,7 +342,7 @@ Notas del contrato del EDR (también en `~/.claude/references/edr/templates/edr.
 6. Escribir `tech/INDEX.md` (los archivos individuales de tech ya se fueron creando intercalados).
 7. Reportar al usuario:
    - Lista de archivos creados (path completo), **agrupada por dominio**
-   - Resumen de 1 línea por EDR-archivo, con su status entre corchetes (`[Accepted]`, `[Pending]`, `[Deferred]`) y su `type`
+   - Resumen de 1 línea por EDR-archivo, con su status entre corchetes (`[Accepted]`, `[Pending]`, `[Deferred]`)
    - Conteo de `Not Applicable` por dominio (viven en los INDEX), no uno por uno
    - Tecnologías registradas en `tech/`
    - **Lista separada de EDRs `Pending`/`Deferred` con su trigger**, así sabe qué quedó por decidir
@@ -379,7 +378,7 @@ Notas del contrato del EDR (también en `~/.claude/references/edr/templates/edr.
 El valor de largo plazo de la skill es que **nunca se vuelva a olvidar un tema**. Cuando aparece un concern que no estaba:
 
 1. Determiná a qué **dominio canónico** pertenece (consultá el "criterio de pertenencia" en `concerns/<dominio>/INDEX.md`). Si encaja en un dominio reservado, ese dominio pasa de reservado a activo.
-2. Creá `concerns/<dominio>/<slug>.md` con el formato estándar (mirá `concerns/runtime/error-handling.md` para una fase `deep` y `concerns/runtime/caching.md` para una `light`). Incluí en el frontmatter `domain` y `type`.
+2. Creá `concerns/<dominio>/<slug>.md` con el formato estándar (mirá `concerns/runtime/error-handling.md` para una fase `deep` y `concerns/runtime/caching.md` para una `light`). Incluí en el frontmatter `domain`.
 3. Sumá la fila al `concerns/<dominio>/INDEX.md` y a la matriz de `concerns/INDEX.md`, con la aplicabilidad por tipo de proyecto (Requerido/Recomendado). Si el dominio pasó de reservado a activo, movelo de tabla en el índice raíz.
 
 Desde ese momento, todo bootstrap futuro lo considera, y el modo update lo ofrece a proyectos viejos (paso 4 de update). El catálogo se sembró de taxonomías externas (ISO/IEC 25010, 12-factor, arc42, OWASP ASVS, production-readiness) para nacer casi completo y solo crecer.

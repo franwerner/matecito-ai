@@ -2,7 +2,6 @@
 name: inter-layer-communication
 depth: deep
 domain: structure
-type: decision
 source: práctica clásica de arquitectura en capas · arc42 §8 (conceptos transversales)
 ---
 
@@ -67,6 +66,6 @@ Si en la pregunta 4 se menciona una librería de validación concreta (pydantic,
 EDR `inter-layer-communication` materializado según `~/.claude/references/edr/templates/edr.md`. Debe contener:
 
 - **Contexto** y **Decisión**: política de DTOs vs entidades en los bordes (con nombres concretos de las clases de mapeo si los hay), estilo de comunicación sync/async (y message bus si aplica), dónde se declaran las interfaces de repositorios y servicios externos (`domain/` vs `application/` vs dentro del feature), y la política de validación (qué valida cada capa, con qué herramienta).
-- **Reglas verificables**: traducí cada una de esas cuatro políticas a aserciones chequeables con su mecanismo al inicio, no como intenciones vagas. Ej: `[tool: dependency-cruiser]` las clases de `domain/**` no se exponen en firmas de controllers; `[tool: <linter>]` interfaces de repositorio declaradas solo en `application/**`; `[manual]` el borde valida formato/tipo con la librería elegida (pydantic/zod/joi) y el dominio valida reglas de negocio. Si se eligió una librería de validación concreta, nombrala en el `[tool: ...]`.
+- **Reglas verificables**: traducí cada una de esas cuatro políticas a aserciones chequeables con su cobertura al inicio, no como intenciones vagas. Ej: `[auto]` las clases de `domain/**` no se exponen en firmas de controllers; `[auto]` interfaces de repositorio declaradas solo en `application/**`; `[manual]` el borde valida formato/tipo con la librería elegida (pydantic/zod/joi) y el dominio valida reglas de negocio.
 - **Alcance**: como decisión estructural, incluí los globs **a nivel convención** que gobiernan dónde viven interfaces, DTOs y validación (ej: `src/application/**/ports/`, `src/**/dto/`, `src/presentation/**/schemas/`). Patrones estables, no archivos concretos.
 - **Relacionados** (opcional): vinculá con `architecture-style` y `layers-and-dependencies` como decisiones que refina.

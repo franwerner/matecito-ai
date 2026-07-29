@@ -1,7 +1,6 @@
 # EDR — Estructura de carpetas
 
 - **Status:** Accepted
-- **Type:** convention
 - **Date:** 2026-07-23
 
 ## Contexto
@@ -28,7 +27,7 @@ Layout raíz `src/{app, routes, features, shared}` más el punto de entrada. `ro
 
 - **[manual]** cada feature vive en su propia carpeta bajo `features/`.
 - **[manual]** lo transversal vive bajo `shared/`.
-- **[tool: eslint]** cada tipo de artefacto lleva su sufijo de rol.
+- **[auto]** cada tipo de artefacto lleva su sufijo de rol.
 
 ## Relacionados
 

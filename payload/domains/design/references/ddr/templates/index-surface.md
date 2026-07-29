@@ -6,10 +6,10 @@
 
 ## DDRs en esta surface
 
-| DDR | Status | Type | Consultá cuando... |
-|---|---|---|---|
-| [<slug>.md](<slug>.md) | <status> | <decision\|convention\|policy> | <gatillo concreto> |
-| ... | | | |
+| DDR | Status | Consultá cuando... |
+|---|---|---|
+| [<slug>.md](<slug>.md) | <status> | <gatillo concreto> |
+| ... | | |
 
 ## No aplican en esta surface
 

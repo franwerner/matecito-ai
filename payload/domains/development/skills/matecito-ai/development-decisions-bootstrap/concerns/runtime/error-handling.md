@@ -2,7 +2,6 @@
 name: error-handling
 depth: deep
 domain: runtime
-type: decision
 source: práctica clásica de manejo de errores · arc42 §8 (conceptos transversales)
 ---
 
@@ -71,9 +70,9 @@ Si se elige una librería específica de Result/errores (ej: `returns` en Python
 
 EDR `error-handling` materializado según el template `~/.claude/references/edr/templates/edr.md`. La **Decisión** captura: estilo de errores elegido (excepciones / Result-Either / mix pragmático), dónde se hace boundary handling (middleware global / por controller / mix), la jerarquía de errores de dominio con nombres concretos si aplica (`UserNotFoundError`, `InsufficientFundsError`), el formato de respuesta de error, y la tech registrada si se eligió una librería de Result.
 
-**Reglas verificables** (cada una con su mecanismo al inicio):
+**Reglas verificables** (cada una con su cobertura al inicio):
 
-- **[tool: type-check]** si se eligió Result/Either: las funciones de borde devuelven el tipo Result, no lanzan excepciones para flujos de error esperados.
+- **[auto]** si se eligió Result/Either: las funciones de borde devuelven el tipo Result, no lanzan excepciones para flujos de error esperados.
 - **[manual]** los errores que escapan de las capas internas se atrapan en el boundary definido (middleware global / controller), no se propagan crudos al cliente.
 - **[manual]** si el proyecto expone API: las respuestas de error 4xx/5xx siguen el formato decidido (ej: RFC 7807 Problem Details), no texto plano.
 - **[manual]** nunca se loggean passwords, tokens, datos personales ni payloads completos en ningún nivel.

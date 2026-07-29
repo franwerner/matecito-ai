@@ -2,7 +2,6 @@
 name: secrets-management
 depth: light
 domain: security
-type: policy
 source: OWASP ASVS v4 §2.10 (Service Authentication) · 12-factor app §III (Config)
 ---
 
@@ -37,7 +36,7 @@ EDR `secrets-management` materializado según `~/.claude/references/edr/template
 - **Reglas verificables** (cada una con su mecanismo):
   - `[manual]` lista explícita de qué NUNCA se commitea (ej. `.env`, archivos de certificados, API keys); todos esos patrones figuran en `.gitignore`.
   - `[manual]` qué NUNCA se loggea: passwords, tokens, PII.
-  - `[tool: <escáner de secretos en CI>]` ningún secreto hardcodeado entra al repositorio (si hay escaneo en CI; omitir el mecanismo `[manual]` correspondiente si no lo hay).
+  - `[auto]` ningún secreto hardcodeado entra al repositorio (si hay escaneo en CI; omitir el mecanismo `[manual]` correspondiente si no lo hay).
   - `[manual]` los secretos se rotan según la política decidida (cadencia o trigger documentado).
 - **Alternativas consideradas**: los otros backends evaluados y por qué no se eligieron para este nivel de sensibilidad.
 - **Consecuencias**: confianza requerida en el entorno (para env vars) o dependencia del secret manager provisionado.

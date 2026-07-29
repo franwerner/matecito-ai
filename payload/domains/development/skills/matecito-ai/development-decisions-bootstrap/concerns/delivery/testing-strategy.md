@@ -2,7 +2,6 @@
 name: testing-strategy
 depth: deep
 domain: delivery
-type: decision
 source: práctica clásica de pirámide de tests · arc42 §8 (conceptos transversales)
 ---
 
@@ -63,5 +62,5 @@ Framework de tests (`pytest.md`, `vitest.md`, `jest.md`, `junit.md`, `rspec.md`,
 EDR `testing-strategy` materializado según `~/.claude/references/edr/templates/edr.md`. Debe contener:
 
 - **Contexto** y **Decisión**: proporciones de la pirámide objetivo (unit / integración / e2e, ej: 70/20/10), política de mocks vs fakes vs reales con criterio claro (qué se mockea y qué no y por qué), si TDD es obligatorio o recomendado y para qué tipo de código, y el umbral de cobertura si se acordó (sobre qué capas y con qué métrica).
-- **Reglas verificables**: cada política como aserción con su mecanismo al inicio. Ej: `[manual]` nunca mockear clases internas del dominio; `[manual]` siempre mockear llamadas HTTP salientes y acceso a DB en unit tests; `[tool: <coverage tool>]` cobertura mínima 80% de líneas en `domain/**` y `application/**`, sin umbral en `infrastructure/**`; `[manual]` todo código nuevo de dominio/casos de uso va precedido de test rojo si TDD es obligatorio. Nombrá el framework de tests y la herramienta de cobertura concretos en los `[tool: ...]`. Conservá los porcentajes de la pirámide y el umbral por capa.
+- **Reglas verificables**: cada política como aserción con su cobertura al inicio. Ej: `[manual]` nunca mockear clases internas del dominio; `[manual]` siempre mockear llamadas HTTP salientes y acceso a DB en unit tests; `[auto]` cobertura mínima 80% de líneas en `domain/**` y `application/**`, sin umbral en `infrastructure/**`; `[manual]` todo código nuevo de dominio/casos de uso va precedido de test rojo si TDD es obligatorio. Conservá los porcentajes de la pirámide y el umbral por capa.
 - **Relacionados** (opcional): vinculá con `ci-quality-gates` (donde tests y cobertura corren como gate).

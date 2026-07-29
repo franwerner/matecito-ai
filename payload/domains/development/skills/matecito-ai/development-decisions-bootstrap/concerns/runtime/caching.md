@@ -2,7 +2,6 @@
 name: caching
 depth: light
 domain: runtime
-type: decision
 source: checklists de production-readiness / SRE
 ---
 
@@ -46,7 +45,7 @@ Si se elige Redis / Memcached u otra herramienta, registrala en el catálogo `te
 
 EDR `caching` materializado según el template `~/.claude/references/edr/templates/edr.md`. La **Decisión** captura: qué se cachea y qué no, la capa elegida (in-memory / distribuido / CDN-HTTP), la estrategia de invalidación (TTL fijo / por evento / mix) y los TTLs concretos si se definieron.
 
-**Reglas verificables** (cada una con su mecanismo al inicio):
+**Reglas verificables** (cada una con su cobertura al inicio):
 
 - **[manual]** solo se cachea lo enumerado en la Decisión; cachear datos fuera de esa lista requiere actualizar el EDR.
 - **[manual]** cada entrada cacheada tiene un TTL explícito o una regla de purga por evento; ninguna entrada queda sin política de expiración.

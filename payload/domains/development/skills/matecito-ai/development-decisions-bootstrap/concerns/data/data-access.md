@@ -2,7 +2,6 @@
 name: data-access
 depth: deep
 domain: data
-type: decision
 source: práctica clásica de patrones de acceso a datos · arc42 §8 (conceptos transversales)
 ---
 
@@ -62,7 +61,7 @@ Motor de DB (`postgresql.md`, `mongodb.md`, `mysql.md`, `sqlite.md`), ORM o quer
 
 EDR `data-access` materializado según el template `~/.claude/references/edr/templates/edr.md`. La **Decisión** captura: nivel de abstracción sobre la DB (ORM / query builder / raw SQL / mix), si hay patrón Repository y para qué entidades, la herramienta de migraciones, y dónde se inician las transacciones. Si hay mix (ej: ORM para CRUD + raw para reportes), documentar el criterio concreto para elegir cuándo usar cada uno. Registrar como tech el motor de DB, el ORM/query builder y la herramienta de migraciones si es separada.
 
-**Reglas verificables** (cada una con su mecanismo al inicio):
+**Reglas verificables** (cada una con su cobertura al inicio):
 
 - **[manual]** si se eligió Repository: el acceso a datos de las entidades cubiertas pasa por su Repository; los servicios/casos de uso no llaman al ORM ni a la DB directamente.
 - **[manual]** las transacciones se inician en la capa decidida (ej: caso de uso / application service); las capas inferiores solo ejecutan dentro de la unidad de trabajo.

@@ -2,7 +2,6 @@
 name: layers-and-dependencies
 depth: deep
 domain: structure
-type: decision
 source: práctica clásica de arquitectura en capas · arc42 §5 (vista de building blocks)
 ---
 
@@ -81,6 +80,6 @@ Mostrá las reglas como lista en formato path/glob verificable y pedí confirmac
 EDR `layers-and-dependencies` materializado según `~/.claude/references/edr/templates/edr.md`. Debe contener:
 
 - **Contexto** y **Decisión**: lista de capas con nombre de carpeta y responsabilidad de cada una.
-- **Reglas verificables**: las reglas de dependencia escritas como paths/globs (qué puede importar qué, qué está explícitamente prohibido), cada una como aserción con su mecanismo al inicio según la herramienta de enforcement elegida o disponible. Ej: `[tool: dependency-cruiser]` ningún import desde `src/presentation/**` hacia `src/infrastructure/**`; `[tool: import-linter]` `src/domain/**` solo importa de `src/domain/**`; `[tool: ArchUnit]` para Java. Usá `[manual]` solo si no hay herramienta disponible todavía. Nombrá la herramienta concreta (`import-linter` / `dependency-cruiser` / `ArchUnit` / `deptrac`) en cada `[tool: ...]` para que en sesiones futuras se sepa cómo verificar las reglas.
+- **Reglas verificables**: las reglas de dependencia escritas como paths/globs (qué puede importar qué, qué está explícitamente prohibido), cada una como aserción con su cobertura al inicio. Ej: `[auto]` ningún import desde `src/presentation/**` hacia `src/infrastructure/**`; `[auto]` `src/domain/**` solo importa de `src/domain/**`. Usá `[manual]` solo si no hay herramienta de enforcement disponible todavía. El nombre de la herramienta (`import-linter` / `dependency-cruiser` / `ArchUnit` / `deptrac`) NO va en la regla: vive en su config, que es la fuente de verdad de qué se chequea.
 - **Alcance**: como decisión estructural, incluí los globs **a nivel convención** que delimitan cada capa (ej: `src/domain/**`, `src/application/**`, `src/infrastructure/**`, `src/presentation/**`, o `features/<feature>/**` y `shared/**` en Vertical Slice). Patrones estables, no archivos concretos.
 - **Relacionados** (opcional): vinculá con `architecture-style` (decisión de la que depende) y con `arch-enforcement` (que ejecuta estas reglas en CI).

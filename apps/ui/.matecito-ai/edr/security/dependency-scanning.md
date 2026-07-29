@@ -1,7 +1,6 @@
 # EDR — Escaneo de dependencias
 
 - **Status:** Accepted
-- **Type:** policy
 - **Date:** 2026-07-23
 
 ## Contexto
@@ -14,8 +13,8 @@ Proyecto npm que conviene mantener con las deps escaneadas por vulnerabilidades,
 
 ## Reglas verificables
 
-- **[tool: dependabot]** las deps npm tienen escaneo de vulnerabilidades con PRs automáticos.
-- **[tool: pnpm audit]** corre como gate en CI cuando exista.
+- **[auto]** las deps npm tienen escaneo de vulnerabilidades con PRs automáticos.
+- **[auto]** corre como gate en CI cuando exista.
 
 ## Relacionados
 

@@ -1,7 +1,6 @@
 # EDR — Convenciones de código
 
 - **Status:** Accepted
-- **Type:** convention
 - **Date:** 2026-07-23
 
 ## Contexto
@@ -28,10 +27,10 @@ Enforcer: ESLint (flat config) con typescript-eslint, eslint-plugin-react-hooks 
 
 ## Reglas verificables
 
-- **[tool: eslint]** union sobre enum, no-magic-numbers, eqeqeq, orden de imports y casing.
-- **[tool: tsc strict]** sin `any`; ausencia modelada con `T | null`.
-- **[tool: eslint no-restricted-syntax] + [manual]** los valores de un conjunto cerrado se usan por su constante nombrada, nunca por string literal inline.
-- **[tool: eslint max-params] + [manual]** forma de función: pocos parámetros o objeto de opciones, sin parámetros booleanos.
+- **[auto]** union sobre enum, no-magic-numbers, eqeqeq, orden de imports y casing.
+- **[auto]** sin `any`; ausencia modelada con `T | null`.
+- **[auto] + [manual]** los valores de un conjunto cerrado se usan por su constante nombrada, nunca por string literal inline.
+- **[auto] + [manual]** forma de función: pocos parámetros o objeto de opciones, sin parámetros booleanos.
 
 ## Relacionados
 

@@ -8,6 +8,6 @@ Un concern nuevo va en `accessibility` si trata sobre una **regla de accesibilid
 
 ## Concerns en esta surface
 
-| Concern | Prof. | Type | Qué decide |
-|---|---|---|---|
-| [contrast-target](contrast-target.md) | light | policy | El nivel de contraste WCAG objetivo (AA/AAA) y los ratios mínimos verificables para texto y elementos de UI. |
+| Concern | Prof. | Qué decide |
+|---|---|---|
+| [contrast-target](contrast-target.md) | light | El nivel de contraste WCAG objetivo (AA/AAA) y los ratios mínimos verificables para texto y elementos de UI. |

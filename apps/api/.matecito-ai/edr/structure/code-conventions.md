@@ -1,7 +1,6 @@
 # EDR — Convenciones de código
 
 - **Status:** Accepted
-- **Type:** convention
 - **Date:** 2026-07-23
 
 ## Contexto
@@ -14,9 +13,9 @@ Adoptamos el set idiomático de Go (formateo y análisis estático estándar ya 
 
 ## Reglas verificables
 
-- **[tool: gofmt]** el código está formateado con gofmt.
-- **[tool: go vet]** el código pasa go vet.
-- **[tool: golangci-lint]** el código pasa golangci-lint.
+- **[auto]** el código está formateado con gofmt.
+- **[auto]** el código pasa go vet.
+- **[auto]** el código pasa golangci-lint.
 
 ## Alternativas consideradas
 

@@ -84,7 +84,6 @@ Para cada candidato:
 - **Dedup:** chequeá si ya existe `.matecito-ai/edr/<proposedDomain>/<proposedSlug>.md`. Si existe → salteá el candidato (o drift-check en Paso 6 si corrés sobre Inferred existentes). Si no existe → es un hueco real.
 - **Sin concern (`concern: null`):** marcá `catalog_gap_flags` (advisory) Y bajá la confianza — sin un concern que lo ancle, no estás seguro de que sea una decisión que merezca EDR. Salvo evidencia muy fuerte, va a `open_questions`, no a `candidates[]`.
 - `proposedSlug`: kebab-case descriptivo del concern.
-- `proposedType`: `decision` (trade-off real), `convention` (acuerdo de estilo), o `policy` (regla verificable).
 - `proposedAlcanceGlobs`: solo para `estructural`/`patrón`, globs estables a nivel convención (no `path:line`).
 
 ### Paso 6: Detección de drift (solo si hay EDRs Inferred existentes)
@@ -136,7 +135,6 @@ Resumen: draftearían Inferred: N / preguntas abiertas → bootstrap: M / posibl
     "proposedDomain": "structure",
     "proposedSlug": "layered-modules",
     "proposedAlcanceGlobs": ["src/*/index.ts"],
-    "proposedType": "convention",
     "lowSignalReason": null
   }
 ]

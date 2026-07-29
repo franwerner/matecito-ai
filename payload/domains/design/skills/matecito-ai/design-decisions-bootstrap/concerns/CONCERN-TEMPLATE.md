@@ -6,11 +6,10 @@ El valor de largo plazo de la skill es que **nunca se vuelva a olvidar un tema d
 
 ---
 
-## Antes de escribir: 3 decisiones
+## Antes de escribir: 2 decisiones
 
 1. **Surface canónica.** ¿A qué surface pertenece? Mirá el "criterio de pertenencia" en cada `concerns/<surface>/INDEX.md`. La taxonomía es **cerrada** (`foundation`, `components`, `layout`, `brand`, `accessibility`); no inventes una surface nueva. Si genuinamente no encaja en ninguna, es señal de que falta una surface en la taxonomía — eso es una decisión de catálogo aparte (tocar el motor + `concerns/INDEX.md`), no algo que se resuelve metiéndolo a la fuerza.
 2. **Profundidad.** `deep` (cuestionario propio de 3-5 preguntas, para decisiones grandes con condicionales) o `light` (1-2 preguntas, para temas acotados). Referencia: `foundation/color-palette.md` es `deep`; `foundation/spacing-grid.md` es `light`.
-3. **Type.** `decision` (alternativas y trade-offs reales) · `convention` (acuerdo de estilo, sin gran dilema) · `policy` (regla verificable, a menudo de accesibilidad).
 
 ---
 
@@ -23,7 +22,6 @@ Copiá esta estructura. Las secciones marcadas (opcional) se incluyen solo si ap
 name: <slug-en-kebab-case>
 depth: <deep | light>
 domain: <surface canónica>
-type: <decision | convention | policy>
 source: <taxonomía/estándar de origen: W3C Design Tokens, Atomic Design, WCAG 2.x, Material Design, etc.>
 ---
 
@@ -57,7 +55,7 @@ Una por turno. Para cada una: línea de "por qué importa", opciones con default
 ## Qué materializar
 
 DDR `<name>` materializado según el template canónico [`templates/ddr.md`](~/.claude/references/ddr/templates/ddr.md). Especificá qué campos concretos y **verificables contra Figma** debe contener:
-- **Reglas verificables:** nombrá las reglas como **valores concretos chequeables contra el archivo Figma** (hex exacto, ratio de contraste, escala modular, px, nombres de tokens) — NUNCA adjetivos vagos. Cada una con su mecanismo de verificación al inicio: `[tool: figma]` (chequeable leyendo styles/components del archivo), `[tool: contrast]` (cálculo de ratio WCAG) o `[manual]` (revisión humana).
+- **Reglas verificables:** nombrá las reglas como **valores concretos chequeables contra el archivo Figma** (hex exacto, ratio de contraste, escala modular, px, nombres de tokens) — NUNCA adjetivos vagos. Cada una con su mecanismo de verificación al inicio: `[auto]` (chequeable leyendo styles/components del archivo), `[auto]` (cálculo de ratio WCAG) o `[manual]` (revisión humana).
 - **Alcance** (solo concerns con locator espacial): la lista de tokens / set de componentes / frames —a nivel convención, patrones estables, no nodos concretos efímeros— que la decisión gobierna y que el validador usa como ancla de drift contra Figma.
 - **Relacionados** (si aplica): vínculos tipados esperados con otros DDRs.
 ```
@@ -72,7 +70,7 @@ Estas reglas protegen el patrón de la skill. Romperlas degrada el catálogo con
 - ❌ **No pinees una herramienta como obligatoria.** Mal: "usá Tokens Studio". La herramienta la decide el usuario. Las herramientas se nombran solo **como ejemplos ilustrativos** de una opción (ej: "plugin de tokens (Tokens Studio, Figma Variables)").
 - ❌ **No prescribas una paleta/escala concreta como dogma.** El concern ofrece opciones abstractas con ejemplos; el usuario elige y eso se registra en el DDR. El concern no dice "usá #2563EB" — dice "un primario de marca con sus tints/shades" como forma de la decisión.
 - ❌ **No escribas opciones sin default ni sin "no sé, recomendame".** Toda pregunta ofrece un default razonado y la salida "no sé, recomendame" para quien no tiene opinión.
-- ❌ **No uses lenguaje vago en "Qué materializar".** Mal: "buenos colores con buen contraste". Bien: reglas verificables con valores concretos chequeables contra Figma (ej: "texto normal ≥ 4.5:1 contra su fondo", "todo color de UI referencia un color style nombrado"), cada una con su mecanismo `[tool: figma]` / `[tool: contrast]` / `[manual]`. Lo que va al DDR tiene que ser chequeable contra el archivo.
+- ❌ **No uses lenguaje vago en "Qué materializar".** Mal: "buenos colores con buen contraste". Bien: reglas verificables con valores concretos chequeables contra Figma (ej: "texto normal ≥ 4.5:1 contra su fondo", "todo color de UI referencia un color style nombrado"), cada una con su cobertura `[auto]` / `[manual]`. Lo que va al DDR tiene que ser chequeable contra el archivo.
 - ❌ **No dupliques contenido de otra fase.** Si una decisión ya la captura otro concern, referencialo, no lo repitas.
 
 ---
@@ -81,14 +79,14 @@ Estas reglas protegen el patrón de la skill. Romperlas degrada el catálogo con
 
 Antes de guardar el concern, verificá:
 
-- [ ] Frontmatter completo: `name`, `depth`, `domain`, `type`, `source`.
+- [ ] Frontmatter completo: `name`, `depth`, `domain`, `source`.
 - [ ] `domain` es una de las surfaces canónicas y coincide con la carpeta donde va el archivo.
 - [ ] Tiene las 3 secciones núcleo: `## Qué decide`, `## Preguntas`, `## Qué materializar`.
 - [ ] Cada pregunta tiene línea de "por qué importa", default marcado, y "no sé, recomendame".
 - [ ] `deep` tiene 3-5 preguntas; `light` tiene 1-2.
 - [ ] **Cero recetas de implementación visual.**
 - [ ] Las herramientas aparecen solo como ejemplos entre paréntesis, no como imposición.
-- [ ] "Qué materializar" describe reglas verificables con valores concretos chequeables contra Figma (no adjetivos vagos), cada una con su mecanismo `[tool: figma]`/`[tool: contrast]`/`[manual]`; si el concern tiene locator, pide la sección `Alcance` con tokens/components/frames.
+- [ ] "Qué materializar" describe reglas verificables con valores concretos chequeables contra Figma (no adjetivos vagos), cada una con su mecanismo `[auto]`/`[auto]`/`[manual]`; si el concern tiene locator, pide la sección `Alcance` con tokens/components/frames.
 - [ ] Si hay condicionales o dependencias → están en "Notas de lógica".
 
 ---

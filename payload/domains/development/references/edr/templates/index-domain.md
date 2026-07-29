@@ -6,10 +6,10 @@
 
 ## EDRs en este dominio
 
-| EDR | Status | Type | Consultá cuando... |
-|---|---|---|---|
-| [<slug>.md](<slug>.md) | <status> | <decision\|convention\|policy> | <gatillo concreto> |
-| ... | | | |
+| EDR | Status | Consultá cuando... |
+|---|---|---|
+| [<slug>.md](<slug>.md) | <status> | <gatillo concreto> |
+| ... | | |
 
 ## No aplican en este dominio
 

@@ -2,7 +2,6 @@
 name: design-tokens
 depth: light
 domain: foundation
-type: decision
 source: W3C Design Tokens Community Group Format · Material Design (design tokens)
 ---
 
@@ -42,10 +41,10 @@ Una o dos, según haga falta.
 
 DDR `design-tokens` materializado según el template `~/.claude/references/ddr/templates/ddr.md`. La **Decisión** captura: la estrategia de tokens elegida (variables+styles / solo styles / ninguno) y la taxonomía de nombres concreta con ejemplos.
 
-**Reglas verificables** (cada una con su mecanismo al inicio):
+**Reglas verificables** (cada una con su cobertura al inicio):
 
-- **[tool: figma]** las decisiones visuales del sistema (color, tipografía, spacing, radios) están expresadas como Figma Variables o styles nombrados, no como valores crudos repetidos.
-- **[tool: figma]** los nombres de los tokens siguen la taxonomía declarada (ej: `color.primary.500`, `space.md`); no hay nombres fuera del patrón.
+- **[auto]** las decisiones visuales del sistema (color, tipografía, spacing, radios) están expresadas como Figma Variables o styles nombrados, no como valores crudos repetidos.
+- **[auto]** los nombres de los tokens siguen la taxonomía declarada (ej: `color.primary.500`, `space.md`); no hay nombres fuera del patrón.
 - **[manual]** cada token tiene un único valor de verdad; no hay dos tokens con el mismo rol y distinto valor.
 
 **Alcance:** el conjunto de colecciones de Figma Variables y styles que conforman el set de tokens — el ancla de drift contra Figma.

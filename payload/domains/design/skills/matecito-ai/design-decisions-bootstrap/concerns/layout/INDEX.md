@@ -8,6 +8,6 @@ Un concern nuevo va en `layout` si trata sobre la **composición de la página o
 
 ## Concerns en esta surface
 
-| Concern | Prof. | Type | Qué decide |
-|---|---|---|---|
-| [grid-breakpoints](grid-breakpoints.md) | light | convention | La grilla de columnas y los breakpoints responsive que gobiernan la composición en cada tamaño de pantalla. |
+| Concern | Prof. | Qué decide |
+|---|---|---|
+| [grid-breakpoints](grid-breakpoints.md) | light | La grilla de columnas y los breakpoints responsive que gobiernan la composición en cada tamaño de pantalla. |

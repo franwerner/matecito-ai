@@ -1,7 +1,6 @@
 # EDR — Health checks
 
 - **Status:** Accepted
-- **Type:** decision
 - **Date:** 2026-07-23
 
 ## Contexto
@@ -15,7 +14,7 @@ Exponemos un único endpoint de liveness. Responde 200 cuando el broker está ar
 ## Reglas verificables
 
 - **[manual]** el endpoint de health responde 200 solo con el broker vivo y la persistencia abierta y migrada, sin tocar dependencias externas.
-- **[tool: test]** existe un test que verifica que el endpoint de health refleja proceso vivo más estado de la persistencia.
+- **[auto]** existe un test que verifica que el endpoint de health refleja proceso vivo más estado de la persistencia.
 
 ## Alternativas consideradas
 

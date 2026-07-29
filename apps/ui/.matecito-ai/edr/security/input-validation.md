@@ -1,7 +1,6 @@
 # EDR — Validación de entrada
 
 - **Status:** Accepted
-- **Type:** policy
 - **Date:** 2026-07-23
 
 ## Contexto
@@ -20,7 +19,7 @@ Todo lo que entra a la UI proviene del broker (envelope WS `{type, payload}` y s
 
 - **[manual]** todo dato entrante del broker pasa por su schema Zod (generado por Kubb) en el borde de datos antes de entrar al estado.
 - **[manual]** un payload inválido nunca se cuela al estado ni tumba la app.
-- **[tool: kubb]** los tipos y schemas se generan del OpenAPI del broker, no se escriben a mano.
+- **[auto]** los tipos y schemas se generan del OpenAPI del broker, no se escriben a mano.
 
 ## Relacionados
 

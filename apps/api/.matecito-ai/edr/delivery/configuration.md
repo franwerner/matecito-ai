@@ -1,7 +1,6 @@
 # EDR — Configuración
 
 - **Status:** Accepted
-- **Type:** convention
 - **Date:** 2026-07-23
 
 ## Contexto
@@ -20,7 +19,7 @@ Lo que el daemon crea en esa ubicación queda **restringido a su dueño**: el di
 - **[manual]** los flags al ejecutar el comando overridean los defaults (puerto, ubicación de la persistencia).
 - **[manual]** la config se valida al startup y aborta con mensaje claro si un valor es inválido.
 - **[manual]** la ubicación default de la persistencia es el home compartido (`~/.matecito-ai/`).
-- **[tool: gosec]** el directorio de persistencia se crea sin acceso para terceros y el identificador de máquina sin acceso para grupo ni terceros; aflojar cualquiera de los dos rompe el gate de lint.
+- **[auto]** el directorio de persistencia se crea sin acceso para terceros y el identificador de máquina sin acceso para grupo ni terceros; aflojar cualquiera de los dos rompe el gate de lint.
 
 ## Alternativas consideradas
 

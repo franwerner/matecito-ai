@@ -8,6 +8,6 @@ Un concern nuevo va en `frontend` si trata sobre la *implementación técnica* d
 
 ## Concerns en este dominio
 
-| Concern | Prof. | Type | Qué decide |
-|---|---|---|---|
-| [accessibility](accessibility.md) | light | decision | El nivel de conformidad WCAG objetivo y cómo se verifica que se cumple durante el desarrollo. |
+| Concern | Prof. | Qué decide |
+|---|---|---|
+| [accessibility](accessibility.md) | light | El nivel de conformidad WCAG objetivo y cómo se verifica que se cumple durante el desarrollo. |

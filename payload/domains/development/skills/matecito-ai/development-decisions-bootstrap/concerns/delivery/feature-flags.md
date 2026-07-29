@@ -2,7 +2,6 @@
 name: feature-flags
 depth: light
 domain: delivery
-type: decision
 source: continuous delivery / trunk-based development
 ---
 
@@ -45,4 +44,4 @@ Si se elige una librería o servicio de feature flags, registrarlo en `tech/`.
 EDR `feature-flags` materializado según `~/.claude/references/edr/templates/edr.md`. Debe contener:
 
 - **Contexto** y **Decisión**: mecanismo elegido (o decisión explícita de no usar, con `Status: Pending` y motivo si es "ninguno por ahora"), la convención de naming, y quién tiene permiso de cambiar un flag en producción.
-- **Reglas verificables**: las convenciones de naming y ciclo de vida como aserciones con su mecanismo al inicio. Ej: `[manual]` todo flag sigue el prefijo `feat_<ticket>_<nombre>` / `exp_<ticket>_<nombre>`; `[manual]` todo flag se elimina en el sprint siguiente a su activación definitiva; `[manual]` solo <rol> puede cambiar un flag en producción. Usá `[tool: <linter/test>]` si el naming o la expiración es chequeable automáticamente. Conservá los valores concretos del prefijo y la regla de expiración.
+- **Reglas verificables**: las convenciones de naming y ciclo de vida como aserciones con su cobertura al inicio. Ej: `[manual]` todo flag sigue el prefijo `feat_<ticket>_<nombre>` / `exp_<ticket>_<nombre>`; `[manual]` todo flag se elimina en el sprint siguiente a su activación definitiva; `[manual]` solo <rol> puede cambiar un flag en producción. Usá `[auto]` si el naming o la expiración es chequeable automáticamente. Conservá los valores concretos del prefijo y la regla de expiración.

@@ -9,7 +9,7 @@ Entrevista al usuario para capturar las decisiones de diseño de la pieza o sist
 
 El objetivo es que las decisiones queden **registradas y verificables contra Figma**, no implícitas en la cabeza del diseñador. Eso le permite a Claude (y a cualquier nuevo diseñador) trabajar respetando el sistema sin volver a preguntarlo.
 
-> **Nota sobre "DDR".** Usamos el término en sentido amplio: el catálogo cubre *decisiones* (con trade-offs reales), *convenciones* (acuerdos de estilo) y *políticas* (reglas verificables). El campo `type` de cada fase lo refleja. No todo lo que se captura es "arquitectura visual" en sentido estricto, pero todo merece quedar escrito, fechado y justificado — que es lo que aporta el formato DDR.
+> **Nota sobre "DDR".** Usamos el término en sentido amplio: el catálogo cubre *decisiones* (con trade-offs reales), *convenciones* (acuerdos de estilo) y *políticas* (reglas verificables), sin distinguirlas con una etiqueta. No todo lo que se captura es "arquitectura visual" en sentido estricto, pero todo merece quedar escrito, fechado y justificado — que es lo que aporta el formato DDR.
 
 ---
 
@@ -74,7 +74,7 @@ Estas reglas son la diferencia entre una skill que la gente usa y una que abando
 
 **Permití aplazar explícitamente.** Cualquier fase puede quedar `Pending` con la razón ("definimos el dark mode cuando llegue el rediseño de la app"). Mejor un DDR honesto con "pendiente + por qué" que una decisión inventada.
 
-**Las reglas verificables son valores concretos contra Figma.** Cada DDR `Accepted` lleva reglas chequeables con valores —hex, ratio, escala, px, nombres de tokens— no adjetivos vagos. El mecanismo va al inicio de cada regla (`[tool: figma]`, `[tool: contrast]`, `[manual]`). Esto es lo que hace el sistema verificable por `design-decisions-mine` y por `design-verify`.
+**Las reglas verificables son valores concretos contra Figma.** Cada DDR `Accepted` lleva reglas chequeables con valores —hex, ratio, escala, px, nombres de tokens— no adjetivos vagos. La cobertura va al inicio de cada regla (`[auto]` / `[manual]`). Esto es lo que hace el sistema verificable por `design-decisions-mine` y por `design-verify`.
 
 ---
 
@@ -94,7 +94,7 @@ Con eso ya sabés:
 - Si la pieza es greenfield o ya tiene un sistema visual empezado en Figma
 - Qué tokens / componentes ya existen (para inferir tipo de pieza y defaults)
 
-> **Canva queda fuera.** Canva no expone tokens legibles, así que no sirve como fuente de evidencia. Si la pieza vive solo en Canva, las preguntas se contestan a mano; no hay reglas `[tool: figma]` que chequear.
+> **Canva queda fuera.** Canva no expone tokens legibles, así que no sirve como fuente de evidencia. Si la pieza vive solo en Canva, las preguntas se contestan a mano; no hay reglas `[auto]` que chequear.
 
 ---
 
@@ -156,7 +156,7 @@ Este es el procedimiento genérico del motor. Vale para cualquier fase, sea del 
 4. Si el archivo tiene **"Notas de lógica (para el motor)"**, aplicalas: defaults según tipo de pieza, preguntas condicionales, propuestas según respuestas de fases previas.
 5. **Confirmá** la decisión antes de seguir.
 5b. **Si la decisión corresponde a un principle canónico** del catálogo en `~/.claude/references/design-principles/` (típicamente fases de las surfaces `foundation`, `components`, `layout`), preguntá UNA vez cuál principle aplica y registralo en el DDR como `**Applied principle:** <Nombre> — <1 línea de por qué>`. No fuerces: si la decisión no mapea a un principle (ej. una convención de naming de tokens, una política de tono de voz), omití este paso. El catálogo se consulta por nombre, sin link en el DDR.
-6. **Materializá el DDR** en `.matecito-ai/ddr/<surface>/<name>.md`, con el `type` del frontmatter en su encabezado, según la sección "Qué materializar" del archivo. Las **Reglas verificables** salen con valores concretos contra Figma y su mecanismo (`[tool: figma]` / `[tool: contrast]` / `[manual]`).
+6. **Materializá el DDR** en `.matecito-ai/ddr/<surface>/<name>.md`, según la sección "Qué materializar" del archivo. Las **Reglas verificables** salen con valores concretos contra Figma y su cobertura (`[auto]` / `[manual]`).
 
 Si la fase estaba recomendada pero el usuario la sacó, o no aplica: no la trates, pero dejá su registro — `Not Applicable` como fila en el INDEX de la surface; `Pending`/`Deferred` como DDR-archivo con su razón. Ver "Cómo manejar fases omitidas".
 
@@ -200,8 +200,7 @@ Si el usuario quiere un tema que no está en el catálogo:
 
 1. Tratalo con el procedimiento genérico, haciéndole 2-3 preguntas para extraer qué decide, opciones y qué materializar.
 2. **Asignale una surface canónica.** Mirá el "criterio de pertenencia" en cada `concerns/<surface>/INDEX.md` para decidir dónde encaja. No inventés una surface nueva. Si genuinamente no encaja en ninguna, es señal de que falta una surface en la taxonomía — eso es una decisión de catálogo, avisале al usuario, no lo resuelvas en el repo.
-3. **Asignale un `type`** (`decision` / `convention` / `policy`).
-4. Materializá el DDR en `.matecito-ai/ddr/<surface>/<slug>.md`. Una fase custom es **siempre solo para esta pieza**: no toques el catálogo `concerns/` (es read-only, se deploya desde el repo matecito-ai). Si el concern merece sumarse al catálogo para todas las piezas, eso se hace editando `payload/domains/design/skills/.../concerns/` en el repo matecito-ai (ver "Ratchet"), no desde acá.
+3. Materializá el DDR en `.matecito-ai/ddr/<surface>/<slug>.md`. Una fase custom es **siempre solo para esta pieza**: no toques el catálogo `concerns/` (es read-only, se deploya desde el repo matecito-ai). Si el concern merece sumarse al catálogo para todas las piezas, eso se hace editando `payload/domains/design/skills/.../concerns/` en el repo matecito-ai (ver "Ratchet"), no desde acá.
 
 ---
 
@@ -261,7 +260,7 @@ Notas del contrato del DDR (también en `~/.claude/references/ddr/templates/ddr.
 4. Escribir los DDR-archivo de las fases con contenido: `Accepted` completo (con reglas verificables); `Pending`/`Deferred` con su trigger/condición. Los `Not Applicable` no generan archivo — quedan como fila en el INDEX de la surface (o del raíz si la surface quedó sin uso).
 5. Reportar al usuario:
    - Lista de archivos creados (path completo), **agrupada por surface**
-   - Resumen de 1 línea por DDR-archivo, con su status entre corchetes (`[Accepted]`, `[Pending]`, `[Deferred]`) y su `type`
+   - Resumen de 1 línea por DDR-archivo, con su status entre corchetes (`[Accepted]`, `[Pending]`, `[Deferred]`)
    - Conteo de `Not Applicable` por surface (viven en los INDEX), no uno por uno
    - **Lista separada de DDRs `Pending`/`Deferred` con su trigger**, así sabe qué quedó por decidir
    - Sugerencia de commitear estos archivos al repo
@@ -292,7 +291,7 @@ Notas del contrato del DDR (también en `~/.claude/references/ddr/templates/ddr.
 El valor de largo plazo de la skill es que **nunca se vuelva a olvidar un tema**. Cuando aparece un concern que no estaba:
 
 1. Determiná a qué **surface canónica** pertenece (consultá el "criterio de pertenencia" en `concerns/<surface>/INDEX.md`).
-2. Creá `concerns/<surface>/<slug>.md` con el formato estándar (mirá `concerns/foundation/color-palette.md` para una fase `deep` y `concerns/foundation/spacing-grid.md` para una `light`). Incluí en el frontmatter `domain` (la surface) y `type`.
+2. Creá `concerns/<surface>/<slug>.md` con el formato estándar (mirá `concerns/foundation/color-palette.md` para una fase `deep` y `concerns/foundation/spacing-grid.md` para una `light`). Incluí en el frontmatter `domain` (la surface).
 3. Sumá la fila al `concerns/<surface>/INDEX.md` y a la matriz de `concerns/INDEX.md`, con la aplicabilidad por tipo de pieza (Requerido/Recomendado).
 
 Desde ese momento, todo bootstrap futuro lo considera, y el modo update lo ofrece a piezas viejas (paso 4 de update). El catálogo se sembró de taxonomías externas (W3C Design Tokens, Atomic Design, WCAG 2.x, Material Design) para nacer casi completo y solo crecer.
@@ -311,8 +310,8 @@ Desde ese momento, todo bootstrap futuro lo considera, y el modo update lo ofrec
 - ❌ Dejar la sección `## Evidencia (inferida)` en un DDR ya ratificado → es transitoria; al pasar a `Accepted` se descarta (git conserva la traza).
 - ❌ Mantener una tabla `Historial` manual → es redundante con git y se pudre.
 - ❌ Inventar reglas no discutidas con el usuario en la materialización → todo lo que va al DDR fue confirmado.
-- ❌ Reglas vagas tipo "que la paleta sea armoniosa" → siempre verificable: hex, ratio, escala, px, nombres de tokens, con su mecanismo (`[tool: figma]`/`[tool: contrast]`/`[manual]`).
-- ❌ Inferir decisiones de un mockup con valores sueltos sin tokens → eso es señal débil; sin styles nombrados no hay regla `[tool: figma]` que chequear.
+- ❌ Reglas vagas tipo "que la paleta sea armoniosa" → siempre verificable: hex, ratio, escala, px, nombres de tokens, con su mecanismo (`[auto]`/`[auto]`/`[manual]`).
+- ❌ Inferir decisiones de un mockup con valores sueltos sin tokens → eso es señal débil; sin styles nombrados no hay regla `[auto]` que chequear.
 - ❌ Asumir el sistema en lugar de leerlo del Figma conectado en pre-flight → leer styles/components primero.
 - ❌ Leer todo el catálogo `concerns/` de una → leer `INDEX.md` (raíz) para seleccionar, y cada `concerns/<surface>/<slug>.md` solo cuando se trata esa fase.
 - ❌ Inventar una surface nueva en una pieza → la taxonomía es fija e impuesta por el motor; una surface nueva es decisión de catálogo, no de pieza.

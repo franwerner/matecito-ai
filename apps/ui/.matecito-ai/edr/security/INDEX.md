@@ -4,10 +4,10 @@ Validación de la entrada del broker y escaneo de dependencias de la UI.
 
 ## EDRs en este dominio
 
-| EDR | Status | Type | Consultá cuando... |
-|---|---|---|---|
-| [input-validation.md](input-validation.md) | Accepted | policy | parseás lo entrante del broker (envelope WS / snapshot) o generás schemas desde el OpenAPI. |
-| [dependency-scanning.md](dependency-scanning.md) | Accepted | policy | tocás el escaneo de deps npm o el gate de vulnerabilidades. |
+| EDR | Status | Consultá cuando... |
+|---|---|---|
+| [input-validation.md](input-validation.md) | Accepted | parseás lo entrante del broker (envelope WS / snapshot) o generás schemas desde el OpenAPI. |
+| [dependency-scanning.md](dependency-scanning.md) | Accepted | tocás el escaneo de deps npm o el gate de vulnerabilidades. |
 
 ## No aplican en este dominio
 

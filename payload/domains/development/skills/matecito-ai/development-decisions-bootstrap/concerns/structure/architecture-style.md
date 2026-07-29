@@ -2,7 +2,6 @@
 name: architecture-style
 depth: deep
 domain: structure
-type: decision
 source: práctica clásica de patrones arquitectónicos · arc42 §4 (vista de solución)
 ---
 
@@ -49,6 +48,6 @@ Una por turno. Para cada una: línea de "por qué importa", opciones con default
 EDR `architecture-style` materializado según `~/.claude/references/edr/templates/edr.md`. Debe contener:
 
 - **Contexto** y **Decisión**: patrón arquitectónico elegido, nivel de acoplamiento buscado, y justificación concreta (por qué este patrón para este tipo de proyecto y equipo).
-- **Reglas verificables**: si el patrón implica restricciones específicas, enumeralas como aserciones chequeables con su mecanismo al inicio. Ej: `[tool: dependency-cruiser]` ningún módulo de `domain/**` importa framework externo; `[manual]` los bordes I/O exponen interfaces, el resto es concreto (si no hay check automático). Estas reglas son la base de layers-and-dependencies.
+- **Reglas verificables**: si el patrón implica restricciones específicas, enumeralas como aserciones chequeables con su cobertura al inicio. Ej: `[auto]` ningún módulo de `domain/**` importa framework externo; `[manual]` los bordes I/O exponen interfaces, el resto es concreto (si no hay check automático). Estas reglas son la base de layers-and-dependencies.
 - **Alcance**: como decisión estructural, incluí los globs **a nivel convención** que el patrón gobierna (ej: `src/domain/**`, `src/application/**`, `src/infrastructure/**` para Clean; `features/<feature>/**` para Vertical Slice). Patrones estables, no archivos concretos.
 - **Relacionados** (opcional): vinculá con `layers-and-dependencies` e `inter-layer-communication`, que refinan esta decisión.

@@ -2,7 +2,7 @@
 
 Referencia canónica del **concepto** de EDR (Engineering Decision Record). Es la fuente de verdad de la *idea*; cualquier skill o agente que trabaje con EDRs apunta acá en vez de redefinirla. La *estructura/plantilla* concreta se define por separado; esto define qué cuenta como EDR y qué no.
 
-> **Por qué "Engineering" y no "Architecture".** El término estándar en la industria es "ADR" (*Architecture* Decision Record), pero acá el artefacto cubre **más que arquitectura**: decisiones, convenciones y políticas de ingeniería que gobiernan el código (desde el patrón de capas hasta "usá enums, no magic strings" o un límite de rate limiting). "Engineering" refleja ese alcance real y evita la lectura estrecha de "solo arquitectura". Lo que une a los tres sabores **no es la arquitectura** — es que son *elecciones deliberadas que gobiernan el código y se pueden chequear*. (El paralelo en el dominio de diseño es **DDR** — Design Decision Record.)
+> **Por qué "Engineering" y no "Architecture".** El término estándar en la industria es "ADR" (*Architecture* Decision Record), pero acá el artefacto cubre **más que arquitectura**: decisiones, convenciones y políticas de ingeniería que gobiernan el código (desde el patrón de capas hasta "usá enums, no magic strings" o dónde se aplica el rate limiting). "Engineering" refleja ese alcance real y evita la lectura estrecha de "solo arquitectura". Lo que une a los tres sabores **no es la arquitectura** — es que son *elecciones deliberadas que gobiernan el código y se pueden chequear*. (El paralelo en el dominio de diseño es **DDR** — Design Decision Record.)
 
 ## Qué ES un EDR
 
@@ -12,10 +12,9 @@ Un EDR captura una **decisión** de ingeniería: una elección deliberada entre 
 2. **Tiene un porqué** — el contexto y el trade-off que justifican la elección.
 3. **Perdura como restricción** — gobierna el código futuro; quien escribe código después la respeta, y se puede chequear si el código se desvió de ella.
 
-Cubre tres sabores, todos "decisiones" en sentido amplio:
-- **decisión** — un trade-off real (p. ej. qué motor de persistencia).
-- **convención** — un acuerdo de estilo o estructura (p. ej. cómo se nombran los módulos).
-- **política** — una regla verificable (p. ej. límites de rate limiting).
+Cubre tres sabores, todos "decisiones" en sentido amplio: un **trade-off real** (p. ej. qué motor de persistencia), una **convención** de estilo o estructura (p. ej. cómo se nombran los módulos) y una **política** verificable (p. ej. el punto de aplicación del rate limiting: en el gateway, no en cada handler).
+
+Los tres comparten formato, lector y ciclo de vida, así que el EDR **no los distingue con una etiqueta**: no hay campo que clasificar al escribirlo. Lo que discrimina en la práctica ya está en otro lado — el **dominio** (la carpeta) dice de qué área es, y el **mecanismo** de cada regla verificable (`[auto]` / `[manual]`) dice cómo se chequea.
 
 Responde: *"qué decidimos, por qué, y qué gobierna de acá en adelante"*.
 
@@ -26,6 +25,7 @@ Responde: *"qué decidimos, por qué, y qué gobierna de acá en adelante"*.
 - **No es una señal ni un recordatorio.** Un "falta decidir X", un TODO o una nota *apuntan* a una decisión ausente — son el dedo señalando, no la decisión.
 - **No es código incidental.** Un patrón que aparece pocas veces o sin intención clara no es una decisión, es ruido. Sin evidencia de elección deliberada, no hay EDR.
 - **No es el "cómo".** El detalle de implementación vive en el código y sus comentarios. El EDR captura el *porqué* de una elección, no el paso a paso. En concreto, las secciones de **razonamiento** (Contexto, Decisión, Consecuencias, Alternativas) se escriben en términos de **conceptos, patrones y límites** — nunca nombrando **identificadores internos volátiles**: clases, métodos, columnas de base de datos, errores internos ni rutas de archivo concretas. Un identificador así en el razonamiento vuelve al EDR un calco del código que se pudre con el primer rename. Si hace falta anclar a algo concreto, va a la sección de anclaje/enforcement de la plantilla (un glob estable, o una regla verificable —que sí puede nombrar la clase, porque es el ancla que se chequea—), no al razonamiento. Excepción: el nombre de una tecnología/librería (que ES la decisión) y el contrato público de cara al consumidor (endpoints públicos, códigos de error expuestos).
+- **No es el comportamiento observable.** Si la restricción la puede notar alguien que solo **usa el producto**, sin ver el código, entonces es comportamiento y vive en un **capability-spec** (`rule`), no en un EDR. El test: *¿lo nota un consumidor externo?* Sí → capability-spec. No → EDR. Los dos suelen convivir sobre el mismo tema, repartidos así: el spec fija el límite de cara al actor ("superando N req/min recibís 429"), el EDR fija el mecanismo con el que se implementa y por qué ese ("el rate limiting se aplica en el gateway, no en cada handler, porque…"). Ver el ejemplo desarrollado en `~/.claude/references/spec/README.md` → "Relación con el EDR".
 - **No es un porqué adivinado.** Inferir la razón de una decisión sin que conste es inventar. El porqué lo aporta una persona.
 
 ## Dónde va cada nombre — el test del identificador volátil

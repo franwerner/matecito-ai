@@ -8,7 +8,7 @@ Un concern nuevo va en `brand` si trata sobre la **identidad o expresión de mar
 
 ## Concerns en esta surface
 
-| Concern | Prof. | Type | Qué decide |
-|---|---|---|---|
-| [logo-usage](logo-usage.md) | light | policy | Las reglas de uso del logo: variantes válidas, área de protección (clear space), tamaño mínimo y usos prohibidos. |
-| [tone-of-voice](tone-of-voice.md) | light | convention | El tono y los atributos de voz del copy, y los do/don't que lo mantienen consistente en todas las piezas. |
+| Concern | Prof. | Qué decide |
+|---|---|---|
+| [logo-usage](logo-usage.md) | light | Las reglas de uso del logo: variantes válidas, área de protección (clear space), tamaño mínimo y usos prohibidos. |
+| [tone-of-voice](tone-of-voice.md) | light | El tono y los atributos de voz del copy, y los do/don't que lo mantienen consistente en todas las piezas. |

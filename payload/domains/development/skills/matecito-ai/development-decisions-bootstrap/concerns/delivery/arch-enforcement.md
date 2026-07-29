@@ -2,7 +2,6 @@
 name: arch-enforcement
 depth: light
 domain: delivery
-type: policy
 source: práctica de architecture-as-code / CI quality gates
 ---
 
@@ -51,6 +50,6 @@ La herramienta elegida (ej: `import-linter.md`, `dependency-cruiser.md`, `archun
 EDR `arch-enforcement` materializado según `~/.claude/references/edr/templates/edr.md`. Debe contener:
 
 - **Contexto** y **Decisión**: la herramienta de enforcement elegida y por qué (normalmente el default del stack), si corre en CI bloqueando el merge / solo localmente / todavía no, y la referencia al EDR `layers-and-dependencies` como origen de las reglas que el linter traduce (no duplicar las reglas acá).
-- **Reglas verificables**: expresá las garantías que da esta decisión como aserciones con su mecanismo al inicio, nombrando la herramienta elegida. Ej: `[tool: dependency-cruiser]` el step de arch-lint corre en CI y bloquea el merge ante cualquier violación; `[tool: import-linter]` la config existe en su ubicación esperada y el comando definido la ejecuta. Usá `[manual]` solo si por ahora es convención documentada sin check.
+- **Reglas verificables**: expresá las garantías que da esta decisión como aserciones con su cobertura al inicio (la herramienta elegida no se nombra acá: vive en su config). Ej: `[auto]` el step de arch-lint corre en CI y bloquea el merge ante cualquier violación; `[auto]` la config existe en su ubicación esperada y el comando definido la ejecuta. Usá `[manual]` solo si por ahora es convención documentada sin check.
 - **Alcance**: como decisión estructural, incluí la **ubicación esperada de la config** y los globs **a nivel convención** que el enforcement cubre (ej: `.importlinter`, `.dependency-cruiser.js`, test de ArchUnit, `deptrac.yaml`; y `src/**` como superficie analizada). Indicá el **comando** que la ejecuta para que quien implemente sepa qué archivo crear y qué step agregar al CI. La config de CI concreta (GitHub Actions, GitLab, etc.) depende del proyecto.
 - **Relacionados**: vinculá con `layers-and-dependencies` (fuente de las reglas) y `ci-quality-gates` (donde este check se integra como gate).

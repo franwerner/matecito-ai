@@ -1,7 +1,6 @@
 # EDR — Documentación
 
 - **Status:** Accepted
-- **Type:** convention
 - **Date:** 2026-07-23
 
 ## Contexto

@@ -1,7 +1,6 @@
 # EDR — MCP server (superficie cara a Claude)
 
 - **Status:** Accepted
-- **Type:** decision
 - **Date:** 2026-07-27
 
 ## Contexto

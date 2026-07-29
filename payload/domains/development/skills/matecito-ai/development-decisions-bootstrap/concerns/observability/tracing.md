@@ -2,7 +2,6 @@
 name: tracing
 depth: light
 domain: observability
-type: decision
 source: SRE · OpenTelemetry
 ---
 
@@ -46,7 +45,7 @@ SDK de tracing si se elige uno concreto (ej: `opentelemetry-sdk.md`, `jaeger.md`
 
 EDR `tracing` materializado según el template `~/.claude/references/edr/templates/edr.md`. La **Decisión** captura: nivel de tracing elegido (sin tracing / en proceso / distribuido con propagación), el protocolo de propagación de contexto (W3C TraceContext si OTel), el SDK, el backend de almacenamiento, y la regla de sampling si se definió.
 
-**Reglas verificables** (cada una con su mecanismo al inicio):
+**Reglas verificables** (cada una con su cobertura al inicio):
 
 - **[manual]** si hay tracing distribuido: el contexto se propaga entre servicios con el protocolo decidido (ej: W3C TraceContext), sin tramos donde se pierda el `trace-id`.
 - **[manual]** el sampling sigue la regla decidida (ej: 100% en desarrollo, 10% en producción salvo errores, que siempre se muestrean).

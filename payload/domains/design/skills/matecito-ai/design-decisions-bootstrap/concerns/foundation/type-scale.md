@@ -2,7 +2,6 @@
 name: type-scale
 depth: deep
 domain: foundation
-type: decision
 source: Material Design (typography) · escala modular tipográfica clásica · W3C Design Tokens (typography)
 ---
 
@@ -61,12 +60,12 @@ Una por turno. Para cada una: línea de "por qué importa", opciones con default
 
 DDR `type-scale` materializado según el template `~/.claude/references/ddr/templates/ddr.md`. La **Decisión** captura: las familias elegidas, el ratio modular, la lista de niveles con su tamaño/line-height/peso concreto, y los pesos disponibles.
 
-**Reglas verificables** (cada una con su mecanismo al inicio):
+**Reglas verificables** (cada una con su cobertura al inicio):
 
-- **[tool: figma]** cada nivel de la escala existe como un text style nombrado (`Heading/H1`, `Body/Base`, `Caption`); no hay tamaños de texto aplicados como valor suelto.
-- **[tool: figma]** el tamaño en px de cada text style coincide con la escala modular declarada (ej: base 16, ratio 1.250 → H3 = 25, H2 = 31, H1 = 39).
-- **[tool: figma]** la familia de cada text style es una de las declaradas en la Decisión; no aparecen familias fuera de la lista.
-- **[tool: figma]** el peso de cada text style está entre los pesos decididos; no hay pesos fuera de la lista.
+- **[auto]** cada nivel de la escala existe como un text style nombrado (`Heading/H1`, `Body/Base`, `Caption`); no hay tamaños de texto aplicados como valor suelto.
+- **[auto]** el tamaño en px de cada text style coincide con la escala modular declarada (ej: base 16, ratio 1.250 → H3 = 25, H2 = 31, H1 = 39).
+- **[auto]** la familia de cada text style es una de las declaradas en la Decisión; no aparecen familias fuera de la lista.
+- **[auto]** el peso de cada text style está entre los pesos decididos; no hay pesos fuera de la lista.
 - **[manual]** el tamaño de cuerpo cumple el mínimo legible (ej: ≥ 16px en web).
 
 **Alcance:** la lista de text styles nombrados que componen la escala (`Heading/*`, `Body/*`, `Caption`) — el ancla que `mine`/`verify` usan para detectar drift contra Figma.

@@ -10,10 +10,9 @@ Un DDR captura una **decisión** de diseño: una elección deliberada entre alte
 2. **Tiene un porqué** — el contexto y el trade-off que justifican la elección.
 3. **Perdura como restricción** — gobierna el diseño futuro; quien produzca piezas después la respeta, y se puede chequear contra Figma si una pieza se desvió de ella.
 
-Cubre tres sabores, todos "decisiones" en sentido amplio:
-- **decisión** — un trade-off real (p. ej. qué paleta primaria, qué familia tipográfica).
-- **convención** — un acuerdo de estilo o estructura (p. ej. cómo se nombran los tokens, qué escala de espaciado).
-- **política** — una regla verificable (p. ej. ratio de contraste mínimo, objetivo WCAG).
+Cubre tres sabores, todos "decisiones" en sentido amplio: un **trade-off real** (p. ej. qué paleta primaria, qué familia tipográfica), una **convención** de estilo o estructura (p. ej. cómo se nombran los tokens, qué escala de espaciado) y una **política** verificable (p. ej. ratio de contraste mínimo, objetivo WCAG).
+
+Los tres comparten formato, lector y ciclo de vida, así que el DDR **no los distingue con una etiqueta**: no hay campo que clasificar al escribirlo. Lo que discrimina en la práctica ya está en otro lado — la **surface** (la carpeta) dice de qué área es, y el **mecanismo** de cada regla verificable (`[auto]` / `[manual]`) dice cómo se chequea.
 
 Responde: *"qué decidimos, por qué, y qué gobierna de acá en adelante"*.
 

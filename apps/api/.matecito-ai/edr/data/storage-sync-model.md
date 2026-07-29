@@ -1,7 +1,6 @@
 # EDR — Modelo de almacenamiento y sincronización de records
 
 - **Status:** Accepted
-- **Type:** decision
 - **Date:** 2026-07-24
 
 ## Contexto

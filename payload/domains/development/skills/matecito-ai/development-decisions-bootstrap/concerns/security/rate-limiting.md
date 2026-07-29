@@ -2,7 +2,6 @@
 name: rate-limiting
 depth: light
 domain: security
-type: decision
 source: OWASP ASVS v4 §13.1 (Generic Web Service Security)
 ---
 
@@ -36,12 +35,12 @@ Si se elige una librería en la app (ej: `express-rate-limit`, `slowapi`, `throt
 
 ## Qué materializar
 
-EDR `rate-limiting` materializado según `~/.claude/references/edr/templates/edr.md`. Esta es una decisión de tipo `policy`; sus reglas deben quedar especialmente accionables. Debe contener:
+EDR `rate-limiting` materializado según `~/.claude/references/edr/templates/edr.md`. Sus reglas deben quedar especialmente accionables. Ojo con el borde: **el límite observable por el cliente** ("superando N req/min recibís 429") es comportamiento y vive en un capability-spec `rule`; lo que va al EDR es el **mecanismo y su punto de aplicación**, con su porqué. Debe contener:
 
 - **Contexto**: por qué sin límite un cliente puede agotar recursos o forzar credenciales por fuerza bruta, y cómo el punto de aplicación determina si la protección llega antes o después del código de la app.
 - **Decisión**: granularidad elegida (IP, usuario autenticado, API key, o mix), punto de aplicación (API gateway/reverse proxy vs middleware de la app), y los límites concretos si se definieron.
 - **Reglas verificables** (cada una con su mecanismo):
-  - `[tool: test]` superado el límite decidido (ej. requests/minuto por tier), el sistema responde `429` con header `Retry-After`.
+  - `[auto]` superado el límite decidido (ej. requests/minuto por tier), el sistema responde `429` con header `Retry-After`.
   - `[manual]` el límite se aplica con la granularidad elegida en el punto de aplicación decidido.
   - Para "Mix": `[manual]` los endpoints sensibles listados (login, reset de password) tienen el límite más estricto aplicado.
 - **Alternativas consideradas**: las otras granularidades y puntos de aplicación evaluados y por qué no se eligieron.

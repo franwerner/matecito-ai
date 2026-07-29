@@ -2,7 +2,6 @@
 name: dependency-injection
 depth: deep
 domain: delivery
-type: decision
 source: práctica clásica de IoC y composition root · arc42 §8 (conceptos transversales)
 ---
 
@@ -61,5 +60,5 @@ Si se eligió un container de DI externo: `dependency-injector.md`, `awilix.md`,
 EDR `dependency-injection` materializado según `~/.claude/references/edr/templates/edr.md`. Debe contener:
 
 - **Contexto** y **Decisión**: mecanismo elegido (manual / container / framework), librería específica si aplica (`dependency-injector`, `awilix`, `tsyringe`, Spring IoC, etc.), scopes por tipo de componente (servicio, repository, unit of work), y — si es composition root manual — dónde vive y quién es responsable de armarlo.
-- **Reglas verificables**: las reglas de scope como aserciones con su mecanismo al inicio, no como intención vaga. Ej: `[manual]` todo `Service` se registra como singleton; `[manual]` todo `Repository` y unit of work es scoped al request; `[tool: <linter/test>]` si la convención de registro es chequeable por la librería de DI o un test de wiring. Conservá los valores concretos de scope por tipo de componente.
+- **Reglas verificables**: las reglas de scope como aserciones con su cobertura al inicio, no como intención vaga. Ej: `[manual]` todo `Service` se registra como singleton; `[manual]` todo `Repository` y unit of work es scoped al request; `[auto]` si la convención de registro es chequeable por la librería de DI o un test de wiring. Conservá los valores concretos de scope por tipo de componente.
 - **Relacionados** (opcional): vinculá con `architecture-style` y `inter-layer-communication` (dónde se declaran las interfaces que el container cablea).

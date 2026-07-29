@@ -4,13 +4,13 @@ Configuración, empaquetado/despliegue, gates de calidad, documentación y featu
 
 ## EDRs en este dominio
 
-| EDR | Status | Type | Consultá cuando... |
-|---|---|---|---|
-| [configuration.md](configuration.md) | Accepted | convention | agregás una variable de entorno, tocás la validación de config al boot o el `.env`. |
-| [deployment-topology.md](deployment-topology.md) | Accepted | decision | tocás el build estático, el embebido en el binario del broker o el orden de build en la release. |
-| [ci-quality-gates.md](ci-quality-gates.md) | Accepted | policy | tocás los gates de merge, el pre-commit o el sync de tipos generados. |
-| [documentation.md](documentation.md) | Accepted | convention | escribís el README o te preguntás dónde está la doc de API. |
-| [feature-flags.md](feature-flags.md) | Pending | decision | aparece una necesidad de flag de larga duración. |
+| EDR | Status | Consultá cuando... |
+|---|---|---|
+| [configuration.md](configuration.md) | Accepted | agregás una variable de entorno, tocás la validación de config al boot o el `.env`. |
+| [deployment-topology.md](deployment-topology.md) | Accepted | tocás el build estático, el embebido en el binario del broker o el orden de build en la release. |
+| [ci-quality-gates.md](ci-quality-gates.md) | Accepted | tocás los gates de merge, el pre-commit o el sync de tipos generados. |
+| [documentation.md](documentation.md) | Accepted | escribís el README o te preguntás dónde está la doc de API. |
+| [feature-flags.md](feature-flags.md) | Pending | aparece una necesidad de flag de larga duración. |
 
 ## No aplican en este dominio
 

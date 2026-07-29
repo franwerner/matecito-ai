@@ -2,7 +2,6 @@
 name: authorization
 depth: light
 domain: security
-type: decision
 source: OWASP ASVS v4 §4 (Access Control)
 ---
 

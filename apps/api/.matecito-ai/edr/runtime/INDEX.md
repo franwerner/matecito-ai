@@ -4,11 +4,11 @@ Cómo se comporta el broker en ejecución: manejo de errores, concurrencia y res
 
 ## EDRs en este dominio
 
-| EDR | Status | Type | Consultá cuando... |
-|---|---|---|---|
-| [error-handling.md](error-handling.md) | Accepted | policy | propagás, traducís o loggeás un error. |
-| [concurrency-async.md](concurrency-async.md) | Accepted | decision | agregás una goroutine, un channel o coordinás el lifecycle. |
-| [resilience.md](resilience.md) | Accepted | decision | tocás presupuestos de hooks sincrónicos, reconexión del WS o la política del spool local. |
+| EDR | Status | Consultá cuando... |
+|---|---|---|
+| [error-handling.md](error-handling.md) | Accepted | propagás, traducís o loggeás un error. |
+| [concurrency-async.md](concurrency-async.md) | Accepted | agregás una goroutine, un channel o coordinás el lifecycle. |
+| [resilience.md](resilience.md) | Accepted | tocás presupuestos de hooks sincrónicos, reconexión del WS o la política del spool local. |
 
 ## No aplican en este dominio
 

@@ -2,7 +2,6 @@
 name: auth
 depth: deep
 domain: security
-type: decision
 source: OWASP ASVS §2-3 (autenticación y gestión de sesiones) · arc42 §8 (conceptos transversales)
 ---
 
@@ -74,7 +73,7 @@ EDR `auth` materializado según `~/.claude/references/edr/templates/edr.md`. Deb
 - **Contexto**: tipo de clientes (web/API/integración), nivel de sensibilidad de los datos, y por qué este mecanismo es difícil de migrar una vez que hay usuarios en producción.
 - **Decisión**: mecanismo de autenticación elegido y sus valores; modelo de permisos con descripción de los roles si aplica; dónde y cómo se valida (middleware/guard centralizado, decorator por endpoint, o manual); política de tokens/sesiones con las duraciones escritas como valores concretos, no como "corta duración".
 - **Reglas verificables** (cada una con su mecanismo):
-  - `[tool: test]` el access token expira a la duración decidida (ej. 15 min).
+  - `[auto]` el access token expira a la duración decidida (ej. 15 min).
   - `[manual]` el refresh token rota en cada uso y caduca a la duración decidida (ej. 7 días).
   - `[manual]` toda ruta está protegida por el punto de validación elegido salvo las excepciones declaradas explícitamente.
   - Para API keys: `[manual]` las keys tienen fecha de expiración y un procedimiento de rotación documentado.

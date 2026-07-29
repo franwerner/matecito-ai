@@ -3,7 +3,6 @@
 # DDR — <título>
 
 - **Status:** <Inferred | Accepted | Pending | Deferred>
-- **Type:** <decision | convention | policy>
 - **Date:** <YYYY-MM-DD>
 - **Applied principle:** <Opcional. Solo si la decisión mapea a un principle del catálogo canónico en `~/.claude/references/design-principles/`. Formato: `<Nombre> — <1 línea de por qué este principle>`. Ej: `Contrast — la jerarquía de la paleta se apoya en diferencia de luminancia, no de tono`. Si no aplica, omitir la línea completa.>
 
@@ -39,13 +38,11 @@
 
 ## Reglas verificables
 
-<!-- Solo si Accepted. Cada regla es una aserción chequeable con VALORES CONCRETOS contra Figma (hex, ratio, escala, px, nombres de tokens) — no un adjetivo vago. Marcá el mecanismo de verificación al inicio de cada una:
-- [tool: figma] → chequeable leyendo el archivo Figma vía el MCP figma (styles/components/variables nombrados, hex, px, escala).
-- [tool: contrast] → chequeable con un cálculo de ratio de contraste (WCAG).
+<!-- Solo si Accepted. Cada regla es una aserción chequeable contra Figma escrita en lenguaje natural: precisa (hex, ratio, escala, px, nombres de tokens), no un adjetivo vago. NO nombres la herramienta ni el método — cómo se chequea se resuelve al verificar. Marcá al inicio solo la COBERTURA:
+- [auto] → hoy se puede chequear sin una persona (leyendo el archivo Figma, calculando un ratio de contraste).
 - [manual] → hoy solo se verifica en revisión visual humana, no hay check automático. -->
 
-- **[tool: figma]** <regla concreta con valores>. Ej: **[tool: figma]** el color style `Primary/500` tiene hex exactamente `#2563EB`.
-- **[tool: contrast]** <regla de ratio>. Ej: **[tool: contrast]** texto sobre `Primary/500` cumple ratio ≥ 4.5:1.
+- **[auto]** <regla precisa>. Ej: **[auto]** el color style `Primary/500` tiene hex exactamente `#2563EB`; **[auto]** texto sobre `Primary/500` cumple ratio ≥ 4.5:1.
 - **[manual]** <regla que hoy solo se chequea en review visual>.
 
 ## Alcance
@@ -77,6 +74,6 @@ Locator **a nivel sistema** —styles, sets de componentes o frames estables, no
 <!--
 Notas del contrato (no van en el DDR generado):
 - No hay sección `Historial`. El historial de ediciones y la evolución de decisiones los lleva git.
-- Header en inglés (`Status`, `Type`, `Date`, `Applied principle`); nombres de sección y prosa en español.
+- Header en inglés (`Status`, `Date`, `Applied principle`); nombres de sección y prosa en español.
 - `Inferred` llena solo header + `## Evidencia (inferida)` + `## Alcance` (cuando el kind tiene locator). `## Contexto`, `## Decisión`, `## Consecuencias`, `## Alternativas consideradas`, `## Reglas verificables` quedan vacías hasta la ratificación.
 -->

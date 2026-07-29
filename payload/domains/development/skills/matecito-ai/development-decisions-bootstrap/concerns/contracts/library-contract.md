@@ -2,7 +2,6 @@
 name: library-contract
 depth: light
 domain: contracts
-type: decision
 source: arc42 §8 (cross-cutting concepts) · semver.org
 ---
 
@@ -39,6 +38,6 @@ EDR `library-contract` materializado según `~/.claude/references/edr/templates/
   - `[manual]` solo lo declarado en la superficie pública (exports/index) se considera contrato; lo demás es interno y puede cambiar sin major.
   - `[manual]` un breaking change incrementa la versión major; lo additive, minor; el fix, patch.
   - `[manual]` toda eliminación pasa primero por un deprecation warning en un minor antes de removerse en el siguiente major.
-  - Si hay tooling: `[tool: <release tooling>]` el changelog se genera automáticamente a partir de conventional commits.
+  - Si hay tooling: `[auto]` el changelog se genera automáticamente a partir de conventional commits.
 - **Alternativas consideradas**: tratar todo lo no `_private`/`internal` como público y la ausencia de política de deprecación, con su trade-off para librerías internas vs públicas.
 - **Consecuencias**: disciplina requerida en cada release y previsibilidad que ganan los consumidores.

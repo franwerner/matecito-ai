@@ -210,7 +210,7 @@ El ejecutor es `scope → candidates[]` y NO escala por sí mismo; el escalado l
 Después del confirm en el gate, para cada candidato aceptado:
 
 1. Leer `~/.claude/references/edr/templates/edr.md` (READ-ONLY).
-2. Completar el header: `Status: Inferred`, `Type: <proposedType>`, `Date: <hoy>`.
+2. Completar el header: `Status: Inferred`, `Date: <hoy>`.
 3. Dejar `## Contexto`, `## Decisión`, `## Consecuencias`, `## Alternativas consideradas` **vacíos** (el humano los completa al promover a Accepted). Mine no simula el porqué: los identificadores observados van a `## Evidencia (inferida)` / `## Alcance`, nunca a un razonamiento redactado (ver `~/.claude/references/edr/README.md` → "Dónde va cada nombre").
 4. Llenar `## Evidencia (inferida)` con `kind`, `observado`, `prevalencia` (si aplica para el kind).
 5. Para `estructural`/`patrón`: llenar `## Alcance` con `proposedAlcanceGlobs`.
@@ -233,7 +233,6 @@ Después del confirm en el gate, para cada candidato aceptado:
   "proposedDomain": "<dominio canónico>",
   "proposedSlug": "<kebab-case>",
   "proposedAlcanceGlobs": ["src/**/*.routes.ts"],
-  "proposedType": "decision | convention | policy",
   "lowSignalReason": "descripción si confidence es low | null"
 }
 ```

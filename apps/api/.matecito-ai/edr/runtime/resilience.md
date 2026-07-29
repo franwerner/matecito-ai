@@ -1,7 +1,6 @@
 # EDR — Resiliencia
 
 - **Status:** Accepted
-- **Type:** decision
 - **Date:** 2026-07-27
 
 ## Contexto
@@ -26,7 +25,7 @@ El broker es un daemon local único del que dependen tres canales con modos de f
 - **[manual]** la reconexión WS usa backoff exponencial con jitter (1 s inicial, tope 30 s) y no tiene límite de reintentos.
 - **[manual]** el cliente de hooks no tiene procesos residentes ni timers: el flush del spool solo ocurre en el próximo contacto exitoso, entregando lo pendiente antes que lo nuevo.
 - **[manual]** el spool local no tiene tope de tamaño ni expiración; ningún ítem se descarta por antigüedad o volumen.
-- **[tool: gosec]** el servidor del borde HTTP declara un techo de recepción de cabeceras; construirlo sin ese techo rompe el gate de lint.
+- **[auto]** el servidor del borde HTTP declara un techo de recepción de cabeceras; construirlo sin ese techo rompe el gate de lint.
 
 ## Alternativas consideradas
 

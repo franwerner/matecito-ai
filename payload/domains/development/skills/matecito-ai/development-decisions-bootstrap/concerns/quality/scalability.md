@@ -2,7 +2,6 @@
 name: scalability
 depth: light
 domain: quality
-type: decision
 source: ISO/IEC 25010 (característica: performance efficiency — capacity)
 ---
 

@@ -2,7 +2,6 @@
 name: code-conventions
 depth: deep
 domain: structure
-type: convention
 source: prácticas idiomáticas por lenguaje · Clean Code · guías de estilo oficiales (PEP 8, Effective Go, Airbnb, Rustfmt/Clippy)
 ---
 
@@ -89,7 +88,7 @@ Una por turno, pero como casi todas son lintables con un default claro del lengu
 ## Notas de lógica (para el motor)
 
 - **Default por lenguaje (Fase 0):** proponé el idiom del stack como default de cada pregunta y pedí confirmación. Ej — TS: enum/union, `T | null` con strict, `readonly`/`const`, no `any`, `===`, kebab archivos + PascalCase tipos + camelCase funciones. Go: typed constants + `iota`, valores cero/`ok`-idiom, no `interface{}` gratuito, comparación por valor, MixedCaps. Python: `Enum`, `None`/`Optional`, dataclasses frozen, type hints + mypy strict, snake_case + PascalCase clases. Rust: `enum`+match, `Option`, inmutable por defecto (ya lo es), sin `unwrap` gratuito, snake_case + CamelCase tipos.
-- **Marcá el enforcement de cada regla:** la mayoría son lintables → en el EDR van como `[tool: eslint / golangci-lint / ruff / clippy]` con la regla concreta (ej. `no-magic-numbers`, `@typescript-eslint/no-explicit-any`, `eqeqeq`). Las no chequeables por linter (ej. "options object sobre boolean param") van `[manual]`.
+- **Marcá la cobertura de cada regla:** la mayoría son lintables → van `[auto]`, enunciadas como aserción en lenguaje natural ("no hay números mágicos", "no se usa el tipo comodín", "la comparación es estricta"), NO con el identificador de la regla del linter — ese vive en la config, que es su fuente de verdad. Las no chequeables por linter (ej. "options object sobre boolean param") van `[manual]`.
 - **Batch:** no hagas 10 turnos si el usuario acepta los defaults del lenguaje — proponé el set completo, confirmá en bloque, y profundizá solo donde quiera desviarse.
 - Si el proyecto ya eligió linter/formatter en `tech`, alineá estas reglas con esa herramienta (no propongas una convención que el linter elegido no pueda enforzar sin config extra; avisá si hace falta).
 
@@ -98,5 +97,5 @@ Una por turno, pero como casi todas son lintables con un default claro del lengu
 EDR `code-conventions` materializado según `~/.claude/references/edr/templates/edr.md`. Debe contener:
 
 - **Contexto** y **Decisión**: las convenciones elegidas por cada punto tratado, en términos de concepto (no nombres de clases del proyecto). Enunciá cada una como una regla ("los conjuntos cerrados se modelan con enum/union; la ausencia con `T | null`; …").
-- **Reglas verificables**: cada convención como aserción chequeable con su mecanismo al inicio — `[tool: <linter> <regla>]` para las lintables, `[manual]` para el resto. Es la parte más importante: el registro real de estas convenciones es la regla de linter; el EDR las agrupa y justifica.
+- **Reglas verificables**: cada convención como aserción chequeable en lenguaje natural, con su cobertura al inicio — `[auto]` para las lintables, `[manual]` para el resto. Es la parte más importante: el registro real de estas convenciones es la regla de linter; el EDR las agrupa y justifica.
 - **Relacionados**: `relacionado-con` → `folder-structure` (naming: sufijos allá, casing acá), `layers-and-dependencies` (imports: reglas de capa allá, estilo acá), `runtime/error-handling` (representación de errores allá).

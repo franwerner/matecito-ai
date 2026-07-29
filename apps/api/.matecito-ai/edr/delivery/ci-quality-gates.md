@@ -1,7 +1,6 @@
 # EDR — CI y quality gates
 
 - **Status:** Accepted
-- **Type:** policy
 - **Date:** 2026-07-28
 
 ## Contexto
@@ -19,14 +18,14 @@ Con la persistencia adentro, el estilo dejó de ser lo único que vale la pena v
 
 ## Reglas verificables
 
-- **[tool: go-arch-lint]** el merge se bloquea si un componente importa algo que su grafo declarado no permite, o si usa una dependencia externa que no tiene concedida.
-- **[tool: golangci-lint]** el merge se bloquea si el linter reporta errores.
-- **[tool: ci]** el merge se bloquea si `go mod tidy -diff` detecta que el manifest de dependencias quedó desincronizado del código.
-- **[tool: ci]** el merge se bloquea si `go test ./...` falla o el binario no buildea.
-- **[tool: ci]** el pipeline de release construye el bundle de la UI antes del build de Go y falla si el bundle no construye.
-- **[tool: ci]** el workflow toma la versión del lenguaje del manifest del módulo, nunca de un valor escrito aparte que pueda desincronizarse.
+- **[auto]** el merge se bloquea si un componente importa algo que su grafo declarado no permite, o si usa una dependencia externa que no tiene concedida.
+- **[auto]** el merge se bloquea si el linter reporta errores.
+- **[auto]** el merge se bloquea si `go mod tidy -diff` detecta que el manifest de dependencias quedó desincronizado del código.
+- **[auto]** el merge se bloquea si `go test ./...` falla o el binario no buildea.
+- **[auto]** el pipeline de release construye el bundle de la UI antes del build de Go y falla si el bundle no construye.
+- **[auto]** el workflow toma la versión del lenguaje del manifest del módulo, nunca de un valor escrito aparte que pueda desincronizarse.
 - **[manual]** no se agrega umbral de cobertura como gate.
-- **[tool: husky/lint-staged]** los `.go` staged pasan por `gofumpt` en el pre-commit del root.
+- **[auto]** los `.go` staged pasan por `gofumpt` en el pre-commit del root.
 - **[manual]** cada herramienta de verificación se invoca con versión explícita; ninguna resuelve "la última".
 
 ## Alternativas consideradas

@@ -1,7 +1,6 @@
 # EDR — Modelado de datos
 
 - **Status:** Accepted
-- **Type:** decision
 - **Date:** 2026-07-28
 
 ## Contexto

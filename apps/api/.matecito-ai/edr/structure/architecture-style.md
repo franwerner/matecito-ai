@@ -1,7 +1,6 @@
 # EDR — Estilo de arquitectura
 
 - **Status:** Accepted
-- **Type:** decision
 - **Date:** 2026-07-23
 
 ## Contexto
@@ -20,8 +19,8 @@ Adoptamos un estilo layered pragmático organizado por componente, con acoplamie
 
 - **[manual]** solo hay interfaces en los bordes de I/O declarados (store, tail, hub); la lógica interna no define interfaces de abstracción.
 - **[manual]** no existe una capa de application-service ceremonial: el broker es chico y se acopla directo.
-- **[tool: go-arch-lint]** ningún componente fuera del borde de persistencia importa los tipos generados del ORM ni el driver de la base: el borde no filtra sus detalles hacia adentro.
-- **[tool: depguard]** ningún archivo fuera de `internal/store/**` importa `database/sql`.
+- **[auto]** ningún componente fuera del borde de persistencia importa los tipos generados del ORM ni el driver de la base: el borde no filtra sus detalles hacia adentro.
+- **[auto]** ningún archivo fuera de `internal/store/**` importa `database/sql`.
 
 ## Alternativas consideradas
 

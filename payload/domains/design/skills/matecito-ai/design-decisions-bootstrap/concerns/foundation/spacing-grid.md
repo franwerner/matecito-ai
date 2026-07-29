@@ -2,7 +2,6 @@
 name: spacing-grid
 depth: light
 domain: foundation
-type: convention
 source: Material Design (8dp grid) · W3C Design Tokens (dimension)
 ---
 
@@ -42,10 +41,10 @@ Una o dos, según haga falta.
 
 DDR `spacing-grid` materializado según el template `~/.claude/references/ddr/templates/ddr.md`. La **Decisión** captura: la unidad base, el step, y la lista de tokens de spacing con su valor px concreto.
 
-**Reglas verificables** (cada una con su mecanismo al inicio):
+**Reglas verificables** (cada una con su cobertura al inicio):
 
-- **[tool: figma]** todo padding/gap/margin de los frames del sistema es un múltiplo de la unidad base decidida (ej: múltiplo de 8); no hay valores fuera de la escala.
-- **[tool: figma]** los tokens de spacing nombrados existen con el valor px declarado (`Spacing/md` = 16); no hay spacings de sistema aplicados como valor suelto.
+- **[auto]** todo padding/gap/margin de los frames del sistema es un múltiplo de la unidad base decidida (ej: múltiplo de 8); no hay valores fuera de la escala.
+- **[auto]** los tokens de spacing nombrados existen con el valor px declarado (`Spacing/md` = 16); no hay spacings de sistema aplicados como valor suelto.
 
 **Alcance:** la lista de tokens de spacing nombrados (`Spacing/*`) y los frames del sistema que la escala gobierna — el ancla de drift contra Figma.
 

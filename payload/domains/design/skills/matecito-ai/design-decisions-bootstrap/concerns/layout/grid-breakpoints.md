@@ -2,7 +2,6 @@
 name: grid-breakpoints
 depth: light
 domain: layout
-type: convention
 source: Material Design (responsive layout grid) · Bootstrap/Tailwind breakpoint conventions
 ---
 
@@ -42,11 +41,11 @@ Una o dos, según haga falta.
 
 DDR `grid-breakpoints` materializado según el template `~/.claude/references/ddr/templates/ddr.md`. La **Decisión** captura: el número de columnas, gutter y margin concretos, y la lista de breakpoints con su ancho px.
 
-**Reglas verificables** (cada una con su mecanismo al inicio):
+**Reglas verificables** (cada una con su cobertura al inicio):
 
-- **[tool: figma]** los frames principales usan layout grids de Figma con el número de columnas, gutter y margin decididos; no hay columnas arbitrarias por frame.
-- **[tool: figma]** existe un frame/variante por cada breakpoint declarado (ej: 360, 768, 1280); no falta ningún breakpoint de la Decisión.
-- **[tool: figma]** gutter y margin son múltiplos de la unidad base de `spacing-grid`.
+- **[auto]** los frames principales usan layout grids de Figma con el número de columnas, gutter y margin decididos; no hay columnas arbitrarias por frame.
+- **[auto]** existe un frame/variante por cada breakpoint declarado (ej: 360, 768, 1280); no falta ningún breakpoint de la Decisión.
+- **[auto]** gutter y margin son múltiplos de la unidad base de `spacing-grid`.
 
 **Alcance:** los frames de página/pantalla y sus layout grids que la decisión gobierna, por breakpoint — el ancla de drift contra Figma.
 

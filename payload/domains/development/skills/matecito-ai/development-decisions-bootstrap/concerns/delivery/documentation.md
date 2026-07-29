@@ -2,7 +2,6 @@
 name: documentation
 depth: light
 domain: delivery
-type: convention
 source: arc42 §1 / práctica de engineering documentation
 ---
 
@@ -41,5 +40,5 @@ Elegí qué tipos de doc aplican al proyecto (podés combinar):
 EDR `documentation` materializado según `~/.claude/references/edr/templates/edr.md`. Debe contener:
 
 - **Contexto** y **Decisión**: qué tipos de doc se mantienen (README, EDRs, docs de API, docs de módulos, runbooks), dónde vive cada una, y el formato de API docs si aplica (generada desde código / archivo estático versionado / plataforma externa).
-- **Reglas verificables**: las convenciones de mantenimiento como aserciones con su mecanismo al inicio. Ej: `[tool: <CI doc check>]` `openapi.yaml` se regenera y el PR falla si queda desincronizado del código; `[manual]` cualquier cambio de interfaz pública actualiza el doc de API en el mismo PR; `[manual]` el `README.md` en raíz describe qué es el proyecto, cómo levantarlo y cómo correr tests. Conservá el detalle de qué tipo de doc vive dónde.
+- **Reglas verificables**: las convenciones de mantenimiento como aserciones con su cobertura al inicio. Ej: `[auto]` `openapi.yaml` se regenera y el PR falla si queda desincronizado del código; `[manual]` cualquier cambio de interfaz pública actualiza el doc de API en el mismo PR; `[manual]` el `README.md` en raíz describe qué es el proyecto, cómo levantarlo y cómo correr tests. Conservá el detalle de qué tipo de doc vive dónde.
 - **Relacionados** (opcional): vinculá con `ci-quality-gates` si la verificación de docs corre como gate.

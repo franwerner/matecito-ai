@@ -1,7 +1,6 @@
 # EDR — Logging
 
 - **Status:** Accepted
-- **Type:** policy
 - **Date:** 2026-07-23
 
 ## Contexto

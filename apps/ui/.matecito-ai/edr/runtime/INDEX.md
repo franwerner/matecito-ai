@@ -4,10 +4,10 @@ Manejo de errores y resiliencia de la UI en ejecución.
 
 ## EDRs en este dominio
 
-| EDR | Status | Type | Consultá cuando... |
-|---|---|---|---|
-| [error-handling.md](error-handling.md) | Accepted | decision | tocás error boundaries, errores de data, el mapeo del error del broker o el estado de conexión. |
-| [resilience.md](resilience.md) | Accepted | decision | tocás reconexión del WS, retry del snapshot o el resync tras la caída. |
+| EDR | Status | Consultá cuando... |
+|---|---|---|
+| [error-handling.md](error-handling.md) | Accepted | tocás error boundaries, errores de data, el mapeo del error del broker o el estado de conexión. |
+| [resilience.md](resilience.md) | Accepted | tocás reconexión del WS, retry del snapshot o el resync tras la caída. |
 
 ## No aplican en este dominio
 
