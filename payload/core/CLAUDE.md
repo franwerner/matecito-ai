@@ -265,7 +265,12 @@ Mandatory delegation triggers: 4+ files to understand → delegate exploration; 
 
 The flow is the structured planning layer for substantial changes. The active domain fragment defines the concrete phase pipeline; this kernel defines how the orchestrator drives it.
 
-`intake` is the entry phase: it structures the raw request, asks the discovery form, classifies/triages, and runs an early decision-record guard **only when decision records are active per the activation gate** (when the store is absent or empty it skips the guard silently). It produces the Intake Brief.
+`intake` is the entry phase: it structures the raw request, classifies/triages, and runs an early decision-record guard **only when decision records are active per the activation gate** (when the store is absent or empty it skips the guard silently). It produces the Intake Brief.
+
+<!-- matecito-ai: el kernel afirma el invariante, NO el mecanismo. Antes decía "asks the discovery
+     form", que es un cómo — y ese cómo, aplicado a una fase headless, se traducía en que el agente
+     se contestara su propio formulario. El slot y el invariante son del kernel; el mecanismo, del dominio. -->
+**Discovery invariant (binding on every domain).** The discovery form is resolved **with the user** before the Intake Brief exists. A headless phase cannot answer its own form: invented answers become a mandate nobody agreed to, because everything downstream reads the brief as *confirmed*. **HOW** it gets resolved is the domain fragment's call — e.g. development runs a two-pass `needs-input` cycle through its Discovery Gate. **THAT** it is resolved with the user is not negotiable, and no execution mode waives it.
 
 ### Artifact Store Policy
 
@@ -301,7 +306,8 @@ This trigger has **two distinct confirmation moments**, do not conflate them: (1
 
 On the first flow request (or natural-language "do a flow for X") in a session, ASK execution mode:
 
-- **Automatic** (`auto`): phases run back-to-back, show final result only.
+<!-- matecito-ai: "show final result only" contradecía el párrafo de abajo ("only skips the between-phase checkpoint") y se leía como licencia para no surfacear nada hasta el final -->
+- **Automatic** (`auto`): phases run back-to-back, skipping the between-phase checkpoint. This does NOT mean "show the final result only": gates, guards and hard-stops still surface and still wait — see the paragraph below.
 - **Interactive** (`interactive`, DEFAULT): after each phase, show summary and ask "¿Continuamos?" before the next.
 
 Cache the choice for the session.
