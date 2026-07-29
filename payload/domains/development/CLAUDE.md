@@ -32,7 +32,11 @@ Code (variables, functions, classes, constants): English. Comments follow the `c
 ## Contract & definition shapes — never inferred
 When you are about to create or modify a **contract or definition** — a domain entity, a database model / migration / schema, an API request/response (DTO), a public/exported type, interface, or enum, an event payload, or a config schema — you MUST NOT infer its shape. Both **which properties it has** and **each property's type** are decisions the human owns; do not invent "obvious" fields or "most likely" types (an `id`, an `email`, a `createdAt`; `string` vs `uuid`; float vs integer minor units — these are decisions, not defaults).
 
-- **Artifact-pinned → execute.** If the shape is already fixed by an upstream artifact (spec, design, an EDR modeling policy, or the user's explicit request), that IS the mandate — implement it, do not re-ask. Only the un-pinned parts are open.
+- **Artifact-pinned → execute, unless it conflicts.** If the shape is already fixed by an upstream artifact (spec, design, an EDR modeling policy, or the user's explicit request) **and it is coherent**, that IS the mandate — implement it, do not re-ask. Only the un-pinned parts are open. But check coherence before executing: STOP and open the discussion when
+  - **the user's request contradicts an Accepted EDR** — do not silently pick a winner. Show both sides (what the user asked for; what the EDR fixes and why) and discuss it. The outcome may be adjusting the request, or updating the EDR via `development-decisions-bootstrap` (update mode); or
+  - **the artifact that pins the shape is internally inconsistent, or does not cover this case** — an EDR was written at a point in time and may not have foreseen this. Say so: do not stretch it by analogy, and do not follow it to the letter knowing it breaks something.
+
+  Silently executing a mandate you can see is inconsistent is NOT respecting the decision — it is hiding the problem. The goal is a back-and-forth until you land on a middle ground, not the artifact winning by default nor the request winning by default. As a headless executor you cannot hold that discussion yourself: return `blocked` with the conflict stated and the concrete options; the main thread carries the conversation.
 - **Unspecified → ask, per whole contract.** Propose the FULL contract (all fields + their types) as one reviewable unit — never field-by-field. With several unspecified contracts, default to one at a time (they often depend on each other); tell the user how many there are and offer "one-by-one or all-at-once" so they set the pace.
 - **Where the answer lives.** The concrete shape (field names + types) belongs in the **code** (or the `design` artifact that materializes it) — NEVER copied into an EDR as a typed struct (that is a code calco; EDR reasoning stays conceptual). Only a **cross-cutting modeling policy** hidden in the answer ("identifiers are UUIDs", "money as integer minor units", "status as enums, not magic strings") may be captured as an EDR, expressed conceptually — and once captured it pins that part, so you stop re-asking it (per artifact-pinned). Offer to capture such a policy; never force it.
 - **Scope.** Targets shapes that persist, cross a boundary, or are public. A transient internal struct used within a single function is execution detail, not a contract — no need to ask.
@@ -88,6 +92,26 @@ The "Reads" column lists the **full-lane** ideal. In `reduced`/`custom` lanes so
 
 ### Strict TDD (resolution + forwarding)
 Same precedence as model resolution — per-project `domainConfig.development.strictTdd` → global `domainConfig.development.strictTdd` → `false` (pre-M7 flat top-level `strictTdd` is auto-migrated into `domainConfig.development` on read). Resolve once per session, cache. If effective `strictTdd` is true, add to the `sdd-apply` / `sdd-verify` prompt: "STRICT TDD MODE IS ACTIVE. Test runner: {test_command}. Follow strict-tdd.md." The `{test_command}` comes from `sdd/{project}/testing-capabilities` in Engram.
+
+<!-- matecito-ai: `sdd-intake` tenía orden de "ask 2-4 questions" corriendo headless, sin canal con el usuario: se las autocontestaba y el brief salía con respuestas inventadas que el flujo trataba como mandato confirmado. El discovery pasa a dos pasadas. -->
+### Discovery Gate (MANDATORY)
+`sdd-intake` runs headless and CANNOT ask the user anything. It formulates the discovery form and returns `status: needs-input` with the questions. That return is neither an error nor a blocker — it is the normal first pass.
+
+When intake returns `needs-input`: put its questions to the user yourself (you own the channel), then **re-dispatch `sdd-intake`** with the raw request plus the answers verbatim so it produces the brief on Pass 2. Never answer them on the user's behalf, never trim the list down to the ones you find interesting, and never skip ahead to another phase — no brief exists yet, so there is nothing downstream to run. If the user leaves one open, hand it back as open instead of resolving it for them.
+
+This gate sits BEFORE the INTAKE GATE and does not replace it: discovery answers first, then the brief, then confirm / adjust / cancel over that brief. **Automatic mode does NOT skip this gate** — Automatic only skips the between-phase "¿Continuamos?" checkpoint, never a question the user has to answer.
+
+<!-- matecito-ai: los buzones de cada fase (Open Questions, New Decisions, Deviations, Derived capabilities, risks) existían sin que nadie los consumiera: eran el lugar barato donde depositar lo no resuelto y seguir. Este guard los convierte en disparador. -->
+### Unresolved Decisions Guard (MANDATORY)
+After EVERY phase returns and before dispatching the next one, inspect the return envelope for unresolved-decision mailboxes. **Two tiers — do not conflate them.**
+
+**Tier 1 — pending decision → STOP and ask.** `sdd-spec` → `Derived capabilities (unconfirmed)`; `sdd-design` → `New Decisions` (titled `New Decisions (not yet in EDRs)` when the EDR store is active, plain otherwise — **emitted either way**, the activation gate does not suppress it) and `Open Questions`; `sdd-tasks` → `Tasks not traceable to spec/design`. Content in any of these means the phase produced something the user has not agreed to. Present it and wait before the next dispatch. **Automatic mode does NOT skip this gate** (same pattern as the INTAKE GATE and the mine gate).
+
+**Tier 2 — accomplished fact → surface, do not block.** `sdd-apply` → `Deviations from Design`; any phase → `risks`. These report what already happened. Show them verbatim in the between-phase summary — never compress them to "no news" — and call out a deviation explicitly when it touches something `sdd-verify` will check against the design, because the design artifact is now stale.
+
+**One gate per phase, batched.** Do NOT ask item by item: collect every Tier-1 item the phase returned and present the batch with a count first ("3 decisions / 1 question") plus bulk actions (confirm all / item by item / adjust). Gate fatigue is the failure mode here — a gate the user clicks through without reading is worse than no gate. This matters most in a repo with no `.matecito-ai/edr/`, where every architectural choice lands under `New Decisions`.
+
+**Empty → silent.** No Tier-1 content means no gate: dispatch the next phase without mentioning this guard at all.
 
 ### Review Workload Guard (MANDATORY)
 After `sdd-tasks` and before `sdd-apply`, inspect `Review Workload Forecast`. If chained PRs recommended / 400-line budget risk High / decision needed → apply cached `delivery_strategy` (`ask-on-risk` default: STOP and ask chained PRs vs `size:exception`). Automatic mode does not override this guard.

@@ -3,9 +3,9 @@ name: sdd-intake
 description:
   Intake and structure a raw user request before any SDD phase runs. Use as the FIRST step
   when a user describes a feature, bug, change, or task in natural language and it needs to be
-  turned into a clear, structured brief. Asks targeted intake questions, classifies the change,
-  triages whether the full SDD flow is needed, and catches EDR conflicts or undecided
-  architectural questions before exploration begins.
+  turned into a clear, structured brief. Formulates the targeted intake questions for the
+  orchestrator to ask, classifies the change, triages whether the full SDD flow is needed, and
+  catches EDR conflicts or undecided architectural questions before exploration begins.
 model: sonnet
 tools: Read, Grep, Glob, mcp__plugin_engram_engram__mem_save
 # matecito-ai: sdd-intake is the entry phase of the SDD flow. It structures the raw request and
@@ -23,7 +23,8 @@ Also read shared conventions at `~/.claude/skills/_shared/sdd-phase-common.md`.
 
 Execute all steps from the skill directly in this context window:
 1. Receive the raw user request (natural language from the chat)
-2. Ask 2-4 targeted intake questions to lock down what is ambiguous (the discovery form)
+<!-- matecito-ai: discovery de dos pasadas — este agente corre headless y NO puede preguntar; formula y devuelve, el orquestador pregunta -->
+2. The discovery form, two-pass. **Pass 1** (your launch prompt carries no answers): work out the 2-4 targeted questions that lock down what is ambiguous, return `status: needs-input` with them formulated, and STOP — no classification, no triage, no brief, no `mem_save`. **Pass 2** (your launch prompt carries the user's answers): continue from step 3 using those answers verbatim. NEVER answer the form yourself — you have no channel to the user, and a brief built on invented answers is treated downstream as a confirmed mandate
 3. Classify the change: type (feature/bug/refactor/chore), domains touched, rough size
 4. Triage: does this warrant the full SDD flow, or is it trivial enough to go direct?
 <!-- matecito-ai: diagram inference test — single source of truth in matecito-ai:behavior (Ecosystem) -->
@@ -41,7 +42,9 @@ phases (sdd-explore/sdd-design).
 
 ## Engram Save (mandatory when tied to a named change)
 
-After completing work, call `mem_save` with:
+<!-- matecito-ai: Pass 1 no produce artefacto — no hay brief que persistir hasta que lleguen las respuestas -->
+Skip this entirely when returning `needs-input` (Pass 1): there is no brief yet. On Pass 2, after
+completing work, call `mem_save` with:
 - title: `"sdd/{change-name}/intake"`
 - topic_key: `"sdd/{change-name}/intake"`
 - type: `"architecture"`
@@ -51,9 +54,11 @@ After completing work, call `mem_save` with:
 ## Result Contract
 
 Return a structured result with these fields:
-- `status`: `done` | `blocked` | `needs-decision`
+- `status`: `done` | `needs-input` | `blocked` | `needs-decision`
 - `executive_summary`: one-sentence description of the structured request and the triage outcome
-- `artifacts`: topic_keys or file paths written (e.g. `sdd/{change-name}/intake`)
+<!-- matecito-ai: salida de Pass 1 — el orquestador las hace y re-despacha esta misma fase -->
+- `questions`: on `needs-input` only — the 2-4 formulated discovery questions, each with one line on why it matters (what changes downstream depending on the answer). Every other field below is omitted on `needs-input`: there is no brief yet
+- `artifacts`: topic_keys or file paths written (e.g. `sdd/{change-name}/intake`) — none on `needs-input`
 - `next_recommended`: `sdd-explore` (full flow) | `direct-implementation` (trivial, SDD not needed) | `development-decisions-bootstrap` (an undecided architectural question must be captured first)
 - `diagram`: `needed | not-needed` — whether an architecture diagram is warranted per the diagram inference test (decided here, generated downstream)
 - `ui-test`: `needed | not-needed` — whether UI verification via ProofShot is warranted (keyword-inferred or explicit override; confirmed at INTAKE GATE; execution deferred to sdd-verify)

@@ -52,7 +52,8 @@ FOR EACH entry under "Modified Capabilities":
 └── Read the existing DURABLE capability-spec (`.matecito-ai/development-specs/<type>/<capability>.md`) first — your delta modifies it. If it does not exist, treat it as a NEW capability spec.
 ```
 
-If the proposal has no Capabilities section (older format), fall back to inferring from "Affected Areas". But always prefer the explicit Capabilities mapping when present.
+<!-- matecito-ai: en lane `reduced` (el default) NO hay proposal — spec lee el intake brief, que no tiene sección Capabilities. Esta rama es el camino por defecto, no el caso raro del formato viejo: por eso el mapeo derivado viaja marcado, no como contrato. -->
+If the upstream artifact has no Capabilities section (an intake brief in a `reduced` lane, or a proposal in the older format), derive a proposed capability mapping from whatever it does carry (Affected Areas, or the brief's structured Request) and **mark it explicitly as derived**: list it in your return summary under "Derived capabilities (unconfirmed)" so the main thread confirms it. A derived mapping is NOT a contract. If the derivation is ambiguous — two reasonable readings of which capability is touched, or you cannot name the capability without inventing behavior — return `blocked` with the possible readings instead of picking one. Always prefer the explicit Capabilities mapping when present.
 
 ### Step 3: Read Existing Durable Specs
 
@@ -186,6 +187,12 @@ Return to the orchestrator:
 - Edge cases: {covered/missing}
 - Error states: {covered/missing}
 
+<!-- matecito-ai: buzón del mapeo derivado (Step 2) — el thread principal lo confirma antes de que downstream lo trate como contrato -->
+### Derived capabilities (unconfirmed)
+{Capability mappings you derived because the upstream artifact had no Capabilities
+section, each with what you derived it from. These are NOT contract until the main
+thread confirms them. If the mapping was explicit, state "None — mapping was explicit."}
+
 ### Next Step
 Ready for design (sdd-design). If design already exists, ready for tasks (sdd-tasks).
 ```
@@ -201,6 +208,8 @@ Ready for design (sdd-design). If design already exists, ready for tasks (sdd-ta
 - Include both happy path AND edge case scenarios
 - Keep scenarios TESTABLE — someone should be able to write an automated test from each one
 - DO NOT include implementation details in specs — specs describe WHAT, not HOW
+<!-- matecito-ai: recordatorio apuntado — la doctrina completa vive en el fragmento del dominio (cargado en Step 1), no se duplica acá. Acá aplica cuando un escenario fija campos o tipos de un contrato. -->
+- **Before a scenario or requirement pins ANY contract or definition** — domain entity, DB model/migration/schema, DTO, public/exported type, interface or enum, event payload, or config schema — apply **"Contract & definition shapes — never inferred"** from the domain fragment (`~/.claude/matecito-ai/domains/development.md`, read in Step 1). Never invent which fields it has nor their types to make a scenario concrete. Pinned-and-coherent upstream → use it; unspecified, or pinned by something that conflicts or does not cover this case → return `blocked` proposing the FULL contract as one reviewable unit
 - **MODIFIED requirements MUST be the FULL block** — copy entire requirement + all scenarios from main spec, then edit. Partial MODIFIED blocks lose content at archive time.
 - If adding new behavior without changing existing behavior → use ADDED, not MODIFIED
 - **Size budget**: Spec artifact MUST be under 650 words. Prefer requirement tables over narrative descriptions. Each scenario: 3-5 lines max.

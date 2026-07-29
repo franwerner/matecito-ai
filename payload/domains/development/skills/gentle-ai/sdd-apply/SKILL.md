@@ -188,8 +188,12 @@ Return to the orchestrator:
 
 {IF Strict TDD Mode → include TDD Cycle Evidence table from strict-tdd.md}
 
+<!-- matecito-ai: Tier-2 del Unresolved Decisions Guard — no bloquea, pero el orquestador lo muestra verbatim. Marcá el impacto en verify: vos tenés el contexto, el orquestador no. -->
 ### Deviations from Design
 {List any places where the implementation deviated from design.md and why.
+For each one, state whether `sdd-verify` will check it against the design
+(i.e. it touches a spec requirement or a task `criteria:`) — if so, the design
+artifact is now stale and verify will read it as a mismatch.
 If none, say "None — implementation matches design."}
 
 ### Issues Found
@@ -216,8 +220,11 @@ If none, say "None."}
 - ALWAYS follow the design decisions — don't freelance a different approach
 <!-- matecito-ai: respect the EDRs listed in the design's EDR Alignment; load the `context7` skill before writing library versions or APIs; ask the codegraph MCP for a symbol's impact before changing it (see Step 2) -->
 - ALWAYS respect the applicable EDRs (`.matecito-ai/edr/`) as hard constraints; if an EDR conflict/uncaptured decision was flagged as a blocker, STOP and report instead of coding around it
+<!-- matecito-ai: recordatorio apuntado — la doctrina completa vive en el fragmento del dominio (cargado en Step 1), no se duplica acá -->
+- **Before writing ANY contract or definition** — domain entity, DB model/migration/schema, DTO, public/exported type, interface or enum, event payload, or config schema — apply **"Contract & definition shapes — never inferred"** from the domain fragment (`~/.claude/matecito-ai/domains/development.md`, read in Step 1). Never infer which fields it has nor their types. Pinned-and-coherent → implement it; unspecified, or pinned by something that conflicts or does not cover this case → return `blocked` proposing the FULL contract as one reviewable unit
 - ALWAYS match existing code patterns and conventions in the project
-- If you discover the design is wrong or incomplete, NOTE IT in your return summary — don't silently deviate
+<!-- matecito-ai: la redacción anterior ("NOTE IT ... don't silently deviate") autorizaba desviarse mientras se avisara, negando el hard-stop del kernel. El corte detalle-vs-decisión evita el rebote de bloquear por minucias. -->
+- If you discover the design is wrong or incomplete **in something the task you are about to write needs**, STOP and return `blocked` with the gap and the concrete options. Do NOT implement your own version and note it afterwards — noting is not authorization. If the gap does not affect what you are writing, note it and continue. The cut is between **execution detail** (an internal variable name, guard ordering, how you split a private function) and **decision** (a contract, a new dependency, which layer the logic lives in, changing the design's approach) — the canonical criterion for what counts as a decision is in `~/.claude/references/edr/README.md`. Resolve the first; raise the second
 - If a task is blocked by something unexpected, STOP and report back
 - If workload forecast requires a decision and none was provided, STOP before writing code
 - When applying a chained/stacked PR slice, keep the batch autonomous: one deliverable scope, verification included, and clear rollback boundary

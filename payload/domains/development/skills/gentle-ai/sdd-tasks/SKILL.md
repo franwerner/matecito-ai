@@ -218,6 +218,16 @@ Return to the orchestrator:
 ### Implementation Order
 {Brief description of the recommended order and why}
 
+<!-- matecito-ai: Tier 1 del Unresolved Decisions Guard. El scope creep silencioso entra por acá:
+     trabajo que aparece en el checklist, se implementa y se verifica sin que el usuario lo pidiera. -->
+### Tasks not traceable to spec/design
+{Every task that links to NO spec requirement and to nothing the design establishes,
+each with what motivated it (a gap you found, an implied prerequisite, a project
+convention). This is Tier 1 for the orchestrator's Unresolved Decisions Guard: it is
+work the user did not ask for. Do NOT drop those tasks, and do NOT fold them in as if
+they came from the spec — list them and let the user decide.
+If every task traces, state "None — every task links to spec or design."}
+
 ### Review Workload Forecast
 - Estimated changed lines: {estimate or range}
 - 400-line budget risk: {Low | Medium | High}
@@ -238,6 +248,8 @@ Return to the orchestrator:
 - Each task should be completable in ONE session (if a task feels too big, split it)
 - Use hierarchical numbering: 1.1, 1.2, 2.1, 2.2, etc.
 - NEVER include vague tasks like "implement feature" or "add tests"
+<!-- matecito-ai: una tarea sin origen no está prohibida — pero se declara, no se cuela -->
+- Every task MUST link to a spec requirement or to something the design establishes. A task that links to neither is not forbidden (a real gap or an implied prerequisite may warrant it) but it MUST be declared under `### Tasks not traceable to spec/design` in your return — never folded in silently
 - If the project uses TDD, integrate test-first tasks: RED task (write failing test) → GREEN task (make it pass) → REFACTOR task (clean up)
 <!-- matecito-ai: budget subido de 530 → 800 palabras para absorber la sub-línea `criteria:` (criteria + edr) por tarea. -->
 - **Size budget**: Tasks artifact MUST be under 800 words. Each task: the `- [ ]` line + one indented `criteria:` sub-line (max 2 lines total). Use checklist format, not paragraphs.

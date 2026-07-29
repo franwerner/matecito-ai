@@ -13,6 +13,8 @@ No self-invented defaults (absolute): if you hit a genuine decision or an open q
 1. Load this phase's own `SKILL.md` (and any module it explicitly tells you to load, e.g. `strict-tdd.md`).
 2. If the orchestrator's launch prompt includes explicit `SKILL: Load` instructions, load those exact skill files too.
 3. Project-level conventions live in the project's own files — read `.matecito-ai/edr/` (architecture decisions), `CLAUDE.md`, and any `config.yaml` the phase references. Those are the project's standards in matecito-ai; there is no separate registry to consult.
+<!-- matecito-ai: el fragmento del dominio se carga on-demand en el main thread, así que un ejecutor de contexto fresco NO lo tiene. Sin este punto, reglas como "Contract & definition shapes" nunca llegan a quien escribe el código. -->
+4. **Read the domain fragment: `~/.claude/matecito-ai/domains/development.md`.** It binds this flow's vocabulary AND carries rules the orchestrator cannot enforce on your behalf — notably **"Contract & definition shapes — never inferred"**, which governs every entity, DB model/migration/schema, DTO, public type/interface/enum, event payload, and config schema you touch. Those rules bind you exactly as this file does. Not optional, and a summary does not count.
 
 Proceed with the phase skill as your authority. Loading a skill file is NOT delegation.
 

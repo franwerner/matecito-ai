@@ -41,18 +41,39 @@ Your output is a clear brief + a routing decision.
 ### Step 1: Load Skills
 Follow **Section A** from `sdd-phase-common.md`.
 
-### Step 2: Ask the Discovery Form (2-4 questions)
+<!-- matecito-ai: esta fase corre headless. La versión anterior ordenaba "ask 2-4 questions" a un
+     agente sin canal con el usuario: el único desenlace posible era autocontestarse y emitir
+     "Discovery answers" inventadas que el resto del flujo trataba como mandato confirmado.
+     Ahora el discovery es de dos pasadas: el agente FORMULA, el orquestador PREGUNTA. -->
+### Step 2: The Discovery Form (two-pass — you FORMULATE, you never ANSWER)
 
-The raw request is almost always underspecified. Before structuring anything, ask **2-4 targeted
-questions** to lock down what is ambiguous. Keep it short — this is a 30-second form, not an interrogation.
+**You run headless: you have NO channel to the user.** You cannot ask anything, and you MUST NOT
+answer the discovery form yourself. Inventing `Discovery answers` is the single worst failure of
+this phase: everything downstream reads the brief as a *confirmed* mandate, so a fabricated answer
+becomes a requirement nobody agreed to.
 
+**Pass 1 — your launch prompt carries NO answers.** The raw request is almost always underspecified.
+Work out the **2-4 targeted questions** that would lock down what is ambiguous, then STOP: return
+`status: needs-input` with the questions formulated (format in Step 7). Do NOT classify, do NOT
+triage, do NOT run the early guard, do NOT produce a brief, do NOT persist anything. The
+orchestrator has the channel — it asks the user and re-dispatches you with the answers.
+
+Keep it short — this is a 30-second form, not an interrogation.
 Pick the questions that actually matter for *this* request. Typical axes:
 - **Scope:** what exactly is in and out? (e.g. "¿solo export CSV, o también otros formatos?")
 - **Trigger / surface:** where does the user invoke it? (endpoint, button, CLI, job)
 - **Constraints:** size, performance, limits (e.g. "¿reportes chicos o pueden ser de cientos de miles de filas?")
 - **Behavior:** sync vs async, what happens on failure, edge cases.
 
-Ask only what's genuinely unclear. If the user already answered something in the raw request, don't re-ask it.
+Ask only what's genuinely unclear. If the user already answered something in the raw request, don't
+re-ask it. If nothing is genuinely ambiguous, go straight to Pass 2 with zero questions — a form
+asked for the sake of the form is noise.
+
+**Pass 2 — your launch prompt carries the answers.** Continue with Step 3 onward, using the user's
+real answers. Record them verbatim under `### Discovery answers` — never paraphrase an answer into
+something more convenient, and never fill in a gap the user left open. If an answer came back
+partial or a new ambiguity appears, that question is still open: return `needs-input` again rather
+than closing it yourself.
 
 ### Step 3: Classify the Change
 
@@ -96,7 +117,35 @@ Follow **Section C** from `sdd-phase-common.md`.
 - topic_key: `sdd/{change-name}/intake`
 - type: `architecture`
 
-### Step 7: Return the Structured Brief
+### Step 7: Return
+
+<!-- matecito-ai: salida de Pass 1 — preguntas formuladas, sin brief y sin persistir -->
+#### Pass 1 output — `needs-input`
+
+When you stopped at Step 2 because the launch prompt carried no answers, return EXACTLY this and
+nothing else. No brief, no classification, no `mem_save`:
+
+```markdown
+## Discovery Form: {short title}
+
+**Status**: needs-input
+
+### Request (as received)
+{the raw request, verbatim}
+
+### Questions (unanswered — for the orchestrator to ask)
+1. {question} — {why it matters: what changes downstream depending on the answer}
+2. {question} — {why it matters}
+3. {question} — {why it matters}
+
+### Next
+Re-dispatch `sdd-intake` with these answers to produce the brief.
+```
+
+Never guess an answer to move on. Returning `needs-input` is the successful outcome of Pass 1, not
+a failure.
+
+#### Pass 2 output — the structured brief
 
 Return EXACTLY this format (and persist the same content):
 
@@ -135,8 +184,10 @@ This brief is the entry artifact for the flow. The next phase reads it as its st
 
 ## Rules
 
-- ALWAYS ask the discovery form first (2-4 questions) — never structure a request you haven't clarified.
-- Ask ONLY what's genuinely ambiguous; don't re-ask what the user already stated.
+<!-- matecito-ai: la regla anterior ("ALWAYS ask the discovery form first") le pedía a un agente headless algo que no puede hacer; el resultado era autocontestarse -->
+- NEVER answer the discovery form yourself. You run headless: you FORMULATE the questions and return `needs-input`; the ORCHESTRATOR asks them. A brief built on answers you invented is the worst output of this phase — downstream treats it as confirmed mandate.
+- The discovery form is ALWAYS resolved before the brief exists (2-4 questions, or zero if nothing is genuinely ambiguous) — never structure a request you haven't clarified.
+- Formulate ONLY what's genuinely ambiguous; don't re-ask what the user already stated.
 - Do NOT explore the codebase in depth — that's `sdd-explore`. Your domain mapping is a rough routing aid, not analysis.
 - Do NOT design or implement.
 - The EDR check is SHALLOW — catch obvious early blockers, don't do design-level analysis (that's `sdd-design`).
