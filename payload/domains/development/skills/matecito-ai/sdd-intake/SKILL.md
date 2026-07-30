@@ -39,7 +39,7 @@ Your output is a clear brief + a routing decision.
 ## What to Do
 
 ### Step 1: Load Skills
-Follow **Section A** from `sdd-phase-common.md`.
+Follow **Section A** from `~/.claude/skills/_shared/sdd-phase-common.md`.
 
 <!-- matecito-ai: esta fase corre headless. La versión anterior ordenaba "ask 2-4 questions" a un
      agente sin canal con el usuario: el único desenlace posible era autocontestarse y emitir
@@ -65,9 +65,17 @@ Pick the questions that actually matter for *this* request. Typical axes:
 - **Constraints:** size, performance, limits (e.g. "¿reportes chicos o pueden ser de cientos de miles de filas?")
 - **Behavior:** sync vs async, what happens on failure, edge cases.
 
-Ask only what's genuinely unclear. If the user already answered something in the raw request, don't
-re-ask it. If nothing is genuinely ambiguous, go straight to Pass 2 with zero questions — a form
-asked for the sake of the form is noise.
+Formulate only what's genuinely unclear. If the user already answered something in the raw request,
+don't re-ask it.
+
+<!-- matecito-ai: acá había una puerta trasera ("si nada es ambiguo, andá directo a Pass 2 con cero
+     preguntas"). Un ejecutor headless que se auto-declara sin ambigüedad emitía el brief sin que el
+     usuario apareciera nunca — exactamente el fallo que esta fase de dos pasadas viene a cerrar. -->
+**Pass 1 always returns `needs-input`. There is no path from Pass 1 to the brief.** If you conclude
+that nothing is genuinely ambiguous, you still stop: return `needs-input` with an EMPTY question
+list and one line stating what you understood and why you found nothing to ask. The orchestrator
+confirms that with the user — a one-word confirmation is cheap; a brief built on an ambiguity you
+failed to notice is not. You do not get to decide that the user has nothing to add.
 
 **Pass 2 — your launch prompt carries the answers.** Continue with Step 3 onward, using the user's
 real answers. Record them verbatim under `### Discovery answers` — never paraphrase an answer into
@@ -81,6 +89,30 @@ From the request + answers, classify:
 - **Type:** `feature` | `bug` | `refactor` | `chore`
 - **Domains touched:** map to the canonical EDR domains (e.g. an export endpoint touches `contracts`, `security`, `runtime`, maybe `data`). This is a rough mapping to help routing — NOT a deep analysis.
 - **Rough size:** `trivial` | `small` | `medium` | `large`.
+
+<!-- matecito-ai: neither flag appeared anywhere in this skill, which declares itself the authority on
+     CONTENT ("This skill defines WHAT goes in each section") and enumerated Classification as "type,
+     domains touched, size". They lived only in the agent file. This phase is the ONLY one that decides
+     them and two downstream phases read them from the brief: drop them from the classification and they
+     drop from the brief, and their readers find absence — which both gates read as "does not apply",
+     silently. -->
+Plus the two **downstream flags** this phase is the only one to decide. They are part of the
+classification, they travel in the brief (`### Classification`), and the user confirms or adjusts
+both at the INTAKE GATE. Neither is executed here — this phase decides, others act:
+
+- **`diagram`:** `needed` | `not-needed`, with a one-line reason. Apply the **diagram inference test**
+  in `~/.claude/matecito-ai/domains/development.md` (`## Architecture diagrams (drawio)`) — that is
+  the single source of truth for when a diagram is warranted; do not restate or re-derive its
+  criteria. Read by `sdd-design`, which only *recommends* the live render. You never generate one.
+- **`ui-test`:** `needed` | `not-needed`, with a one-line reason. Scan the request's description and
+  scenarios for `browser`, `page`, `form`, `screen`, `visual`, `click`, `render` — any hit → `needed`.
+  An explicit override written in the request (`ui-test: needed` / `ui-test: not-needed`) beats the
+  keyword inference; no hit and no override → `not-needed`. Read by `sdd-spec` (it authors the
+  `ui-scenarios` block only when this says `needed`) and by `sdd-verify` (its UI gate). You never run
+  proofshot.
+
+Absence is not neutral: both downstream gates read a missing flag as "does not apply" and close
+**silently**, so a flag you drop is a check nobody notices was skipped.
 
 ### Step 4: Triage — recommend a lane
 
@@ -112,81 +144,74 @@ The point: catch the blocker now, at intake, instead of letting the flow discove
 
 ### Step 6: Persist Artifact
 
-Follow **Section C** from `sdd-phase-common.md`.
+Follow **Section C** from `~/.claude/skills/_shared/sdd-phase-common.md`.
 - artifact: `intake`
 - topic_key: `sdd/{change-name}/intake`
 - type: `architecture`
 
 ### Step 7: Return
 
+<!-- matecito-ai: las dos plantillas literales vivían acá y cubrían bien la pasada feliz, dejando a
+     interpretación `blocked` y `needs-decision`: dos ejecutores inventaron secciones distintas para
+     el mismo caso. La FORMA se mudó al template; acá queda el CONTENIDO. No la vuelvas a copiar:
+     una segunda copia es una desincronización esperando. -->
+**The shape of your return lives in `~/.claude/references/phase-returns/sdd-intake.md`.** Read it
+and follow it **literally**: it declares both blocks — the Discovery Form on Pass 1, the Intake
+Brief on Pass 2 — their sections, their order, which ones are unconditional, and what changes for
+each of the four statuses this phase can return (`needs-input`, `done`, `needs-decision`,
+`blocked`). The orchestrator validates your return against that same file, matching titles literally
+— a section you drop, rename or re-level is a gate that never fires. Do NOT reconstruct the format
+from memory or from another phase's return.
+
 <!-- matecito-ai: salida de Pass 1 — preguntas formuladas, sin brief y sin persistir -->
-#### Pass 1 output — `needs-input`
+#### Pass 1 — what goes in the Discovery Form
 
-When you stopped at Step 2 because the launch prompt carried no answers, return EXACTLY this and
-nothing else. No brief, no classification, no `mem_save`:
+When you stopped at Step 2 because the launch prompt carried no answers, the Discovery Form is your
+entire output: no classification, no triage, no early guard, no brief, no `mem_save`.
 
-```markdown
-## Discovery Form: {short title}
-
-**Status**: needs-input
-
-### Request (as received)
-{the raw request, verbatim}
-
-### Questions (unanswered — for the orchestrator to ask)
-1. {question} — {why it matters: what changes downstream depending on the answer}
-2. {question} — {why it matters}
-3. {question} — {why it matters}
-
-### Next
-Re-dispatch `sdd-intake` with these answers to produce the brief.
-```
+- **Request (as received)** — the raw request, verbatim. Not tidied up, not restated.
+- **Questions** — the 2-4 you worked out in Step 2, each with one line on why it matters (what
+  changes downstream depending on the answer). **The list MAY be empty**: when nothing is genuinely
+  ambiguous, it carries your one-line reading of the request instead, for the user to confirm or
+  correct. That is a complete, legitimate return — never pad it with invented questions, and never
+  read it as licence to produce the brief.
+- **Next** — re-dispatch `sdd-intake` with the answers (or with the confirmation).
 
 Never guess an answer to move on. Returning `needs-input` is the successful outcome of Pass 1, not
 a failure.
 
-#### Pass 2 output — the structured brief
+#### Pass 2 — what goes in the brief
 
-Return EXACTLY this format (and persist the same content):
+Persist the same content (Step 6).
 
-```markdown
-## Intake Brief: {short title}
-
-### Request (structured)
-{1-2 sentences: what the user wants, restated clearly after the discovery form}
-
-### Classification
-- Type: {feature|bug|refactor|chore}
-- Domains touched: {list of canonical EDR domains}
-- Size: {trivial|small|medium|large}
-
-### Discovery answers
-- {question}: {answer}
-- ...
-
-### Triage
-Lane: {direct | reduced | full | custom} — add-ons: [{explore? propose? design? tasks?} or none] — {one line why}
-
-### Early guard (EDRs)
-{One of:
-- "Clear — no conflict with existing EDRs, no undecided question."
-- "⛔ BLOCKED: conflicts with `<domain>/<slug>.md` — {what}. Resolve before proceeding."
-- "🟡 NEEDS DECISION: `<domain>` has no EDR for {what}. Capture via development-decisions-bootstrap first."}
-
-### Next
-{direct-implementation | development-decisions-bootstrap | the first phase the chosen lane runs — `sdd-explore` if `explore` is on, else `sdd-propose` if `propose` is on, else `sdd-spec`}
-```
+- **Request (structured)** — 1-2 sentences: what the user wants, restated clearly now that the
+  discovery form is answered.
+- **Classification** — Step 3's output: type, domains touched, size, plus the two downstream flags
+  `diagram` and `ui-test`, each with its one-line reason. The flags are not optional extras: they
+  exist nowhere else, and the phases that read them close silently when they are absent.
+- **Discovery answers** — the user's answers **verbatim**. Never paraphrase one into something more
+  convenient, never fill in a gap they left open.
+- **Triage** — the lane from Step 4 (base + enabled add-ons) with one line on why. A recommendation,
+  not a decision: the user confirms or adjusts it at the gate below.
+- **Early guard (EDRs)** — Step 5's finding: all-clear, the conflict, or the undecided question, with
+  the EDR cited. **Only when the EDR store is active** — with the store absent or empty this section
+  is absent too, and EDRs are not mentioned anywhere in the brief.
+- **Next** — where the flow goes: `direct-implementation`, `development-decisions-bootstrap`, or the
+  first phase the chosen lane runs (`sdd-explore` if `explore` is on, else `sdd-propose` if `propose`
+  is on, else `sdd-spec`).
 
 This brief is the entry artifact for the flow. The next phase reads it as its starting point — `sdd-explore` in the full lane, `sdd-spec` in the reduced lane — so the flow doesn't start from a vague one-liner.
 
 <!-- matecito-ai: GATE de confirmación -->
-**Confirmation gate (handled by the orchestrator):** after you return this brief, the orchestrator MUST show it to the user and wait for **confirm / adjust / cancel** before launching any next phase — always, even for `trivial` changes. Do NOT assume the flow proceeds automatically. If the user adjusts the scope, the brief is updated and re-shown. See `~/.claude/skills/_shared/orchestration.md` (GATE de confirmación del alcance).
+**Confirmation gate (handled by the orchestrator):** after you return this brief, the orchestrator MUST show it to the user and wait for **confirm / adjust / cancel** before launching any next phase — always, even for `trivial` changes. Do NOT assume the flow proceeds automatically. If the user adjusts the scope, the brief is updated and re-shown.
 
 ## Rules
 
 <!-- matecito-ai: la regla anterior ("ALWAYS ask the discovery form first") le pedía a un agente headless algo que no puede hacer; el resultado era autocontestarse -->
 - NEVER answer the discovery form yourself. You run headless: you FORMULATE the questions and return `needs-input`; the ORCHESTRATOR asks them. A brief built on answers you invented is the worst output of this phase — downstream treats it as confirmed mandate.
-- The discovery form is ALWAYS resolved before the brief exists (2-4 questions, or zero if nothing is genuinely ambiguous) — never structure a request you haven't clarified.
+<!-- matecito-ai: "o cero preguntas si nada es ambiguo" se leía como permiso para saltar a Pass 2 sin
+     que el usuario apareciera. La lista vacía no acorta el ciclo: sigue siendo `needs-input`. -->
+- The discovery form is ALWAYS resolved by the USER before the brief exists — never structure a request you haven't clarified. Pass 1 returns `needs-input` **always**, whether you formulated 2-4 questions or none: an empty question list is still a return to the orchestrator for confirmation, never a shortcut into the brief.
 - Formulate ONLY what's genuinely ambiguous; don't re-ask what the user already stated.
 - Do NOT explore the codebase in depth — that's `sdd-explore`. Your domain mapping is a rough routing aid, not analysis.
 - Do NOT design or implement.
@@ -194,6 +219,10 @@ This brief is the entry artifact for the flow. The next phase reads it as its st
 - If the request conflicts with an Accepted EDR → `blocked`, don't route to the flow.
 - If the request needs an undecided architectural choice → `needs-decision`, route to bootstrap first.
 - Be honest in triage: trivial changes should skip the full flow.
-- Return envelope per **Section D** from `sdd-phase-common.md`.
+<!-- matecito-ai: explicit rule — the flags used to drop out of the brief with nothing complaining. -->
+- ALWAYS emit both downstream flags (`diagram`, `ui-test`) under `### Classification` on Pass 2, whatever their value (Step 3). This phase is their only producer; `sdd-design` and `sdd-spec`/`sdd-verify` are their only readers, and each treats an absent flag as `not-needed` **silently**. Decide them — never generate a diagram, never run proofshot.
+<!-- matecito-ai: la forma del retorno tiene UNA fuente. Si volvés a escribirla acá, creaste la copia que este cambio vino a eliminar. -->
+- The SHAPE of your return is `~/.claude/references/phase-returns/sdd-intake.md` — both blocks, all four statuses. Follow it literally and never reconstruct it from memory (Step 7). This skill defines WHAT goes in each section, never how the section looks.
+- Return envelope per **Section D** from `~/.claude/skills/_shared/sdd-phase-common.md`.
 <!-- matecito-ai: el brief siempre pasa por el gate de confirmación del orquestador antes de la fase siguiente -->
-- The brief ALWAYS goes through the orchestrator's confirmation gate (show to user → confirm/adjust/cancel) before any next phase runs — never assume auto-proceed. See `_shared/orchestration.md`.
+- The brief ALWAYS goes through the orchestrator's confirmation gate (show to user → confirm/adjust/cancel) before any next phase runs — never assume auto-proceed.

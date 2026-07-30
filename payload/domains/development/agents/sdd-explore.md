@@ -37,10 +37,20 @@ After completing work, call `mem_save` with:
 
 ## Result Contract
 
-Return a structured result with these fields:
-- `status`: `done` | `blocked` | `partial`
+<!-- matecito-ai: el contrato de retorno es UNO SOLO y vive en la Sección D de sdd-phase-common.md.
+     Estaba duplicado acá y en las otras ocho fases, y cada edición desalineaba las copias. Este
+     bloque REFERENCIA la fuente única y sólo agrega lo específico de la fase. -->
+
+Every field and its legal values are defined once in **Section D of
+`~/.claude/skills/_shared/sdd-phase-common.md`** — the single source of truth. This agent does
+**NOT** redefine `status` (D.1) or `detailed_report` (D.2 + D.3): emit them exactly as Section D
+specifies for `sdd-explore`.
+
+Phase-specific refinements on top of Section D:
 - `executive_summary`: one-sentence description of what was explored and the key recommendation
 - `artifacts`: topic_keys or file paths written (e.g. `sdd/{change-name}/explore`)
-- `next_recommended`: `sdd-propose` (if tied to a change) or `none` (if standalone)
-- `risks`: risks or blockers discovered during exploration
-- `skill_resolution`: `phase-skill` (loaded own SKILL.md) or `none` <!-- matecito-ai: sin inyección -->
+- `next_recommended`: `sdd-propose` (tied to a change) — or `none`, which is the value when the
+  exploration is standalone, and the only correct value on `blocked` / `needs-input`
+- `risks`: risks and assumptions discovered while exploring. Per D.4 this is never the destination
+  of a decision the user owns nor of an ambiguity you resolved by assuming — that is `blocked`
+- `skill_resolution`: per D.4 — `phase-skill` when you loaded this phase's own SKILL.md <!-- matecito-ai: sin inyección -->

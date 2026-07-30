@@ -21,6 +21,11 @@ Set `capture_prompt: false` when the Engram tool schema supports it; if an older
 
 | Artifact Type | Produced By | Description |
 |---------------|-------------|-------------|
+<!-- matecito-ai: `intake` was missing despite being the ENTRY phase, and despite its brief being read by
+     sdd-spec (the `ui-test` flag), sdd-design (the `diagram` flag) and sdd-verify. `testing-capabilities`
+     was missing too, and sdd-apply and sdd-verify consult it. A "canonical" table with holes is not
+     canonical. -->
+| `intake` | sdd-intake | Intake Brief — entry artifact of the flow (Pass 2 only; Pass 1 persists nothing) |
 | `explore` | sdd-explore | Exploration analysis |
 | `proposal` | sdd-propose | Change proposal |
 | `spec` | sdd-spec | Delta specifications (all domains concatenated) |
@@ -29,24 +34,25 @@ Set `capture_prompt: false` when the Engram tool schema supports it; if an older
 | `apply-progress` | sdd-apply | Implementation progress (one per batch) |
 | `verify-report` | sdd-verify | Verification report |
 | `archive-report` | sdd-archive | Archive closure with lineage |
-| `state` | orchestrator | DAG state for recovery after compaction |
+<!-- matecito-ai: the `state` artifact is gone. It had a declared format (here and in
+     persistence-contract.md), NO instructed producer — the row said "orchestrator", but nothing in the
+     kernel or the domain fragment ever told the orchestrator to write it — and NO consumer at all. The
+     inverse of every other defect in this sweep: not a reader without an emitter, a format with neither
+     end. Post-compaction recovery already works through the phase artifacts themselves (deterministic
+     `topic_key` + the kernel's Recovery Rule), so `state` would have been a SECOND source of truth about
+     which phase ran and which tasks are done — duplicated information that drifts, which is the failure
+     mode this whole round has been undoing. Implementing it would have added the problem, not fixed it. -->
 
+### Project-scoped artifacts (not under `sdd/{change-name}/`)
 
+Two artifacts belong to the PROJECT, not to a change, so they do not take a `{change-name}` segment.
+They are produced once by `sdd-init` and read by later phases of every change.
 
-### State Artifact
+| Topic key | Produced By | Description |
+|-----------|-------------|-------------|
+| `sdd-init/{project}` | sdd-init | Detected project context: stack, architecture, conventions |
+| `sdd/{project}/testing-capabilities` | sdd-init | Test runner, layers, coverage, quality tools, `uiTest.*`, `debugger.*` — format and canonical keys in `~/.claude/skills/sdd-init/references/init-details.md` |
 
-```
-mem_save(
-  title: "sdd/{change-name}/state",
-  topic_key: "sdd/{change-name}/state",
-  type: "architecture",
-  project: "{project}",
-  capture_prompt: false,
-  content: "change: {change-name}\nphase: {last-phase}\nartifact_store: engram\nartifacts:\n  proposal: true\n  specs: true\n  design: false\n  tasks: false\ntasks_progress:\n  completed: []\n  pending: []\nlast_updated: {ISO date}"
-)
-```
-
-Recovery: `mem_search("sdd/{change-name}/state")` → `mem_get_observation(id)` → parse YAML → restore state.
 
 ## Recovery Protocol (2 steps)
 

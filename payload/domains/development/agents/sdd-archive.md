@@ -41,10 +41,21 @@ After completing work, call `mem_save` with:
 
 ## Result Contract
 
-Return a structured result with these fields:
-- `status`: `done` | `blocked` | `partial`
+<!-- matecito-ai: el contrato de retorno es UNO SOLO y vive en la Sección D de sdd-phase-common.md.
+     Estaba duplicado acá y en las otras ocho fases, y cada edición desalineaba las copias. Este
+     bloque REFERENCIA la fuente única y sólo agrega lo específico de la fase. -->
+
+Every field and its legal values are defined once in **Section D of
+`~/.claude/skills/_shared/sdd-phase-common.md`** — the single source of truth. This agent does
+**NOT** redefine `status` (D.1) or `detailed_report` (D.2 + D.3): emit them exactly as Section D
+specifies for `sdd-archive`.
+
+Phase-specific refinements on top of Section D:
 - `executive_summary`: one-sentence confirmation that the change is archived and closed
-- `artifacts`: topic_keys or file paths written (e.g. `sdd/{change-name}/archive-report`, archived folder path)
-- `next_recommended`: `none` (change is complete) or a new `/sdd-new` if follow-up is needed
-- `risks`: any artifacts that could not be merged or archived cleanly
-- `skill_resolution`: `phase-skill` (loaded own SKILL.md) or `none` <!-- matecito-ai: sin inyección -->
+- `artifacts`: topic_keys or file paths written (e.g. `sdd/{change-name}/archive-report`, the durable capability-specs merged)
+- `next_recommended`: `none` — the normal value here, since the change is complete; a new
+  `/sdd-new` only when follow-up work is genuinely needed
+- `risks`: risks and assumptions left standing — e.g. artifacts that could not be merged or archived
+  cleanly. Per D.4 this is never the destination of a decision the user owns nor of an ambiguity you
+  resolved by assuming
+- `skill_resolution`: per D.4 — `phase-skill` when you loaded this phase's own SKILL.md <!-- matecito-ai: sin inyección -->

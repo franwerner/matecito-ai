@@ -29,16 +29,19 @@ From the orchestrator:
 
 ## Execution and Persistence Contract
 
-> Follow **Section B** (retrieval) and **Section C** (persistence) from `skills/_shared/sdd-phase-common.md`.
+> Follow **Section B** (retrieval) and **Section C** (persistence) from `~/.claude/skills/_shared/sdd-phase-common.md`.
 
-- **engram**: Read `sdd/{change-name}/proposal` (required), `sdd/{change-name}/spec` (required), `sdd/{change-name}/design` (required). Save as `sdd/{change-name}/tasks`.
+<!-- matecito-ai: declaraba los tres como required, contra la regla de nearest-upstream del fragmento:
+     en lane `reduced`/`custom` no hay proposal ni design, y el agente ya trata design como opcional.
+     Un `required` que no se cumple en el lane por defecto enseña a ignorar los `required`. -->
+- **engram**: Read `sdd/{change-name}/spec` (**required** — the floor). Read `sdd/{change-name}/design` and `sdd/{change-name}/proposal` **when they exist**: in `reduced` and `custom` lanes those phases may not have run, and their absence is normal, not an error — decompose from what you do have. Save as `sdd/{change-name}/tasks`.
 <!-- matecito-ai: also read the durable capability-specs of the capabilities this change touches — `.matecito-ai/development-specs/<type>/<capability>.md` (type ∈ flow|rule|lifecycle|process; concept at ~/.claude/references/spec/README.md), when present. They are the accumulated behavior contract the tasks must uphold, alongside the change spec and the design. -->
 - **none**: Return result only. Never create or modify project files.
 
 ## What to Do
 
 ### Step 1: Load Skills
-Follow **Section A** from `skills/_shared/sdd-phase-common.md`.
+Follow **Section A** from `~/.claude/skills/_shared/sdd-phase-common.md`.
 
 ### Step 2: Analyze the Design
 
@@ -140,11 +143,18 @@ If the estimate is **High** or likely above 400 lines:
 1. Mark `Chained PRs recommended` as `Yes`.
 2. Split tasks into **work units** that can become chained or stacked PRs.
 3. Each suggested PR must have a clear start, clear finish, verification, and autonomous scope.
-4. **Ask the user which chain strategy to use** (this is a team decision):
+<!-- matecito-ai: acá decía "Ask the user which chain strategy to use" y "Cache the user's choice", a
+     un ejecutor headless sin canal y sin estado de sesión — el mismo defecto que se arregló en
+     sdd-intake. Y encima era redundante: el Review Workload Guard del orquestador YA pregunta esto
+     después de esta fase y antes de apply, que es donde corresponde. Vos documentás las opciones
+     para que la decisión se pueda tomar; no la tomás ni la pedís. -->
+4. **Document the three chain strategies in the forecast** so the user can choose when the guard asks. You do NOT ask and you do NOT choose: you have no channel to the user, and the orchestrator's Review Workload Guard puts this question after your phase and before apply. Lay them out:
    - **Stacked PRs to main** — each PR merges to main in order. Fast iteration, fix on the go. Best for speed-first teams and independent slices.
    - **Feature Branch Chain** — the feature/tracker branch accumulates the final integration; PR #1 targets the tracker branch, later PRs target the immediate previous PR branch so each child diff stays focused. Only the tracker merges to main. Best for rollback control and coordinated releases.
    - **size:exception** — keep it as a single PR with maintainer approval. Best for generated code, migrations, or vendor diffs.
-5. Cache the user's choice and set `Decision needed before apply` from delivery strategy:
+
+   Set `Chain strategy: pending` unless the orchestrator handed you an already-resolved one in the launch prompt. `pending` is the correct, expected value here — not a gap you should fill in.
+5. Set `Decision needed before apply` from the `delivery_strategy` the orchestrator passed you (you receive it; you never cache or infer it):
    - `ask-on-risk`: `Yes` — orchestrator asks before apply.
    - `auto-chain`: `No` — orchestrator proceeds with the first slice using the chosen chain strategy.
    - `single-pr`: `Yes` — orchestrator must require `size:exception` before apply.
@@ -192,53 +202,35 @@ Phase 5: Cleanup (if needed)
 
 **This step is MANDATORY — do NOT skip it.**
 
-Follow **Section C** from `skills/_shared/sdd-phase-common.md`.
+Follow **Section C** from `~/.claude/skills/_shared/sdd-phase-common.md`.
 - artifact: `tasks`
 - topic_key: `sdd/{change-name}/tasks`
 - type: `architecture`
 
 ### Step 5: Return Summary
 
-Return to the orchestrator:
+<!-- matecito-ai: la plantilla vivía acá inline y sólo cubría el caso feliz. Ahora vive en un único
+     archivo, el mismo contra el que el orquestador valida el retorno (Return Contract Check).
+     Mantener además una copia acá sería volver a tener dos formatos que se desincronizan. -->
 
-```markdown
-## Tasks Created
+**Follow `~/.claude/references/phase-returns/sdd-tasks.md` literally.** That file is the canonical
+shape of this phase's return: which sections, in which order, with which titles, which ones are
+unconditional and what changes on `blocked`. The orchestrator validates your return against that
+same file and matches titles **literally** — a section you drop, rename or re-level is a gate that
+never fires. Do not improvise a format here and do not omit a section because you have nothing to
+report: it ships with a `None…` sentinel.
 
-**Change**: {change-name}
-**Location**: Engram `sdd/{change-name}/tasks` (engram) | inline (none)
+Three things the template expects you to already know from this skill:
 
-### Breakdown
-| Phase | Tasks | Focus |
-|-------|-------|-------|
-| Phase 1 | {N} | {Phase name} |
-| Phase 2 | {N} | {Phase name} |
-| Phase 3 | {N} | {Phase name} |
-| Total | {N} | |
-
-### Implementation Order
-{Brief description of the recommended order and why}
-
-<!-- matecito-ai: Tier 1 del Unresolved Decisions Guard. El scope creep silencioso entra por acá:
-     trabajo que aparece en el checklist, se implementa y se verifica sin que el usuario lo pidiera. -->
-### Tasks not traceable to spec/design
-{Every task that links to NO spec requirement and to nothing the design establishes,
-each with what motivated it (a gap you found, an implied prerequisite, a project
-convention). This is Tier 1 for the orchestrator's Unresolved Decisions Guard: it is
-work the user did not ask for. Do NOT drop those tasks, and do NOT fold them in as if
-they came from the spec — list them and let the user decide.
-If every task traces, state "None — every task links to spec or design."}
-
-### Review Workload Forecast
-- Estimated changed lines: {estimate or range}
-- 400-line budget risk: {Low | Medium | High}
-- Chained PRs recommended: {Yes | No}
-- Delivery strategy: {ask-on-risk | auto-chain | single-pr | exception-ok}
-- Decision needed before apply: {Yes | No}
-- Suggested work-unit PR split: {brief list or "Not needed"}
-
-### Next Step
-{Ready for implementation (sdd-apply) OR ask the user whether to use chained PRs before sdd-apply.}
-```
+- `### Tasks not traceable to spec/design` carries every task that links to NO spec requirement and
+  to nothing the design establishes, each with what motivated it (a gap you found, an implied
+  prerequisite, a project convention). This is where silent scope creep enters — work the user did
+  not ask for that lands in the checklist, gets implemented and gets verified. Do NOT drop those
+  tasks and do NOT fold them in as if they came from the spec.
+- `### Review Workload Forecast` repeats the guard lines of the artifact (see the forecast rules
+  above). Their labels are matched literally downstream — reproduce them verbatim.
+- A decision you cannot settle yourself does not go into either of those. It makes you return
+  `blocked`, with the question in the template's `### Blocker` section — never in `risks` (D.4).
 
 ## Rules
 
@@ -254,4 +246,4 @@ If every task traces, state "None — every task links to spec or design."}
 <!-- matecito-ai: budget subido de 530 → 800 palabras para absorber la sub-línea `criteria:` (criteria + edr) por tarea. -->
 - **Size budget**: Tasks artifact MUST be under 800 words. Each task: the `- [ ]` line + one indented `criteria:` sub-line (max 2 lines total). Use checklist format, not paragraphs.
 - **Review workload guard**: ALWAYS include the Review Workload Forecast. If likely above 400 changed lines, recommend chained PRs and honor the received delivery strategy for whether a decision/exception is needed before apply.
-- Return envelope per **Section D** from `skills/_shared/sdd-phase-common.md`.
+- Return envelope per **Section D** from `~/.claude/skills/_shared/sdd-phase-common.md`.

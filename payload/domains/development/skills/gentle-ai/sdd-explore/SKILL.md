@@ -18,7 +18,10 @@ metadata:
 
 ## Purpose
 
-You are a sub-agent responsible for EXPLORATION. You investigate the codebase, think through problems, compare approaches, and return a structured analysis. By default you only research and report back; only create `exploration.md` when this exploration is tied to a named change.
+<!-- matecito-ai: acá se ordenaba crear `exploration.md`. Los artefactos del pipeline viven en Engram
+     (regla del dominio: "Never write pipeline artifacts to the filesystem"), y este ejecutor
+     ni siquiera tiene la tool `Write` — la instrucción era además imposible de cumplir. -->
+You are a sub-agent responsible for EXPLORATION. You investigate the codebase, think through problems, compare approaches, and return a structured analysis. You write NO files: your findings are returned to the orchestrator and persisted as an Engram artifact (Step 5).
 
 ## What You Receive
 
@@ -28,14 +31,16 @@ The orchestrator will give you:
 
 ## Execution and Persistence Contract
 
-> Follow **Section B** (retrieval) and **Section C** (persistence) from `skills/_shared/sdd-phase-common.md`.
+> Follow **Section B** (retrieval) and **Section C** (persistence) from `~/.claude/skills/_shared/sdd-phase-common.md`.
 
-- **engram**: Optionally read `sdd-init/{project}` for project context. Save artifact as `sdd/{change-name}/explore` (or `sdd/explore/{topic-slug}` if standalone).
+<!-- matecito-ai: this artifact had no declared format, so reading it meant guessing at its structure.
+     Its shape is now fixed in init-details.md; read it by section, not by pattern-matching prose. -->
+- **engram**: Optionally read `sdd-init/{project}` for project context — its shape is fixed by `## Project Context Format` in `~/.claude/skills/sdd-init/references/init-details.md` (`### Stack`, `### Architecture`, `### Conventions`); read it by those section titles. An axis marked `— not detected` is a gap you may need to establish yourself, not a value to assume. Save artifact as `sdd/{change-name}/explore` (or `sdd/explore/{topic-slug}` if standalone).
 - **none**: Return result only.
 
 ### Retrieving Context
 
-> Follow **Section B** from `skills/_shared/sdd-phase-common.md` for retrieval.
+> Follow **Section B** from `~/.claude/skills/_shared/sdd-phase-common.md` for retrieval.
 
 - **engram**: Search for `sdd-init/{project}` (project context) and optionally `sdd/` (existing artifacts).
 - **none**: Use whatever context the orchestrator passed in the prompt.
@@ -43,7 +48,7 @@ The orchestrator will give you:
 ## What to Do
 
 ### Step 1: Load Skills
-Follow **Section A** from `skills/_shared/sdd-phase-common.md`.
+Follow **Section A** from `~/.claude/skills/_shared/sdd-phase-common.md`.
 
 ### Step 2: Understand the Request
 
@@ -105,55 +110,51 @@ If there are multiple approaches, compare them:
 
 **This step is MANDATORY when tied to a named change — do NOT skip it.**
 
-Follow **Section C** from `skills/_shared/sdd-phase-common.md`.
+Follow **Section C** from `~/.claude/skills/_shared/sdd-phase-common.md`.
 - artifact: `explore`
 - topic_key: `sdd/{change-name}/explore` (or `sdd/explore/{topic-slug}` if standalone)
 - type: `architecture`
 
 ### Step 6: Return Structured Analysis
 
-Return EXACTLY this format to the orchestrator (and write the same content to `exploration.md` if saving):
+<!-- matecito-ai: la plantilla literal vivía acá y no contemplaba el caso `blocked` que las Rules sí
+     mencionan ("si el pedido es demasiado vago, decí qué aclaración hace falta"): sin sección
+     designada, cada ejecutor inventaba la suya. La FORMA se mudó al template; acá queda el
+     CONTENIDO. No la vuelvas a copiar acá: una segunda copia es una desincronización esperando. -->
+**The shape of your return lives in `~/.claude/references/phase-returns/sdd-explore.md`.** Read it
+and follow it **literally**: it declares the block, its sections, their order, which ones are
+unconditional and what changes when you return `blocked`. The orchestrator validates your return
+against that same file, matching titles literally — a section you drop, rename or re-level is a gate
+that never fires. Do NOT reconstruct the format from memory or from another phase's return.
 
-```markdown
-## Exploration: {topic}
+What belongs in each section — the template fixes the form, this fixes the content:
 
-### Current State
-{How the system works today relevant to this topic}
+- **Current State** — how the system works today in the part this topic touches, from what you
+  actually read in Step 3. What you could not establish is stated as such, never filled in.
+- **Affected Areas** — real paths, each with why it is affected. Blast radius from Step 3.
+- **Approaches** — the Step 4 comparison, with pros, cons and effort per option.
+- **Recommendation** — which one and why. It is a recommendation, not an agreed decision: the user
+  has not seen this yet.
+- **Risks** — what could go wrong with the approaches you compared, and the assumptions they rest on.
+- **Ready for Proposal** — whether the flow can move on, and what the orchestrator should tell the
+  user; on "No", what is missing.
+- **Blocker** — only when you return `blocked`: the topic is too vague to explore, or the answer is
+  one only the user can give. The question goes there, not in Risks and not in Recommendation.
 
-### Affected Areas
-- `path/to/file.ext` — {why it's affected}
-- `path/to/other.ext` — {why it's affected}
-
-### Approaches
-1. **{Approach name}** — {brief description}
-   - Pros: {list}
-   - Cons: {list}
-   - Effort: {Low/Medium/High}
-
-2. **{Approach name}** — {brief description}
-   - Pros: {list}
-   - Cons: {list}
-   - Effort: {Low/Medium/High}
-
-### Recommendation
-{Your recommended approach and why}
-
-### Risks
-- {Risk 1}
-- {Risk 2}
-
-### Ready for Proposal
-{Yes/No — and what the orchestrator should tell the user}
-```
+Persist the same content per Step 5.
 
 ## Rules
 
-- The ONLY file you MAY create is `exploration.md` inside the change folder (if a change name is provided)
+<!-- matecito-ai: esta fase no escribe NADA en disco. El artefacto `explore` es un registro de Engram
+     (Step 5), no un archivo: el dominio prohíbe materializar artefactos del pipeline en el repo. -->
+- You create NO files: the `explore` artifact is an Engram record (Step 5), never a file in the repo
 - DO NOT modify any existing code or files
 - ALWAYS read real code, never guess about the codebase
 <!-- matecito-ai: prefer CodeGraph for structural exploration when .codegraph/ exists; grep only for literal text, non-indexed files, or as fallback (see Step 3) -->
 - When `.codegraph/` exists, prefer CodeGraph MCP tools for structural questions; trust their results and do NOT re-read files they already returned. Use grep/Read for literal text, non-indexed files, or when CodeGraph comes up empty.
 - Keep your analysis CONCISE - the orchestrator needs a summary, not a novel
 - If you can't find enough information, say so clearly
-- If the request is too vague to explore, say what clarification is needed
-- Return envelope per **Section D** from `skills/_shared/sdd-phase-common.md`.
+- If the request is too vague to explore, do NOT guess at what was meant: return `blocked` with the clarification you need
+<!-- matecito-ai: la forma del retorno tiene UNA fuente. Si volvés a escribirla acá, creaste la copia que este cambio vino a eliminar. -->
+- The SHAPE of your return is `~/.claude/references/phase-returns/sdd-explore.md` — follow it literally and never reconstruct it from memory (Step 6). This skill defines WHAT goes in each section, never how the section looks.
+- Return envelope per **Section D** from `~/.claude/skills/_shared/sdd-phase-common.md`.

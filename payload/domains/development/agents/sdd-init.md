@@ -27,8 +27,15 @@ Execute all steps from the skill directly in this context window:
    a. Check if `proofshot` is on PATH (equivalent to `exec.LookPath("proofshot")`). Record ✅ or ❌. Limitation: if proofshot is installed but not on PATH at init time, it is detected as ❌.
    b. Detect dev-server command: inspect `package.json` scripts for `dev`, `start`, or `serve` keys (in that priority order); fall back to framework config (`vite.config.*`, `next.config.*`). Record the resolved command or ❌ if none found.
    c. Derive `uiTest.available` = proofshot ✅ AND devServer ✅.
+<!-- matecito-ai: steps d and e existed in the skill and were missing from this enumeration. Same defect
+     as the `design` artifact in sdd-verify: the agent file is read first, so what it leaves out does not
+     get done. And the cost here is invisible — an undetected `debugger.available` reads as ❌ downstream,
+     which both sdd-apply and sdd-verify honor by skipping the debugger SILENTLY. The whole integration
+     stays dead and looks deliberate. -->
+   d. Detect debug capability for the project's primary language (the one resolved in step 1). **Procedural, never a lookup table** — same criterion as the `debugger` skill: identify that language's standard debug toolchain binary and check whether it is actually installed (e.g. `dlv` for Go, `debugpy` for Python, the inspector for Node). Record WHICH binary you looked for and ✅ / ❌, so a ❌ is diagnosable instead of mysterious.
+   e. Derive `debugger.available` = the toolchain binary for the primary language is present ✅. Absent → ❌, a normal outcome and not a blocker: `sdd-apply` and `sdd-verify` skip debugger usage silently, and the `debugger` skill offers the install command when someone actually needs a session. Do NOT install anything — init detects, it does not provision.
 3. Initialize persistence for the resolved artifact-store mode (`engram` | `none`)
-4. Persist testing capabilities and project context. Include the `uiTest` block (proofshot, devServer, available) as defined in `~/.claude/skills/sdd-init/references/init-details.md` under `### UI Test`.
+4. Persist project context per `## Project Context Format` in `~/.claude/skills/sdd-init/references/init-details.md` (`### Stack`, `### Architecture`, `### Conventions`; an undetermined axis is `— not detected`, never a plausible value), and testing capabilities emitting the canonical keys **literally** as that same file fixes them (`### Canonical keys`): `test_runner.command` / `test_runner.framework`, the `### UI Test` block (`uiTest.proofshot`, `uiTest.devServer.command`, `uiTest.available`) and the `### Debugger` block (`debugger.language`, `debugger.toolchain`, `debugger.available`). Downstream phases look them up by those exact names; a key rewritten as a prose label is a key they will not find.
 5. Return the structured initialization envelope
 
 Do NOT explore the change in depth (that is sdd-explore). Do NOT design or implement.
@@ -44,10 +51,21 @@ Use `capture_prompt: false` when the Engram tool schema supports it; if an older
 
 ## Result Contract
 
-Return a structured result with these fields:
-- `status`: `done` | `blocked` | `partial`
+<!-- matecito-ai: el contrato de retorno es UNO SOLO y vive en la Sección D de sdd-phase-common.md.
+     Estaba duplicado acá y en las otras ocho fases, y cada edición desalineaba las copias. Este
+     bloque REFERENCIA la fuente única y sólo agrega lo específico de la fase. -->
+
+Every field and its legal values are defined once in **Section D of
+`~/.claude/skills/_shared/sdd-phase-common.md`** — the single source of truth. This agent does
+**NOT** redefine `status` (D.1) or `detailed_report` (D.2 + D.3): emit them exactly as Section D
+specifies for `sdd-init` (D.2 defers the block name to this phase's own skill).
+
+Phase-specific refinements on top of Section D:
 - `executive_summary`: one-sentence description of the detected project and persistence outcome
 - `artifacts`: topic_keys written (e.g. `sdd-init/{project}`, `sdd/{project}/testing-capabilities`)
-- `next_recommended`: `sdd-intake` (entry phase of the matecito-ai flow) <!-- matecito-ai: entry phase is sdd-intake; upstream skill says /sdd-explore or /sdd-new -->
-- `risks`: anything missing or ambiguous (no test runner, unrecognized stack, absent config)
-- `skill_resolution`: `phase-skill` (loaded own SKILL.md) or `none` <!-- matecito-ai: sin inyección -->
+- `next_recommended`: `sdd-intake` (entry phase of the matecito-ai flow) — or `none`, always legal
+  and the correct value on `blocked` / `needs-input` <!-- matecito-ai: entry phase is sdd-intake; upstream skill says /sdd-explore or /sdd-new -->
+- `risks`: anything missing or ambiguous about the detected ground truth (no test runner,
+  unrecognized stack, absent config). Per D.4 this is never the destination of a decision the user
+  owns nor of an ambiguity you resolved by assuming
+- `skill_resolution`: per D.4 — `phase-skill` when you loaded this phase's own SKILL.md <!-- matecito-ai: sin inyección -->

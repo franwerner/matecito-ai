@@ -30,15 +30,19 @@ From the orchestrator:
 
 ## Execution and Persistence Contract
 
-> Follow **Section B** (retrieval) and **Section C** (persistence) from `skills/_shared/sdd-phase-common.md`.
+> Follow **Section B** (retrieval) and **Section C** (persistence) from `~/.claude/skills/_shared/sdd-phase-common.md`.
 
-- **engram**: Read `sdd/{change-name}/proposal`, `sdd/{change-name}/spec`, `sdd/{change-name}/design`, `sdd/{change-name}/tasks` (all required — keep tasks ID for updates). Mark tasks complete via `mem_update(id: {tasks-observation-id}, content: "...")`. Save progress as `sdd/{change-name}/apply-progress`.
+<!-- matecito-ai: declaraba los cuatro como "all required", contra la regla de nearest-upstream y
+     contra su propio agente (spec es el piso; tasks y design faltan en lane reduced/custom, y
+     proposal sólo existe si corrió esa fase). Un `required` que no se cumple en el lane por
+     defecto enseña a ignorar los `required`. Mismo arreglo que ya se hizo en `sdd-tasks`. -->
+- **engram**: Read `sdd/{change-name}/spec` (**required** — the floor). Read `sdd/{change-name}/tasks`, `sdd/{change-name}/design` and `sdd/{change-name}/proposal` **when they exist** — in `reduced` / `custom` lanes those phases may not have run, and their absence is normal, not an error. Keep the tasks observation ID when there is one: you mark tasks complete via `mem_update(id: {tasks-observation-id}, content: "...")`. Save progress as `sdd/{change-name}/apply-progress`.
 - **none**: Return progress only. Do not update project artifacts.
 
 ## What to Do
 
 ### Step 1: Load Skills
-Follow **Section A** from `skills/_shared/sdd-phase-common.md`.
+Follow **Section A** from `~/.claude/skills/_shared/sdd-phase-common.md`.
 
 ### Step 2: Read Context
 
@@ -132,14 +136,64 @@ FOR EACH TASK:
 ├── Read relevant spec scenarios (these are your acceptance criteria)
 ├── Read the design decisions (these constrain your approach)
 ├── Read existing code patterns (match the project's style)
+├── Does the design cover what this task needs?
+│   ├── No, and the gap is a DECISION → STOP this task (see "Stopping Mid-Batch" below)
+│   └── No, but it is execution detail → resolve it and note it
 ├── Write the code
-├── Mark task as complete [x] in tasks.md
-└── Note any issues or deviations
+├── Mark task as complete [x] in the tasks artifact (Step 5)
+└── Note any issues or deviations (recording is not authorization — see Rules)
 ```
+
+#### Stopping Mid-Batch (MANDATORY)
+
+Any early exit from the loop above — a design gap you must raise, an unexpected blocker — is a stop
+**inside** the batch, not an escape from it. Before you return control you ALWAYS, in this order:
+
+1. Mark every task you already finished as `[x]` (Step 5).
+2. Persist `apply-progress` with the REAL state — tasks done, task stopped on, tasks untouched (Step 6).
+3. Only then return.
+
+<!-- matecito-ai: el código de las tareas ya terminadas YA está escrito en el repo. No registrarlo es
+     peor que registrarlo: el batch siguiente lee apply-progress, no ve esas tareas, y las
+     re-implementa sobre código que ya existe. Persistir siempre deja el estado real. -->
+
+**Never return control with completed work unpersisted.** There is no exit path from this phase that
+skips Steps 5 and 6 — not `blocked`, not `partial`, not an aborted batch. The only stop that persists
+nothing is one that happens **before** any task of this batch was completed (e.g. the Step 2a
+workload-decision stop, which fires before you write a line): there is no completed work to record,
+so the envelope reports `artifacts: none` per Section D.4.
+
+<!-- matecito-ai: `partial` significaba acá "hay blocker pero no frenó todo", y en la Sección D.1
+     "quedó trabajo hecho pero la fase no terminó". Vale D.1: el batch de continuación normal es el
+     caso más frecuente de esta fase y con la definición vieja se quedaba sin status. -->
+
+Which status to return — resolve it top down and stop at the first that fits (the full rule, with
+its blocks, is in the return template: `~/.claude/references/phase-returns/sdd-apply.md`):
+
+- **`blocked`** — the blocker also stops the rest of the batch: you cannot keep going.
+- **`partial`** — the phase is not finished: tasks of this change remain. This covers the ordinary
+  continuation batch just as much as a stop that left one task untouched. `partial` claims nothing
+  about blockers, in either direction — it is about work left, not about why.
+- **`done`** — nothing remains.
+
+The blocker, when there is one, is reported in ONE place: the template's `### Blocker` section, with
+the gap and the concrete options, whatever the status. NOT in `### Issues Found` (that is for
+problems you did not stop on), and NOT in `risks` (D.4 forbids routing a decision the user owns
+through it). `### Status` may point at it — `Stopped at task {id} — see Blocker` — never restate it.
+Carry the envelope per **Section D** of `~/.claude/skills/_shared/sdd-phase-common.md`.
 
 ### Step 5: Mark Tasks Complete
 
-Update `tasks.md` — change `- [ ]` to `- [x]` for completed tasks:
+This step runs on EVERY exit path, including an early stop mid-batch (see "Stopping Mid-Batch"):
+whatever you actually finished gets marked, even if you did not reach the end of the batch.
+
+<!-- matecito-ai: decía "Update `tasks.md`", con un ejemplo de archivo. No hay `tasks.md` en el repo:
+     las tareas viven en el artefacto `tasks` de Engram y se marcan con `mem_update`. Las fases
+     hermanas (`sdd-tasks`, `sdd-design`) ya estaban saneadas con esta misma aclaración; ésta quedó
+     como la última que ordenaba escribir un artefacto de flujo a disco por nombre de archivo. -->
+Update the **`tasks` artifact** — flip `- [ ]` to `- [x]` on each task you completed, via
+`mem_update` on the tasks observation (Step 6). There is no `tasks.md` file in the repo; the
+checklist below shows the shape of the artifact's content, not a file to edit:
 
 ```markdown
 ## Phase 1: Foundation
@@ -151,9 +205,11 @@ Update `tasks.md` — change `- [ ]` to `- [x]` for completed tasks:
 
 ### Step 6: Persist Progress
 
-**This step is MANDATORY — do NOT skip it.**
+**This step is MANDATORY on EVERY exit path — do NOT skip it.** It is not the last step of the happy
+path: it also runs when you stop mid-batch and return `blocked` or `partial` (see "Stopping
+Mid-Batch"). Persist first, return second — always.
 
-Follow **Section C** from `skills/_shared/sdd-phase-common.md`.
+Follow **Section C** from `~/.claude/skills/_shared/sdd-phase-common.md`.
 - artifact: `apply-progress`
 - topic_key: `sdd/{change-name}/apply-progress`
 - type: `architecture`
@@ -161,58 +217,81 @@ Follow **Section C** from `skills/_shared/sdd-phase-common.md`.
 
 #### Merge Protocol
 
+<!-- matecito-ai: "keep the same structure" no decía de qué estructura, porque el formato del artefacto
+     no estaba declarado en ningún lado. Vive ahora en el template, junto al del retorno. -->
+The shape of the artifact is declared in **`~/.claude/references/phase-returns/sdd-apply.md`**, in its
+"Artifact vs return" section. Do not invent it and do not derive it from your return block: they are
+two different documents with different readers.
+
 When saving apply-progress:
 1. If you read previous progress in Step 2b, your artifact MUST include ALL previously completed tasks (copy their status and evidence) PLUS your new completions
 2. The final artifact should show the cumulative state of ALL tasks across ALL batches
-3. Format: keep the same structure but ensure no completed task is lost from prior batches
+3. **`### Deviations from Design` goes in the artifact too**, with its `verify-checks:` tokens, merged across batches — `sdd-verify` reads that copy, never your return. Putting it only in the return means verify never sees it and every deviation defaults to CRITICAL
+4. **`### UI Scenario Counterparts` goes in the artifact** (Step 6b below), cumulative across batches like everything else here
+
+<!-- matecito-ai: new obligation, and it exists because of who knows what. The spec authors UI scenarios
+     in domain language — it cannot name a route or an accessible name for a control that does not exist
+     yet, and it must not pin them anyway (volatile implementation identifiers do not belong in a spec).
+     YOU know them without guessing: you just wrote them. Before this split, `sdd-spec` had to author the
+     executable block and its only legal move was `blocked`, so every `ui-test: needed` change stopped
+     there. `sdd-verify` still needs exact targets — a locator resolved semantically at run time turns a
+     reproducible check into an agent's judgment. So the exactness lands here. -->
+### Step 6b: Write the UI Scenario Counterparts (conditional)
+
+Applies **only** when the spec artifact carries a `ui-scenarios:` block. No block → skip silently, no
+section, no mention.
+
+For each behavioral scenario in that block, author its **executable counterpart** per **Part 2** of
+`~/.claude/references/ui-scenarios-schema.md` (read it before writing): the same `name` **verbatim**, the
+real `url` you implemented, the `steps` that reach the state its `when` describes, and the `expect`
+assertions that express its `then`. It goes in the artifact under `### UI Scenario Counterparts`, merged
+across batches.
+
+Three things that make this fail quietly if you get them wrong:
+
+- **`name` must match verbatim.** It is the binding key `sdd-verify` pairs on — the same key it already
+  uses for the verdict table. A name that matches nothing is a counterpart nobody runs.
+- **Every behavioral scenario needs one.** `sdd-verify` checks coverage: a scenario with no counterpart
+  is `UNTESTED` and CRITICAL. If a scenario's surface is not implemented yet in this batch, say so in
+  `### Remaining Tasks` — do not omit the counterpart silently.
+- **Targets are role+name or CSS, never `@e\d+`.** Those are ephemeral accessibility-tree refs, valid
+  only inside the snapshot that produced them. `sdd-verify` rejects one with a CRITICAL before the
+  browser opens. Authoring one is a guaranteed verification failure, not a style slip.
+
+You are not designing behavior here: the spec fixed what must be true, you translate it against the
+surface you built. If you cannot translate a `then` into an assertion, that is a finding for
+`### Issues Found` — never a weakened assertion.
 
 ### Step 7: Return Summary
 
-Return to the orchestrator:
+<!-- matecito-ai: la plantilla vivía acá inline, con el blocker repartido entre `### Issues Found` y
+     `### Status`. Ahora vive en un único archivo, el mismo contra el que el orquestador valida el
+     retorno (Return Contract Check). Mantener además una copia acá sería volver a tener dos
+     formatos que se desincronizan. -->
 
-```markdown
-## Implementation Progress
+**Follow `~/.claude/references/phase-returns/sdd-apply.md` literally.** That file is the canonical
+shape of this phase's return: which sections, in which order, with which titles, which ones are
+unconditional, and a full block for each of `done`, `partial` and `blocked`. The orchestrator
+validates your return against that same file and matches titles **literally** — a section you drop,
+rename or re-level is a gate that never fires. Do not improvise a format here and do not omit a
+section because you have nothing to report: it ships with a `None…` sentinel.
 
-**Change**: {change-name}
-**Mode**: {Strict TDD | Standard}
+Three things the template expects you to already know from this skill:
 
-### Completed Tasks
-- [x] {task 1.1 description}
-- [x] {task 1.2 description}
-
-### Files Changed
-| File | Action | What Was Done |
-|------|--------|---------------|
-| `path/to/file.ext` | Created | {brief description} |
-| `path/to/other.ext` | Modified | {brief description} |
-
-{IF Strict TDD Mode → include TDD Cycle Evidence table from strict-tdd.md}
-
-<!-- matecito-ai: Tier-2 del Unresolved Decisions Guard — no bloquea, pero el orquestador lo muestra verbatim. Marcá el impacto en verify: vos tenés el contexto, el orquestador no. -->
-### Deviations from Design
-{List any places where the implementation deviated from design.md and why.
-For each one, state whether `sdd-verify` will check it against the design
-(i.e. it touches a spec requirement or a task `criteria:`) — if so, the design
-artifact is now stale and verify will read it as a mismatch.
-If none, say "None — implementation matches design."}
-
-### Issues Found
-{List any problems discovered during implementation.
-If none, say "None."}
-
-### Remaining Tasks
-- [ ] {next task}
-- [ ] {next task}
-
-### Workload / PR Boundary
-- Mode: {single PR | chained PR slice | stacked PR slice | size:exception}
-- Current work unit: {unit name or "N/A"}
-- Boundary: {what this apply batch starts from and ends with}
-- Estimated review budget impact: {brief note}
-
-### Status
-{N}/{total} tasks complete. {Ready for next batch / Ready for verify / Blocked by X}
-```
+<!-- matecito-ai: el tier de este buzón y quién lo consume están fijados en Sección D.3 + el guard del
+     fragmento de dominio; acá no se re-declaran. Lo que SÍ es tuyo: marcar el impacto en verify,
+     porque vos tenés el contexto del código escrito y el orquestador no. -->
+- `### Deviations from Design` carries every place the implementation departed from the design, and
+  why, each closing with the literal token `verify-checks: yes|no` (the template defines the exact
+  shape; a missing or hedged token is read as `yes`). The token says whether it
+  touches a spec requirement or a task `criteria:`. If it does, the design artifact is now stale and
+  verify will read the deviation as a mismatch. You are the only one who can tell; the orchestrator
+  cannot.
+- `### Issues Found` is for problems you did NOT stop on. The blocker never goes there — it goes in
+  `### Blocker`, and only there (see "Stopping Mid-Batch").
+- The `**Mode**` line is what makes the TDD sections conditional: in Strict TDD Mode the evidence
+  table and test summary are part of the return, in Standard Mode they do not exist. Their content
+  rules are in `strict-tdd.md`.
 
 ## Rules
 
@@ -224,13 +303,21 @@ If none, say "None."}
 - **Before writing ANY contract or definition** — domain entity, DB model/migration/schema, DTO, public/exported type, interface or enum, event payload, or config schema — apply **"Contract & definition shapes — never inferred"** from the domain fragment (`~/.claude/matecito-ai/domains/development.md`, read in Step 1). Never infer which fields it has nor their types. Pinned-and-coherent → implement it; unspecified, or pinned by something that conflicts or does not cover this case → return `blocked` proposing the FULL contract as one reviewable unit
 - ALWAYS match existing code patterns and conventions in the project
 <!-- matecito-ai: la redacción anterior ("NOTE IT ... don't silently deviate") autorizaba desviarse mientras se avisara, negando el hard-stop del kernel. El corte detalle-vs-decisión evita el rebote de bloquear por minucias. -->
-- If you discover the design is wrong or incomplete **in something the task you are about to write needs**, STOP and return `blocked` with the gap and the concrete options. Do NOT implement your own version and note it afterwards — noting is not authorization. If the gap does not affect what you are writing, note it and continue. The cut is between **execution detail** (an internal variable name, guard ordering, how you split a private function) and **decision** (a contract, a new dependency, which layer the logic lives in, changing the design's approach) — the canonical criterion for what counts as a decision is in `~/.claude/references/edr/README.md`. Resolve the first; raise the second
+- If you discover the design is wrong or incomplete **in something the task you are about to write needs**, STOP and return with the gap and the concrete options — `blocked` if it also stops the rest of the batch, otherwise `partial` because tasks remain (status rule in "Stopping Mid-Batch"); persist your completed work first. Do NOT implement your own version and note it afterwards — noting is not authorization. If the gap does not affect what you are writing, note it and continue. The cut is between **execution detail** (an internal variable name, guard ordering, how you split a private function) and **decision** (a contract, a new dependency, which layer the logic lives in, changing the design's approach) — the canonical criterion for what counts as a decision is in `~/.claude/references/edr/README.md`. Resolve the first; raise the second
 - If a task is blocked by something unexpected, STOP and report back
-- If workload forecast requires a decision and none was provided, STOP before writing code
+<!-- matecito-ai: el STOP vive dentro del loop; marcar tareas y persistir apply-progress son pasos
+     POSTERIORES. Sin esta regla quedaban dos lecturas opuestas y ambas defendibles: cortar sin
+     persistir (perdiendo el registro de código ya escrito) o persistir igual. Se fija: siempre persistir. -->
+- ALWAYS persist completed work before returning control. A stop mid-batch (`blocked` or `partial`) still runs Step 5 and Step 6 first — mark what you finished, save `apply-progress` with the real state, then return. The code is already in the repo; leaving it unrecorded makes the next batch re-implement it. See "Stopping Mid-Batch"
+- If workload forecast requires a decision and none was provided, STOP before writing code (nothing was written yet, so there is no completed work to persist)
 - When applying a chained/stacked PR slice, keep the batch autonomous: one deliverable scope, verification included, and clear rollback boundary
 - When applying `size:exception`, state it explicitly in apply-progress and the return summary
+<!-- matecito-ai: this obligation is new and easy to miss: nothing in a task list mentions it, and the only
+     signal is a `ui-scenarios:` block in the spec. Missing it is silent at apply time and CRITICAL at
+     verify — which is exactly the failure shape this ecosystem keeps paying for. -->
+- **If the spec carries a `ui-scenarios:` block, the executable counterparts are part of your deliverable** (Step 6b), in the artifact under `### UI Scenario Counterparts`, cumulative across batches. You are the only phase that knows the real routes and locators — you wrote them; the spec authors the behavioral half in domain language precisely because it cannot know them. `name` matches verbatim, targets are role+name or CSS and never `@e\d+`, and every behavioral scenario gets a counterpart: one missing is `UNTESTED`/CRITICAL at verify. Contract in **Part 2** of `~/.claude/references/ui-scenarios-schema.md`
 - NEVER implement tasks that weren't assigned to you
 - Skill loading is handled in Step 1 — follow any loaded skills strictly when writing code
 - If Strict TDD Mode is active (Step 3), load `strict-tdd.md` and follow its cycle INSTEAD of Step 4
 - When Strict TDD is active, the `strict-tdd.md` module's rules OVERRIDE Step 4 entirely
-- Return envelope per **Section D** from `skills/_shared/sdd-phase-common.md`.
+- Return envelope per **Section D** from `~/.claude/skills/_shared/sdd-phase-common.md`.

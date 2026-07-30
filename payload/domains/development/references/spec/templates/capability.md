@@ -1,4 +1,4 @@
-<!-- Canonical template: capability-spec (`.matecito-ai/development-specs/<capability>.md`). Consumido por la fase de Materialización de development-spec-bootstrap y por el merge de sdd-archive. -->
+<!-- Canonical template: capability-spec (`.matecito-ai/development-specs/<type>/<capability>.md`, type ∈ flow | rule | lifecycle | process). Consumido por la fase de Materialización de development-spec-bootstrap y por el merge de sdd-archive. --><!-- matecito-ai: this path omitted the `<type>/` segment the whole rest of the ecosystem requires (the domain fragment, sdd-archive, sdd-verify, spec-mine) — and the file's own line-8 comment contradicted it. -->
 
 # Capability — <nombre en lenguaje de dominio>
 

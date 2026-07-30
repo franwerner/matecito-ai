@@ -19,7 +19,7 @@ Tu única responsabilidad es **discover y draft candidatos**. Retornás un bloqu
 
 ## Instrucciones
 
-Tu skill `development-decisions-mine` viene precargada en este contexto — seguila exactamente. Leé además las convenciones compartidas en `~/.claude/skills/_shared/sdd-phase-common.md`.
+Tu skill `development-decisions-mine` viene precargada en este contexto — seguila exactamente. Leé además las convenciones compartidas en `~/.claude/skills/_shared/sdd-phase-common.md`, **pero sólo sus Secciones A y B**: C (persistencia) y D (envelope de retorno) NO te aplican — no escribís nada y tu retorno es `candidates[]`, cuya forma vive en tu propia skill. Ese archivo lo dice de su lado; acá queda declarado del tuyo, para que no tengas que llegar hasta allá para enterarte.
 
 Ejecutá todos los pasos en este contexto:
 
@@ -28,7 +28,11 @@ Ejecutá todos los pasos en este contexto:
 NO leas config, NO resuelvas ningún flag, NO te ramifiques por "modo". Tu caller (el orquestador, o la invocación directa de la skill) te pasa un **scope**:
 
 - **scope = repo completo** → escaneás todo el repo.
-- **scope = gap list** (cada item: `dominio/slug` + hint de `Alcance`/archivos) → enfocás el scan en esas áreas.
+<!-- matecito-ai: this line expected an `Alcance` hint the caller never sent: `## Alcance` is a section of
+     the decision-record template, and a gap is by definition a record that does not exist — so there was
+     nowhere to read one from. What the caller does send is the slug, the task that implemented it and the
+     repo root; the implementing task IS the locator. -->
+- **scope = gap list** (cada item: `dominio/slug` + la tarea que lo implementó) → enfocás el scan en las áreas que toca esa tarea.
 
 La referencia de clasificación es el catálogo de concerns de bootstrap (siempre presente), NO los EDR generados. `.matecito-ai/edr/` puede no existir: su ausencia significa "nada decidido todavía" (todo candidato es hueco; se bootstrapea), NO es un guard de salida. La existencia de un EDR se chequea por-candidato en el Paso 5 (dedup), no acá.
 
@@ -181,4 +185,4 @@ Al finalizar retorná:
 - Usá `Read` para leer manifests de configuración directamente.
 - No cargues archivos innecesarios. Priorizá codegraph si disponible.
 - El scan debe cubrir el repo completo, no solo un directorio.
-- Si tu scope es una gap list: el scan se focaliza en las áreas que indican los hints de `Alcance`/archivos de cada gap — no es un scan full del repo. Si el scope es "repo completo": barrés todo.
+- Si tu scope es una gap list: el scan se focaliza en las áreas que toca la tarea que implementó cada gap — no es un scan full del repo. Si el scope es "repo completo": barrés todo.

@@ -28,7 +28,7 @@ From the orchestrator:
 
 ## Execution and Persistence Contract
 
-> Follow **Section B** (retrieval) and **Section C** (persistence) from `skills/_shared/sdd-phase-common.md`.
+> Follow **Section B** (retrieval) and **Section C** (persistence) from `~/.claude/skills/_shared/sdd-phase-common.md`.
 
 - **engram**: Read `sdd/{change-name}/proposal`, `sdd/{change-name}/spec`, `sdd/{change-name}/design`, `sdd/{change-name}/tasks`, `sdd/{change-name}/verify-report` (all required). Record all observation IDs in the archive report for traceability. Save as `sdd/{change-name}/archive-report`.
 - **none**: Return closure summary only. Do not perform archive file operations.
@@ -37,7 +37,7 @@ From the orchestrator:
 ## What to Do
 
 ### Step 1: Load Skills
-Follow **Section A** from `skills/_shared/sdd-phase-common.md`.
+Follow **Section A** from `~/.claude/skills/_shared/sdd-phase-common.md`.
 
 ### Step 2: Merge Delta Spec into Durable Capability-Specs
 
@@ -47,13 +47,16 @@ Read the change's delta spec from Engram (`sdd/{change-name}/spec`). For each ca
 
 **The bridge is the scenario:** the durable spec's `## Escenarios` use the same Given/When/Then that the delta spec produces. Merge anchored on scenarios, **NON-DESTRUCTIVE**:
 
-- **Capability nueva** (no existe el archivo) → creala desde `capability.md`, clasificando su `<type>` (`flow`/`rule`/`lifecycle`/`process`); llená sus secciones desde los `ADDED Requirements` del delta (un escenario por cada `#### Scenario`).
-- **ADDED** → agregá los escenarios nuevos y actualizá las secciones de prosa afectadas (Flujo/Ramas/Casos borde/Reglas/Estados/Errores) para reflejar el comportamiento nuevo.
-- **MODIFIED** → reemplazá el escenario que cambió y ajustá la prosa afectada. PRESERVÁ todo escenario y sección no mencionados por el delta.
-- **REMOVED** → quitá el escenario/comportamiento removido; si una capability queda sin comportamiento, marcá su spec `Deprecated` (no borres el archivo).
-- Si el merge sería **destructivo** (perdería escenarios o secciones no mencionados en el delta) → NO lo apliques: avisá al orquestador y pedí confirmación.
-- Actualizá el `INDEX.md` del tipo afectado y el índice raíz (`development-specs/INDEX.md`).
-- **Vocabulario:** al escribir el spec durable, idioma de dominio + contrato público; NUNCA identificadores internos volátiles (clases, métodos, columnas, rutas, errores internos). El *cómo* es del código; el *por qué* es del EDR (linkealo en "Referencias").
+<!-- matecito-ai: these seven bullets were in Spanish inside an English body. Translated without changing
+     the instruction. The template section names (`## Escenarios`, Flujo/Ramas/…) are deliberately left
+     in Spanish: they are literal titles of files that are written in Spanish, not prose. -->
+- **New capability** (the file does not exist) → create it from `capability.md`, classifying its `<type>` (`flow`/`rule`/`lifecycle`/`process`); fill its sections from the delta's `ADDED Requirements` (one scenario per `#### Scenario`).
+- **ADDED** → add the new scenarios and update the affected prose sections (Flujo/Ramas/Casos borde/Reglas/Estados/Errores) to reflect the new behavior.
+- **MODIFIED** → replace the scenario that changed and adjust the affected prose. PRESERVE every scenario and section the delta does not mention.
+- **REMOVED** → drop the removed scenario/behavior; if a capability is left with no behavior at all, mark its spec `Deprecated` (do not delete the file).
+- If the merge would be **destructive** (losing scenarios or sections the delta does not mention) → do NOT apply it: tell the orchestrator and ask for confirmation.
+- Update the `INDEX.md` of the affected type and the root index (`development-specs/INDEX.md`).
+- **Vocabulary:** write the durable spec in domain language + public contract; NEVER volatile internal identifiers (classes, methods, columns, routes, internal errors). The *how* belongs to the code; the *why* belongs to the EDR (link it under "Referencias").
 
 In `none` mode there is no durable store to update — skip this step.
 
@@ -67,7 +70,9 @@ There are no project directories to move. The archive report saved to Engram ser
 Confirm:
 - [ ] Archive report saved to Engram with all artifact observation IDs
 - [ ] Change state marked as archived
-- [ ] Active changes directory no longer has this change
+<!-- matecito-ai: "Active changes directory no longer has this change" was dropped — an unticabble box,
+     three lines after Step 3 states there are no project directories to move. Leftover of the removed
+     file-based modes; this ecosystem is engram-only. -->
 
 **IF mode is `engram`:** Confirm all artifact observation IDs are recorded in the archive report.
 
@@ -77,36 +82,17 @@ Confirm:
 
 **This step is MANDATORY — do NOT skip it.**
 
-Follow **Section C** from `skills/_shared/sdd-phase-common.md`.
+Follow **Section C** from `~/.claude/skills/_shared/sdd-phase-common.md`.
 - artifact: `archive-report`
 - topic_key: `sdd/{change-name}/archive-report`
 - type: `architecture`
 
 ### Step 6: Return Summary
 
-Return to the orchestrator:
+<!-- matecito-ai: la plantilla del retorno vivía inline acá y sólo cubría el caso feliz — las dos paradas que esta fase tiene (CRITICALs en el verify-report, merge destructivo) no tenían forma. Ahora la forma vive una sola vez, en el template, con su bloque de `blocked`. -->
+Return the `## Change Archived` block **exactly as `~/.claude/references/phase-returns/sdd-archive.md` defines it** — sections, titles, order, and what changes per status. Follow it literally: the orchestrator validates your return against that same file, matching titles literally.
 
-```markdown
-## Change Archived
-
-**Change**: {change-name}
-**Archived to**: Engram archive report (engram) | inline (none)
-
-### Capability-Specs Updated
-| Capability | Type | Action | Scenarios |
-|-----------|------|--------|-----------|
-| {capability} | {type} | Created/Updated/Deprecated | {N added, M modified, K removed} |
-
-### Archive Report (Engram)
-- proposal, spec, design, tasks, verify-report observation IDs recorded
-
-### Source of Truth Updated
-The listed capability-specs under `.matecito-ai/development-specs/` now reflect the new behavior.
-
-### SDD Cycle Complete
-The change has been fully planned, implemented, verified, and archived.
-Ready for the next change.
-```
+What the return must CARRY (the template fixes how it looks): which durable capability-specs were created, updated or deprecated and with how many scenarios; the archive-report observation IDs recorded in Engram; what the source of truth reflects now; and the closing line of the cycle. When you stop instead of closing — CRITICAL issues in the verification report, or a merge that would be destructive — that is the template's `blocked` block, which carries the question and what unblocks it.
 
 ## Rules
 
@@ -116,4 +102,4 @@ Ready for the next change.
 - If the merge would be destructive (dropping scenarios/sections not named in the delta), WARN the orchestrator and ask for confirmation
 - Durable capability-specs are files under `.matecito-ai/development-specs/`; the pipeline artifacts (proposal/spec/design/tasks/verify) stay in Engram — never write them to files
 - The archive is an AUDIT TRAIL — never delete or modify archived changes
-- Return envelope per **Section D** from `skills/_shared/sdd-phase-common.md`.
+- Return envelope per **Section D** from `~/.claude/skills/_shared/sdd-phase-common.md`, carrying the `detailed_report` block **exactly as `~/.claude/references/phase-returns/sdd-archive.md` defines it** — including its `blocked` variant when you stop

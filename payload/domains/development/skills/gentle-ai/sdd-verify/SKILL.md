@@ -22,7 +22,13 @@ Run when the orchestrator launches verification for an SDD change. You are the q
 
 ## Hard Rules
 
-- Read proposal, spec, design, and tasks before judging implementation.
+<!-- matecito-ai: `apply-progress` faltaba en esta lista aunque el agente sí lo recupera: es donde viaja
+     la declaración de desvíos de `sdd-apply` (paso 6), sin la cual no se puede clasificar un desvío.
+     El brief entra por el flag `ui-test` (paso 3b), que nunca estuvo en el spec. -->
+- Read the intake brief, proposal, spec, design, tasks, and apply-progress before judging implementation.
+<!-- matecito-ai: apply-progress is no longer only the deviations and the file list — it carries the
+     executable half of the UI scenarios, without which the browser run has nothing to drive. -->
+- UI verification pairs the spec's **behavioral** scenarios with the **executable counterparts** in apply-progress, by `name`. A behavioral scenario with no counterpart is `UNTESTED`/CRITICAL; a missing counterparts section while the spec declares scenarios is CRITICAL, never a silent skip.
 - Execute relevant tests; static analysis alone is never verification.
 - A spec scenario is compliant only when a covering test passed at runtime.
 - Compare specs first, design second, task completion third.
@@ -33,8 +39,17 @@ Run when the orchestrator launches verification for an SDD change. You are the q
 - Do not fix issues; report them for the orchestrator/user.
 - Persist `verify-report` to Engram (engram mode) or inline-only (none mode). <!-- matecito-ai: engram-only -->
 - If Strict TDD is active, load `strict-tdd-verify.md` from this skill directory; if inactive, never load it.
-- When `ui-test == needed` and `uiTest.available = ✅`, run the ProofShot UI step (one session per run); otherwise skip silently.
-- Return the Section D envelope from `../_shared/sdd-phase-common.md`.
+<!-- matecito-ai: el flag `ui-test` lo decide y lo escribe `sdd-intake` en su brief; el spec nunca lo
+     llevó ni lo mencionó. Leerlo del spec devolvía siempre "ausente", y como el gate cierra en
+     silencio ante un valor ausente, la verificación de UI no corría nunca y tampoco se quejaba. -->
+- When `ui-test == needed` (read from the intake brief) and `uiTest.available = ✅`, run the ProofShot UI step (one session per run); otherwise skip silently.
+<!-- matecito-ai: un desvío de diseño que sobrevive hasta acá ya no es "apply se desvió y lo anotó":
+     `sdd-apply` debe devolver `blocked` cuando el hueco afecta lo que está por escribir. Lo que llega
+     es o detalle de ejecución (no es asunto de esta fase) o una decisión tomada sin preguntar
+     (violación de un hard-stop) — y sólo CRITICAL bloquea el archivado. -->
+- A design deviation is CRITICAL unless `sdd-apply` declared it not verifiable against the design; see Execution Step 6.
+<!-- matecito-ai: la forma del retorno dejó de vivir acá. Una copia inline más era una copia más para desincronizar — que es exactamente cómo `## Decision Gaps` y `## UI Verdict` terminaron sin lugar en el reporte. -->
+- Return the Section D envelope from `~/.claude/skills/_shared/sdd-phase-common.md`, carrying the `detailed_report` block **exactly as `~/.claude/references/phase-returns/sdd-verify.md` defines it**.
 
 ## Decision Gates
 
@@ -46,11 +61,20 @@ Run when the orchestrator launches verification for an SDD change. You are the q
 | Task incomplete | CRITICAL for core task, WARNING for cleanup task. |
 | Test command exits non-zero | CRITICAL. |
 | Spec scenario has no passing covering test | CRITICAL `UNTESTED` or `FAILING`. |
-| Design deviation exists | WARNING unless it breaks a spec. |
+<!-- matecito-ai: recalibrado. La escapatoria vieja ("WARNING unless it breaks a spec") sobra por dos
+     lados: si rompe un spec, la Spec Compliance Matrix ya lo agarra sola como CRITICAL, y dejarla
+     escrita sugería que un desvío que NO rompe un spec es inofensivo. La única rebaja legítima es la
+     que declara `sdd-apply`: un desvío que no toca ningún requisito del spec ni ningún `criteria:` de
+     tarea es detalle de ejecución. Sin declaración se asume verificable: el default seguro es el estricto. -->
+| Design deviation carrying `verify-checks: yes` — or no token at all, or a hedged one | CRITICAL `DESIGN-DEVIATION` (cite the deviation and the design decision it departs from). |
+| Design deviation carrying `verify-checks: no` | WARNING — execution detail, not this phase's business. |
 <!-- matecito-ai: EDR violation in the changed code is CRITICAL -->
 | Changed code violates an EDR it touched | CRITICAL `EDR-VIOLATION` (cite the EDR). |
 | `ui-test != needed` OR `uiTest.available` absent or ❌ | Skip UI step silently — no mention, no UI Verdict section. |
-| Scenario step target matches `@e\d+` | CRITICAL — reject authored runtime ref; scenario FAILS static validation. |
+| Behavioral scenario with no counterpart in apply-progress | CRITICAL `UNTESTED` for that scenario. |
+| Counterpart whose `name` matches no behavioral scenario | WARNING — orphan; report, do not run. |
+| No `### UI Scenario Counterparts` at all, while the spec declares scenarios | CRITICAL — the UI check could not run; say so. NOT a silent skip. |
+| Scenario step target matches `@e\d+` | CRITICAL — reject the runtime ref; scenario FAILS static validation. |
 | Any per-scenario STATE assertion FAIL | CRITICAL — blocks archive. |
 | Session-level error gate FAIL (consoleErrorCount or serverErrorCount > 0) | CRITICAL — blocks archive. |
 
@@ -59,32 +83,60 @@ Run when the orchestrator launches verification for an SDD change. You are the q
 1. Load relevant skills via shared SDD Section A.
 2. Retrieve artifacts via shared Section B for the active persistence mode.
 3. Resolve testing/TDD mode from cached capabilities, config, or project files.
-3b. UI-test gate: read `ui-test` from the spec artifact and `uiTest.available` from `sdd/{project}/testing-capabilities`. If `ui-test != needed` OR `uiTest.available = ❌` OR either is absent → silently skip all UI steps (3c–3e, 3f). No mention, no UI Verdict section.
-3c. Static validation (gate passed): for every scenario in `ui-scenarios`, reject any step target matching `@e\d+`. A matched target is CRITICAL — fail that scenario immediately.
-3d. ProofShot session (gate and static validation passed): generate a collision-safe `outputDir` (`proofshot-artifacts/{change}-{timestamp}-{random}/`); `proofshot start --run "{devServer.command}" --port {port} --output {outputDir}`; for EACH scenario drive its steps then take a LIVE agent-browser `snapshot` and evaluate `visible`/`text_contains` STATE assertions against it; after ALL scenarios `proofshot stop`; read `SUMMARY.md` aggregates `consoleErrorCount`/`serverErrorCount` for the session-level ERROR GATE; delete `{outputDir}/session.webm` by default (retain only with explicit `retain-video` flag).
+<!-- matecito-ai: el flag sale del brief de intake (`### Classification` → `UI test:`), NO del spec —
+     el spec no lo contiene. El brief siempre existe porque intake es fase base, así que no hay fallback. -->
+3b. UI-test gate: read `ui-test` from the **intake brief** (`sdd/{change-name}/intake`, line `- UI test: {needed|not-needed}` under `### Classification`) and `uiTest.available` from `sdd/{project}/testing-capabilities` (literal key, in its `### UI Test` table — canonical-keys list in `~/.claude/skills/sdd-init/references/init-details.md`). If `ui-test != needed` OR `uiTest.available = ❌` OR either is absent → silently skip all UI steps (3c–3e, 3f). No mention, no UI Verdict section. The scenarios come in two halves: the **behavioral** ones from the spec's `ui-scenarios` block and their **executable counterparts** from `### UI Scenario Counterparts` in apply-progress (step 3b-bis).
+<!-- matecito-ai: two halves (schema Parts 1 and 2) because the spec cannot know a route or an accessible
+     name before the code exists, and must not pin them anyway. Pairing is by `name` — the key this phase
+     already used for the verdict table, not a new coupling. -->
+3b-bis. Coverage check (gate passed, before executing anything): pair behavioral scenarios with counterparts **by `name`**, verbatim. No counterpart for a behavioral scenario → `UNTESTED`, **CRITICAL**. Orphan counterpart (name matches nothing) → WARNING, reported and not run. No `### UI Scenario Counterparts` section at all while the spec declares scenarios → **CRITICAL** finding, never a silent skip: the gate closes silently when the flag is off, never when the check was warranted and the input was missing.
+3c. Static validation (counterparts found): for every counterpart, reject any step target matching `@e\d+`. A matched target is CRITICAL — fail that scenario immediately.
+3d. ProofShot session (gate and static validation passed): generate a collision-safe `outputDir` (`proofshot-artifacts/{change}-{timestamp}-{random}/`); `proofshot start --run "{uiTest.devServer.command}" --port {port} --output {outputDir}` (same `### UI Test` table); for EACH scenario drive its steps then take a LIVE agent-browser `snapshot` and evaluate `visible`/`text_contains` STATE assertions against it; after ALL scenarios `proofshot stop`; read `SUMMARY.md` aggregates `consoleErrorCount`/`serverErrorCount` for the session-level ERROR GATE; delete `{outputDir}/session.webm` by default (retain only with explicit `retain-video` flag).
 3e. SPLIT verdict: `ui-verdict = (all STATE assertions PASS) AND (error gate PASS)`; any FAIL → CRITICAL → blocks archive.
-3f. Append `## UI Verdict` to the report: per-scenario STATE table (`Scenario | STATE | Failure Reason`), session-level ERROR GATE row (`consoleErrorCount`, `serverErrorCount`, PASS/FAIL), artifact path `proofshot-artifacts/{outputDir}/`.
+3f. Emit `## UI Verdict` in the report — a CONDITIONAL section, present only when this gate passed. It carries the per-scenario STATE results, the session-level ERROR GATE (`consoleErrorCount`, `serverErrorCount`, PASS/FAIL) and the artifact path `proofshot-artifacts/{outputDir}/`. Its position and exact shape are fixed by `~/.claude/references/phase-returns/sdd-verify.md` — including its `##` level, which the UI gate matches literally.
 4. Count completed and incomplete tasks.
 5. Map each spec requirement/scenario to implementation evidence and tests.
-6. Check design decisions against changed code.
+<!-- matecito-ai: `sdd-apply` ya declara, por cada desvío, si esta fase lo va a chequear contra el
+     diseño (si toca un requisito del spec o un `criteria:` de tarea) — pero nadie leía esa declaración,
+     así que la única rebaja legítima de severidad no tenía forma de aplicarse. Acá se lee. -->
+6. Check design decisions against changed code. First read `### Deviations from Design` in the apply-progress artifact: for each deviation `sdd-apply` recorded, take its declaration of whether this phase will check it against the design (i.e. whether it touches a spec requirement or a task `criteria:`). Then classify per the Decision Gates table — declared verifiable, or no declaration at all, and the code does diverge from the design → CRITICAL `DESIGN-DEVIATION`; declared NOT verifiable → WARNING. A deviation with no declaration is treated as verifiable: the safe default is the strict one, and only apply has the context to downgrade it. Record every deviation in `### Coherence (Design)` and list it under its severity in `### Issues Found`. If apply-progress has no such section (or it is the `None` sentinel), there are no declared deviations — judge the code against the design as usual.
 <!-- matecito-ai: verify the change respects the EDRs it touched -->
 6b. Check EDR compliance (scoped to THIS change). For each EDR listed in the design's "EDR Alignment" section (or, if absent, the EDRs in `.matecito-ai/edr/<domain>/` for the domains this change touched), confirm the implemented code actually honors that EDR's concrete rules (e.g. auth mechanism, error format, validation location, layer dependencies). This is scoped to the current change — do NOT audit the whole EDR catalog here. Report any violation as CRITICAL `EDR-VIOLATION` (cite the EDR). If `.matecito-ai/edr/` does not exist, skip this step.
+<!-- matecito-ai: this hard rule had no section of its own in the report — its only home was `### Issues
+     Found`, which carries the finding only if there WAS a violation. With nothing found, no trace
+     remained that the check ran, so "no violation" and "never checked" were indistinguishable. -->
+   Record the outcome in `### Coherence (EDRs)` — one row per applicable EDR, emitted **whenever the store is active, including the all-clear case**, and omitted entirely (with no mention of EDRs anywhere) when the store is absent or empty. Its position, columns and conditionality are fixed by `~/.claude/references/phase-returns/sdd-verify.md`; the meaning of its cells by [references/report-format.md](references/report-format.md). A violation still goes under CRITICAL in `### Issues Found` as well — the table is the evidence the check ran, not a replacement for the finding.
 <!-- matecito-ai: validate implemented behavior against the durable capability-specs (accumulated behavior, not just the change delta), scoped to Accepted only -->
 6d. Check capability-spec compliance (durable behavior), **scoped to `Status: Accepted` specs only**. For each capability this change touches that has a durable spec under `.matecito-ai/development-specs/<type>/<capability>.md` (type ∈ flow|rule|lifecycle|process), load it and check its `Status` at the load point: `Accepted` → confirm the implemented code honors the accumulated intended behavior that spec describes — not only the delta introduced by this change; report any divergence as CRITICAL `SPEC-VIOLATION` (cite the capability-spec). `Inferred` (like `Draft`) → skip — it is a non-authoritative draft, not a contract, and can never trigger `SPEC-VIOLATION`. If `.matecito-ai/development-specs/` does not exist, skip this step entirely.
+<!-- matecito-ai: same hole as 6b had — a hard rule whose only trace in the report was `### Issues Found`,
+     so the all-clear case was indistinguishable from a check that never ran. Worse here, because a
+     skipped `Inferred` spec ALSO looks like a clean check unless the row says so. -->
+   Record the outcome in `### Coherence (Capability-Specs)` — one row per touched capability that has a durable spec, emitted **whenever the store is active, all-clear case included**, and absent entirely when the store is not. A skipped `Inferred`/`Draft` spec still gets its row, marked `➖ Not checked`: it says a spec exists but is not yet a contract, which is information, not an absence. Shape fixed by `~/.claude/references/phase-returns/sdd-verify.md`, cell meanings by [references/report-format.md](references/report-format.md). A divergence also goes under CRITICAL in `### Issues Found`.
 <!-- matecito-ai: decision-gap confirmation hook
-Active ONLY when flagDecisionGaps=true (does NOT depend on EDRs existing). When active: read the tasks artifact; collect all `· edr: <domain>/<slug>` whose file `.matecito-ai/edr/<domain>/<slug>.md` does NOT exist — these are the decision gaps. For each gap: (a) check the task is `[x]` (complete); (b) check its `criteria:` passes in the shipped code (static inspection or test result). If (a) and (b) → `implemented: yes`; otherwise `implemented: no`. Add a `## Decision Gaps` section to the verify-report with the table `| domain/slug | task | implemented? |`. If the section has at least one `yes`, the orchestrator may trigger the mine gate post-verify. When flag off: do NOT add the section, do NOT mention anything — byte-identical behavior to before. -->
-6c. (Decision-gap confirmation — flag-gated) When `flagDecisionGaps=true` (regardless of EDR presence): from the tasks artifact collect all `· edr: <domain>/<slug>` refs whose target file does NOT exist → these are decision gaps. For each: confirm task is `[x]` AND `criteria:` passes in shipped code → mark `implemented: yes/no`. Add `## Decision Gaps` to the verify-report: `| domain/slug | task | implemented? |`. Silent when flag off.
+Active ONLY when flagDecisionGaps=true (does NOT depend on EDRs existing). When active: read the tasks artifact; collect all `· edr: <domain>/<slug>` whose file `.matecito-ai/edr/<domain>/<slug>.md` does NOT exist — these are the decision gaps. For each gap: (a) check the task is `[x]` (complete); (b) check its `criteria:` passes in the shipped code (static inspection or test result). If (a) and (b) → `implemented: yes`; otherwise `implemented: no`. La sección viaja DENTRO del bloque que devolvés (que es el mismo texto que persistís): el gate del orquestador sólo lee el retorno, así que una sección que quedara únicamente en la copia persistida no dispararía nada. Si tiene al menos un `yes`, el orquestador puede disparar el mine gate post-verify. When flag off: do NOT add the section, do NOT mention anything — byte-identical behavior to before. -->
+6c. (Decision-gap confirmation — flag-gated) When `flagDecisionGaps=true` (regardless of EDR presence): from the tasks artifact collect all `· edr: <domain>/<slug>` refs whose target file does NOT exist → these are decision gaps. For each: confirm task is `[x]` AND `criteria:` passes in shipped code → mark `implemented: yes/no`. Emit `## Decision Gaps` as a CONDITIONAL section of the report you return — position, columns and `##` level fixed by `~/.claude/references/phase-returns/sdd-verify.md`, which the mine gate matches literally. Silent when flag off: omit the section entirely, never empty.
 7. Run test, build/type-check, and coverage commands when available.
 8. Build the behavioral compliance matrix from actual test results.
 9. Persist and return the verification report.
 
 ## Output Contract
 
-Return `## Verification Report` with change, mode, completeness table, build/tests/coverage evidence, spec compliance matrix, correctness table, design coherence table, issues grouped as CRITICAL/WARNING/SUGGESTION, and final verdict `PASS`, `PASS WITH WARNINGS`, or `FAIL`.
+<!-- matecito-ai: el contrato dice QUÉ tiene que llevar el reporte; la FORMA vive una sola vez, en el template. Antes esta sección era una tercera descripción del mismo bloque (con la plantilla y con el contrato del ejecutor) y las tres divergían. -->
+Return the `## Verification Report` block **exactly as `~/.claude/references/phase-returns/sdd-verify.md` defines it** — sections, titles, order, which ones are conditional, and what changes per status. Follow it literally: the orchestrator validates your return against that same file, matching titles literally, so a section you drop, rename or re-level is a gate that never fires.
+
+What the report must CARRY (the template fixes how it looks): change identity and mode; task completeness; real build/test/coverage execution evidence; the spec compliance matrix; correctness and design-coherence tables; issues grouped as CRITICAL/WARNING/SUGGESTION; and a final verdict `PASS`, `PASS WITH WARNINGS`, or `FAIL`. Plus the conditional sections, each only when its gate holds: `### Coherence (EDRs)` (step 6b, whenever the decision store is active), `### Coherence (Capability-Specs)` (step 6d, whenever that store is active), the Strict TDD extension, `## UI Verdict` (step 3f), and `## Decision Gaps` (step 6c).
+
+<!-- matecito-ai: la regla del veredicto tenía que seguir a la recalibración del desvío: si un desvío
+     CRITICAL pudiera convivir con un PASS, subir la severidad no cambiaría nada aguas abajo. -->
+Verdict rules for design coherence: a CRITICAL `DESIGN-DEVIATION` forbids `PASS` and `PASS WITH WARNINGS` — the verdict is `FAIL`, like any other CRITICAL. A deviation apply declared not verifiable is a WARNING: it caps the verdict at `PASS WITH WARNINGS` and never blocks archive.
 
 ## References
 
-- [references/report-format.md](references/report-format.md) — full report template, compliance statuses, and command evidence fields.
-- [references/ui-scenarios-schema.md](references/ui-scenarios-schema.md) — `ui-scenarios` block schema: field definitions, step primitives, target rules, `wait` primitive, assertion classes, validation rules.
+- `~/.claude/references/phase-returns/sdd-verify.md` — **the** shape of the report you return (and persist). Read it before writing the report.
+- [references/report-format.md](references/report-format.md) — compliance statuses and what counts as command evidence: the meaning of the cells the template lays out.
+<!-- matecito-ai: el schema dejó de ser privado de esta skill: ahora es contrato compartido entre quien
+     PRODUCE el bloque (`sdd-spec`) y quien lo CONSUME (esta fase), así que vive en references/ y se
+     despliega a `~/.claude/references/`. La ruta relativa vieja ya no resuelve. -->
+- `~/.claude/references/ui-scenarios-schema.md` — the UI-scenario contract, shared by **three** phases: Part 1 the behavioral half (`sdd-spec`), Part 2 the executable counterparts (`sdd-apply`), **Part 3 execution and coverage — yours**. Read Part 3 before running the UI step, and Part 2 to know the shape of what you are executing.
 - [strict-tdd-verify.md](strict-tdd-verify.md) — load only when Strict TDD is active.
-- `../_shared/sdd-phase-common.md` — skill loading, retrieval, persistence, and return envelope.
+- `~/.claude/skills/_shared/sdd-phase-common.md` — skill loading, retrieval, persistence, and return envelope.

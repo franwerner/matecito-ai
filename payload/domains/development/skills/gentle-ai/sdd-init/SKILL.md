@@ -41,16 +41,26 @@ Run this phase when the orchestrator/user asks to initialize SDD in a project. Y
    a. Check if `proofshot` is on PATH (equivalent to `exec.LookPath("proofshot")`). Record ✅ or ❌. Note: proofshot installed but not on PATH at init time → detected as ❌.
    b. Detect dev-server command from `package.json` scripts (`dev`, `start`, `serve` in priority order) or framework config (`vite.config.*`, `next.config.*`). Record resolved command or ❌.
    c. Derive `uiTest.available` = proofshot ✅ AND devServer ✅.
+<!-- matecito-ai: el fragmento del dominio afirma que este toolchain lo detecta init y lo cachea acá,
+     y `sdd-apply` / `sdd-verify` consultan `debugger.available` para decidir si pueden abrir una
+     sesión. Nadie lo detectaba: el campo nunca se escribía, ambas fases lo leían ausente y saltaban
+     el debugger EN SILENCIO. Toda la integración estaba muerta y parecía deliberado. -->
+   d. Detect debug capability for the project's primary language (the one you resolved in step 1). This is **procedural, not a lookup table** — same criterion as the `debugger` skill: identify that language's standard debug toolchain binary and check whether it is actually installed (e.g. `dlv` for Go, `debugpy` for Python, the inspector for Node). Record the binary you looked for and ✅ / ❌.
+   e. Derive `debugger.available` = the toolchain binary for the primary language is present ✅. Absent → ❌, which is a normal outcome, not a blocker: `sdd-apply` and `sdd-verify` simply skip debugger usage, and the `debugger` skill offers the install command when someone actually needs a session. Do NOT install anything here — init detects, it does not provision.
 3. Initialize persistence for the resolved mode.
 <!-- matecito-ai: paso de construir el registry removido -->
-4. Persist testing capabilities and project context, including the `uiTest` block (proofshot, devServer, available) per the `### UI Test` section in `references/init-details.md`.
-5. Return the structured initialization envelope.
+4. Persist project context per `## Project Context Format` in `references/init-details.md` (`### Stack`, `### Architecture`, `### Conventions` — an axis you could not establish is `— not detected`, never a plausible value), and testing capabilities emitting the canonical keys **literally** as that same file fixes them — `test_runner.command` / `test_runner.framework`, the `### UI Test` block (`uiTest.proofshot`, `uiTest.devServer.command`, `uiTest.available`) and the `### Debugger` block (`debugger.language`, `debugger.toolchain`, `debugger.available`). Downstream phases look them up by those exact names; a key rewritten as a prose label is a key they will not find.
+5. Return the structured initialization envelope, with the `## SDD Initialized` block from `~/.claude/references/phase-returns/sdd-init.md`.
 
 ## Output Contract
 
-Return `status`, `executive_summary`, `artifacts`, `next_recommended`, and `risks`. Include project, stack, persistence mode, testing capability table, saved observation IDs/paths, and next `/sdd-explore` or `/sdd-new` step. <!-- matecito-ai: registry path removido del contrato -->-
+<!-- matecito-ai: esta sección re-enumeraba los campos del envelope por su cuenta — y se olvidaba de `detailed_report` y de `skill_resolution`, así que init era la única fase sin bloque titulado y por lo tanto la única cuyo retorno nadie podía validar. Los campos se heredan de la Sección D; la forma del bloque vive en el template. -->
+Return the Section D envelope from `~/.claude/skills/_shared/sdd-phase-common.md` — do not re-declare its fields here — carrying the `## SDD Initialized` block **exactly as `~/.claude/references/phase-returns/sdd-init.md` defines it**. Follow it literally: the orchestrator validates your return against that same file, matching section titles literally.
+
+What the return must CARRY (the template fixes how it looks): project and stack, architecture and conventions detected, persistence mode with its limitations, the testing-capability table (runner, layers, coverage, quality tools, `uiTest.available`, debugger toolchain), the saved observation IDs, and the next step (`/sdd-intake`, or `/sdd-explore` to investigate first). Detection never guesses: an undetected capability is `❌`, and evidence that does not resolve to one answer is the template's `blocked` block, not a plausible default.
 
 ## References
 
-- [references/init-details.md](references/init-details.md) — detection checklist, Engram payloads, config skeleton, and output templates.
-- `../_shared/engram-convention.md` — Engram artifact naming.
+- `~/.claude/references/phase-returns/sdd-init.md` — **the** shape of the block you return.
+- [references/init-details.md](references/init-details.md) — detection checklist, Engram payloads, and the full Testing Capabilities format (what goes into the artifact).
+- `~/.claude/skills/_shared/engram-convention.md` — Engram artifact naming.

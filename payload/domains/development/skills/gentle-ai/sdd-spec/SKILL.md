@@ -28,15 +28,18 @@ From the orchestrator:
 
 ## Execution and Persistence Contract
 
-> Follow **Section B** (retrieval) and **Section C** (persistence) from `skills/_shared/sdd-phase-common.md`.
+> Follow **Section B** (retrieval) and **Section C** (persistence) from `~/.claude/skills/_shared/sdd-phase-common.md`.
 
-- **engram**: Read `sdd/{change-name}/proposal` (required). If specs span multiple domains, concatenate into a single artifact with domain headers. Save as `sdd/{change-name}/spec`.
+<!-- matecito-ai: dos lecturas con propósitos distintos. La de requisitos es "el upstream más cercano"
+     (proposal, o el brief en lane reduced). La del brief es INCONDICIONAL y sólo por el flag
+     `ui-test`, que ninguna otra fase upstream transporta. No las colapses en una. -->
+- **engram**: Read the nearest available upstream for requirements — `sdd/{change-name}/proposal`, falling back to `sdd/{change-name}/intake` when no proposal exists (`reduced`/`custom` lanes). Read `sdd/{change-name}/intake` **as well, always**, for the `ui-test` flag (Step 4b) — even when the proposal was your requirements source. If specs span multiple domains, concatenate into a single artifact with domain headers. Save as `sdd/{change-name}/spec`.
 - **none**: Return result only. Never create or modify project files.
 
 ## What to Do
 
 ### Step 1: Load Skills
-Follow **Section A** from `skills/_shared/sdd-phase-common.md`.
+Follow **Section A** from `~/.claude/skills/_shared/sdd-phase-common.md`.
 
 ### Step 2: Identify Affected Domains
 
@@ -159,43 +162,119 @@ The system {MUST/SHALL/SHOULD} {behavior}.
 - THEN {outcome}
 ```
 
+### Step 4b: Write the `ui-scenarios` Block (conditional — only when `ui-test: needed`)
+
+<!-- matecito-ai: esta fase PRODUCE `ui-scenarios`. Antes nadie lo escribía: sdd-verify lo iteraba y
+     su compuerta de UI cerraba en silencio al no encontrarlo, así que la verificación de UI entera
+     era inalcanzable sin ningún error visible. El productor es spec porque el bloque es la
+     contraparte ejecutable de los escenarios Given/When/Then que esta fase ya escribió. -->
+
+<!-- matecito-ai: el flag se lee SIEMPRE del intake brief, NO del upstream de requisitos. En lane
+     `full` el upstream de esta fase es la proposal, que no lleva el flag; sólo en lane `reduced` el
+     upstream ES el brief. Como intake es fase BASE, el brief existe en todos los lanes: es el único
+     lugar donde el flag está garantizado. Leerlo "del upstream" lo perdería en el lane completo. -->
+
+**Read the intake brief for this flag — ALWAYS, whatever your requirements upstream was.**
+`mem_search("sdd/{change-name}/intake")` → `mem_get_observation`, and look under `### Classification`
+for the line `- UI test: {needed|not-needed}`. Do this even when you took your requirements from the
+proposal: the proposal does not carry the flag, and intake is a base phase, so the brief always
+exists. The flag is decided by `sdd-intake` and confirmed by the user at the INTAKE GATE — you never
+decide it and never override it.
+
+```
+IF the brief says `UI test: needed`
+├── AUTHOR the block (below) into the spec artifact
+└── report the scenario count in your return's `### Coverage`
+
+ELSE (not-needed, or the line is absent)
+└── Skip SILENTLY — no block, no placeholder, no mention anywhere
+```
+
+**Before authoring, read `~/.claude/references/ui-scenarios-schema.md` in full.** It is the contract:
+per-scenario fields, the legal step primitives, the `wait` primitive, the target rules, the assertion
+classes, and the validation rules your output must already satisfy. Do not author from memory, and do
+not invent a primitive it does not define — `sdd-verify` executes the block literally.
+
+**Derive, do not duplicate.** These are not a second set of scenarios: take the Given/When/Then
+scenarios you already wrote and, for the capabilities with a visual surface, express each as a
+behavioral UI scenario — the GIVEN becomes `given`, the WHEN becomes `when`, the THEN becomes the
+`then` conditions. A capability with no visual surface produces no `ui-scenarios` entry. Never
+introduce behavior in this block that the requirements above it do not already state.
+
+<!-- matecito-ai: this step used to author the FULLY EXECUTABLE block — `url` plus steps with concrete
+     locators. It was unworkable and wrong at once. Unworkable: the schema demanded a route and role+name
+     targets, the brief carries neither, and for a new feature the control does not exist yet, so the only
+     legal move was `blocked` — every `ui-test: needed` change stopped here. Wrong: a route and an
+     accessible name are volatile implementation identifiers, which the capability-spec vocabulary rule
+     forbids in a spec. You own the WHAT; `sdd-apply` authors the executable counterpart because it knows
+     the real locators — it just wrote them. -->
+**You write the WHAT, not the HOW.** No routes, no CSS selectors, no accessible names, no component
+names. If you are about to write `/login` or `role=button name="Submit"`, stop: that is the executable
+counterpart, and `sdd-apply` authors it in its `apply-progress` (Part 2 of the schema). You never need
+to know a route or a control's name to say what must be true — and you must not pin them, because they
+are the code's business.
+
+This is also why you no longer block here. Nothing in this block requires information that does not
+exist yet, so there is no case where the flag says `needed` and you cannot author it.
+
+Name what the user sees and does, in the vocabulary the requirement already uses. If a scenario does
+not name the control it acts on in user-visible terms, that is a gap in the requirement — fix the
+requirement, do not invent a selector to paper over it.
+
+**Where it goes**: at the END of the spec artifact you persist in Step 5 — never in your return
+block. The orchestrator never reads the artifact, and `sdd-verify` never reads your return.
+
+````markdown
+## UI Scenarios
+
+```yaml
+ui-scenarios:
+  - name: {the binding key — sdd-apply reuses it verbatim, sdd-verify maps it 1:1 to a STATE row}
+    given: {the starting situation, in domain language}
+    when: {the interaction the user performs}
+    then:
+      - {an observable condition that must hold afterwards}
+```
+````
+
+<!-- matecito-ai: acá había un marcador `ui-test: needed` copiado dentro del spec, de cuando verify
+     leía el flag del artefacto spec. Verify ahora lo lee del intake brief, que es donde se decide y
+     se confirma: copiarlo acá era duplicar estado, y dos copias del mismo dato divergen. -->
+**Do NOT copy the `ui-test` flag into the spec.** It lives in the intake brief, which is where it is
+decided and confirmed, and that is where `sdd-verify` reads it. The spec carries the scenarios; the
+brief carries the flag. One fact, one home.
+
 ### Step 5: Persist Artifact
 
 **This step is MANDATORY — do NOT skip it.**
 
-Follow **Section C** from `skills/_shared/sdd-phase-common.md`.
+Follow **Section C** from `~/.claude/skills/_shared/sdd-phase-common.md`.
 - artifact: `spec`
 - topic_key: `sdd/{change-name}/spec`
 - type: `architecture`
 
 ### Step 6: Return Summary
 
-Return to the orchestrator:
+<!-- matecito-ai: la plantilla literal salió de acá. Mantenerla inline Y en el template crea una
+     copia más para desincronizar — que es exactamente el defecto que el template vino a cerrar. -->
+The shape of your return lives in **`~/.claude/references/phase-returns/sdd-spec.md`**. Read it and
+follow it literally: it declares the `## Specs Created` block — its sections, their titles, their
+order, which ones are unconditional, and what changes when you return `blocked`. The orchestrator
+validates your return against that same file, matching titles literally, so a section you drop,
+rename or re-level is a gate that never fires.
 
-```markdown
-## Specs Created
+Two things that file makes explicit and that this phase gets wrong most often:
 
-**Change**: {change-name}
-
-### Specs Written
-| Domain | Type | Requirements | Scenarios |
-|--------|------|-------------|-----------|
-| {domain} | Delta/New | {N added, M modified, K removed} | {total scenarios} |
-
-### Coverage
-- Happy paths: {covered/missing}
-- Edge cases: {covered/missing}
-- Error states: {covered/missing}
-
-<!-- matecito-ai: buzón del mapeo derivado (Step 2) — el thread principal lo confirma antes de que downstream lo trate como contrato -->
-### Derived capabilities (unconfirmed)
-{Capability mappings you derived because the upstream artifact had no Capabilities
-section, each with what you derived it from. These are NOT contract until the main
-thread confirms them. If the mapping was explicit, state "None — mapping was explicit."}
-
-### Next Step
-Ready for design (sdd-design). If design already exists, ready for tasks (sdd-tasks).
-```
+- `### Derived capabilities (unconfirmed)` is this phase's **Tier-1 mailbox**. It carries the
+  mapping you derived in Step 2 and it is emitted **always** — with the `None — mapping was
+  explicit.` sentinel when the upstream artifact had its own Capabilities section. A derived mapping
+  is not contract until the main thread confirms it.
+- The ambiguous-derivation stop from Step 2 returns `blocked`, and the possible readings go in the
+  `### Blocker` section that file designates — never in `risks`, never as a mapping you picked.
+<!-- matecito-ai: el bloque `ui-scenarios` va en el ARTEFACTO, no en el retorno; del retorno sólo
+     cuelga el conteo, y en una sección que ya existe — no se abre un buzón nuevo por esto. -->
+- The `ui-scenarios` you wrote in Step 4b are reported in the return **only as a count**, on the
+  `### Coverage` line that file declares for them. The block itself lives in the persisted artifact.
 
 ## Rules
 
@@ -210,10 +289,19 @@ Ready for design (sdd-design). If design already exists, ready for tasks (sdd-ta
 - DO NOT include implementation details in specs — specs describe WHAT, not HOW
 <!-- matecito-ai: recordatorio apuntado — la doctrina completa vive en el fragmento del dominio (cargado en Step 1), no se duplica acá. Acá aplica cuando un escenario fija campos o tipos de un contrato. -->
 - **Before a scenario or requirement pins ANY contract or definition** — domain entity, DB model/migration/schema, DTO, public/exported type, interface or enum, event payload, or config schema — apply **"Contract & definition shapes — never inferred"** from the domain fragment (`~/.claude/matecito-ai/domains/development.md`, read in Step 1). Never invent which fields it has nor their types to make a scenario concrete. Pinned-and-coherent upstream → use it; unspecified, or pinned by something that conflicts or does not cover this case → return `blocked` proposing the FULL contract as one reviewable unit
+<!-- matecito-ai: reglas del bloque `ui-scenarios` — el detalle operativo está en el Step 4b; acá van
+     las que un ejecutor apurado rompe si sólo lee las Rules. -->
+- **The BEHAVIORAL half of `ui-scenarios` is produced HERE, and only when the intake brief says `ui-test: needed`** — read that flag from `sdd/{change-name}/intake` **always**, whatever your requirements upstream was (the proposal does not carry it; the brief always exists). Flag `not-needed` or absent → skip silently: no block, no mention. The **executable counterpart** — real route, real locators — is `sdd-apply`'s, in its `apply-progress`: you never author it, and you never need a route or a control's name to say what must be true
+- **`ui-scenarios` targets MUST be role+name or CSS — NEVER `@eN` runtime snapshot refs.** `sdd-verify` rejects a `@e\d+` target as CRITICAL and the scenario fails static validation
+- **`ui-scenarios` entries are DERIVED from the Given/When/Then scenarios you already wrote** (for the capabilities with a visual surface), never a parallel set of behavior. Author them against `~/.claude/references/ui-scenarios-schema.md`, read in full first
 - **MODIFIED requirements MUST be the FULL block** — copy entire requirement + all scenarios from main spec, then edit. Partial MODIFIED blocks lose content at archive time.
 - If adding new behavior without changing existing behavior → use ADDED, not MODIFIED
-- **Size budget**: Spec artifact MUST be under 650 words. Prefer requirement tables over narrative descriptions. Each scenario: 3-5 lines max.
-- Return envelope per **Section D** from `skills/_shared/sdd-phase-common.md`.
+<!-- matecito-ai: el presupuesto acota la PROSA de requisitos. Contar el YAML de `ui-scenarios` contra
+     él haría que un ejecutor recorte escenarios de UI para "entrar" — degradando en silencio lo que
+     sdd-verify va a ejecutar. El bloque ya está acotado por su origen: sale de los escenarios que
+     escribiste, para capabilities con superficie visual. -->
+- **Size budget**: Spec artifact MUST be under 650 words. Prefer requirement tables over narrative descriptions. Each scenario: 3-5 lines max. The `## UI Scenarios` block does NOT count against this budget — never drop or trim a UI scenario to fit it
+- Return envelope per **Section D** from `~/.claude/skills/_shared/sdd-phase-common.md`.
 
 ## RFC 2119 Keywords Quick Reference
 

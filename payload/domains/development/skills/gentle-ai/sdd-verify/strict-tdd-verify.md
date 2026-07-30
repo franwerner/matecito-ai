@@ -7,7 +7,21 @@
 
 When Strict TDD Mode is active, verification goes beyond "does the code work?" to "was the code built correctly?" — meaning: was TDD actually followed? The apply phase reports TDD evidence; your job is to validate that evidence against reality.
 
-## Step 5a: TDD Compliance Check (includes Assertion Quality Audit)
+<!-- matecito-ai: the five sections below were titled `Step 5a` / `Step 5 Expanded` / `Step 5d` /
+     `Step 5e` / `Step 5f`, the numbering of an earlier version of the skill that no longer exists:
+     today `SKILL.md` has no 5a-5f at all (its step 5 is the spec→evidence mapping). A reader who went
+     looking for them found nothing. They become NAME-based titles — an inherited number goes stale at
+     the next renumbering; a name does not. -->
+## Where this module slots in
+
+These sections are **not** numbered steps of `SKILL.md` and do not extend one: they are the extra
+checks Strict TDD adds on top of the standard verification. Run them alongside the skill's Execution
+Steps — the compliance check needs the `apply-progress` artifact (Execution Step 2) and the real test
+results (Execution Step 7), so it lands after those. Their output goes to the report at the position
+`~/.claude/references/phase-returns/sdd-verify.md` fixes for the *Strict TDD extension*, right after
+`### Coherence (Design)`.
+
+## TDD Compliance Check (includes the Assertion Quality Audit)
 
 Read the `apply-progress` artifact and verify that TDD was actually followed:
 
@@ -22,7 +36,7 @@ Read apply-progress artifact:
 │   │
 │   ├── GREEN column:
 │   │   ├── Must say "✅ Passed"
-│   │   ├── Cross-reference with Step 5b test execution results:
+│   │   ├── Cross-reference with the test execution results (SKILL.md Execution Step 7):
 │   │   │   └── The test file listed must PASS when you run it
 │   │   └── Flag: CRITICAL if test fails now (was it really green?)
 │   │
@@ -47,7 +61,7 @@ Read apply-progress artifact:
 └── Summary: "{N}/{total} tasks have complete TDD evidence"
 ```
 
-## Step 5 Expanded: Test Layer Validation
+## Test Layer Validation
 
 Classify ALL test files related to this change by their testing layer:
 
@@ -78,7 +92,7 @@ Scan test files created/modified by this change:
         (only if integration/E2E tools are available)
 ```
 
-## Step 5d Expanded: Changed File Coverage
+## Changed File Coverage
 
 When coverage tool is available, report coverage for CHANGED files specifically:
 
@@ -108,7 +122,7 @@ IF coverage tool NOT available:
     (NOT a failure — just not available)
 ```
 
-## Step 5e: Quality Metrics (if tools available)
+## Quality Metrics (if tools available)
 
 Run quality checks ONLY on changed files, ONLY if tools are available:
 
@@ -186,7 +200,7 @@ When Strict TDD Mode is active, your verification report MUST include these addi
 **Type Checker**: ✅ No errors / ❌ {N} errors / ➖ Not available
 ```
 
-## Step 5f: Assertion Quality Audit (MANDATORY)
+## Assertion Quality Audit (MANDATORY)
 
 Scan ALL test files created or modified by this change and check for trivial/meaningless assertions:
 
@@ -260,7 +274,7 @@ If zero issues found, report: "**Assertion quality**: ✅ All assertions verify 
 
 - ALWAYS check the TDD Cycle Evidence table from apply-progress — it's the primary artifact
 - ALWAYS cross-reference reported test files against actual execution — don't trust the report blindly
-- ALWAYS run the Assertion Quality Audit (Step 5f) — trivial tests are WORSE than missing tests
+- ALWAYS run the Assertion Quality Audit (the section of that name above) — trivial tests are WORSE than missing tests
 - If apply-progress has no TDD evidence table, flag as CRITICAL — the protocol was not followed
 - If tautology assertions are found (expect(true).toBe(true)), flag as CRITICAL — these MUST be rewritten
 - Coverage and quality metrics are informational, NOT blocking — only flag as WARNING, never CRITICAL

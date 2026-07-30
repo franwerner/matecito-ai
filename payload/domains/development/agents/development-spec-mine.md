@@ -19,7 +19,7 @@ Tu única responsabilidad es **discover y draft candidatos**. Retornás un bloqu
 
 ## Instrucciones
 
-Tu skill `development-spec-mine` viene precargada en este contexto — seguila exactamente. Leé además las convenciones compartidas en `~/.claude/skills/_shared/sdd-phase-common.md`.
+Tu skill `development-spec-mine` viene precargada en este contexto — seguila exactamente. Leé además las convenciones compartidas en `~/.claude/skills/_shared/sdd-phase-common.md`, **pero sólo sus Secciones A y B**: C (persistencia) y D (envelope de retorno) NO te aplican — no escribís nada y tu retorno es `candidates[]`, cuya forma vive en tu propia skill. Ese archivo lo dice de su lado; acá queda declarado del tuyo, para que no tengas que llegar hasta allá para enterarte.
 
 Ejecutá todos los pasos en este contexto:
 

@@ -29,6 +29,11 @@ Execute all steps from the skill directly in this context window:
 5. Implement assigned tasks: in TDD mode follow RED → GREEN → REFACTOR; in standard mode write code then verify
 6. Match existing code patterns and conventions
 7. Mark each task `[x]` complete as you finish it
+<!-- matecito-ai: the spec authors UI scenarios in domain language — it cannot name a route or an accessible
+     name for a control that does not exist yet, and must not pin them anyway. You know them because you
+     just wrote them, and `sdd-verify` needs exact targets to stay deterministic. Hence the counterparts
+     land here. -->
+7b. UI scenario counterparts (conditional): if the spec artifact carries a `ui-scenarios:` block, author one **executable counterpart per behavioral scenario** per **Part 2** of `~/.claude/references/ui-scenarios-schema.md` — the same `name` **verbatim** (it is the key `sdd-verify` pairs on), the real `url` you implemented, the `steps` reaching the state its `when` describes, and the `expect` assertions expressing its `then`. It goes in the artifact under `### UI Scenario Counterparts`, merged across batches. Targets MUST be role+name or CSS — **never** `@e\d+`, which `sdd-verify` rejects as CRITICAL before the browser opens. Every behavioral scenario needs a counterpart: one missing is `UNTESTED`/CRITICAL at verify, so if its surface is not built yet in this batch, say so in `### Remaining Tasks` instead of omitting it. No `ui-scenarios:` block → skip silently.
 8. Persist progress to active backend
 
 ## Engram Save (mandatory)
@@ -44,10 +49,22 @@ Also update the tasks artifact with `[x]` marks via `mem_update` (engram).
 
 ## Result Contract
 
-Return a structured result with these fields:
-- `status`: `done` | `blocked` | `partial`
+<!-- matecito-ai: el contrato de retorno es UNO SOLO y vive en la Sección D de sdd-phase-common.md.
+     Estaba duplicado acá y en las otras ocho fases, y cada edición desalineaba las copias. Este
+     bloque REFERENCIA la fuente única y sólo agrega lo específico de la fase. -->
+
+Every field and its legal values are defined once in **Section D of
+`~/.claude/skills/_shared/sdd-phase-common.md`** — the single source of truth. This agent does
+**NOT** redefine `status` (D.1) or `detailed_report` (D.2 + D.3): emit them exactly as Section D
+specifies for `sdd-apply`, including the Tier-2 mailbox D.3 assigns to this phase — and state, per
+deviation, whether `sdd-verify` will check it against the design.
+
+Phase-specific refinements on top of Section D:
 - `executive_summary`: one-sentence description of what was implemented (tasks done / total)
 - `artifacts`: list of files changed and topic_keys updated
-- `next_recommended`: `sdd-verify` (if all tasks done) or `sdd-apply` again (if tasks remain)
-- `risks`: deviations from design, unexpected complexity, or blocked tasks
-- `skill_resolution`: `phase-skill` (loaded own SKILL.md) or `none` <!-- matecito-ai: sin inyección -->
+- `next_recommended`: `sdd-verify` (all tasks done) or `sdd-apply` again (tasks remain) — or `none`,
+  always legal and the correct value on `blocked` / `needs-input`
+<!-- matecito-ai: "blocked tasks" acá era el tercer destino del mismo blocker (los otros dos: `### Issues
+     Found` y `### Status`), y ninguno de los tres lo consumía nadie. Un blocker, un lugar. -->
+- `risks`: unexpected complexity, or an assumption that needs validating. A blocker goes in `### Blocker` — never here, never in `### Issues Found` (that section is for problems you did NOT stop on). Deviations belong in the D.3 mailbox; and a gap that affects what you are about to write is not a risk, it is a `blocked` (see the skill's Rules)
+- `skill_resolution`: per D.4 — `phase-skill` when you loaded this phase's own SKILL.md <!-- matecito-ai: sin inyección -->

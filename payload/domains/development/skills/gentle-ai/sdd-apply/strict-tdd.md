@@ -86,6 +86,56 @@ FOR EACH TASK:
 └── 7. Note any deviations or issues discovered
 ```
 
+<!-- matecito-ai: este módulo REEMPLAZA el Step 4 de la skill, así que la regla de desvíos no le
+     llegaba: en modo Strict TDD la conducta vieja ("anotá y seguí") era la única instrucción presente. -->
+**Deviations rule (applies inside this cycle, same as in Standard Mode).** Step 7 is for recording
+what you resolved, NOT a licence to resolve it. If you find the design wrong or incomplete **in
+something the task you are about to write needs**, STOP and return with the gap and the concrete
+options (`blocked` or `partial`, and persist first — see "Stopping mid-batch" below) — before writing
+the RED test, because the test encodes the decision. Noting it
+afterwards is not authorization. If the gap does not affect what you are writing, note it and
+continue. The cut is between **execution detail** (an internal name, guard ordering, how you split a
+private helper) and **decision** (a contract, a new dependency, which layer the logic lives in,
+changing the design's approach); the canonical criterion is in `~/.claude/references/edr/README.md`.
+Each deviation you do record must state whether `sdd-verify` will check it against the design.
+
+<!-- matecito-ai: mismo agujero que la regla de desvíos — este módulo reemplaza el Step 4, pero
+     marcar tareas y persistir apply-progress son los Steps 5-6 de la skill, POSTERIORES al ciclo.
+     En Strict TDD el corte es aún más temprano (antes del test RED), así que sin esta regla un stop
+     en la tarea 3 de 5 dejaba el código de las tareas 1-2 escrito en el repo y sin registrar. -->
+**Stopping mid-batch — completed work is ALWAYS persisted (same as in Standard Mode).** Every early
+exit from this cycle is a stop **inside** the batch, not an escape from it: the design gap above, a
+pre-existing failure in step 0 SAFETY NET, an infrastructure failure of the test runner, or any other
+unexpected blocker. Before returning control you ALWAYS, in this order:
+
+1. Mark every task whose cycle you completed as `[x]` — Step 5 of `SKILL.md` (this module does NOT
+   replace it).
+2. Persist `apply-progress` with the REAL state — tasks done, task stopped on and at which stage,
+   tasks untouched — Step 6 of `SKILL.md`, MANDATORY on every exit path.
+3. Only then return.
+
+**Never return control with completed work unpersisted.** The code and tests of the finished tasks
+are already in the repo; leaving them unrecorded makes the next batch re-implement them.
+
+Which status to return — same rule as Standard Mode, resolved top down (`SKILL.md` → "Stopping
+Mid-Batch"; the full blocks are in `~/.claude/references/phase-returns/sdd-apply.md`):
+
+- **`blocked`** — the blocker also stops the rest of the batch: you cannot keep going. An
+  infrastructure failure of the test runner is always this case: without a runner no further task
+  can pass the GREEN execution gate.
+- **`partial`** — the phase is not finished: tasks of this change remain. The ordinary continuation
+  batch and a stop that left one task untouched are both `partial`; it claims nothing about whether
+  a blocker exists.
+- **`done`** — nothing remains.
+
+The blocker, when there is one, is reported in ONE place: the return template's `### Blocker`
+section, with the gap and the concrete options — not `### Issues Found`, not `risks`. Carry the
+envelope per **Section D** of `~/.claude/skills/_shared/sdd-phase-common.md`.
+
+The **TDD Cycle Evidence** table still ships on an early exit: one row per task whose cycle you
+completed, plus a row for the task you stopped on showing the last stage it reached (e.g. RED written,
+GREEN never run). Do not omit the table because the batch was cut short.
+
 ## Choosing Test Layer
 
 Based on the testing capabilities cached in Engram (`sdd/{project}/testing-capabilities`), choose the appropriate test layer for each task:
@@ -119,7 +169,8 @@ Detect the test runner from the cached testing capabilities:
 
 ```
 Read test command from:
-├── Cached capabilities → test_runner.command (fastest — already detected)
+├── Cached capabilities → `test_runner.command` (fastest — already detected)
+│   └── literal key, under `### Test Runner` in `sdd/{project}/testing-capabilities`
 ├── project test config → test_command (override)
 └── Fallback: detect from package.json/pyproject.toml/go.mod
 
@@ -177,23 +228,17 @@ BEFORE touching production code:
 
 ## Return Summary Extension
 
-When Strict TDD Mode is active, your return summary MUST include this section:
+<!-- matecito-ai: este módulo reemplaza el Step 4 de la skill, no el formato del retorno. La forma de
+     las dos secciones vive en el template; acá sólo lo que significan sus celdas. -->
 
-```markdown
-### TDD Cycle Evidence
-| Task | Test File | Layer | Safety Net | RED | GREEN | TRIANGULATE | REFACTOR |
-|------|-----------|-------|------------|-----|-------|-------------|----------|
-| 1.1 | `path/test.ext` | Unit | ✅ 5/5 | ✅ Written | ✅ Passed | ✅ 3 cases | ✅ Clean |
-| 1.2 | `path/test.ext` | Integration | N/A (new) | ✅ Written | ✅ Passed | ➖ Single | ✅ Clean |
-| 1.3 | `path/test.ext` | Unit | ✅ 2/2 | ✅ Written | ✅ Passed | ✅ 2 cases | ➖ None needed |
+This module does NOT define its own return format. The return is the one in
+`~/.claude/references/phase-returns/sdd-apply.md`, followed literally, for whichever of `done`,
+`partial` or `blocked` you resolved. What Strict TDD Mode adds is that its two **conditional**
+sections — `### TDD Cycle Evidence` and `### Test Summary` — become mandatory: in this mode they are
+part of the return, and their absence is a broken return, not "nothing to report". Emit the block's
+`**Mode**: Strict TDD` header line so the orchestrator can tell the condition holds.
 
-### Test Summary
-- **Total tests written**: {N}
-- **Total tests passing**: {N}
-- **Layers used**: Unit ({N}), Integration ({N}), E2E ({N})
-- **Approval tests** (refactoring): {N} or "None — no refactoring tasks"
-- **Pure functions created**: {N}
-```
+Fill those two sections as the template shows. What each column means is this module's business:
 
 **Column definitions**:
 - **Safety Net**: Pre-existing tests run before modifying files. "N/A (new)" for new files.
@@ -358,7 +403,12 @@ expect(screen.getByRole("button")).toBeDisabled();
 - ALWAYS verify that every assertion CALLS production code and asserts a SPECIFIC expected value
 - ALWAYS run the Safety Net before modifying existing files — protect what already works
 - ALWAYS report the TDD Cycle Evidence table — the verify phase will check it
-- If a test runner execution fails for infrastructure reasons (not test failures), report as "Blocked" and continue to next task
+- ALWAYS persist completed work before returning control — a stop mid-cycle (`blocked` or `partial`) still marks the finished tasks and saves `apply-progress` first (see "Stopping mid-batch" above)
+<!-- matecito-ai: esta regla decía "reportá Blocked y seguí con la tarea siguiente", en contradicción
+     directa con "Stopping mid-batch" (que trata el fallo de infraestructura como salida temprana que
+     corta el batch). Vale la de arriba: sin runner no hay compuerta GREEN, así que "seguir" sólo
+     puede producir código sin test verde — exactamente lo que este módulo existe para impedir. -->
+- If a test runner execution fails for infrastructure reasons (not test failures), that is an early exit from the cycle — do NOT continue to the next task. Mark what you finished, persist `apply-progress`, and return `blocked` with the failure stated in `### Blocker` (see "Stopping mid-batch" above). Without a working runner no further task can pass the GREEN execution gate, so continuing can only produce production code that was never proven green
 - Prefer pure functions — but don't force it where it doesn't fit (e.g., React components with state)
 - For refactoring tasks, ALWAYS write approval tests before touching code
 - Run ONLY the relevant test file during the cycle, not the full suite
