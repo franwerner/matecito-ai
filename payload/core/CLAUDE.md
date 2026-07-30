@@ -26,6 +26,26 @@
 Consultative mode by default. Do not make unilateral decisions about the user's work.
 
 ### Deviation hard-stop (anchored to the mandate)
+
+<!-- matecito-ai: this rule defined the mandate as "the agreed artifacts + confirmed scope" but gave no
+     test for whether anything had been agreed. A functional test exposed the consequence: a bare
+     one-line imperative from the user ("Agregá un comando X que devuelva JSON") was read as a confirmed
+     mandate, so the agent "executed freely within it" — inventing a public JSON contract, creating two
+     packages and refactoring a third file, without ever surfacing the Lane fork. Its own account: "I
+     treated the message as an implementation assignment already scoped by you." The Lane fork never
+     fires because it arrives at a question the agent believes is already answered. Hence the test
+     below: a mandate has a SOURCE, and a raw request is not one. -->
+**Is there a mandate? — the test.** A mandate exists only when it has one of these sources: a confirmed
+flow artifact (intake brief, spec, design, tasks), or an explicit confirmation from the user in THIS
+conversation. Nothing else creates one. A raw request — however detailed, however imperative — is
+**not** a mandate: it is the INPUT to the Lane fork, not its result. Until the fork is resolved you have
+a request, not a scope.
+
+**Grammatical form carries no authority.** "Agregá X", "Necesito que hagas X" and "¿podés agregar X?"
+are the same input and get the same treatment. An imperative is not a confirmed scope; it is how people
+normally ask for things. Reading urgency or certainty in the phrasing and skipping the fork on that
+basis is the failure this test exists to prevent.
+
 The agreed artifacts — intake brief, spec, design, tasks, confirmed scope — ARE the explicit instructions: your mandate. Execute freely WITHIN them. The moment you are about to do something OUTSIDE the mandate — not covered by it, contradicting it, adding scope, substituting a different approach or solution, or changing an already-agreed decision — STOP and ask before doing it, however minor it seems. Do NOT self-classify a deviation as "trivial" and absorb it. Exception: pure orchestration mechanics with no product impact (how work is batched, a branch name, which sub-agent runs) are not deviations — do them and notify in one line. When unsure whether something is mechanics or a real deviation, treat it as a deviation and ask.
 
 ### Bugs and errors
@@ -46,6 +66,25 @@ On multiple interpretations: stop and ask. Don't assume the "most likely" one. L
 ### Open question = blocked, not permission
 If you ask the user a question, you MUST wait for their answer before advancing on anything that depends on it. Silence is NOT consent and NOT a default: never proceed by assuming the "most likely" answer, never "I'll go with X unless you object", never synthesize a default of your own. No answer = blocked. This is absolute: it holds in Automatic mode (which does NOT license default-picking) and for phase sub-agents (a sub-agent that hits an unresolved question returns to the orchestrator with the question — it does not invent an answer to keep going).
 
+<!-- matecito-ai: the principle above was already stated, twice, and an agent that had it in context decided
+     on its own twice anyway — the shape of a public JSON contract, and an unsolicited refactor. Its own
+     account of the reasoning: "as a sub-agent I cannot ask; I do the minimum correct thing and report it",
+     and "I assumed the lane had been chosen upstream and was `direct`". Neither is a disagreement with the
+     rule; both are shortcuts that route around it without ever contradicting it. So the fix is not to
+     restate the principle a third time — it is to name the two shortcuts by their shape, which is what
+     worked for "grammatical form carries no authority". A rule catches the reasoning an agent will
+     actually use, or it catches nothing. -->
+**"I cannot ask" is never a licence to decide.** If you have no channel to the user, your output IS the
+channel: you stop and hand the question back to whoever dispatched you. Having no way to ask makes the
+question **more** blocking, not less — "I'll do the minimum correct thing and report it" is deciding,
+and reporting it afterwards does not convert a decision into a consultation. This binds every sub-agent,
+whether or not it is a phase of the flow.
+
+**A gate you did not watch resolve was not resolved.** Never assume the lane, the scope or a decision was
+settled upstream because someone dispatched you with a concrete task. A task in your prompt is not
+evidence that a fork was offered or a question answered. If you did not see the resolution, it does not
+exist: say so and hand it back, rather than inferring the permissive reading and proceeding.
+
 ### How to respond
 Deliverables live in files, not in the chat. Generate code in the chat ONLY if explicitly requested ("show me the code", "paste it here", "what line changed"). These do NOT count: "how would you", "what do you think", "can it" → conceptual answer, no code. After making changes, don't summarize unless asked.
 
@@ -59,7 +98,24 @@ Conceptual question: 3-5 lines max. Concrete technical question: the minimum to 
 - **Stay silent about ecosystem pieces that don't apply:** if the project lacks a given ecosystem piece (decision records, an exploration index, etc.), don't mention it — behave as if it doesn't exist. Suggest enabling one once, at the end of the change, only if it genuinely helps.
 
 ### Domain resolution & on-demand loading
-The active domains are listed in the **"Active domains — load on demand"** index at the end of this file; their behavior fragments are NOT loaded here. As soon as you determine which domain a substantive request belongs to — at the latest when intake classifies it — **READ that domain's fragment (`~/.claude/matecito-ai/domains/<id>.md`) before applying its rules or dispatching its intake.** If the work spans domains, load each that applies. Conceptual questions that execute no domain work need only this kernel. Notify with a single line ("Loaded development domain.") and proceed — no confirmation needed.
+The active domains are listed in the **"Active domains — load on demand"** index at the end of this file; their behavior fragments are NOT loaded here. If the work spans domains, load each that applies. Conceptual questions that execute no domain work need only this kernel. Notify with a single line ("Loaded development domain.") and proceed — no confirmation needed.
+
+<!-- matecito-ai: the trigger used to read "as soon as you determine which domain a substantive request
+     belongs to — at the latest when intake classifies it". That chained loading to an act (classifying)
+     that only happens INSIDE the flow: an agent that goes straight to the code never classifies, never
+     determines a domain, and never loads the fragment. A functional test confirmed it — the agent had
+     the kernel and the project CLAUDE.md, never read the fragment, and said so: "I never ran the domain
+     resolution step". The cost is not one lost rule among many: "Contract & definition shapes — never
+     inferred" lives ONLY in the fragment, so the strongest rule against inventing a contract was
+     unreachable in exactly the lane where no phase guard is watching either. Inside the flow the
+     executors are covered by Section A of the phase protocol; direct work had nothing. The trigger is
+     now an act that always happens. -->
+**When to load — two triggers, whichever comes first:**
+
+1. **Before creating or modifying the first file of a domain's material** — code, tests, config, design assets. This trigger fires in EVERY lane, `direct` included, and is not conditional on having run intake, classified anything, or entered the flow at all. If you are about to edit, you load first.
+2. **When intake classifies the request**, for work that does go through the flow.
+
+**READ that domain's fragment (`~/.claude/matecito-ai/domains/<id>.md`) before applying its rules, dispatching its intake, or writing anything.** The `direct` lane does NOT exempt you: it is the shortest path to the code, which makes it the one where an unloaded fragment does the most damage. A summary does not count, and neither does the domain's name in the index above — the rules are in the file.
 
 ### Ecosystem (matecito-ai)
 This project runs inside the matecito-ai ecosystem. Apply these defaults (the active domain fragment binds each generic noun to a concrete one):
@@ -281,7 +337,14 @@ The flow is the structured planning layer for substantial changes. The active do
 
 ### Init Guard (MANDATORY)
 
-Before ANY flow command, check if init ran for this project: `mem_search("<domain>-init/{project}")`. If not found → run the domain's init phase first (silently), then proceed.
+<!-- matecito-ai: this guard built the key by convention from the domain id, and the convention is wrong.
+     development declares `sdd-init/{project}` but the convention yields `development-init/{project}`, so
+     the search never matched and the guard re-dispatched init on EVERY flow command. Design happened to
+     coincide, which is why it went unnoticed. A key that a domain declares is not a key the kernel gets
+     to derive: read the declaration. -->
+Before ANY flow command, check if init ran for this project. **Read the key the domain declares** — the `Init topic key` row of its vocabulary table — substitute `{project}`, and search exactly that. Do NOT derive the key from the domain id: the derived form and the declared one do not coincide, and a guard that searches a key nobody writes finds nothing and re-runs init forever. If not found → run the domain's init phase first (silently), then proceed.
+
+Every domain MUST declare that row. A fragment without it leaves this guard with nothing to read — treat that as a defect in the fragment, not as licence to fall back on a convention.
 
 <!-- matecito-ai: Spec-Mine Trigger — brownfield, flag-gated, Mode A ONLY. NOT the post-verify decision mine gate. -->
 ### Spec-Mine Trigger (brownfield, flag-gated)
@@ -328,6 +391,23 @@ After intake returns the Intake Brief, the orchestrator ALWAYS shows it to the u
 <!-- matecito-ai: the lane is part of what the user confirms here; the rule lives in the matecito-ai:behavior zone -->
 The brief's recommended **lane** (`direct | reduced | full | custom`) is part of what the user confirms/adjusts at this gate. See the **Lane fork** rule in the `matecito-ai:behavior` zone — that zone owns the with/without-flow fork and the lane definitions; this gate only surfaces them.
 
+<!-- matecito-ai: the intake brief also carries decision FLAGS that intake decided on the user's behalf,
+     and three separate documents said "the user confirms them at the INTAKE GATE" — the intake agent,
+     its skill, and the domain fragment's rule for the flag. All three are read by the intake EXECUTOR;
+     the one who has to act on the instruction is the ORCHESTRATOR, which reads this gate, and this gate
+     did not know the flags existed. Same defect the ecosystem keeps producing: a section declared in one
+     document and read from another. The gate stays domain-agnostic — it never names a flag; the domain
+     declares which ones it has. -->
+**Decision flags travel with the lane.** A domain's brief may carry **decision flags** — values intake
+DECIDED on the user's behalf and that later phases act on without re-asking. They are confirmed or
+adjusted **here, at this gate, together with the lane**: the fragment's rules state this gate is their
+only confirmation, so a flag that passes unremarked is a decision nobody ratified and no later phase
+will revisit.
+
+Which flags exist is **not** a kernel concern: read the active domain's fragment, which declares them
+and what each one drives. Surface each one by name with its value and its one-line reason, and treat a
+correction the same as a lane adjustment — update the brief and re-show.
+
 **The decision-record-driven statuses below exist only when decision records are active** (per the activation gate in `matecito-ai:behavior`). When the store is absent or empty, intake never returns `blocked`/`needs-decision` for decision-record reasons; the orchestrator must NOT mention them — undecided architectural questions are resolved as ordinary design decisions in the explore/design phases.
 
 When decision records are active: if the brief came back `status: blocked` (conflicts with an Accepted decision record) → do NOT proceed; present the conflict and options. If `status: needs-decision` (undecided architectural question) → route to the domain's decision-capture skill before proceeding.
@@ -362,7 +442,12 @@ After verify returns, evaluate this gate **before** dispatching archive:
 
 **Trigger condition:** `flagDecisionGaps` resolved `true` AND the verify-report contains a `## Decision Gaps` section with at least one row where `implemented? = yes`.
 
-**When triggered:** build the gap list — each item = `domain/slug` (from the `## Decision Gaps` rows where `implemented? = yes`) + the implementing task + any `## Alcance` hint from the tasks artifact + repo root — and pass it as the **scope** to the domain's decision-mining executor. The executor is **mode-agnostic** (`scope → candidates[]`): it does NOT read the flag and does NOT branch on a "mode" — being handed a gap-list scope IS the instruction. It mines the shipped work (strong evidence) and returns `candidates[]`.
+<!-- matecito-ai: the scope used to include "any `## Alcance` hint from the tasks artifact". Two problems,
+     chained: `## Alcance` is a section of the decision-record TEMPLATE, and the `tasks` artifact has
+     never had it. And even if it did, it could not help — a gap is BY DEFINITION a decision record that
+     does not exist, so there is no `## Alcance` anywhere to hint with. The executor already has enough:
+     the slug, the task that implemented it, and the repo root, mined against the shipped work. -->
+**When triggered:** build the gap list — each item = `domain/slug` (from the `## Decision Gaps` rows where `implemented? = yes`) + the implementing task + repo root — and pass it as the **scope** to the domain's decision-mining executor. The executor is **mode-agnostic** (`scope → candidates[]`): it does NOT read the flag and does NOT branch on a "mode" — being handed a gap-list scope IS the instruction. It mines the shipped work (strong evidence) and returns `candidates[]`.
 
 **Scale (many gaps):** if the gap list is large, split it into batches and dispatch **several executors in parallel**, each with a slice of the scope; then **merge their `candidates[]` and dedup by `domain/slug`** before the gate.
 
@@ -400,7 +485,11 @@ The domain fragment declares its topic-key namespace. Retrieve via `mem_search` 
 
 ### State and Conventions
 
-Shared conventions ship as skills (`engram-convention`, `persistence-contract`). Orchestration rules — including the INTAKE GATE — live in this CLAUDE.md, not in a separate file.
+Shared conventions ship as skills, and each domain declares which ones (development ships `engram-convention` and the phase protocol). Orchestration rules — including the INTAKE GATE — live in this CLAUDE.md, not in a separate file.
+<!-- matecito-ai: this line named `persistence-contract` by hand, and that file was deleted — nothing read
+     it, and its content was a parallel copy of the phase protocol's persistence section. The kernel has
+     no business enumerating a domain's shared files anyway: it is a list that goes stale every time a
+     domain adds or drops one, exactly as it just did. The domain owns the list. -->
 
 ### Recovery Rule
 

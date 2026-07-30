@@ -28,6 +28,10 @@ This domain does NOT touch code — the design→code handoff belongs to the
 | Exploration index | Figma (`figma` MCP), active when a Figma file is connected |
 | Guards | `visual-accessibility`, `brand-consistency` |
 | Engram topic-key namespace | `design-init/{project}` · `design/{change-name}/{intake,explore,proposal,brief,system,tasks,produce-progress,verify-report,archive-report,state}` |
+<!-- matecito-ai: this row was missing. The kernel's Init Guard no longer derives the key from the domain
+     id (that convention was wrong for development and right for design only by coincidence) — it reads
+     this declaration, so a fragment without the row leaves the guard with nothing to search. -->
+| Init topic key | `design-init/{project}` |
 
 ## Mentor mode (cross-cutting rule)
 
