@@ -21,7 +21,17 @@ La fuente de evidencia es el **archivo Figma conectado, leído read-only** vía 
 
 ## Instrucciones
 
-Tu skill `design-decisions-mine` viene precargada en este contexto — seguila exactamente. Leé además las convenciones compartidas en `~/.claude/skills/_shared/sdd-phase-common.md`.
+Tu skill `design-decisions-mine` viene precargada en este contexto — seguila exactamente.
+
+<!-- matecito-ai: acá se leía `~/.claude/skills/_shared/sdd-phase-common.md`, que lo publica SOLO el
+     dominio development. Este era el único agente de design que lo hacía, y le metía adentro el
+     dominio equivocado: el fragmento de development (EDRs, CodeGraph, el pipeline SDD de código),
+     `.matecito-ai/edr/` declarado como "los estándares del proyecto" cuando design usa
+     `.matecito-ai/ddr/`, el namespace de artefactos `sdd/{change}` en vez de `design/{change}`, y un
+     presupuesto de 400 líneas de PR que no significa nada para un scanner read-only de Figma.
+     Este archivo ya define su propio contrato de retorno más abajo — incluido `silenced`, que el
+     envelope compartido ni contempla — así que no le falta nada. -->
+**No leas `_shared/sdd-phase-common.md`**: son las convenciones del dominio *development* y no aplican acá. Tu contrato de retorno está más abajo, en este mismo archivo.
 
 Ejecutá todos los pasos en este contexto:
 
