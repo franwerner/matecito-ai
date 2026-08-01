@@ -83,8 +83,21 @@ artifact.
 |---------|--------|----------|-------------|
 | `name`  | string | yes      | The behavioral scenario's `name`, **verbatim**. A name that does not match one is a counterpart nobody runs |
 | `url`   | string | yes      | The real route you implemented, appended to the dev-server base URL (e.g. `/login`) |
-| `steps` | list   | yes      | Ordered primitives that reach the state the `when` describes |
+| `steps` | list   | yes      | Ordered primitives that establish the scenario's own precondition and reach the state its `when` describes |
 | `expect`| object | yes      | The `then` conditions expressed as executable assertions |
+| `covers`| string | yes      | `full`, or `partial: <what it does not cover>` — see below |
+
+<!-- matecito-ai: coverage used to be binary — a counterpart existed or it did not — so one that only
+     approximated its scenario read as full coverage. The real case that exposed it: a keyboard scenario
+     driven with `click`, honestly flagged by apply in prose that `sdd-verify` never reads. A judgment
+     nobody can see is a judgment nobody can check; the token makes it matchable, like `verify-checks:`
+     and `blocking-test:` elsewhere. -->
+**`covers` is a claim about this counterpart against its behavioral scenario.** `full` asserts every
+`then` condition is actually exercised. `partial:` asserts it is not, and must name what is left out —
+`partial: activation is driven by click, so the Tab-reach path is unverified`. `sdd-verify` reports a
+`partial` counterpart as a WARNING even when it passes: a green row that silently proves less than the
+scenario claims is worse than a red one. If you find yourself writing `partial`, check first whether a
+primitive covers it — `focus`/`press`/`storage` exist precisely for the cases that used to force it.
 
 You are not designing behavior here: the behavioral scenario fixes what must be true, and you translate
 it against the surface you actually built. If you cannot translate a `then` into an assertion, that is a
@@ -98,12 +111,33 @@ finding — say so; do not silently weaken it.
 | `snapshot`    | `snapshot`                                  | `snapshot` (accessibility tree)  |
 | `fill`        | `fill: { target: <locator>, value: <text> }`| `fill <target> "<text>"`         |
 | `click`       | `click: <locator>`                          | `click <target>`                 |
+| `focus`       | `focus: <locator>`                          | `focus <target>`                 |
+| `press`       | `press: <key>`                              | `press <key>` (`Tab`, `Enter`, `Control+a`) |
+| `storage`     | `storage: { scope: local\|session, action: clear\|set, key?: <k>, value?: <v> }` | `storage <scope> …` |
 | `screenshot`  | `screenshot: <label>`                       | `screenshot [<label>]`           |
 | `wait`        | `wait: { selector: <locator>, timeout_ms: <n> }` | wait until locator resolves or timeout |
 
 Use `wait` for async UI — navigation delays, data loading, animation. `selector` is a locator that must
 become present before proceeding; `timeout_ms` is a positive integer and the scenario FAILS if the
 element does not appear in that window. Always place `wait` before assertions that depend on async state.
+
+<!-- matecito-ai: `focus`, `press` and `storage` were missing, and their absence was not neutral. Without
+     `press`, a scenario asserting keyboard operability got a `click` as a stand-in — a PASS that proves
+     the mouse path and says nothing about the keyboard. Without `storage`, a scenario about a corrupted
+     stored preference could not be driven at all, and counterparts had to chain off each other's leftover
+     state, which made the run order load-bearing and undeclared. All three exist in agent-browser
+     (`press <key>`, `focus <sel>`, `storage <local|session>`); the schema simply had not exposed them. -->
+`focus` + `press` are what make a keyboard assertion real. A scenario whose `when` says the user reaches
+a control with Tab and activates it from the keyboard is driven with `focus`/`press`, never with `click`
+— a click proves the mouse path and says nothing about the one the scenario claims.
+
+`storage` is what makes a counterpart **self-contained**. Use it to establish the scenario's own
+precondition — clear the store for a first-visit scenario, set a specific (or deliberately invalid)
+value for a "remembered choice" one.
+
+**Every counterpart establishes its own starting state.** Never rely on the state a previous counterpart
+happened to leave behind: a run order that is load-bearing is a contract nobody declared, it breaks the
+moment one scenario fails midway or is skipped, and `sdd-verify` is under no obligation to preserve it.
 
 ### Target / locator rules
 
@@ -144,7 +178,9 @@ an individual scenario.
 
 - name: login renders and submits
   url: /login
+  covers: full
   steps:
+    - storage: { scope: local, action: clear }   # own precondition, not the previous scenario's leftovers
     - open: /login
     - snapshot
     - fill: { target: 'role=textbox name="Email"', value: "a@b.com" }
@@ -160,6 +196,23 @@ an individual scenario.
     no_server_errors: true
 ```
 
+A keyboard scenario is driven with `focus` + `press`, never with `click`:
+
+```yaml
+- name: submit is reachable from the keyboard
+  url: /login
+  covers: full
+  steps:
+    - open: /login
+    - focus: 'role=textbox name="Email"'
+    - press: Tab
+    - press: Tab
+    - press: Enter
+    - wait: { selector: 'role=heading name="Welcome"', timeout_ms: 3000 }
+  expect:
+    visible: ['role=heading name="Welcome"']
+```
+
 ---
 
 ## Part 3 — Execution and coverage (performed by `sdd-verify`)
@@ -171,8 +224,10 @@ them by `name`.
 
 | Situation | Verdict |
 |---|---|
-| Every behavioral scenario has a counterpart | Proceed to execute |
+| Every behavioral scenario has a counterpart, all `covers: full` | Proceed to execute |
 | A behavioral scenario has **no** counterpart | That scenario is `UNTESTED`, **CRITICAL**. Apply must not be able to drop one quietly |
+| A counterpart declares `covers: partial: …` | Run it, and report **WARNING** with what it leaves out — even when it PASSES |
+| A counterpart carries no `covers` | **WARNING**, treated as `partial: undeclared` — an omission gets the strict reading |
 | A counterpart's `name` matches no behavioral scenario | **WARNING** — orphan counterpart; report it, do not run it |
 | **No** `### UI Scenario Counterparts` section at all, while the spec declares behavioral scenarios | An explicit **CRITICAL** finding: the UI check could not run and the report says so. **Never a silent skip** — silence here is indistinguishable from "no UI work was needed" |
 
@@ -201,3 +256,6 @@ Authored by whoever owns the field:
 6. `wait.timeout_ms` is a positive integer (Part 2).
 7. `expect` contains at least one assertion (Part 2).
 8. `no_console_errors` / `no_server_errors` are booleans; only `true` is meaningful (omit to skip).
+9. `covers` is `full` or `partial: <what is left out>` — the reason is not optional (Part 2).
+10. A counterpart establishes its own starting state and never depends on another's leftovers (Part 2).
+11. A scenario whose `when` describes keyboard interaction is driven with `focus`/`press`, not `click`.

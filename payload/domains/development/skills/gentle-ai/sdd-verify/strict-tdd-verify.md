@@ -18,7 +18,7 @@ These sections are **not** numbered steps of `SKILL.md` and do not extend one: t
 checks Strict TDD adds on top of the standard verification. Run them alongside the skill's Execution
 Steps — the compliance check needs the `apply-progress` artifact (Execution Step 2) and the real test
 results (Execution Step 7), so it lands after those. Their output goes to the report at the position
-`~/.claude/references/phase-returns/sdd-verify.md` fixes for the *Strict TDD extension*, right after
+`~/.claude/references/phase-returns/sdd-verify/sdd-verify.md` fixes for the *Strict TDD extension*, right after
 `### Coherence (Design)`.
 
 ## TDD Compliance Check (includes the Assertion Quality Audit)

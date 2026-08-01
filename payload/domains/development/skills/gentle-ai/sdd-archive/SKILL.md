@@ -90,7 +90,7 @@ Follow **Section C** from `~/.claude/skills/_shared/sdd-phase-common.md`.
 ### Step 6: Return Summary
 
 <!-- matecito-ai: la plantilla del retorno vivía inline acá y sólo cubría el caso feliz — las dos paradas que esta fase tiene (CRITICALs en el verify-report, merge destructivo) no tenían forma. Ahora la forma vive una sola vez, en el template, con su bloque de `blocked`. -->
-Return the `## Change Archived` block **exactly as `~/.claude/references/phase-returns/sdd-archive.md` defines it** — sections, titles, order, and what changes per status. Follow it literally: the orchestrator validates your return against that same file, matching titles literally.
+Return the `## Change Archived` block **exactly as `~/.claude/references/phase-returns/sdd-archive/sdd-archive.md` defines it** — sections, titles, order, and what changes per status. Follow it literally: the orchestrator validates your return against that same file, matching titles literally.
 
 What the return must CARRY (the template fixes how it looks): which durable capability-specs were created, updated or deprecated and with how many scenarios; the archive-report observation IDs recorded in Engram; what the source of truth reflects now; and the closing line of the cycle. When you stop instead of closing — CRITICAL issues in the verification report, or a merge that would be destructive — that is the template's `blocked` block, which carries the question and what unblocks it.
 
@@ -102,4 +102,4 @@ What the return must CARRY (the template fixes how it looks): which durable capa
 - If the merge would be destructive (dropping scenarios/sections not named in the delta), WARN the orchestrator and ask for confirmation
 - Durable capability-specs are files under `.matecito-ai/development-specs/`; the pipeline artifacts (proposal/spec/design/tasks/verify) stay in Engram — never write them to files
 - The archive is an AUDIT TRAIL — never delete or modify archived changes
-- Return envelope per **Section D** from `~/.claude/skills/_shared/sdd-phase-common.md`, carrying the `detailed_report` block **exactly as `~/.claude/references/phase-returns/sdd-archive.md` defines it** — including its `blocked` variant when you stop
+- Return envelope per **Section D** from `~/.claude/skills/_shared/sdd-phase-common.md`, carrying the `detailed_report` block **exactly as `~/.claude/references/phase-returns/sdd-archive/sdd-archive.md` defines it** — including its `blocked` variant when you stop

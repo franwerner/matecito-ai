@@ -136,7 +136,7 @@ Follow **Section C** from `~/.claude/skills/_shared/sdd-phase-common.md`.
 
 <!-- matecito-ai: la plantilla literal salió de acá. Mantenerla inline Y en el template crea una
      copia más para desincronizar — que es exactamente el defecto que el template vino a cerrar. -->
-The shape of your return lives in **`~/.claude/references/phase-returns/sdd-propose.md`**. Read it
+The shape of your return lives in **`~/.claude/references/phase-returns/sdd-propose/sdd-propose.md`**. Read it
 and follow it literally: it declares the `## Proposal Created` block — its sections, their titles,
 their order, which ones are unconditional, and what changes when you return `blocked`. The
 orchestrator validates your return against that same file, matching titles literally, so a section

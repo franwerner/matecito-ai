@@ -50,17 +50,17 @@ Run this phase when the orchestrator/user asks to initialize SDD in a project. Y
 3. Initialize persistence for the resolved mode.
 <!-- matecito-ai: paso de construir el registry removido -->
 4. Persist project context per `## Project Context Format` in `references/init-details.md` (`### Stack`, `### Architecture`, `### Conventions` — an axis you could not establish is `— not detected`, never a plausible value), and testing capabilities emitting the canonical keys **literally** as that same file fixes them — `test_runner.command` / `test_runner.framework`, the `### UI Test` block (`uiTest.proofshot`, `uiTest.devServer.command`, `uiTest.available`) and the `### Debugger` block (`debugger.language`, `debugger.toolchain`, `debugger.available`). Downstream phases look them up by those exact names; a key rewritten as a prose label is a key they will not find.
-5. Return the structured initialization envelope, with the `## SDD Initialized` block from `~/.claude/references/phase-returns/sdd-init.md`.
+5. Return the structured initialization envelope, with the `## SDD Initialized` block from `~/.claude/references/phase-returns/sdd-init/sdd-init.md`.
 
 ## Output Contract
 
 <!-- matecito-ai: esta sección re-enumeraba los campos del envelope por su cuenta — y se olvidaba de `detailed_report` y de `skill_resolution`, así que init era la única fase sin bloque titulado y por lo tanto la única cuyo retorno nadie podía validar. Los campos se heredan de la Sección D; la forma del bloque vive en el template. -->
-Return the Section D envelope from `~/.claude/skills/_shared/sdd-phase-common.md` — do not re-declare its fields here — carrying the `## SDD Initialized` block **exactly as `~/.claude/references/phase-returns/sdd-init.md` defines it**. Follow it literally: the orchestrator validates your return against that same file, matching section titles literally.
+Return the Section D envelope from `~/.claude/skills/_shared/sdd-phase-common.md` — do not re-declare its fields here — carrying the `## SDD Initialized` block **exactly as `~/.claude/references/phase-returns/sdd-init/sdd-init.md` defines it**. Follow it literally: the orchestrator validates your return against that same file, matching section titles literally.
 
 What the return must CARRY (the template fixes how it looks): project and stack, architecture and conventions detected, persistence mode with its limitations, the testing-capability table (runner, layers, coverage, quality tools, `uiTest.available`, debugger toolchain), the saved observation IDs, and the next step (`/sdd-intake`, or `/sdd-explore` to investigate first). Detection never guesses: an undetected capability is `❌`, and evidence that does not resolve to one answer is the template's `blocked` block, not a plausible default.
 
 ## References
 
-- `~/.claude/references/phase-returns/sdd-init.md` — **the** shape of the block you return.
+- `~/.claude/references/phase-returns/sdd-init/sdd-init.md` — **the** shape of the block you return.
 - [references/init-details.md](references/init-details.md) — detection checklist, Engram payloads, and the full Testing Capabilities format (what goes into the artifact).
 - `~/.claude/skills/_shared/engram-convention.md` — Engram artifact naming.

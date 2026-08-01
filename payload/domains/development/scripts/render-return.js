@@ -1,0 +1,349 @@
+#!/usr/bin/env node
+'use strict';
+
+// Builds a phase's return block from data, against the contract in `<phase>.yaml`.
+//
+// The agent never types a heading, so a section cannot be dropped, re-levelled or left without its
+// sentinel. Derived values are computed here, which is what makes a summary that contradicts its own
+// body impossible to express rather than merely detectable afterwards.
+//
+// Usage:
+//   render-return.js --phase sdd-design --schema
+//   render-return.js --phase sdd-design --data data.json [--contracts DIR]
+//
+// Exit 0 renders to stdout, 1 on invalid data (with the offending field), 2 when it cannot run.
+
+const fs = require('fs');
+const path = require('path');
+const yaml = require('./lib/yaml');
+
+function get(data, dotted) {
+  return dotted.split('.').reduce((o, k) => (o == null ? undefined : o[k]), data);
+}
+
+function fail(msg) {
+  process.stderr.write(`${msg}\n`);
+  process.exit(1);
+}
+
+function fmt(template, value, field) {
+  if (value && typeof value === 'object') {
+    // Report every missing key at once: one round-trip per key is how a two-object contract turns
+    // into four failed runs.
+    const missing = keysOf(template).filter((k) => value[k] === undefined);
+    if (missing.length) fail(`\`${field}\` is missing ${missing.map((k) => `\`${k}\``).join(', ')} — it needs { ${keysOf(template).join(', ')} }`);
+    return template.replace(/\{(\w+)\}/g, (_, k) => String(value[k]));
+  }
+  return template.replace(/\{n\}/g, String(value));
+}
+
+function derive(spec, data) {
+  const [kind, arg] = spec.split(':');
+  if (kind === 'count') return (get(data, arg) || []).length;
+  fail(`unknown derived value \`${spec}\``);
+}
+
+// --- rendering ------------------------------------------------------------
+
+function renderLabeledBullets(section, data) {
+  const out = [];
+  for (const b of section.bullets || []) {
+    let value;
+    if (b.derived) value = derive(b.derived, data);
+    else {
+      value = get(data, b.field);
+      if (value === undefined || value === null || value === '') {
+        fail(`missing required field \`${b.field}\` (renders "${b.label}" under ${section.title})`);
+      }
+    }
+    out.push(`- **${b.label}**: ${b.format ? fmt(b.format, value, b.field || b.derived) : value}`);
+  }
+  return out.join('\n');
+}
+
+function renderFields(section, data) {
+  const out = [];
+  const lead = get(data, section.lead);
+  if (lead === undefined || lead === '') fail(`missing required field \`${section.lead}\` (opens ${section.title})`);
+  out.push(String(lead), '');
+  for (const f of section.fields || []) {
+    const v = get(data, f.field);
+    if (v === undefined || v === '') fail(`missing required field \`${f.field}\` (renders "${f.label}" under ${section.title})`);
+    out.push(`**${f.label}**: ${v}`, '');
+  }
+  return out.join('\n').trimEnd();
+}
+
+function renderItems(section, data) {
+  const list = get(data, section.field);
+  if (list === undefined) fail(`missing required field \`${section.field}\` (renders ${section.title}; use [] when there is nothing)`);
+  if (!Array.isArray(list)) fail(`\`${section.field}\` must be a list`);
+  // The sentinel is emitted because the list is empty, never because the agent remembered to.
+  if (list.length === 0) return 'None.';
+
+  const spec = section.items || {};
+  const out = [];
+  for (const [i, item] of list.entries()) {
+    const text = typeof item === 'string' ? item : item[spec.text || 'text'];
+    if (!text) fail(`\`${section.field}[${i}]\` has no \`${spec.text || 'text'}\``);
+    out.push(`- ${text}`);
+    if (!spec.token) continue;
+
+    const value = typeof item === 'object' ? item[spec.token_field] : undefined;
+    if (value === undefined) fail(`\`${section.field}[${i}]\` has no \`${spec.token_field}\` — the token is what proves the test ran`);
+    if (spec.values && !spec.values.includes(value)) {
+      fail(`\`${section.field}[${i}].${spec.token_field}\` is "${value}", not one of ${JSON.stringify(spec.values)}`);
+    }
+    if (spec.passing && !spec.passing.includes(value)) {
+      fail(`\`${section.field}[${i}].${spec.token_field}\` is "${value}", which contradicts ${section.title} — that item belongs in the blocker section`);
+    }
+    out.push(`  · ${spec.token}: ${value}`);
+  }
+  return out.join('\n');
+}
+
+// A table the agent supplies as rows of objects cannot come out misaligned, and a column it forgets is
+// named at render time instead of surviving as a ragged pipe nobody notices.
+function renderTable(section, data) {
+  const rows = get(data, section.field);
+  if (rows === undefined) fail(`missing required field \`${section.field}\` (renders ${section.title}; use [] when there is nothing)`);
+  if (!Array.isArray(rows)) fail(`\`${section.field}\` must be a list of rows`);
+  if (rows.length === 0 && section.sentinel) return 'None.';
+
+  const cols = section.columns || [];
+  const out = [
+    `| ${cols.map((c) => c.label).join(' | ')} |`,
+    `|${cols.map(() => '---').join('|')}|`,
+  ];
+  for (const [i, row] of rows.entries()) {
+    const missing = cols.filter((c) => row[c.key] === undefined).map((c) => c.key);
+    if (missing.length) fail(`\`${section.field}[${i}]\` is missing ${missing.map((k) => `\`${k}\``).join(', ')} — a row needs { ${cols.map((c) => c.key).join(', ')} }`);
+    out.push(`| ${cols.map((c) => String(row[c.key]).replace(/\|/g, '\\|')).join(' | ')} |`);
+  }
+  if (section.footer) {
+    const value = section.footer.derived ? derive(section.footer.derived, data) : get(data, section.footer.field);
+    if (value === undefined) fail(`missing required field \`${section.footer.field}\` (renders the footer of ${section.title})`);
+    out.push('', `**${section.footer.label}**: ${section.footer.format ? fmt(section.footer.format, value, section.footer.field) : value}`);
+  }
+  return out.join('\n');
+}
+
+// Labeled entries whose value may be a command's real output, which has to survive verbatim.
+function renderBlocks(section, data) {
+  const out = [];
+  for (const b of section.blocks || []) {
+    const v = get(data, b.field);
+    if (v === undefined || v === '') fail(`missing required field \`${b.field}\` (renders "${b.label}" under ${section.title})`);
+    if (typeof v === 'object' && v.summary !== undefined) {
+      out.push(`**${b.label}**: ${v.summary}`);
+      if (v.output) out.push('```text', String(v.output).replace(/```/g, "'''"), '```');
+    } else {
+      out.push(`**${b.label}**: ${v}`);
+    }
+    out.push('');
+  }
+  return out.join('\n').trimEnd();
+}
+
+// Several named lists in one section, each with its own sentinel.
+function renderLabeledLists(section, data) {
+  const out = [];
+  for (const l of section.lists || []) {
+    const items = get(data, l.field);
+    if (items === undefined) fail(`missing required field \`${l.field}\` (renders "${l.label}" under ${section.title}; use [] when there is nothing)`);
+    if (!Array.isArray(items)) fail(`\`${l.field}\` must be a list`);
+    if (items.length === 0) {
+      out.push(`**${l.label}**: None`);
+      continue;
+    }
+    out.push(`**${l.label}**:`);
+    for (const it of items) out.push(`- ${typeof it === 'string' ? it : it.text}`);
+  }
+  return out.join('\n');
+}
+
+const RENDERERS = {
+  'labeled-bullets': renderLabeledBullets,
+  'labeled-lists': renderLabeledLists,
+  fields: renderFields,
+  items: renderItems,
+  table: renderTable,
+  blocks: renderBlocks,
+  line: (section, data) => {
+    const v = get(data, section.field);
+    if (v === undefined || v === '') fail(`missing required field \`${section.field}\` (renders ${section.title})`);
+    return String(v);
+  },
+};
+
+// A phase whose return changes block by status (sdd-intake ships a Discovery Form on Pass 1 and an
+// Intake Brief on Pass 2) declares `variants`; everything else uses the top-level block and sections.
+function resolveVariant(contract, status) {
+  if (!contract.variants) return contract;
+  const v = contract.variants.find((x) => (x.statuses || []).includes(status));
+  if (!v) fail(`no variant of \`${contract.phase}\` covers status "${status}"`);
+  return { ...contract, ...v };
+}
+
+function blockTitle(template, data) {
+  return template.replace(/\{(\w+)\}/g, (_, k) => {
+    if (data[k] === undefined || data[k] === '') fail(`missing required field \`${k}\` (it names the block: "${template}")`);
+    return String(data[k]);
+  });
+}
+
+function render(rawContract, data) {
+  const status = data.status;
+  if (!status) fail('missing required field `status`');
+  if (!(rawContract.statuses || []).includes(status)) {
+    fail(`\`status\` is "${status}", not one of ${JSON.stringify(rawContract.statuses)}`);
+  }
+  const contract = resolveVariant(rawContract, status);
+
+  const out = [blockTitle(contract.block, data), ''];
+  for (const h of contract.header || []) {
+    const v = get(data, h.field);
+    if (v === undefined || v === '') fail(`missing required field \`${h.field}\` (renders "${h.label}" in the header)`);
+    out.push(`**${h.label}**: ${v}`);
+  }
+  if ((contract.header || []).length) out.push('');
+
+  for (const section of contract.sections || []) {
+    if (section.emitted === 'on-status' && !(section.statuses || []).includes(status)) continue;
+    // A gate the agent evaluated (a store exists, a flag is on) travels as a boolean it supplies.
+    // Requiring it explicitly is the point: an omitted gate would silently drop the section, which is
+    // the failure these contracts exist to prevent.
+    if (section.emitted === 'conditional') {
+      const gate = data[section.when];
+      if (gate === undefined) fail(`missing required field \`${section.when}\` — it decides whether ${section.title} is emitted, and guessing it is how a section goes missing`);
+      if (!gate) continue;
+    }
+
+    let title = section.title;
+    if (section.variant && data[section.variant.when]) title = section.variant.title;
+
+    const renderer = RENDERERS[section.render];
+    if (!renderer) fail(`contract error: section ${section.title} declares no known \`render\``);
+    // Errors quote the title actually being rendered, not the base one, or they point at a section
+    // the reader will not find in the output.
+    out.push(title, renderer({ ...section, title }, data), '');
+  }
+  return out.join('\n').replace(/\n{3,}/g, '\n\n').trimEnd() + '\n';
+}
+
+// --- schema ---------------------------------------------------------------
+
+function keysOf(format) {
+  return [...format.matchAll(/\{(\w+)\}/g)].map((m) => m[1]);
+}
+
+// The agent asks the tool for the shape instead of memorizing it, so the two cannot drift.
+function schema(contract) {
+  const out = [`Data shape for \`${contract.phase}\` — write this as JSON and pass it with --data.`, ''];
+  out.push(`status: one of ${JSON.stringify(contract.statuses)}`);
+  if (contract.variants) {
+    out.push('', 'This phase returns a DIFFERENT block per status:');
+    for (const v of contract.variants) out.push(`  ${JSON.stringify(v.statuses)} → ${v.block}`);
+    for (const v of contract.variants) {
+      out.push('', `── ${v.block} ──`);
+      out.push(...schema({ ...contract, ...v, variants: null, phase: contract.phase }).split('\n').slice(3));
+    }
+    return out.join('\n') + '\n';
+  }
+  for (const k of keysOf(contract.block || '')) out.push(`${k}: string   (names the block: "${contract.block}")`);
+  for (const h of contract.header || []) out.push(`${h.field}: string   (header "${h.label}")`);
+
+  for (const s of contract.sections || []) {
+    let when = '';
+    if (s.emitted === 'on-status') when = ` [only on status ${JSON.stringify(s.statuses)}]`;
+    if (s.emitted === 'conditional') when = ` [emitted only when \`${s.when}\` is true]`;
+    out.push('', `${s.title}${when}`);
+    if (s.emitted === 'conditional') out.push(`  ${s.when}: boolean   (required — decides whether the section exists)`);
+    if (s.render === 'table') {
+      const cols = (s.columns || []).map((c) => c.key).join(', ');
+      out.push(`  ${s.field}: [{ ${cols} }]   (one row per entry)`);
+      if (s.sentinel) out.push('  (empty list renders the "None." sentinel — never omit the field)');
+      if (s.footer && !s.footer.derived) {
+        out.push(`  ${s.footer.field}: ${s.footer.format ? `{ ${keysOf(s.footer.format).join(', ')} }` : 'string'}   ("${s.footer.label}")`);
+      } else if (s.footer) {
+        out.push(`  (footer "${s.footer.label}" derived from ${s.footer.derived.split(':')[1]} — do NOT supply)`);
+      }
+    } else if (s.render === 'blocks') {
+      for (const b of s.blocks || []) out.push(`  ${b.field}: string | { summary, output }   ("${b.label}"; output is fenced verbatim)`);
+    } else if (s.render === 'labeled-lists') {
+      for (const l of s.lists || []) out.push(`  ${l.field}: [string]   ("${l.label}"; empty list renders "None")`);
+    } else if (s.render === 'labeled-bullets') {
+      for (const b of s.bullets || []) {
+        if (b.derived) out.push(`  (derived from ${b.derived.split(':')[1]} — do NOT supply "${b.label}")`);
+        else if (b.format) out.push(`  ${b.field}: { ${keysOf(b.format).join(', ')} }   (rendered as "${b.format}")`);
+        else out.push(`  ${b.field}: string`);
+      }
+    } else if (s.render === 'fields') {
+      out.push(`  ${s.lead}: string`);
+      for (const f of s.fields || []) out.push(`  ${f.field}: string   ("${f.label}")`);
+    } else if (s.render === 'items') {
+      const spec = s.items || {};
+      const shape = spec.token
+        ? `[{ ${spec.text || 'text'}: string, ${spec.token_field}: ${JSON.stringify(spec.passing || spec.values)} }]`
+        : `[{ ${spec.text || 'text'}: string }]`;
+      out.push(`  ${s.field}: ${shape}`);
+      out.push(`  (empty list renders the "None." sentinel — never omit the field)`);
+    } else if (s.render === 'line') {
+      out.push(`  ${s.field}: string`);
+    }
+    if (s.variant) out.push(`  ${s.variant.when}: boolean   (retitles to "${s.variant.title}")`);
+  }
+  return out.join('\n') + '\n';
+}
+
+// --- cli ------------------------------------------------------------------
+
+function arg(name, fallback) {
+  const i = process.argv.indexOf(`--${name}`);
+  return i === -1 ? fallback : process.argv[i + 1];
+}
+
+// Deployed, the contracts sit in the user's ~/.claude; inside the payload repo they sit next to this
+// script. The probe is the phase's own file, not the directory: the deployed directory can exist and
+// still lack a contract that has not shipped yet.
+function contractsDir(phase) {
+  const explicit = arg('contracts');
+  if (explicit) return explicit;
+  const home = path.join(require('os').homedir(), '.claude', 'references', 'phase-returns');
+  if (phase && fs.existsSync(path.join(home, phase, `${phase}.yaml`))) return home;
+  return path.resolve(__dirname, '..', 'references', 'phase-returns');
+}
+
+function main() {
+  const phase = arg('phase');
+  if (!phase) {
+    process.stderr.write(`usage: render-return.js --phase <name> [--schema | --data <file.json>] [--contracts <dir>]\n  --contracts defaults to ${contractsDir(phase)}\n`);
+    process.exit(2);
+  }
+  const dir = contractsDir(phase);
+
+  let contract;
+  try {
+    contract = yaml.parse(fs.readFileSync(path.join(dir, phase, `${phase}.yaml`), 'utf8'));
+  } catch (e) {
+    process.stderr.write(`cannot read the contract for \`${phase}\`: ${e.message}\n`);
+    process.exit(2);
+  }
+
+  if (process.argv.includes('--schema')) {
+    process.stdout.write(schema(contract));
+    return;
+  }
+
+  const file = arg('data');
+  let data;
+  try {
+    data = JSON.parse(file ? fs.readFileSync(file, 'utf8') : fs.readFileSync(0, 'utf8'));
+  } catch (e) {
+    process.stderr.write(`cannot read the data: ${e.message}\n`);
+    process.exit(2);
+  }
+  process.stdout.write(render(contract, data));
+}
+
+main();

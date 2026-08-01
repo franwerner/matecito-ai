@@ -1,0 +1,39 @@
+# matecito-ai: shape of the `sdd-archive` return. Meaning lives in `sdd-archive.md`.
+phase: sdd-archive
+block: "## Change Archived"
+statuses: [done, blocked]
+header:
+  - { label: Change, field: change }
+sections:
+  - title: "### Capability-Specs Updated"
+    emitted: always
+    sentinel: true
+    render: table
+    field: capability_specs
+    columns:
+      - { key: spec, label: Capability-spec }
+      - { key: action, label: Action }
+      - { key: scenarios, label: Scenarios }
+  - title: "### Archive Report (Engram)"
+    emitted: always
+    sentinel: true
+    render: table
+    field: archive_report
+    columns:
+      - { key: artifact, label: Artifact }
+      - { key: observation, label: Observation ID }
+  - title: "### Source of Truth Updated"
+    emitted: always
+    render: line
+    field: source_of_truth
+  - title: "### Blocker"
+    emitted: on-status
+    statuses: [blocked]
+    render: fields
+    lead: blocker.question
+    fields:
+      - { label: What unblocks it, field: blocker.what_unblocks }
+  - title: "### SDD Cycle Complete"
+    emitted: always
+    render: line
+    field: cycle_complete

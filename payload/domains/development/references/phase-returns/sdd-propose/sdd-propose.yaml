@@ -1,0 +1,32 @@
+# matecito-ai: shape of the `sdd-propose` return. `sdd-propose.md` is the authority on MEANING.
+# `validate-return.js --self-check` fails when the two stop agreeing.
+phase: sdd-propose
+block: "## Proposal Created"
+statuses: [done, blocked]
+header:
+  - { label: Change, field: change }
+  - { label: Location, field: location }
+sections:
+  - title: "### Summary"
+    emitted: always
+    render: line
+    field: summary
+  - title: "### Scope and approach (unconfirmed)"
+    emitted: always
+    tier: 1
+    sentinel: true
+    render: items
+    field: scope_unconfirmed
+    items: { text: text }
+  - title: "### Blocker"
+    emitted: on-status
+    statuses: [blocked]
+    render: fields
+    lead: blocker.question
+    fields:
+      - { label: Options weighed, field: blocker.options }
+      - { label: What unblocks it, field: blocker.what_unblocks }
+  - title: "### Next Step"
+    emitted: always
+    render: line
+    field: next_step

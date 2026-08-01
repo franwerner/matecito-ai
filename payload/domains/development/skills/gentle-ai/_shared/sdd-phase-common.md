@@ -111,14 +111,34 @@ enumerated below on purpose.
 <!-- matecito-ai: el formato literal de cada retorno vive en un template propio, no acá ni disperso en
      las skills. La tabla sólo dice CUÁL bloque te toca; el template dice cómo se ve, incluidas las
      variantes por status y qué secciones son condicionales. -->
-**The exact shape of your return lives in `~/.claude/references/phase-returns/<your-phase>.md`.**
-Read it and follow it literally: it declares the sections, their titles, their order, which ones are
-unconditional and what changes for each status. The orchestrator validates your return against that
-same file (Return Contract Check), matching titles literally — a section you drop, rename or
-re-level is a gate that never fires.
+<!-- matecito-ai: the block used to be typed by hand against a markdown template, and the failures were
+     always the same three: a dropped section, a re-levelled heading, a forgotten sentinel — each one a
+     gate that never fires, silently. The shape now lives as data in `<phase>.yaml` and a script builds
+     the block from your content, so those three are not mistakes you can make. What you still have to
+     get right is the CONTENT, which is what the `.md` is for. -->
+**You do not write the block by hand. You render it:**
 
-Carry the block **in full**, including sections whose body is only a `None…` sentinel. "In full"
-means no section is missing; placeholders, of course, get filled in.
+1. `node ~/.claude/scripts/render-return.js --phase <your-phase> --schema` — the exact data shape.
+   Read it instead of reconstructing it: it also states which fields are **derived** (never supply
+   those — the renderer computes them) and that an empty list is `[]`, which is a different thing from
+   an omitted field.
+2. Write your content as JSON to a temporary file.
+3. `node ~/.claude/scripts/render-return.js --phase <your-phase> --data <file>` — its stdout IS your
+   `detailed_report`. Paste it verbatim.
+
+A non-zero exit names the offending field: fix the data and re-run. **Never hand-write the block to
+get past a failure** — the failure is the contract telling you the content is wrong, not the tool
+being in the way. If the script cannot run at all, say so in your return rather than substituting a
+hand-made block that nothing checked.
+
+**`~/.claude/references/phase-returns/<your-phase>/<your-phase>.md` is what you read to know WHAT
+belongs in each section** — the rationale, the examples, and the reason each rule exists. It is the
+authority on meaning; the `.yaml` beside it is the authority on shape. The orchestrator validates what
+you return against that same contract.
+
+Sections whose body is only a `None…` sentinel are emitted by the renderer when their list is empty —
+you get that for free, and it is why "nothing to report" and "the phase dropped the section" stay
+distinguishable.
 
 | Phase | Block to carry |
 | --- | --- |

@@ -121,7 +121,7 @@ Follow **Section C** from `~/.claude/skills/_shared/sdd-phase-common.md`.
      mencionan ("si el pedido es demasiado vago, decí qué aclaración hace falta"): sin sección
      designada, cada ejecutor inventaba la suya. La FORMA se mudó al template; acá queda el
      CONTENIDO. No la vuelvas a copiar acá: una segunda copia es una desincronización esperando. -->
-**The shape of your return lives in `~/.claude/references/phase-returns/sdd-explore.md`.** Read it
+**The shape of your return lives in `~/.claude/references/phase-returns/sdd-explore/sdd-explore.md`.** Read it
 and follow it **literally**: it declares the block, its sections, their order, which ones are
 unconditional and what changes when you return `blocked`. The orchestrator validates your return
 against that same file, matching titles literally — a section you drop, rename or re-level is a gate
@@ -156,5 +156,5 @@ Persist the same content per Step 5.
 - If you can't find enough information, say so clearly
 - If the request is too vague to explore, do NOT guess at what was meant: return `blocked` with the clarification you need
 <!-- matecito-ai: la forma del retorno tiene UNA fuente. Si volvés a escribirla acá, creaste la copia que este cambio vino a eliminar. -->
-- The SHAPE of your return is `~/.claude/references/phase-returns/sdd-explore.md` — follow it literally and never reconstruct it from memory (Step 6). This skill defines WHAT goes in each section, never how the section looks.
+- The SHAPE of your return is `~/.claude/references/phase-returns/sdd-explore/sdd-explore.md` — follow it literally and never reconstruct it from memory (Step 6). This skill defines WHAT goes in each section, never how the section looks.
 - Return envelope per **Section D** from `~/.claude/skills/_shared/sdd-phase-common.md`.

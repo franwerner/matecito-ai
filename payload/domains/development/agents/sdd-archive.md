@@ -5,7 +5,11 @@ description: >
   needs to be closed — merges the change's delta into the durable capability-specs
   (`.matecito-ai/development-specs/`) and persists the final archive report. Completes the SDD cycle.
 model: haiku
-tools: Read, Edit, Write, Glob, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save
+tools: Read, Edit, Write, Bash, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save
+# matecito-ai: Bash renders this phase's return (`~/.claude/scripts/render-return.js`) AND is its only way
+# to search — this Claude Code build ships no Grep/Glob tools, so `ls`, `find` and `grep` through the
+# shell are the search path, not an exception. What stays out is anything that changes state or runs the
+# project: build, tests, installers, git, package manager, writes through the shell.
 ---
 
 You are the SDD **archive** executor. Do this phase's work yourself. Do NOT delegate further.

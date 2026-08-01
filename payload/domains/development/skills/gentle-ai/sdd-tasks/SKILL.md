@@ -213,7 +213,7 @@ Follow **Section C** from `~/.claude/skills/_shared/sdd-phase-common.md`.
      archivo, el mismo contra el que el orquestador valida el retorno (Return Contract Check).
      Mantener además una copia acá sería volver a tener dos formatos que se desincronizan. -->
 
-**Follow `~/.claude/references/phase-returns/sdd-tasks.md` literally.** That file is the canonical
+**Follow `~/.claude/references/phase-returns/sdd-tasks/sdd-tasks.md` literally.** That file is the canonical
 shape of this phase's return: which sections, in which order, with which titles, which ones are
 unconditional and what changes on `blocked`. The orchestrator validates your return against that
 same file and matches titles **literally** — a section you drop, rename or re-level is a gate that

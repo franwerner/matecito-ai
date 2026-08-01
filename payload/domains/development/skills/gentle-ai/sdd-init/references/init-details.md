@@ -54,7 +54,7 @@ The shape of the `sdd-init/{project}` artifact. Read by `sdd-explore` and `sdd-p
 context (optional for both), and by any later phase that needs the ground truth. Section titles are
 fixed — a consumer looks for them literally.
 
-This is the FULL detail. The `### Project` section of `~/.claude/references/phase-returns/sdd-init.md`
+This is the FULL detail. The `### Project` section of `~/.claude/references/phase-returns/sdd-init/sdd-init.md`
 is the one-line-per-axis summary of these same three axes, for the orchestrator; the two never restate
 each other.
 
@@ -186,7 +186,7 @@ Detection notes:
 <!-- matecito-ai: esto era una TERCERA descripción del retorno (además del template y de la skill).
      El formato vive en un solo lugar; acá queda sólo lo que el template no sabe: lo que cambia
      según el modo de persistencia. -->
-The shape of the return lives in `~/.claude/references/phase-returns/sdd-init.md` — that file owns
+The shape of the return lives in `~/.claude/references/phase-returns/sdd-init/sdd-init.md` — that file owns
 the block and its sections; do not restate them here.
 
 What this file adds, because it is mode-specific: **engram** mode must mention that the persisted

@@ -155,7 +155,7 @@ Follow **Section C** from `~/.claude/skills/_shared/sdd-phase-common.md`.
      interpretación `blocked` y `needs-decision`: dos ejecutores inventaron secciones distintas para
      el mismo caso. La FORMA se mudó al template; acá queda el CONTENIDO. No la vuelvas a copiar:
      una segunda copia es una desincronización esperando. -->
-**The shape of your return lives in `~/.claude/references/phase-returns/sdd-intake.md`.** Read it
+**The shape of your return lives in `~/.claude/references/phase-returns/sdd-intake/sdd-intake.md`.** Read it
 and follow it **literally**: it declares both blocks — the Discovery Form on Pass 1, the Intake
 Brief on Pass 2 — their sections, their order, which ones are unconditional, and what changes for
 each of the four statuses this phase can return (`needs-input`, `done`, `needs-decision`,
@@ -222,7 +222,7 @@ This brief is the entry artifact for the flow. The next phase reads it as its st
 <!-- matecito-ai: explicit rule — the flags used to drop out of the brief with nothing complaining. -->
 - ALWAYS emit both downstream flags (`diagram`, `ui-test`) under `### Classification` on Pass 2, whatever their value (Step 3). This phase is their only producer; `sdd-design` and `sdd-spec`/`sdd-verify` are their only readers, and each treats an absent flag as `not-needed` **silently**. Decide them — never generate a diagram, never run proofshot.
 <!-- matecito-ai: la forma del retorno tiene UNA fuente. Si volvés a escribirla acá, creaste la copia que este cambio vino a eliminar. -->
-- The SHAPE of your return is `~/.claude/references/phase-returns/sdd-intake.md` — both blocks, all four statuses. Follow it literally and never reconstruct it from memory (Step 7). This skill defines WHAT goes in each section, never how the section looks.
+- The SHAPE of your return is `~/.claude/references/phase-returns/sdd-intake/sdd-intake.md` — both blocks, all four statuses. Follow it literally and never reconstruct it from memory (Step 7). This skill defines WHAT goes in each section, never how the section looks.
 - Return envelope per **Section D** from `~/.claude/skills/_shared/sdd-phase-common.md`.
 <!-- matecito-ai: el brief siempre pasa por el gate de confirmación del orquestador antes de la fase siguiente -->
 - The brief ALWAYS goes through the orchestrator's confirmation gate (show to user → confirm/adjust/cancel) before any next phase runs — never assume auto-proceed.

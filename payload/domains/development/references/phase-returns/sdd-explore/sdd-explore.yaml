@@ -1,0 +1,46 @@
+# matecito-ai: shape of the `sdd-explore` return. Note this phase's artifact IS this block, so what
+# you trim here you also trim from what the next phase reads. Meaning lives in `sdd-explore.md`.
+phase: sdd-explore
+block: "## Exploration: {topic}"
+statuses: [done, blocked]
+sections:
+  - title: "### Current State"
+    emitted: always
+    render: line
+    field: current_state
+  - title: "### Affected Areas"
+    emitted: always
+    sentinel: true
+    render: items
+    field: affected_areas
+    items: { text: text }
+  - title: "### Approaches"
+    emitted: always
+    sentinel: true
+    render: table
+    field: approaches
+    columns:
+      - { key: approach, label: Approach }
+      - { key: pros, label: Pros }
+      - { key: cons, label: Cons }
+  - title: "### Recommendation"
+    emitted: always
+    render: line
+    field: recommendation
+  - title: "### Risks"
+    emitted: always
+    sentinel: true
+    render: items
+    field: risks
+    items: { text: text }
+  - title: "### Blocker"
+    emitted: on-status
+    statuses: [blocked]
+    render: fields
+    lead: blocker.question
+    fields:
+      - { label: What unblocks it, field: blocker.what_unblocks }
+  - title: "### Ready for Proposal"
+    emitted: always
+    render: line
+    field: ready_for_proposal

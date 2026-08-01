@@ -1,0 +1,84 @@
+# matecito-ai: shape of the `sdd-apply` return. The apply-progress ARTIFACT is cumulative across
+# batches and carries more than this block (the UI counterparts, the file list verify reads).
+# Meaning in `sdd-apply.md`.
+phase: sdd-apply
+block: "## Implementation Progress"
+statuses: [done, partial, blocked]
+header:
+  - { label: Change, field: change }
+  - { label: Mode, field: mode }
+sections:
+  - title: "### Completed Tasks"
+    emitted: always
+    sentinel: true
+    render: items
+    field: completed_tasks
+    items: { text: text }
+  - title: "### Files Changed"
+    emitted: always
+    sentinel: true
+    render: table
+    field: files_changed
+    columns:
+      - { key: file, label: File }
+      - { key: action, label: Action }
+  # Gated on Strict TDD, which the `Mode` header states. Absent outside it, and that is legitimate.
+  - title: "### TDD Cycle Evidence"
+    emitted: conditional
+    when: strict_tdd
+    render: table
+    field: tdd_evidence
+    columns:
+      - { key: task, label: Task }
+      - { key: red, label: RED }
+      - { key: green, label: GREEN }
+      - { key: refactor, label: REFACTOR }
+  - title: "### Test Summary"
+    emitted: conditional
+    when: strict_tdd
+    render: line
+    field: test_summary
+  - title: "### Deviations from Design"
+    emitted: always
+    tier: 2
+    sentinel: true
+    render: items
+    field: deviations
+    items:
+      text: text
+      token: "verify-checks"
+      token_field: verify_checks
+      values: [yes, no]
+      # Both values are legal here: this mailbox reports accomplished facts, and the token only tells
+      # `sdd-verify` how to classify each one. Nothing belongs in another section.
+      passing: [yes, no]
+  - title: "### Blocker"
+    emitted: conditional
+    when: has_blocker
+    render: fields
+    lead: blocker.question
+    fields:
+      - { label: Options weighed, field: blocker.options }
+      - { label: What unblocks it, field: blocker.what_unblocks }
+  - title: "### Issues Found"
+    emitted: always
+    sentinel: true
+    render: items
+    field: issues
+    items: { text: text }
+  - title: "### Remaining Tasks"
+    emitted: always
+    sentinel: true
+    render: items
+    field: remaining_tasks
+    items: { text: text }
+  - title: "### Workload / PR Boundary"
+    emitted: always
+    render: labeled-bullets
+    bullets:
+      - { label: Mode, field: workload.mode }
+      - { label: Boundary, field: workload.boundary }
+  - title: "### Status"
+    emitted: always
+    render: line
+    field: status_line

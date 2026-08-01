@@ -1,0 +1,86 @@
+# matecito-ai: the return contract of `sdd-design` as data. `render-return.js` builds the block from
+# it, so the shape is correct by construction: a section cannot be dropped, re-levelled, or left
+# without its sentinel, because the agent never types a heading.
+#
+# The `.md` next to this file stays the authority on MEANING — what belongs in each section and why.
+# This file is the authority on SHAPE. `validate-return.js --self-check` fails when the two stop
+# agreeing; run it whenever you edit either file.
+#
+# Derived fields are NOT inputs: the renderer computes them. That is what makes a summary that
+# contradicts its own body impossible to express rather than merely detectable.
+
+phase: sdd-design
+block: "## Design Created"
+statuses: [done, blocked]
+
+header:
+  - label: Change
+    field: change
+  - label: Location
+    field: location
+
+sections:
+  - title: "### Summary"
+    emitted: always
+    render: labeled-bullets
+    bullets:
+      - label: Approach
+        field: summary.approach
+      - label: Key Decisions
+        derived: "count:new_decisions"
+        format: "{n} documented"
+      - label: Files Affected
+        field: summary.files_affected
+        format: "{new} new, {modified} modified, {deleted} deleted"
+      - label: Testing Strategy
+        field: summary.testing_strategy
+
+  - title: "### Blocker"
+    emitted: on-status
+    statuses: [blocked]
+    render: fields
+    lead: blocker.question
+    fields:
+      - label: Options weighed
+        field: blocker.options
+      - label: Why this is not mine to settle
+        field: blocker.why_not_mine
+      - label: What unblocks it
+        field: blocker.what_unblocks
+
+  - title: "### New Decisions"
+    emitted: always
+    accepts: ["### New Decisions (not yet in EDRs)"]
+    variant:
+      title: "### New Decisions (not yet in EDRs)"
+      when: decision_store_active
+    tier: 1
+    sentinel: true
+    render: items
+    field: new_decisions
+    items:
+      text: text
+      token: "blocking-test"
+      token_field: blocking_test
+      values: [none, infra, contract, data-model]
+      # Filed HERE means the alternatives differ in no axis. Any other value belongs in `### Blocker`.
+      passing: [none]
+
+  - title: "### Open Questions"
+    emitted: always
+    tier: 2
+    sentinel: true
+    render: items
+    field: open_questions
+    items:
+      text: text
+
+  - title: "### Next Step"
+    emitted: always
+    render: line
+    field: next_step
+
+# Read by the validator when a return was written by hand instead of rendered.
+summary_claims:
+  - section: "### New Decisions"
+    pattern: "Key Decisions"

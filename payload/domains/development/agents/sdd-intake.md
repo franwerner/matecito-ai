@@ -7,10 +7,14 @@ description:
   orchestrator to ask, classifies the change, triages whether the full SDD flow is needed, and
   catches EDR conflicts or undecided architectural questions before exploration begins.
 model: sonnet
-tools: Read, Grep, Glob, mcp__plugin_engram_engram__mem_save
+tools: Read, Bash, mcp__plugin_engram_engram__mem_save
 # matecito-ai: sdd-intake is the entry phase of the SDD flow. It structures the raw request and
 # produces a brief artifact that sdd-explore consumes. It reads EDRs only to catch early
 # blockers; it does NOT explore the codebase (that is sdd-explore's job).
+# matecito-ai: Bash renders this phase's return (`~/.claude/scripts/render-return.js`) AND is its only way
+# to search — this Claude Code build ships no Grep/Glob tools, so `ls`, `find` and `grep` through the
+# shell are the search path, not an exception. What stays out is anything that changes state or runs the
+# project: build, tests, installers, git, package manager, writes through the shell.
 ---
 
 You are the SDD **intake** executor. Do this phase's work yourself. Do NOT delegate further.

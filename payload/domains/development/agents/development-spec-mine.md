@@ -2,7 +2,7 @@
 name: development-spec-mine
 description: Executor de contexto fresco para minería de capability-specs (Mode A brownfield scan de comportamiento as-built). Hace el trabajo pesado de scan/discovery y retorna un bloque candidates[] estructurado. NUNCA escribe capability-specs — la gate y la materialización son responsabilidad del thread principal.
 model: sonnet
-tools: Read, Grep, Glob, mcp__codegraph
+tools: Read, Bash, mcp__codegraph
 skills:
   - development-spec-mine
 ---
@@ -174,7 +174,7 @@ Al finalizar retorná:
 - Usá el MCP codegraph para preguntas de arquitectura y flujo (rutas, callgraphs, enums de estado, suscriptores); es el punto de entrada primario si `.codegraph/` existe. Resolvé los nombres reales de las tools registradas bajo el prefijo `mcp__codegraph__*` en el momento de uso — no asumas nombres.
 - Usá el MCP codegraph para rastrear dependencias entre módulos (callers/callees).
 - Usá el MCP codegraph cuando necesitás el código fuente completo de un símbolo específico.
-- Usá `Grep` y `Glob` para búsquedas de texto literal, archivos de test no indexados, o cuando `.codegraph/` no existe.
+- Usá `Bash` (`grep`, `rg`, `find`, `ls`) para búsquedas de texto literal, archivos de test no indexados, o cuando `.codegraph/` no existe — **sólo lectura**, nunca comandos que modifiquen el repo. Este build no trae herramientas `Grep`/`Glob`.
 - Usá `Read` para leer archivos de test completos y parsear Given/When/Then.
 - No cargues archivos innecesarios. Priorizá codegraph si disponible.
 - El scan debe cubrir el repo completo (o el área que el caller acotó como scope), nunca una gap list — spec-mine no tiene Mode B.

@@ -118,7 +118,7 @@ unexpected blocker. Before returning control you ALWAYS, in this order:
 are already in the repo; leaving them unrecorded makes the next batch re-implement them.
 
 Which status to return — same rule as Standard Mode, resolved top down (`SKILL.md` → "Stopping
-Mid-Batch"; the full blocks are in `~/.claude/references/phase-returns/sdd-apply.md`):
+Mid-Batch"; the full blocks are in `~/.claude/references/phase-returns/sdd-apply/sdd-apply.md`):
 
 - **`blocked`** — the blocker also stops the rest of the batch: you cannot keep going. An
   infrastructure failure of the test runner is always this case: without a runner no further task
@@ -232,7 +232,7 @@ BEFORE touching production code:
      las dos secciones vive en el template; acá sólo lo que significan sus celdas. -->
 
 This module does NOT define its own return format. The return is the one in
-`~/.claude/references/phase-returns/sdd-apply.md`, followed literally, for whichever of `done`,
+`~/.claude/references/phase-returns/sdd-apply/sdd-apply.md`, followed literally, for whichever of `done`,
 `partial` or `blocked` you resolved. What Strict TDD Mode adds is that its two **conditional**
 sections — `### TDD Cycle Evidence` and `### Test Summary` — become mandatory: in this mode they are
 part of the return, and their absence is a broken return, not "nothing to report". Emit the block's

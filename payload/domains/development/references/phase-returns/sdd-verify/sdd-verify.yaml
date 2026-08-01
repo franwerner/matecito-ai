@@ -1,0 +1,154 @@
+# matecito-ai: the return contract of `sdd-verify` as data. See `sdd-verify.md` for what each section
+# MEANS and why it exists — this file only fixes its SHAPE.
+# `validate-return.js --self-check` fails when the two stop agreeing; run it after editing either.
+#
+# This phase is the one that stretched the format: seven of its sections are tables, five are gated on
+# something other than status, and the artifact it persists IS this block.
+
+phase: sdd-verify
+block: "## Verification Report"
+statuses: [done, blocked]
+
+header:
+  - label: Change
+    field: change
+  - label: Version
+    field: version
+  - label: Mode
+    field: mode
+
+sections:
+  - title: "### Blocker"
+    emitted: on-status
+    statuses: [blocked]
+    render: fields
+    lead: blocker.what_stopped
+    fields:
+      - label: What unblocks it
+        field: blocker.what_unblocks
+
+  - title: "### Completeness"
+    emitted: always
+    render: table
+    field: completeness
+    columns:
+      - { key: metric, label: Metric }
+      - { key: value, label: Value }
+
+  - title: "### Build & Tests Execution"
+    emitted: always
+    render: blocks
+    blocks:
+      - label: Build
+        field: build
+      - label: Tests
+        field: tests
+      - label: Coverage
+        field: coverage
+
+  - title: "### Spec Compliance Matrix"
+    emitted: always
+    render: table
+    field: spec_compliance
+    sentinel: true
+    columns:
+      - { key: requirement, label: Requirement }
+      - { key: scenario, label: Scenario }
+      - { key: test, label: Test }
+      - { key: result, label: Result }
+    footer:
+      label: Compliance summary
+      field: compliance_summary
+      format: "{compliant}/{total} scenarios compliant"
+
+  - title: "### Correctness (Static Evidence)"
+    emitted: always
+    render: table
+    field: correctness
+    sentinel: true
+    columns:
+      - { key: requirement, label: Requirement }
+      - { key: status, label: Status }
+      - { key: notes, label: Notes }
+
+  - title: "### Coherence (Design)"
+    emitted: always
+    render: table
+    field: coherence_design
+    sentinel: true
+    columns:
+      - { key: decision, label: Decision }
+      - { key: followed, label: "Followed?" }
+      - { key: verifiable_per_apply, label: Verifiable per apply }
+      - { key: severity, label: Severity }
+      - { key: notes, label: Notes }
+
+  # Gated on the STORE, not on the finding: with the store active it is emitted even when all-clear,
+  # because a check whose only trace is `### Issues Found` looks identical to a check that never ran.
+  - title: "### Coherence (EDRs)"
+    emitted: conditional
+    when: edr_store_active
+    render: table
+    field: coherence_edrs
+    sentinel: true
+    columns:
+      - { key: edr, label: EDR }
+      - { key: followed, label: "Followed?" }
+      - { key: severity, label: Severity }
+      - { key: notes, label: Notes }
+
+  - title: "### Coherence (Capability-Specs)"
+    emitted: conditional
+    when: spec_store_active
+    render: table
+    field: coherence_specs
+    sentinel: true
+    columns:
+      - { key: spec, label: Capability-spec }
+      - { key: status, label: Status }
+      - { key: followed, label: "Followed?" }
+      - { key: severity, label: Severity }
+      - { key: notes, label: Notes }
+
+  # `##`, not `###`, and deliberately so: the UI step and the kernel's mine gate match these two at
+  # that level. Levelling them down is a gate that never fires.
+  - title: "## UI Verdict"
+    emitted: conditional
+    when: ui_gate_passed
+    render: table
+    field: ui_verdict
+    columns:
+      - { key: scenario, label: Scenario }
+      - { key: counterpart, label: Counterpart }
+      # A counterpart that only approximates its scenario has to be visible in the verdict table, or a
+      # PASS row silently claims more than it proved.
+      - { key: covers, label: Covers }
+      - { key: state, label: STATE }
+      - { key: failure_reason, label: Failure Reason }
+    footer:
+      label: Error gate
+      field: error_gate
+      format: "consoleErrorCount {console} / serverErrorCount {server} → {verdict}"
+
+  - title: "## Decision Gaps"
+    emitted: conditional
+    when: flag_decision_gaps
+    render: table
+    field: decision_gaps
+    columns:
+      - { key: slug, label: domain/slug }
+      - { key: task, label: task }
+      - { key: implemented, label: "implemented?" }
+
+  - title: "### Issues Found"
+    emitted: always
+    render: labeled-lists
+    lists:
+      - { label: CRITICAL, field: issues.critical }
+      - { label: WARNING, field: issues.warning }
+      - { label: SUGGESTION, field: issues.suggestion }
+
+  - title: "### Verdict"
+    emitted: always
+    render: line
+    field: verdict

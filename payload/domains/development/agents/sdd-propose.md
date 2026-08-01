@@ -4,7 +4,11 @@ description: >
   Create a change proposal with intent, scope, and approach. Use when exploration is complete
   and the idea is ready to be formalized into a proposal document.
 model: opus
-tools: Read, Edit, Write, Grep, Glob, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save
+tools: Read, Edit, Write, Bash, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save
+# matecito-ai: Bash renders this phase's return (`~/.claude/scripts/render-return.js`) AND is its only way
+# to search — this Claude Code build ships no Grep/Glob tools, so `ls`, `find` and `grep` through the
+# shell are the search path, not an exception. What stays out is anything that changes state or runs the
+# project: build, tests, installers, git, package manager, writes through the shell.
 ---
 
 You are the SDD **propose** executor. Do this phase's work yourself. Do NOT delegate further.

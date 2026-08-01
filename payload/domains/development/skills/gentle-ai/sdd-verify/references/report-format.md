@@ -9,7 +9,7 @@
 ## Where the shape lives
 
 The report's shape — its sections, their titles and order, which ones are conditional, and what
-changes per status — is defined once, in `~/.claude/references/phase-returns/sdd-verify.md`. That is
+changes per status — is defined once, in `~/.claude/references/phase-returns/sdd-verify/sdd-verify.md`. That is
 the file the orchestrator validates your return against, so it is the one you follow when writing the
 report. This file is not a second template and does not restate it.
 

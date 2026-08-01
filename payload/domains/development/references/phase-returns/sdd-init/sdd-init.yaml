@@ -1,0 +1,48 @@
+# matecito-ai: shape of the `sdd-init` return. The ARTIFACTS it persists are far fuller than this
+# block — this is the summary the orchestrator routes on. Meaning lives in `sdd-init.md`.
+phase: sdd-init
+block: "## SDD Initialized"
+statuses: [done, blocked]
+header:
+  - { label: Project, field: project }
+  - { label: Mode, field: mode }
+sections:
+  - title: "### Project"
+    emitted: always
+    render: labeled-bullets
+    bullets:
+      - { label: Stack, field: project_info.stack }
+      - { label: Architecture, field: project_info.architecture }
+      - { label: Conventions, field: project_info.conventions }
+  - title: "### Persistence"
+    emitted: always
+    render: labeled-bullets
+    bullets:
+      - { label: Mode, field: persistence.mode }
+      - { label: Limitations, field: persistence.limitations }
+  - title: "### Testing Capabilities"
+    emitted: always
+    render: table
+    field: testing_capabilities
+    columns:
+      - { key: capability, label: Capability }
+      - { key: available, label: Available }
+      - { key: detail, label: Detail }
+  - title: "### Artifacts Saved"
+    emitted: always
+    sentinel: true
+    render: items
+    field: artifacts_saved
+    items: { text: text }
+  - title: "### Blocker"
+    emitted: on-status
+    statuses: [blocked]
+    render: fields
+    lead: blocker.question
+    fields:
+      - { label: What you found, field: blocker.what_found }
+      - { label: What unblocks it, field: blocker.what_unblocks }
+  - title: "### Next Step"
+    emitted: always
+    render: line
+    field: next_step

@@ -5,7 +5,7 @@ description: >
   and bootstrap persistence. Use as the FIRST setup step before
   any SDD phase runs in a project that has not been initialized yet.
 model: sonnet
-tools: Read, Grep, Glob, Bash, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save
+tools: Read, Bash, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save
 # matecito-ai: sdd-init is the setup/bootstrap phase — it sits OUTSIDE the intake→archive flow
 # graph and runs once per project (the orchestrator's SDD Init Guard launches it when
 # sdd-init/{project} is absent from Engram). It needs Bash to detect the real stack and test

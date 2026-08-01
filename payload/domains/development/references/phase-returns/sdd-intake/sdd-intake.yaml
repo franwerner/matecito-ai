@@ -1,0 +1,69 @@
+# matecito-ai: shape of the `sdd-intake` return. The only phase that returns a DIFFERENT block per
+# pass, so the contract is split into variants keyed by status. Meaning lives in `sdd-intake.md`.
+#
+# Pass 1 always returns `needs-input` — there is no path from it to the brief, not even with an empty
+# question list. That is enforced structurally here: the Discovery Form variant has no triage, no
+# classification and no brief, so a Pass-1 return simply cannot carry them.
+
+phase: sdd-intake
+statuses: [needs-input, done, needs-decision, blocked]
+
+variants:
+  - statuses: [needs-input]
+    block: "## Discovery Form: {title}"
+    sections:
+      - title: "### Request (as received)"
+        emitted: always
+        render: line
+        field: request_raw
+      # MAY be empty: nothing ambiguous is a complete, legitimate return — never a shortcut to the
+      # brief. Empty renders the sentinel, and the one-line reading travels in `### Next`.
+      - title: "### Questions (unanswered — for the orchestrator to ask)"
+        emitted: always
+        sentinel: true
+        render: items
+        field: questions
+        items: { text: text }
+      - title: "### Next"
+        emitted: always
+        render: line
+        field: next
+
+  - statuses: [done, needs-decision, blocked]
+    block: "## Intake Brief: {title}"
+    sections:
+      - title: "### Request (structured)"
+        emitted: always
+        render: line
+        field: request_structured
+      # The two downstream flags live here and nowhere else. `sdd-design` reads `Diagram`,
+      # `sdd-spec`/`sdd-verify` read `UI test`, and each treats an absent flag as not-needed, silently.
+      - title: "### Classification"
+        emitted: always
+        render: labeled-bullets
+        bullets:
+          - { label: Type, field: classification.type }
+          - { label: Domains touched, field: classification.domains }
+          - { label: Size, field: classification.size }
+          - { label: Diagram, field: classification.diagram }
+          - { label: UI test, field: classification.ui_test }
+      - title: "### Discovery answers"
+        emitted: always
+        sentinel: true
+        render: items
+        field: discovery_answers
+        items: { text: text }
+      - title: "### Triage"
+        emitted: always
+        render: line
+        field: triage
+      # Conditional on the STORE: absent or empty means decision records are not mentioned anywhere.
+      - title: "### Early guard (EDRs)"
+        emitted: conditional
+        when: edr_store_active
+        render: line
+        field: early_guard
+      - title: "### Next"
+        emitted: always
+        render: line
+        field: next

@@ -170,10 +170,11 @@ Otherwise omit the whole section, silently.}
      nowhere to be reported and the silence looked identical to "no UI work was needed". The gate (flag +
      availability) decides whether the section exists; everything that went wrong AFTER the gate is
      reported INSIDE it. Hence the Counterpart column: `UNTESTED` is now expressible. -->
-| Scenario | Counterpart | STATE | Failure Reason |
-|----------|-------------|-------|----------------|
-| {behavioral scenario `name`} | ✅ Found | ✅ PASS / ❌ FAIL | {reason or —} |
-| {behavioral scenario `name`} | ❌ Missing | ❌ UNTESTED | no counterpart in apply-progress — CRITICAL |
+| Scenario | Counterpart | Covers | STATE | Failure Reason |
+|----------|-------------|--------|-------|----------------|
+| {behavioral scenario `name`} | ✅ Found | ✅ full | ✅ PASS / ❌ FAIL | {reason or —} |
+| {behavioral scenario `name`} | ✅ Found | ⚠️ partial | ✅ PASS | {what the counterpart leaves unverified — WARNING even on PASS} |
+| {behavioral scenario `name`} | ❌ Missing | — | ❌ UNTESTED | no counterpart in apply-progress — CRITICAL |
 
 {One row per **behavioral** scenario declared by the spec — never one per counterpart, so a scenario
 apply never implemented still gets its row. Orphan counterparts (a `name` matching no behavioral

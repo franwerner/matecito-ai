@@ -1,0 +1,47 @@
+# matecito-ai: shape of the `sdd-tasks` return. Meaning in `sdd-tasks.md`.
+# The forecast lines are matched LINE BY LINE by the Review Workload Guard, which is why they are
+# three separate fields rather than free prose: a reworded line is a guard that never fires.
+phase: sdd-tasks
+block: "## Tasks Created"
+statuses: [done, blocked]
+header:
+  - { label: Change, field: change }
+sections:
+  - title: "### Breakdown"
+    emitted: always
+    render: labeled-bullets
+    bullets:
+      - { label: Total tasks, field: breakdown.total }
+      - { label: Work units, field: breakdown.work_units }
+  - title: "### Implementation Order"
+    emitted: always
+    sentinel: true
+    render: items
+    field: implementation_order
+    items: { text: text }
+  - title: "### Blocker"
+    emitted: on-status
+    statuses: [blocked]
+    render: fields
+    lead: blocker.question
+    fields:
+      - { label: Options weighed, field: blocker.options }
+      - { label: What unblocks it, field: blocker.what_unblocks }
+  - title: "### Tasks not traceable to spec/design"
+    emitted: always
+    tier: 1
+    sentinel: true
+    render: items
+    field: untraceable_tasks
+    items: { text: text }
+  - title: "### Review Workload Forecast"
+    emitted: always
+    render: labeled-bullets
+    bullets:
+      - { label: "Decision needed before apply", field: forecast.decision_needed }
+      - { label: "Chained PRs recommended", field: forecast.chained_prs }
+      - { label: "400-line budget risk", field: forecast.budget_risk }
+  - title: "### Next Step"
+    emitted: always
+    render: line
+    field: next_step
