@@ -257,7 +257,7 @@ Follow **Section C** from `~/.claude/skills/_shared/sdd-phase-common.md`.
 
 <!-- matecito-ai: la plantilla literal salió de acá. Mantenerla inline Y en el template crea una
      copia más para desincronizar — que es exactamente el defecto que el template vino a cerrar. -->
-The shape of your return lives in **`~/.claude/references/phase-returns/sdd-spec.md`**. Read it and
+The shape of your return lives in **`~/.claude/references/phase-returns/sdd-spec/sdd-spec.md`**. Read it and
 follow it literally: it declares the `## Specs Created` block — its sections, their titles, their
 order, which ones are unconditional, and what changes when you return `blocked`. The orchestrator
 validates your return against that same file, matching titles literally, so a section you drop,
@@ -300,7 +300,14 @@ Two things that file makes explicit and that this phase gets wrong most often:
      él haría que un ejecutor recorte escenarios de UI para "entrar" — degradando en silencio lo que
      sdd-verify va a ejecutar. El bloque ya está acotado por su origen: sale de los escenarios que
      escribiste, para capabilities con superficie visual. -->
-- **Size budget**: Spec artifact MUST be under 650 words. Prefer requirement tables over narrative descriptions. Each scenario: 3-5 lines max. The `## UI Scenarios` block does NOT count against this budget — never drop or trim a UI scenario to fit it
+<!-- matecito-ai: `## Scope` se exceptúa por la MISMA razón, y no en abstracto: pasó. Un ejecutor con
+     el presupuesto ajustado la fue plegando y terminó dropeándola entera para entrar — y `sdd-apply`
+     NO lee el intake brief, así que ese spec era su única fuente de qué archivos tocar. Se tapó
+     pasándole las rutas en el prompt de despacho, que es el orquestador cubriendo un agujero del
+     contrato. La lista de archivos no es prosa que se pueda comprimir: o está completa o miente.
+     Y el conteo: `wc -w` cuenta cada guion de viñeta y cada flecha como palabra — reportó 724 sobre
+     643 reales, así que ese ejecutor plegó contenido por ~80 palabras que no existían. -->
+- **Size budget**: Spec artifact MUST be under 650 words. Prefer requirement tables over narrative descriptions. Each scenario: 3-5 lines max. **Two sections do NOT count against this budget and are never dropped or trimmed to fit it**: the `## UI Scenarios` block, and `## Scope` — the file list is `sdd-apply`'s only source of what to touch, since it does not read the intake brief. **Count only tokens containing a letter or a digit** — bare bullet dashes, arrows and em-dashes are not words, and `wc -w` overcounts by ~10%: budget on the real figure, never fold content to satisfy an inflated one
 - Return envelope per **Section D** from `~/.claude/skills/_shared/sdd-phase-common.md`.
 
 ## RFC 2119 Keywords Quick Reference
