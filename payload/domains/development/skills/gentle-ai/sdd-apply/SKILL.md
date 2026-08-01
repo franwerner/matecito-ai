@@ -52,12 +52,12 @@ Before writing ANY code:
 3. Read existing code in affected files — understand current patterns
 4. Check the project's coding conventions from `config.yaml`
 
-<!-- matecito-ai: EDRs + context7 + codegraph before implementing — START -->
+<!-- matecito-ai: EDRs + resolve-dependency-version + codegraph before implementing — START -->
 5. **Read the applicable EDRs.** If `.matecito-ai/edr/` exists, the design's "EDR Alignment" section already lists the relevant EDRs. Read their **Reglas verificables** and treat them as hard constraints on your implementation (e.g. token TTLs, error format, validation location, layer dependencies). If the design flagged an EDR conflict or an uncaptured decision as a blocker, STOP and report — do not implement around it. If you capture or edit a decision into an EDR during apply, its reasoning (Contexto/Decisión/Consecuencias/Alternativas) follows the vocabulary rule — concepts, not volatile internal identifiers; those go in `## Alcance`/`## Reglas verificables` (see `~/.claude/references/edr/README.md` → "Dónde va cada nombre").
 6. **Use the available MCP tools while implementing:**
-   - **context7** — before writing a version into a manifest, adding a dependency, or writing config/API code for a library or framework, **load the `context7` skill and follow it**. It is the single source of truth for this (mandatory triggers, context7 as the only version source, and the hard "not found → report and block, never guess" rule) — do not rely on a summary here or on your own memory of versions and APIs.
+   - **resolve-dependency-version** — before writing a version into a manifest, adding a dependency, or writing config/API code for a library or framework, **load the `resolve-dependency-version` skill and follow it**. It is the single source of truth for this (mandatory triggers, the `context7` MCP as the only version source, and the hard "not found → report and block, never guess" rule) — do not rely on a summary here or on your own memory of versions and APIs.
    - **codegraph** (only if `.codegraph/` exists) — before changing an existing symbol (function/class/method), ask the codegraph MCP for the impact/blast-radius of that symbol to see what else depends on it, so you don't break callers, and for its callers/callees to confirm call sites. For literal-text or non-indexed files, use grep as usual.
-<!-- matecito-ai: EDRs + context7 + codegraph before implementing — END -->
+<!-- matecito-ai: EDRs + resolve-dependency-version + codegraph before implementing — END -->
 
 #### Step 2a: Enforce Review Workload Decision
 
@@ -168,7 +168,7 @@ so the envelope reports `artifacts: none` per Section D.4.
      caso más frecuente de esta fase y con la definición vieja se quedaba sin status. -->
 
 Which status to return — resolve it top down and stop at the first that fits (the full rule, with
-its blocks, is in the return template: `~/.claude/references/phase-returns/sdd-apply.md`):
+its blocks, is in the return template: `~/.claude/references/phase-returns/sdd-apply/sdd-apply.md`):
 
 - **`blocked`** — the blocker also stops the rest of the batch: you cannot keep going.
 - **`partial`** — the phase is not finished: tasks of this change remain. This covers the ordinary
@@ -219,7 +219,7 @@ Follow **Section C** from `~/.claude/skills/_shared/sdd-phase-common.md`.
 
 <!-- matecito-ai: "keep the same structure" no decía de qué estructura, porque el formato del artefacto
      no estaba declarado en ningún lado. Vive ahora en el template, junto al del retorno. -->
-The shape of the artifact is declared in **`~/.claude/references/phase-returns/sdd-apply.md`**, in its
+The shape of the artifact is declared in **`~/.claude/references/phase-returns/sdd-apply/sdd-apply.md`**, in its
 "Artifact vs return" section. Do not invent it and do not derive it from your return block: they are
 two different documents with different readers.
 
@@ -258,9 +258,17 @@ Three things that make this fail quietly if you get them wrong:
   only inside the snapshot that produced them. `sdd-verify` rejects one with a CRITICAL before the
   browser opens. Authoring one is a guaranteed verification failure, not a style slip.
 
+- **Each counterpart establishes its own starting state.** Use the `storage` primitive to clear or seed
+  what the scenario needs; never rely on what the previous counterpart left behind. A run order that is
+  load-bearing is a contract nobody declared, and it breaks the moment one scenario fails midway.
+- **Declare `covers`.** `full` asserts every `then` is actually exercised; `partial: <what is missing>`
+  says it is not, and the reason is not optional. Omitting it reads as `partial: undeclared`, which is a
+  WARNING at verify. Before writing `partial`, check whether a primitive covers it — `focus`, `press`
+  and `storage` exist precisely for the cases that used to force an approximation.
+
 You are not designing behavior here: the spec fixed what must be true, you translate it against the
 surface you built. If you cannot translate a `then` into an assertion, that is a finding for
-`### Issues Found` — never a weakened assertion.
+`### Issues Found` — never a weakened assertion, and never a `covers: full` that is not true.
 
 ### Step 7: Return Summary
 
@@ -269,7 +277,7 @@ surface you built. If you cannot translate a `then` into an assertion, that is a
      retorno (Return Contract Check). Mantener además una copia acá sería volver a tener dos
      formatos que se desincronizan. -->
 
-**Follow `~/.claude/references/phase-returns/sdd-apply.md` literally.** That file is the canonical
+**Follow `~/.claude/references/phase-returns/sdd-apply/sdd-apply.md` literally.** That file is the canonical
 shape of this phase's return: which sections, in which order, with which titles, which ones are
 unconditional, and a full block for each of `done`, `partial` and `blocked`. The orchestrator
 validates your return against that same file and matches titles **literally** — a section you drop,
@@ -297,7 +305,7 @@ Three things the template expects you to already know from this skill:
 
 - ALWAYS read specs before implementing — specs are your acceptance criteria
 - ALWAYS follow the design decisions — don't freelance a different approach
-<!-- matecito-ai: respect the EDRs listed in the design's EDR Alignment; load the `context7` skill before writing library versions or APIs; ask the codegraph MCP for a symbol's impact before changing it (see Step 2) -->
+<!-- matecito-ai: respect the EDRs listed in the design's EDR Alignment; load the `resolve-dependency-version` skill before writing library versions or APIs; ask the codegraph MCP for a symbol's impact before changing it (see Step 2) -->
 - ALWAYS respect the applicable EDRs (`.matecito-ai/edr/`) as hard constraints; if an EDR conflict/uncaptured decision was flagged as a blocker, STOP and report instead of coding around it
 <!-- matecito-ai: recordatorio apuntado — la doctrina completa vive en el fragmento del dominio (cargado en Step 1), no se duplica acá -->
 - **Before writing ANY contract or definition** — domain entity, DB model/migration/schema, DTO, public/exported type, interface or enum, event payload, or config schema — apply **"Contract & definition shapes — never inferred"** from the domain fragment (`~/.claude/matecito-ai/domains/development.md`, read in Step 1). Never infer which fields it has nor their types. Pinned-and-coherent → implement it; unspecified, or pinned by something that conflicts or does not cover this case → return `blocked` proposing the FULL contract as one reviewable unit

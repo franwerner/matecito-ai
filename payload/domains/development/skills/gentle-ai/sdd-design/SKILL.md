@@ -53,6 +53,15 @@ Before designing, read the actual code that will be affected:
 - Dependencies and interfaces
 - Test infrastructure (if any)
 
+<!-- matecito-ai: the domain fragment declares CodeGraph the exploration index, and this phase — whose
+     first rule is "ALWAYS read the actual codebase before designing" — did not have it granted. An
+     executor noticed and fell back to literal search: not blocked, but a preference it could not honor.
+     Grant and instruction now match. -->
+**Prefer CodeGraph for structural questions** when `.codegraph/` exists — who calls what, the blast
+radius of a symbol, where a responsibility already lives. Fall back to literal search (Bash: `grep`,
+`rg`, `find`) for text and non-indexed files. Reference the server by capability and resolve its real
+tool names at use time; they drift between versions.
+
 <!-- matecito-ai: read project EDRs before designing — START -->
 #### Step 2a: Read the project's architecture decisions (EDRs)
 
@@ -105,6 +114,30 @@ architectural decision pass as if it were execution detail either.
 
 If the project has `.matecito-ai/development-specs/` (durable capability-specs under `<type>/<capability>.md`, type ∈ flow|rule|lifecycle|process — concept at `~/.claude/references/spec/README.md`), read the capability-specs this change touches. They are the accumulated **intended behavior** (the WHAT) the technical design must satisfy — the sibling of the EDRs, which are the constraints (the why/how-decision). Design so the change fits the behavior these specs already describe; if it must change that behavior, say so explicitly under "New Decisions". If `.matecito-ai/development-specs/` does NOT exist, proceed normally.
 <!-- matecito-ai: read durable capability-specs before designing — END -->
+
+<!-- matecito-ai: resolve library versions before proposing them — START -->
+#### Step 2c: Resolve library versions before proposing one as an option
+
+`## New Decisions` can include a library as one of the alternatives you propose to the user. Left to
+itself, this phase would state those options from training memory — a version one or two majors
+behind, an API shape or a support/deprecation status that no longer holds. That is exactly the failure
+`resolve-dependency-version` exists to prevent, and it is already the ecosystem's single choke point
+for this (the domain fragment names it as the sole version-resolution path; bootstrap, mine and apply
+all defer to it instead of copying its criterion) — so this step routes to it rather than repeating it.
+
+**Before naming a library as one of the options under `## New Decisions`**, read
+`~/.claude/skills/resolve-dependency-version/SKILL.md` (the deployed path — this phase has no `Skill`
+tool and no `skills:` preload, so a directed `Read` is how you reach it) and follow it. It resolves the
+library's current version and support/deprecation status through the `context7` MCP, corroborated
+against the ecosystem's remote lookup, and reports any discrepancy between the two rather than
+silently picking one — the version you cite in the option comes from that resolution, never from
+memory. Do NOT restate the skill's version-choice criterion inline here or anywhere else in this
+design: this file names the trigger and the reason; the skill owns the rule, and duplicating it is the
+copy this whole change exists to avoid.
+
+A design that proposes no library skips this entirely — the skill is read only when the trigger
+fires, which is most designs.
+<!-- matecito-ai: resolve library versions before proposing them — END -->
 
 ### Step 3: Write design.md
 
@@ -256,11 +289,25 @@ Follow **Section C** from `~/.claude/skills/_shared/sdd-phase-common.md`.
 
 <!-- matecito-ai: la plantilla literal salió de acá. Mantenerla inline Y en el template crea una
      copia más para desincronizar — que es exactamente el defecto que el template vino a cerrar. -->
-The shape of your return lives in **`~/.claude/references/phase-returns/sdd-design.md`**. Read it and
-follow it literally: it declares the `## Design Created` block — its sections, their titles, their
-order, which ones are unconditional, and what changes when you return `blocked`. The orchestrator
-validates your return against that same file, matching titles literally, so a section you drop,
-rename or re-level is a gate that never fires.
+<!-- matecito-ai: the block is no longer typed by hand. Its shape now lives as data in `sdd-design.yaml`
+     and a script builds it, so a dropped section, a re-levelled heading or a forgotten sentinel are not
+     mistakes you can make. The `.md` stays the authority on MEANING — what belongs in each section and
+     why — which is what you still have to get right. -->
+**You do not write this block by hand. You render it.**
+
+1. `node ~/.claude/scripts/render-return.js --phase sdd-design --schema` — the exact data shape. Read
+   it rather than reconstructing it: it also states which fields are **derived** (you must not supply
+   them) and that an empty list is `[]`, never an omitted field.
+2. Write your content as JSON to a temporary file.
+3. `node ~/.claude/scripts/render-return.js --phase sdd-design --data <file>` — the output IS your
+   `detailed_report`.
+
+A non-zero exit names the offending field. Fix the data and re-run; never hand-write the block to get
+past a failure, because the failure is the contract telling you the content is wrong.
+
+**`~/.claude/references/phase-returns/sdd-design/sdd-design.md` remains what you read to know what
+belongs in each section** — the rationale, the examples, and the reasons each rule exists. It is the
+authority on meaning; the `.yaml` next to it is the authority on shape.
 
 Three things that file makes explicit and that this phase gets wrong most often:
 
@@ -281,6 +328,8 @@ Three things that file makes explicit and that this phase gets wrong most often:
 <!-- matecito-ai: EDRs are binding — respect Accepted EDRs in .matecito-ai/edr/; never contradict one silently (report as blocker); flag uncovered decisions for capture via development-decisions-bootstrap (see Step 2a) -->
 - ALWAYS read `.matecito-ai/edr/` (if present) before designing; treat Accepted EDRs as binding constraints and surface conflicts as blockers — including the case where the EDR itself is the inconsistent one, or did not foresee this case (Step 2a)
 - ALWAYS emit New Decisions in BOTH places — `## New Decisions` in the artifact and `### New Decisions` **in your return** — whether or not `.matecito-ai/edr/` exists (Step 2a-bis). The guard reads the return only. Only the EDR-naming parts are gated on the store; the detection is not. A repo with no captured decisions is the one that most needs its architectural choices raised, not the one where they pass silently. **What lands in this section is filtered by the blocking test below** — a decision the test catches returns `blocked` instead of being filed here
+<!-- matecito-ai: recordatorio apuntado — la regla completa con su porqué vive en `resolve-dependency-version` (Step 2c), no se duplica acá. -->
+- **Before naming a library as an option under `## New Decisions`**, read `~/.claude/skills/resolve-dependency-version/SKILL.md` and follow it (Step 2c) — it resolves the version and support/deprecation status through context7 before you state the option. Never restate its version-choice criterion inline
 <!-- matecito-ai: recordatorio apuntado — la doctrina completa vive en el fragmento del dominio (cargado en Step 1), no se duplica acá. Aplica sobre todo a la sección "Interfaces / Contracts". -->
 - **Before pinning ANY contract or definition** in the design — domain entity, DB model/migration/schema, DTO, public/exported type, interface or enum, event payload, or config schema (this is what the "Interfaces / Contracts" section materializes) — apply **"Contract & definition shapes — never inferred"** from the domain fragment (`~/.claude/matecito-ai/domains/development.md`, read in Step 1). Never infer which fields it has nor their types. Pinned-and-coherent upstream → carry it through; unspecified, or pinned by something that conflicts or does not cover this case → return `blocked` proposing the FULL contract as one reviewable unit
 - Every decision MUST have a rationale (the "why")
@@ -320,7 +369,7 @@ Three things that file makes explicit and that this phase gets wrong most often:
   · blocking-test: none | infra | contract | data-model
   ```
 
-  `none` means "I put the alternatives side by side and they differ in NONE of the three axes; that is why this item is here and not in `blocked`" — the only value consistent with the item's location, and therefore the normal one. Naming an axis instead contradicts the item's own destination: an axis that differs makes the decision `blocked`. The orchestrator reads the token mechanically and never reopens your reasoning: `none` → ordinary Tier 1; an axis named → it stops, because the item is in the wrong mailbox; absent or hedged → Tier 1 under the strict reading, the same default an undeclared deviation gets in `sdd-apply`. Do not hedge it, do not omit it, and do not write `none` for a decision you did not actually put side by side — one line per decision, and the token IS the audit trail the paragraph above asks for. Shape and the reader's table: `~/.claude/references/phase-returns/sdd-design.md`, section "The blocking-test token".
+  `none` means "I put the alternatives side by side and they differ in NONE of the three axes; that is why this item is here and not in `blocked`" — the only value consistent with the item's location, and therefore the normal one. Naming an axis instead contradicts the item's own destination: an axis that differs makes the decision `blocked`. The orchestrator reads the token mechanically and never reopens your reasoning: `none` → ordinary Tier 1; an axis named → it stops, because the item is in the wrong mailbox; absent or hedged → Tier 1 under the strict reading, the same default an undeclared deviation gets in `sdd-apply`. Do not hedge it, do not omit it, and do not write `none` for a decision you did not actually put side by side — one line per decision, and the token IS the audit trail the paragraph above asks for. Shape and the reader's table: `~/.claude/references/phase-returns/sdd-design/sdd-design.md`, section "The blocking-test token".
 <!-- matecito-ai: Open Questions dejó de ser buzón de decisiones (se solapaba con New Decisions y el
      ejecutor duplicaba: razonamiento en una, pregunta en la otra => fatiga de confirmación). -->
 - `## Open Questions` is NOT a decision mailbox. A question that pins a decision belongs to `## New Decisions` / `### New Decisions`, or makes you return `blocked` per the test above — never here. What stays here is what fixes nothing: implementation doubts and things to validate during apply. And a question you write there and answer yourself in the same delivery is not an open question — it is a decision you took without asking. Whatever remains genuinely open at the end MUST still appear under `### Open Questions` **in your return** (not only in the artifact), so the orchestrator can carry it forward — it is no longer Tier 1

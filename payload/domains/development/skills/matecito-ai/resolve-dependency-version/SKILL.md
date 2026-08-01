@@ -1,5 +1,5 @@
 ---
-name: context7
+name: resolve-dependency-version
 description: Defines when and how to consult the context7 MCP for current library documentation — version resolution before installing or pinning ANY dependency, library/framework configuration, API usage, version migrations, and library-specific debugging. USE THIS SKILL whenever you are about to add or install a dependency, write a version into a manifest (package.json, go.mod, requirements.txt, Cargo.toml, …), write configuration or API calls for a library/framework, migrate a library across versions, or debug an error specific to a library. Your training data is stale for versions and APIs — resolve them, never recall them.
 ---
 
@@ -32,6 +32,12 @@ Before first use in a session, confirm the actual registered tool names under th
 | Use a library API non-trivially | Current signature/usage — especially if the lib moves fast |
 | Migrate a library across versions | Breaking changes, migration guide |
 | Debug a library-specific error | Known issues, changed behavior between versions |
+<!-- matecito-ai: new row — an agent proposing a library as one of the OPTIONS in a decision (e.g.
+     `sdd-design`'s `## New Decisions`) was not covered by any existing trigger, which left it free to
+     name libraries and versions from training memory in the one place they get put in front of the
+     user as if vetted. This is what keeps the skill the single source: `sdd-design` routes here instead
+     of copying a criterion. -->
+| Propose a library as an option in a decision | Current version and support/deprecation status — resolved BEFORE the option is stated |
 
 The first two are **mandatory**: no dependency is added and no version is pinned without resolving it through context7 first and then corroborating it (see below).
 
@@ -60,8 +66,18 @@ context7's docs are a snapshot and can lag the registry, so a version taken from
 
 **Resolution:**
 
+<!-- matecito-ai: inverted. The old rule wrote the ecosystem's version whenever it was greater — that
+     pins a version with no documentation coherent with it: you'd write 5.0 and then implement against
+     context7's 4.2 docs, which is worse than not consulting anything, because the number LOOKS
+     verified. The registry is now a corroborating SIGNAL, never the source of the number — the number
+     always comes from context7. What's removed is the silent, unilateral upgrade; what never
+     changes is that a discrepancy is always reported, so the user decides with both numbers in view
+     whether they still want the newer one, knowing it means implementing against stale documentation. -->
 - **Both agree** → write it.
-- **They differ** → write the ecosystem's version **only if it is greater** than context7's; if it is lower or equal, keep context7's. Either way, note the discrepancy in one line.
+- **They differ** → write context7's version, always — the registry never supplies the number, even
+  when it reports a greater one. Report the discrepancy in one line naming both, e.g. "context7
+  documents up to 4.2; the registry has 5.0, with no documentation available" — so the user decides
+  with that in view.
 - **context7 empty, ecosystem resolves it** → write the ecosystem's version and state that context7 did not have the library.
 - **No lookup tool available** for that ecosystem (toolchain absent) → context7's version stands; say it was not corroborated.
 
@@ -85,7 +101,7 @@ Applies wherever code or manifests are written: `sdd-apply`, the `direct` lane, 
 ## Self-check (before touching a manifest or library API)
 
 1. Am I about to write a **version number**? → came from context7 or the ecosystem's remote lookup? If from neither → stop.
-2. Did I corroborate context7's candidate against the ecosystem's remote lookup, taking the greater of the two?
+2. Did I corroborate context7's candidate against the ecosystem's remote lookup, writing context7's version regardless of which is greater and reporting any discrepancy in one line?
 3. Am I reading the number off installed state (`node_modules`, `npm ls`, `pip show`, `go.sum`, a lockfile)? → that is not a source; go query remotely.
 4. Did BOTH sources come up empty? → report what you queried in each and wait — never guess.
 5. Am I writing **config/API code** for a library that moves fast? → queried current docs?

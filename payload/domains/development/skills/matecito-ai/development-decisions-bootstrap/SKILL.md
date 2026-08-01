@@ -249,7 +249,10 @@ Registro paralelo que se construye intercalado con la conversación. Cada vez qu
 
 Tres preguntas rápidas (pueden ir en un turno):
 
-1. **Versión.** Si el manifest la tiene, mostrala como default.
+<!-- matecito-ai: choke point único — cualquier otro punto de entrada (paso 6 de "Cómo tratar una fase",
+     modo update) llega a esta misma pregunta en vez de resolver la versión por su cuenta. No dupliques
+     esta resolución en otro lado. -->
+1. **Versión.** Si el manifest la tiene, mostrala como default — pero confirmala contra documentación vigente antes de fijarla; si el manifest no la tiene, la resolución te aporta la versión actual. Usá la skill `resolve-dependency-version` (corrés en el thread principal, que ya tiene el MCP que necesita) para esta resolución.
 2. **Por qué (1-2 líneas).** Si no tiene una razón clara, sugerí una y pedí confirmación.
 3. **Alternativas descartadas (1 línea).** 1-3 que se consideraron, o "ninguna evaluada" (información honesta).
 
@@ -366,7 +369,7 @@ Notas del contrato del EDR (también en `~/.claude/references/edr/templates/edr.
    - **Actualizar una decisión** (cambio menor o de fondo) → editar el EDR en el lugar. Git lleva el historial.
    - **Agregar una decisión nueva** no cubierta → crear EDR en su dominio + fila en el índice de ese dominio (y en el raíz si el dominio es nuevo en el proyecto).
    - **Cambiar un `Not Applicable` a `Pending`/`Accepted`** → el contexto del proyecto cambió (ej: el script chico creció a app multiusuario y ahora sí hay auth). Sacá la fila de la sección "No aplican" del INDEX del dominio (o "Dominios sin uso" del raíz) y creá el EDR-archivo con el nuevo status y contenido; creá la carpeta del dominio si no existía.
-   - **Agregar/cambiar/quitar una tecnología** → editar `tech/INDEX.md` y el archivo en `tech/<nombre>.md`. Si reemplazás, borrá el archivo viejo y su fila del INDEX — git conserva el historial del archivo borrado.
+   - **Agregar/cambiar/quitar una tecnología** → editar `tech/INDEX.md` y el archivo en `tech/<nombre>.md`. Si tocás la versión, resolvela por el mismo camino que en la captura inicial — ver "Catálogo de tecnologías", paso 1. Si reemplazás, borrá el archivo viejo y su fila del INDEX — git conserva el historial del archivo borrado.
    - **Rehacer todo desde cero** → confirmación doble. Antes de sobrescribir, mover el directorio a `.matecito-ai/edr.old.<timestamp>/`.
 6. Para actualizar/agregar, recorré solo las fases relevantes — no rehagas todo el cuestionario.
 7. **Después de cualquier cambio, mantené los índices coherentes:** actualizá el índice del dominio afectado y, si agregaste o vaciaste un dominio, el índice raíz.
