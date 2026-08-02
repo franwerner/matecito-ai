@@ -2,9 +2,11 @@ package cli
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -159,21 +161,34 @@ func (r installRunner) run(selfVersion string, dryRun, yes bool) error {
 	// the one place a self-replace hands off to the new binary.
 	sync.FinishSelfReplace(r.Stdout, r.Stderr, syncResult.SelfReplaced)
 
-	if err := surfaceCodegraphError(syncResult); err != nil {
+	if err := surfaceComponentErrors(syncResult); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// surfaceCodegraphError returns a wrapped error when the sync result carries a
-// codegraph failure, or nil when codegraph succeeded. Keeping this as a named
-// function makes the decision directly testable without running the full command.
-func surfaceCodegraphError(result sync.Result) error {
-	if cgErr := result.Errors["codegraph"]; cgErr != nil {
-		return fmt.Errorf("codegraph: %w", cgErr)
+// surfaceComponentErrors reports any component failure to the shell. It used to
+// single out codegraph, so a failed payload deploy or binary install printed its
+// error and still exited 0 — install succeeded where update would have failed.
+// Every cause is kept and named, because the exit code alone does not say which.
+func surfaceComponentErrors(result sync.Result) error {
+	names := make([]string, 0, len(result.Errors))
+	for name, err := range result.Errors {
+		if err != nil {
+			names = append(names, name)
+		}
 	}
-	return nil
+	if len(names) == 0 {
+		return nil
+	}
+	sort.Strings(names)
+
+	var causes error
+	for _, name := range names {
+		causes = errors.Join(causes, fmt.Errorf("%s: %w", name, result.Errors[name]))
+	}
+	return fmt.Errorf("install: uno o más componentes fallaron durante la sincronización: %w", causes)
 }
 
 func confirmInstall(in io.Reader, out io.Writer, prompt string) bool {

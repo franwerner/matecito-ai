@@ -41,11 +41,6 @@ func TestInstallCmd_ResumeWiring(t *testing.T) {
 // codegraph error, the install command returns a non-nil error and does NOT
 // silently continue to MCP registration (requirement: CLI reports real
 // codegraph install state).
-//
-// The test reaches the codegraph-error branch by invoking the logic that was
-// previously "_ = syncResult" directly through a unit-level helper that
-// mirrors what RunE does: if syncResult.Errors["codegraph"] is set, the
-// command must return an error wrapping it.
 func TestInstallCmd_CodegraphErrorSurfaced(t *testing.T) {
 	cgErr := errors.New("npm install failed")
 	result := sync.Result{
@@ -54,9 +49,7 @@ func TestInstallCmd_CodegraphErrorSurfaced(t *testing.T) {
 		},
 	}
 
-	// Replicate the decision logic introduced in RunE:
-	// if cgErr := syncResult.Errors["codegraph"]; cgErr != nil { return fmt.Errorf(...) }
-	reportedErr := surfaceCodegraphError(result)
+	reportedErr := surfaceComponentErrors(result)
 	if reportedErr == nil {
 		t.Fatal("expected error to be surfaced when syncResult.Errors['codegraph'] is set, got nil")
 	}
@@ -69,11 +62,48 @@ func TestInstallCmd_CodegraphErrorSurfaced(t *testing.T) {
 }
 
 // TestInstallCmd_CodegraphSuccessNoError verifies that when syncResult has no
-// codegraph error, surfaceCodegraphError returns nil (normal path continues).
+// component error, surfaceComponentErrors returns nil (normal path continues).
 func TestInstallCmd_CodegraphSuccessNoError(t *testing.T) {
 	result := sync.Result{}
-	if err := surfaceCodegraphError(result); err != nil {
-		t.Fatalf("expected nil when codegraph succeeded, got: %v", err)
+	if err := surfaceComponentErrors(result); err != nil {
+		t.Fatalf("expected nil when every component succeeded, got: %v", err)
+	}
+}
+
+// TestInstallCmd_NonCodegraphFailureSurfaced covers the asymmetry install used
+// to have against update: only codegraph reached the exit code, so a failed
+// payload deploy printed its error and the command still exited 0.
+func TestInstallCmd_NonCodegraphFailureSurfaced(t *testing.T) {
+	deployErr := errors.New("no se pudo escribir el destino")
+	binErr := errors.New("descarga interrumpida")
+	result := sync.Result{
+		Errors: map[string]error{
+			"deploy": deployErr,
+			"engram": binErr,
+		},
+	}
+
+	reportedErr := surfaceComponentErrors(result)
+	if reportedErr == nil {
+		t.Fatal("expected a non-codegraph component failure to reach the exit code, got nil")
+	}
+	for _, want := range []string{"deploy", "engram"} {
+		if !strings.Contains(reportedErr.Error(), want) {
+			t.Errorf("returned error should name the failed component %q; got: %v", want, reportedErr)
+		}
+	}
+	if !errors.Is(reportedErr, deployErr) || !errors.Is(reportedErr, binErr) {
+		t.Errorf("returned error should wrap every cause; got: %v", reportedErr)
+	}
+}
+
+// TestInstallCmd_NilComponentErrorIsNotAFailure guards the map-with-nil-value
+// case: sync.Result.HasErrors only counts keys, so a nil entry would otherwise
+// fail a run where nothing actually failed.
+func TestInstallCmd_NilComponentErrorIsNotAFailure(t *testing.T) {
+	result := sync.Result{Errors: map[string]error{"codegraph": nil}}
+	if err := surfaceComponentErrors(result); err != nil {
+		t.Fatalf("expected nil when the only recorded error is nil, got: %v", err)
 	}
 }
 
