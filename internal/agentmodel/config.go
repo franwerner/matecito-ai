@@ -52,6 +52,21 @@ type DomainConfig struct {
 	Settings map[string]any `json:"settings,omitempty"`
 }
 
+// Component names a surface of the repo that the product's consumer recognizes
+// (e.g. "api", "cli", "ui") and the repo-root-relative directories it lives in.
+// Paths may list several directories (a component can span more than one).
+type Component struct {
+	Name  string   `json:"name"`
+	Paths []string `json:"paths"`
+}
+
+// Repo declares the repo's component set for the `components` capability-spec
+// axis. Per-project ONLY: never folded by normalize() and never inherited from
+// a global config (see ProjectComponents in resolve.go).
+type Repo struct {
+	Components []Component `json:"components,omitempty"`
+}
+
 // Config holds the persisted configuration for matecito-ai.
 // StrictTdd, FlagDecisionGaps and FlagSpecMine use pointers so that key-absent
 // (nil) is distinct from false — necessary for the per-project-vs-global
@@ -64,6 +79,10 @@ type Config struct {
 	Domains []string `json:"domains,omitempty"`
 	// DomainConfig holds per-domain settings keyed by domain id (M7).
 	DomainConfig map[string]*DomainConfig `json:"domainConfig,omitempty"`
+	// Repo declares the repo's component set (capability-spec `components` axis).
+	// Per-project only — outside normalize()'s folding and outside the
+	// global→project precedence chain (see ProjectComponents).
+	Repo *Repo `json:"repo,omitempty"`
 
 	// Legacy top-level keys (pre-M7 / pre-per-domain-flag). Read for backward
 	// compatibility and folded into DomainConfig[DefaultDomain] by normalize();
@@ -184,6 +203,15 @@ func (c *Config) SetDomainFlagSpecMine(domain string, v *bool) {
 	c.ensureDomain(domain).FlagSpecMine = v
 }
 
+// RepoComponents returns the repo's declared component set (nil if cfg or
+// cfg.Repo is unset).
+func (c *Config) RepoComponents() []Component {
+	if c == nil || c.Repo == nil {
+		return nil
+	}
+	return c.Repo.Components
+}
+
 // DomainSetting returns a generic per-domain manifest field value (nil if unset).
 func (c *Config) DomainSetting(domain, key string) any {
 	if c == nil || c.DomainConfig == nil {
@@ -293,6 +321,15 @@ func Validate(cfg *Config) error {
 			if !IsValidModel(val) {
 				return fmt.Errorf("agentmodel: invalid model %q for agent %q (valid: %v)", val, key, ValidModels)
 			}
+		}
+	}
+	if cfg.Repo != nil {
+		seen := make(map[string]bool, len(cfg.Repo.Components))
+		for _, comp := range cfg.Repo.Components {
+			if seen[comp.Name] {
+				return fmt.Errorf("agentmodel: duplicate repo component name %q", comp.Name)
+			}
+			seen[comp.Name] = true
 		}
 	}
 	return nil

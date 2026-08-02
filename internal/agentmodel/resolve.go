@@ -40,6 +40,15 @@ func ResolveTdd(global Config, project *Config, domain string) bool {
 	return false
 }
 
+// ProjectComponents returns the repo's declared component set from project.
+// Takes no global argument by design: repo.components is per-project ONLY and
+// is never inherited from a global config (unlike ResolveModel/ResolveTdd,
+// which do take a global). project == nil (no per-project config found) or an
+// unset Repo both yield nil.
+func ProjectComponents(project *Config) []Component {
+	return project.RepoComponents()
+}
+
 // DeriveProjectName returns the repository name from a git remote URL, or
 // filepath.Base(dir) when remoteURL is empty. Pure; never shells out.
 // Handles HTTPS (https://github.com/owner/repo.git) and

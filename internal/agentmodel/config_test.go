@@ -182,6 +182,118 @@ func TestDomainFlagSpecMine_PerProjectVsGlobal(t *testing.T) {
 	}
 }
 
+// --- Repo / components ---
+
+func TestNormalize_RepoNotFolded(t *testing.T) {
+	// repo stays top-level and untouched while a legacy flat flag folds into
+	// DomainConfig[DefaultDomain] — repo is not part of that migration at all.
+	dir := t.TempDir()
+	path := filepath.Join(dir, "config.json")
+	writeJSON(t, path, map[string]interface{}{
+		"flagDecisionGaps": true,
+		"repo": map[string]interface{}{
+			"components": []map[string]interface{}{
+				{"name": "cli", "paths": []string{"cmd", "internal"}},
+			},
+		},
+	})
+
+	cfg, err := agentmodel.Load(path)
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if p := cfg.DomainFlagDecisionGaps(agentmodel.DefaultDomain); p == nil || !*p {
+		t.Errorf("legacy flagDecisionGaps should migrate to development; got %v", p)
+	}
+	if cfg.Repo == nil || len(cfg.Repo.Components) != 1 || cfg.Repo.Components[0].Name != "cli" {
+		t.Errorf("repo should survive normalize() untouched, got %+v", cfg.Repo)
+	}
+}
+
+func TestRepoComponents_NilSafe(t *testing.T) {
+	var nilCfg *agentmodel.Config
+	if got := nilCfg.RepoComponents(); got != nil {
+		t.Errorf("expected nil for nil *Config, got %v", got)
+	}
+
+	emptyCfg := &agentmodel.Config{}
+	if got := emptyCfg.RepoComponents(); got != nil {
+		t.Errorf("expected nil for unset Repo, got %v", got)
+	}
+}
+
+func TestSave_RepoRoundTrip_PreservesComponentAndPathOrder(t *testing.T) {
+	// S: round-trip Save→Load preserves component order AND each component's
+	// paths order — cli is multi-path on purpose.
+	dir := t.TempDir()
+	path := filepath.Join(dir, "config.json")
+
+	cfg := &agentmodel.Config{
+		Repo: &agentmodel.Repo{Components: []agentmodel.Component{
+			{Name: "cli", Paths: []string{"cmd", "internal"}},
+			{Name: "api", Paths: []string{"apps/api"}},
+			{Name: "ui", Paths: []string{"apps/ui"}},
+		}},
+	}
+
+	if err := agentmodel.Save(path, cfg); err != nil {
+		t.Fatalf("Save() error: %v", err)
+	}
+
+	got, err := agentmodel.Load(path)
+	if err != nil {
+		t.Fatalf("Load after Save error: %v", err)
+	}
+	if got == nil || got.Repo == nil {
+		t.Fatal("expected non-nil Config.Repo after round-trip")
+	}
+	want := []agentmodel.Component{
+		{Name: "cli", Paths: []string{"cmd", "internal"}},
+		{Name: "api", Paths: []string{"apps/api"}},
+		{Name: "ui", Paths: []string{"apps/ui"}},
+	}
+	if !reflect.DeepEqual(got.Repo.Components, want) {
+		t.Errorf("Repo.Components round-trip mismatch: got %+v, want %+v", got.Repo.Components, want)
+	}
+}
+
+func TestRepoComponents_AbsentAxisIsEmpty(t *testing.T) {
+	// no repo.components declared at all → the axis does not exist, empty set.
+	dir := t.TempDir()
+	path := filepath.Join(dir, "config.json")
+	writeJSON(t, path, map[string]interface{}{
+		"models": map[string]string{"sdd-apply": "sonnet"},
+	})
+
+	cfg, err := agentmodel.Load(path)
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if got := cfg.RepoComponents(); len(got) != 0 {
+		t.Errorf("expected empty component set, got %v", got)
+	}
+}
+
+func TestValidate_DuplicateRepoComponentName(t *testing.T) {
+	dup := &agentmodel.Config{Repo: &agentmodel.Repo{Components: []agentmodel.Component{
+		{Name: "cli", Paths: []string{"cmd"}},
+		{Name: "cli", Paths: []string{"internal"}},
+	}}}
+	if err := agentmodel.Validate(dup); err == nil {
+		t.Fatal("expected error for duplicate repo component name")
+	} else if !strings.Contains(err.Error(), "cli") {
+		t.Errorf("error should mention the duplicate name, got: %v", err)
+	}
+
+	unique := &agentmodel.Config{Repo: &agentmodel.Repo{Components: []agentmodel.Component{
+		{Name: "cli", Paths: []string{"cmd"}},
+		{Name: "api", Paths: []string{"apps/api"}},
+	}}}
+	if err := agentmodel.Validate(unique); err != nil {
+		t.Errorf("unexpected error for unique repo component names: %v", err)
+	}
+}
+
 // --- Validate ---
 
 func TestValidate_BadModelValue(t *testing.T) {

@@ -158,6 +158,23 @@ func TestResolveTdd(t *testing.T) {
 	}
 }
 
+// --- ProjectComponents ---
+
+// TestProjectComponents_GlobalNotInherited verifies repo.components is
+// per-project only: a global config declaring components must never leak into
+// a project that has none, because ProjectComponents takes no global argument.
+func TestProjectComponents_GlobalNotInherited(t *testing.T) {
+	global := &agentmodel.Config{Repo: &agentmodel.Repo{Components: []agentmodel.Component{
+		{Name: "api", Paths: []string{"apps/api"}},
+	}}}
+	project := &agentmodel.Config{}
+
+	got := agentmodel.ProjectComponents(project)
+	if len(got) != 0 {
+		t.Errorf("expected no inherited components from global, got %v (global=%v)", got, global.RepoComponents())
+	}
+}
+
 // --- DeriveProjectName ---
 
 func TestDeriveProjectName(t *testing.T) {
