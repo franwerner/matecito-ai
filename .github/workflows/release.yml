@@ -23,6 +23,21 @@ jobs:
           go-version: '1.24'
           cache: true
 
+      # The legacy-orphan catalog is reconstructed from git history and shipped
+      # embedded, so a release that removes or renames payload files leaves the
+      # committed catalog behind. Late upgraders are the ones who pay: their
+      # pre-registry binary deployed those releases, and only the catalog in the
+      # version they finally jump to can clean what was left. Regenerating here
+      # needs the full history that this workflow's fetch-depth: 0 already pulls.
+      - name: Legacy orphan catalog up to date
+        run: |
+          go run ./scripts/gen-legacy-orphans
+          if [ -n "$(git status --porcelain -- internal/setup/deploy/legacyorphans.json)" ]; then
+            echo "::error::legacyorphans.json is stale — run 'go run ./scripts/gen-legacy-orphans' and commit the result."
+            git --no-pager diff -- internal/setup/deploy/legacyorphans.json
+            exit 1
+          fi
+
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
