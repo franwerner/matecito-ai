@@ -96,6 +96,12 @@ Reglas de llenado:
 - `test-assertion` NO llena una sección de evidencia propia: alimenta `Escenarios` (vía `proposedScenarios`) y decide el ruteo de confidence del kind que corrobora.
 - `Propósito`, `Actores`, `Precondiciones`, `Ramas`, `Casos borde`, `Errores de cara al actor` y `Referencias` quedan **sin completar u omitidos** en capability-specs `Inferred` salvo que la evidencia observada los sustente directamente — mine no inventa contexto que no vio (ver "Materialización").
 
+### `proposedComponents` — solo si `repo.components` está declarado
+
+Gate presence-based: si el proyecto no declaró `repo.components`, este campo no existe — ni se calcula ni se pregunta. Si está declarado, cada candidato lleva `proposedComponents`, calculado por **desambiguación por prefijo más largo**: el componente propuesto es aquel cuya `paths` declarada sea el prefijo más largo del/los archivo(s) escaneados que respaldan el candidato. Es total porque el solapamiento entre `paths` declaradas siempre es contención (ej. `internal` vs `internal/tui` — el segundo es más específico y gana si el archivo cae ahí).
+
+**Si el archivo escaneado no cae bajo ninguna `paths` declarada, mine NO propone nada** — `proposedComponents` queda vacío/ausente para ese candidato, no se inventa un componente ni se listan todos los que podrían matchear parcialmente. `development-spec-validate` reporta ese spec sin `Components:` como WARNING, y un humano lo asigna en `development-spec-bootstrap` modo update ("Asignar el componente de un spec que quedó sin `Components:`").
+
 ---
 
 ## Reglas de confianza — router + visible label (NO banda numérica)
@@ -169,10 +175,11 @@ Después del confirm en el gate, para cada candidato aceptado:
 2. Completar el header: `Status: Inferred`, `Date: <hoy>`.
 3. Llenar la sección esqueleto de su `proposedType` (según la tabla del Paso 3 del executor) con `observado` + la evidencia observada.
 4. Si hubo `test-assertion` que corroboró el candidato: llenar `## Escenarios` con `proposedScenarios` (el Given/When/Then parseado del test).
-5. Dejar `## Propósito`, `## Actores`, `## Precondiciones`, y las secciones no-esqueleto de su tipo (`Ramas`, `Casos borde`, `Errores de cara al actor`, `Referencias`) **sin completar u omitidas** salvo que la evidencia observada las sustente directamente — mine no inventa contexto que no vio. El humano las completa/corrige al ratificar (`development-spec-bootstrap` modo update, caso "Ratificar un Inferred").
-6. Escribir en `.matecito-ai/development-specs/<proposedType>/<proposedCapability>.md`.
-7. Si la carpeta del tipo no existía: `mkdir -p .matecito-ai/development-specs/<proposedType>` y crear `INDEX.md` mínimo para el tipo.
-8. Actualizar `.matecito-ai/development-specs/INDEX.md` (raíz) y `.matecito-ai/development-specs/<proposedType>/INDEX.md` con la entrada del nuevo spec.
+5. Si `repo.components` está declarado y el candidato trae `proposedComponents` (no vacío): escribir la línea `- **Components:** <componente>, ...`. Si `proposedComponents` vino vacío (ningún `paths` declarada matcheó el archivo escaneado), **no escribir la línea** — no inventar un componente por descarte.
+6. Dejar `## Propósito`, `## Actores`, `## Precondiciones`, y las secciones no-esqueleto de su tipo (`Ramas`, `Casos borde`, `Errores de cara al actor`, `Referencias`) **sin completar u omitidas** salvo que la evidencia observada las sustente directamente — mine no inventa contexto que no vio. El humano las completa/corrige al ratificar (`development-spec-bootstrap` modo update, caso "Ratificar un Inferred").
+7. Escribir en `.matecito-ai/development-specs/<proposedType>/<proposedCapability>.md`.
+8. Si la carpeta del tipo no existía: `mkdir -p .matecito-ai/development-specs/<proposedType>` y crear `INDEX.md` mínimo para el tipo.
+9. Actualizar `.matecito-ai/development-specs/INDEX.md` (raíz) y `.matecito-ai/development-specs/<proposedType>/INDEX.md` con la entrada del nuevo spec.
 
 ---
 
@@ -188,9 +195,12 @@ Después del confirm en el gate, para cada candidato aceptado:
   "proposedCapability": "<kebab-case>",
   "testEvidence": "referencia al test que corrobora | null",
   "proposedScenarios": ["GIVEN ... WHEN ... THEN ..."],
+  "proposedComponents": ["<componente>", "..."],
   "lowSignalReason": "descripción si confidence es low | null"
 }
 ```
+
+`proposedComponents` solo existe si `repo.components` está declarado (gate presence-based); por desambiguación de prefijo más largo, y vacío/ausente cuando ningún componente matchea el archivo escaneado (ver "Modelo de evidencia" arriba) — nunca inventado.
 
 El executor retorna un bloque markdown con un array JSON bajo el header `## candidates`:
 
@@ -234,3 +244,5 @@ Cuando mine corre sobre un repo que ya tiene capability-specs `Inferred`:
 - No marcar un capability-spec Inferred como Accepted → eso lo hace el humano vía `development-spec-bootstrap` modo update (caso "Ratificar un Inferred").
 - No inventar tipos nuevos → taxonomía cerrada (`flow`/`rule`/`lifecycle`/`process`).
 - No reportar drift como error de coherencia interna → es drift spec-vs-código, categoría que resuelve `development-spec-validate` por separado.
+- No proponer un componente cuando ningún `paths` declarada matchea el archivo escaneado → `proposedComponents` queda vacío, nunca un componente inventado por descarte.
+- No proponer todos los componentes cuyo `paths` matchea parcialmente → siempre el prefijo más largo, nunca la lista completa de matches (eso pondría el archivo en el contenedor y en el contenido, y anula la discriminación del eje).

@@ -77,3 +77,48 @@ Tres capas, no dos:
 - **código** → el *cómo* literal (la implementación paso a paso).
 
 El spec **referencia** los EDRs que gobiernan cómo se implementa un comportamiento (sección "Referencias"), pero no repite su contenido: el spec dice *la regla*, el EDR dice *cómo se implementa esa regla y por qué así*. Ejemplo: el spec de `outbound-message` dice "no se puede enviar fuera de la ventana de 24h; al vencer, el sistema responde con error X"; el EDR dice "modelamos esa condición como una jerarquía de errores de dominio mapeada a RFC 7807, porque…".
+
+## Eje `components`
+
+Un **componente** es una **superficie que el consumidor del producto reconoce** — `api`, `cli`, `ui` — no todo paquete o carpeta interna. Es un eje **opcional** sobre el store de capability-specs: le agrega a cada spec qué superficie(s) del repo participan del comportamiento que describe.
+
+### Declaración
+
+El set de componentes se declara **una sola vez**, en el config **del proyecto** (nunca del global), en un bloque `repo` al tope, hermano de `domains`/`domainConfig`:
+
+```json
+"repo": {
+  "components": [
+    { "name": "cli", "paths": ["cmd", "internal"] },
+    { "name": "api", "paths": ["apps/api"] },
+    { "name": "ui",  "paths": ["apps/ui"] }
+  ]
+}
+```
+
+Array de objetos: `name` (la superficie) + `paths` (una o más carpetas del repo, relativas a la raíz, donde vive). Es el **único** lugar del ecosistema donde se escribe la carpeta de un componente — el capability-spec solo referencia el `name` en su línea de header; no repite las `paths`.
+
+### La línea del header
+
+Con el eje declarado, cada capability-spec suma junto a `Status` y `Date` una línea multivaluada:
+
+```
+- **Components:** api, ui
+```
+
+Cada valor listado debe estar dentro del set declarado en `repo.components`. Es lo único que el eje agrega al store: los `INDEX.md` (raíz y de tipo) no cambian.
+
+### Gate presence-based
+
+Sin `repo.components` declarado, el eje **no existe**: ningún spec lleva la línea `Components:`, y ningún chequeo de validación se dispara por su ausencia. El eje es enteramente opt-in — un repo se comporta exactamente igual que antes de que este eje existiera hasta que alguien declara el set.
+
+### Por qué el store nunca se parte por app
+
+El store de capability-specs vive siempre en la raíz del repo (`.matecito-ai/development-specs/`), nunca dentro de una app o componente — a diferencia del EDR, que sí vive por sub-app (`apps/api/.matecito-ai/edr/`, `apps/ui/.matecito-ai/edr/`).
+
+La razón no es arbitraria: son ejes distintos, no una inconsistencia entre el spec y el EDR.
+
+- El **EDR** captura **cómo está construida** una pieza — es una decisión que, por naturaleza, pertenece a una sola pieza de código. Univaluado: vive donde vive el código que gobierna.
+- El **capability-spec** captura **qué hace el sistema** — y un comportamiento casi nunca respeta el límite de una sola app: un flujo que arranca en la `ui`, pasa por la `api` y termina escribiendo algo que el `cli` también puede disparar es **una sola capacidad**, no tres. Multivaluado: el eje `components` existe precisamente para expresar esa lista de superficies sin partir el spec.
+
+Partir el store por app fuerza a elegir un dueño arbitrario para cada spec que cruza superficies, o a duplicar el spec en cada app que toca — y un spec duplicado diverge con el primer cambio que se aplique de un solo lado, dejando de ser un contrato. Por eso, ante un pedido de crear el store dentro de una app, la autoría no lo hace en silencio ni lo discute: explica este porqué y ofrece declarar el eje `components` en su lugar.

@@ -84,12 +84,29 @@ Antes de la primera pregunta, inspeccioná el repo:
 ```bash
 ls -la
 test -d .matecito-ai/development-specs && echo "--- specs existentes (por tipo) ---" && find .matecito-ai/development-specs -name '*.md' | sort
+find . -type d -name 'development-specs' -not -path './.matecito-ai/development-specs' 2>/dev/null | sort   # antipatrón: store fuera de la raíz — recorré TODO el árbol, no solo .matecito-ai/
 test -d .matecito-ai/edr && echo "--- EDRs a linkear ---" && find .matecito-ai/edr -name '*.md' | sort
+test -f .matecito-ai/config.json && grep -A 20 '"repo"' .matecito-ai/config.json   # ¿el eje components ya está declarado?
+find . -maxdepth 3 \( -name 'package.json' -o -name 'go.mod' -o -name 'pyproject.toml' -o -name 'Cargo.toml' -o -name 'pom.xml' -o -name 'build.gradle' -o -name '*.csproj' -o -name 'composer.json' -o -name 'Gemfile' \) 2>/dev/null | sort   # candidatos a componente: directorios con manifiesto de proyecto propio
 test -f CLAUDE.md && echo "--- CLAUDE.md ---" && cat CLAUDE.md
 find . -maxdepth 2 -iname 'PRD*' -o -iname 'README*' -o -iname '*proposal*' 2>/dev/null | head
 ```
 
-Con eso sabés: si hay specs previos (→ modo update), qué EDRs existen (para linkear), y si hay un PRD del que derivar las capabilities.
+Con eso sabés: si hay specs previos (→ modo update), si el store quedó materializado **fuera de la raíz** (antipatrón — ver "El store nunca se parte por app" abajo), si el eje `components` ya está declarado, qué manifiestos hay (candidatos al set de componentes), qué EDRs existen (para linkear), y si hay un PRD del que derivar las capabilities.
+
+**El store nunca se parte por app.** El comportamiento casi nunca respeta el límite de una sola app (ver `~/.claude/references/spec/README.md` → "Eje `components`" para el porqué completo). Si el `find` de arriba encuentra un `development-specs/` fuera de `.matecito-ai/`, o si te piden crear el store dentro de una app puntual: **no lo hagas en silencio y no lo discutas** — explicá el porqué (partir el store fuerza un dueño arbitrario o un spec duplicado que diverge) y **ofrecé** declarar el eje `components` en su lugar. Consolidar un store ya existente fuera de la raíz es **destructivo** (puede haber contenido divergente) — ofrecelo, nunca lo hagas automático.
+
+### Inferencia del set de componentes (una vez, editable)
+
+Si el pre-flight no encontró `repo.components` ya declarado y encontraste **más de un** manifiesto de proyecto propio (`package.json`, `go.mod`, `pyproject.toml`, `Cargo.toml`, `pom.xml`, `build.gradle`, `*.csproj`, `composer.json`, `Gemfile`, …) en directorios distintos, proponé un set candidato — un componente por directorio con manifiesto, `name` = el directorio, `paths` = ese mismo directorio:
+
+> El repo tiene manifiestos propios en `apps/api` y `apps/ui` — ¿son dos componentes (`api`, `ui`) del eje `components`? Podés ajustar nombres y agregar/quitar rutas antes de confirmar.
+
+Esta propuesta es **editable en la ratificación**: un solo manifiesto puede respaldar un componente cuyas `paths` un humano tiene que separar en más de una carpeta (ej. un `cli` cuyo manifiesto vive en la raíz pero cuyo código spanea `cmd/` + `internal/` — el manifiesto no lo dice, lo dice quien conoce el repo). Marcadores de workspace (`pnpm-workspace.yaml`, `go.work`, etc.) son pista secundaria que **confirma** partición intencional, no la descubre por sí sola.
+
+Con **un solo manifiesto** de proyecto no propongas set alguno — la declaración queda manual (ver `~/.claude/references/spec/README.md` → "Declaración" para la forma exacta del bloque `repo`).
+
+Nada se escribe sin confirmación explícita: al ratificar, editá `.matecito-ai/config.json` del **proyecto** (nunca el config global — `repo` es per-project only) agregando o completando el bloque `repo.components` top-level, hermano de `domains`/`domainConfig`, preservando el resto del archivo intacto. Avisá que quedó declarado.
 
 ---
 
@@ -148,8 +165,9 @@ Procedimiento genérico del motor, para cualquier tipo:
    - **Errores de cara al actor** — el contrato de error observable.
 4. **Escenarios.** Por cada regla/rama/borde relevante, escribí un Given/When/Then. Es el paso que vuelve verificable la capability; no lo saltees.
 5. **Referencias.** Si algún comportamiento está gobernado por un EDR existente (lo viste en pre-flight), linkealo. Si notás que falta un EDR (una decisión técnica no tomada), anotalo como pregunta abierta para `development-decisions-bootstrap` — no lo resuelvas acá.
-6. **Self-check de vocabulario** antes de escribir: ningún identificador interno volátil en ninguna sección. Reformulá a idioma de dominio / contrato público, o mové el ancla técnica a un link en "Referencias".
-7. **Materializá** el spec en `.matecito-ai/development-specs/<type>/<capability>.md`.
+6. **Componentes** (solo si `repo.components` está declarado — gate presence-based, ver `~/.claude/references/spec/README.md` → "Eje `components`"). Preguntá por **comportamiento**, no por implementación: de las secciones que ya recorriste (Actores, Flujo principal, Reglas de negocio…), ¿qué superficies del set participan? Es una inferencia **por spec**, independiente de la del set: el set sale de los manifiestos del repo; esta sale de qué comportamiento describe la capability. Confirmá antes de escribir la línea (ej. "esta capability toca `api` y `ui`, ¿correcto?"). Si el set no está declarado, saltá este paso entero — no lo preguntes.
+7. **Self-check de vocabulario** antes de escribir: ningún identificador interno volátil en ninguna sección. Reformulá a idioma de dominio / contrato público, o mové el ancla técnica a un link en "Referencias".
+8. **Materializá** el spec en `.matecito-ai/development-specs/<type>/<capability>.md`.
 
 ---
 
@@ -198,11 +216,13 @@ Los templates son el **contrato canónico** y viven en `~/.claude/references/spe
 ## Modo update (cuando `.matecito-ai/development-specs/INDEX.md` ya existe)
 
 1. **Leé** el índice raíz, los índices de tipo y los specs existentes.
-2. **Mostrá un resumen** agrupado por tipo y status (`Inferred` pendiente de ratificar, `Accepted`, `Draft` con qué falta, `Deprecated`).
+2. **Mostrá un resumen** agrupado por tipo y status (`Inferred` pendiente de ratificar, `Accepted`, `Draft` con qué falta, `Deprecated`). Si `repo.components` está declarado, sumá al resumen los specs **sin** línea `Components:` (los deja así `development-spec-mine` cuando un archivo escaneado no cae bajo ninguna `paths` declarada, y `development-spec-validate` los reporta como WARNING).
 3. **Preguntá si algún `Draft` está listo para completarse, o algún `Inferred` está listo para ratificar** — es lo más importante del update; sin esto los "lo definimos después" y los candidatos minados sin revisar se pierden.
 4. **Después preguntá qué más:**
    - **Completar un `Draft`** → recorrer sus secciones faltantes, `Status → Accepted`.
    - **Ratificar un `Inferred`** → distinto de completar un `Draft`: el `Inferred` arrancó con secciones **pre-cargadas** por `development-spec-mine` desde evidencia as-built, no vacío. Revisá cada sección minada contra el comportamiento real (¿es la intención, o calcó un bug?), corregí lo que no sea la intención, escrubeá cualquier identificador interno volátil que mine haya dejado (ver vocabulario), agregá los escenarios/bordes que falten, y recién entonces `Status → Accepted`.
+   - **Declarar o editar el set de componentes** (`repo.components`) → si todavía no está declarado, ofrecé la inferencia por manifiestos ("Inferencia del set de componentes" arriba); si ya existe, agregar/renombrar/ajustar `paths` de un componente es edición directa del bloque en `.matecito-ai/config.json`, confirmada como cualquier cambio de set.
+   - **Asignar el componente de un spec que quedó sin `Components:`** → uno a uno (nunca en bulk sin revisar): mostrá la ruta que minó el candidato (si vino de `development-spec-mine`) o el comportamiento descrito, preguntá qué superficie(s) del set le corresponden, y escribí la línea.
    - **Actualizar comportamiento (cambio menor)** → editar el spec. Git lleva el historial.
    - **Agregar una capability nueva** → tratarla con el procedimiento genérico + fila en el `INDEX.md` de su tipo (y en el raíz si el tipo es nuevo en el proyecto).
    - **Retirar una capability** → `Status → Deprecated` con link a su reemplazo; no borrar el archivo.
@@ -225,6 +245,8 @@ Los templates son el **contrato canónico** y viven en `~/.claude/references/spe
 - ❌ Dumpear la lista de capabilities sin clasificarlas por tipo → la enumeración siempre viene agrupada por tipo.
 - ❌ Dejar índices desincronizados tras un cambio → actualizá el índice del tipo afectado y el raíz.
 - ❌ Materializar comportamiento no confirmado por el usuario → todo lo que va al spec fue acordado.
+- ❌ Crear el store de capability-specs dentro de una app o componente puntual → vive siempre en la raíz; explicá el porqué y ofrecé el eje `components`.
+- ❌ Escribir `repo.components` o una línea `Components:` sin ratificación explícita → ambas inferencias (set y por-spec) se confirman antes de escribir, nunca se aplican solas.
 
 ---
 

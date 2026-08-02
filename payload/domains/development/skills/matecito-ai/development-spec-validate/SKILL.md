@@ -40,7 +40,18 @@ Leé `.matecito-ai/development-specs/INDEX.md`. Si no existe, no hay nada que va
    - **Specs con `Status: Inferred`** se tratan como `Draft` para completitud: no reportes secciones esqueleto ni escenarios faltantes como defecto (es un borrador no-confiable minado del código as-built, se espera que le falten hasta la ratificación humana). NO se sostienen al nivel de coherencia de un `Accepted`: una contradicción `Inferred`-vs-`Accepted` se capa en 🟡 WARNING ("posible drift as-built vs intención"), NUNCA 🔴 CRITICAL — ver `coherence-rules.md` → "Coherencia entre capabilities".
    - **`Deprecated`:** verificá que tenga link a su reemplazo (si aplica) y que el reemplazo exista.
 3. **Leé `coherence-rules.md`** (en esta misma skill) y aplicá cada chequeo.
-4. **Emití el reporte** agrupado por tipo y, dentro de cada tipo, por severidad; cerrá con hallazgos cross-capability.
+4. **Si `.matecito-ai/config.json` del proyecto declara `repo.components`**, aplicá también los "Chequeos del eje `components`" (más abajo) — gate presence-based: sin esa declaración, saltealos enteros, sin mención.
+5. **Emití el reporte** agrupado por tipo y, dentro de cada tipo, por severidad; cerrá con hallazgos cross-capability.
+
+## Chequeos del eje `components`
+
+Solo corren si `.matecito-ai/config.json` del proyecto declara `repo.components` (gate presence-based, igual que el resto del eje — ver `~/.claude/references/spec/README.md` → "Eje `components`"). Sin esa declaración, esta sección no existe: no se evalúa nada y no se menciona en el reporte.
+
+Esta skill es **consultiva** para el eje igual que para todo lo demás: **detecta y reporta, nunca escribe**. Ningún hallazgo de acá se resuelve acá — el usuario lo resuelve vía `development-spec-bootstrap` modo update (asignar componente, declarar/editar el set) o, para el store fuera de la raíz, vía la consolidación que esa misma skill **ofrece** (nunca automática — mover specs es destructivo y puede haber contenido divergente).
+
+- **🟡 WARNING — valor fuera del set.** Un spec lista en su línea `Components:` un valor que no está en `repo.components`. Puede ser un typo o un componente que se dejó de declarar; reportalo con el spec y el valor.
+- **🟡 WARNING — spec sin la línea del eje activo.** Un spec no tiene línea `Components:` mientras el eje está declarado. Es el caso normal de un candidato que `development-spec-mine` dejó sin match (ningún `paths` declarada cubría el archivo escaneado) o de un spec anterior a la declaración del eje — no es un error de autoría, es trabajo pendiente de asignar.
+- **🔴 CRITICAL — store fuera de la raíz.** `.matecito-ai/development-specs/` no es la única carpeta de ese nombre en el repo (buscá en **todo** el árbol, no solo bajo `.matecito-ai/`). El store nunca se parte por app; reportalo y **ofrecé** consolidar — no lo hagas vos.
 
 ## Resolución de archivos
 
