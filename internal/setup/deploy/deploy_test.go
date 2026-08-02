@@ -57,19 +57,32 @@ func newBackupDir(t *testing.T) string {
 	return d
 }
 
+// newStateDir returns a fresh, empty state dir (~/.matecito-ai equivalent) so
+// each test starts as a migration (no registry) unless it seeds one itself.
+func newStateDir(t *testing.T) string {
+	t.Helper()
+	d, err := os.MkdirTemp("", "state-*")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { os.RemoveAll(d) })
+	return d
+}
+
 // TestApply_Verbatim verifies that Apply copies files byte-for-byte from the
 // payload without any modification — both agent files and non-agent files.
 func TestApply_Verbatim(t *testing.T) {
 	payload := makePayloadFS(nil)
 	claudeHome := newClaudeHome(t)
+	stateDir := newStateDir(t)
 	backupDir := newBackupDir(t)
 
-	ops, err := deploy.Plan(payload, claudeHome, nil)
+	ops, err := deploy.Plan(payload, claudeHome, stateDir, nil)
 	if err != nil {
 		t.Fatalf("Plan: %v", err)
 	}
 
-	_, err = deploy.Apply(payload, ops, claudeHome, backupDir)
+	_, err = deploy.Apply(payload, ops, claudeHome, stateDir, backupDir)
 	if err != nil {
 		t.Fatalf("Apply: %v", err)
 	}
@@ -111,13 +124,14 @@ func TestCompose_ClaudeMd(t *testing.T) {
 		"domains/development/CLAUDE.md":     {Data: []byte("# development body\n")},
 	}
 	claudeHome := newClaudeHome(t)
+	stateDir := newStateDir(t)
 	backupDir := newBackupDir(t)
 
-	ops, err := deploy.Plan(payload, claudeHome, nil)
+	ops, err := deploy.Plan(payload, claudeHome, stateDir, nil)
 	if err != nil {
 		t.Fatalf("Plan: %v", err)
 	}
-	if _, err := deploy.Apply(payload, ops, claudeHome, backupDir); err != nil {
+	if _, err := deploy.Apply(payload, ops, claudeHome, stateDir, backupDir); err != nil {
 		t.Fatalf("Apply: %v", err)
 	}
 
@@ -154,8 +168,9 @@ func TestPlan_SkillClashAcrossDomains(t *testing.T) {
 		"domains/design/skills/grp/audit/SKILL.md":      {Data: []byte("design")},
 	}
 	claudeHome := newClaudeHome(t)
+	stateDir := newStateDir(t)
 
-	_, err := deploy.Plan(payload, claudeHome, nil)
+	_, err := deploy.Plan(payload, claudeHome, stateDir, nil)
 	if err == nil {
 		t.Fatal("expected clash error, got nil")
 	}
@@ -177,13 +192,14 @@ func TestPlan_FiltersInactiveDomains(t *testing.T) {
 		"domains/design/skills/grp/designskill/SKILL.md":   {Data: []byte("design")},
 	}
 	claudeHome := newClaudeHome(t)
+	stateDir := newStateDir(t)
 	backupDir := newBackupDir(t)
 
-	ops, err := deploy.Plan(payload, claudeHome, []string{"development"})
+	ops, err := deploy.Plan(payload, claudeHome, stateDir, []string{"development"})
 	if err != nil {
 		t.Fatalf("Plan: %v", err)
 	}
-	if _, err := deploy.Apply(payload, ops, claudeHome, backupDir); err != nil {
+	if _, err := deploy.Apply(payload, ops, claudeHome, stateDir, backupDir); err != nil {
 		t.Fatalf("Apply: %v", err)
 	}
 
@@ -222,13 +238,14 @@ func TestPlan_RealPayload_IndexesBothDomains(t *testing.T) {
 		t.Fatalf("ResolvePayloadFS: %v", err)
 	}
 	claudeHome := newClaudeHome(t)
+	stateDir := newStateDir(t)
 	backupDir := newBackupDir(t)
 
-	ops, err := deploy.Plan(payloadFS, claudeHome, nil)
+	ops, err := deploy.Plan(payloadFS, claudeHome, stateDir, nil)
 	if err != nil {
 		t.Fatalf("Plan: %v", err)
 	}
-	if _, err := deploy.Apply(payloadFS, ops, claudeHome, backupDir); err != nil {
+	if _, err := deploy.Apply(payloadFS, ops, claudeHome, stateDir, backupDir); err != nil {
 		t.Fatalf("Apply: %v", err)
 	}
 
@@ -263,8 +280,9 @@ func TestPlan_SharedDeploys_ZeroActiveDomains(t *testing.T) {
 		"shared/skills/grp/myskill/SKILL.md": {Data: []byte("shared skill")},
 	}
 	claudeHome := newClaudeHome(t)
+	stateDir := newStateDir(t)
 
-	ops, err := deploy.Plan(payload, claudeHome, []string{})
+	ops, err := deploy.Plan(payload, claudeHome, stateDir, []string{})
 	if err != nil {
 		t.Fatalf("Plan: %v", err)
 	}
@@ -286,8 +304,9 @@ func TestPlan_SharedDeploys_AlongsideActiveDomain(t *testing.T) {
 		"shared/skills/grp/myskill/SKILL.md":  {Data: []byte("shared skill")},
 	}
 	claudeHome := newClaudeHome(t)
+	stateDir := newStateDir(t)
 
-	ops, err := deploy.Plan(payload, claudeHome, []string{"development"})
+	ops, err := deploy.Plan(payload, claudeHome, stateDir, []string{"development"})
 	if err != nil {
 		t.Fatalf("Plan: %v", err)
 	}
@@ -319,8 +338,9 @@ func TestPlan_SharedSkill_Flattens(t *testing.T) {
 		"shared/skills/grp/myskill/SKILL.md": {Data: []byte("shared skill")},
 	}
 	claudeHome := newClaudeHome(t)
+	stateDir := newStateDir(t)
 
-	ops, err := deploy.Plan(payload, claudeHome, []string{})
+	ops, err := deploy.Plan(payload, claudeHome, stateDir, []string{})
 	if err != nil {
 		t.Fatalf("Plan: %v", err)
 	}
@@ -343,8 +363,9 @@ func TestPlan_SharedVsDomain_SameTarget_Clashes(t *testing.T) {
 		"domains/development/skills/grp/audit/SKILL.md": {Data: []byte("dev")},
 	}
 	claudeHome := newClaudeHome(t)
+	stateDir := newStateDir(t)
 
-	_, err := deploy.Plan(payload, claudeHome, nil)
+	_, err := deploy.Plan(payload, claudeHome, stateDir, nil)
 	if err == nil {
 		t.Fatal("expected clash error, got nil")
 	}
@@ -383,7 +404,12 @@ func TestResolvePayloadFS_Embedded(t *testing.T) {
 }
 
 // TestWalkDir_GitkeepFiltered verifies that .gitkeep placeholder files are never
-// emitted as FileOps, while real files in the same subtree are still included.
+// emitted as a write FileOp, while real files in the same subtree are still
+// included. It deliberately ignores StatusRemoved ops: with no registry (a
+// fresh claudeHome/stateDir, as here), Plan's migration path always sweeps the
+// embedded legacy catalog — which does carry real .gitkeep destinations from
+// versions that deployed them before this filter existed (see legacy.go). That
+// is the intended cleanup, not a regression of this filter.
 func TestWalkDir_GitkeepFiltered(t *testing.T) {
 	// A subtree that contains only .gitkeep files — simulates empty shared/agents/
 	// and shared/references/ directories as they exist in the repository.
@@ -395,13 +421,14 @@ func TestWalkDir_GitkeepFiltered(t *testing.T) {
 		"shared/skills/.gitkeep":     {Data: []byte{}},
 	}
 	claudeHome := newClaudeHome(t)
+	stateDir := newStateDir(t)
 
-	ops, err := deploy.Plan(onlyGitkeep, claudeHome, []string{})
+	ops, err := deploy.Plan(onlyGitkeep, claudeHome, stateDir, []string{})
 	if err != nil {
 		t.Fatalf("Plan: %v", err)
 	}
 	for _, op := range ops {
-		if filepath.Base(op.Target) == ".gitkeep" {
+		if op.Status != deploy.StatusRemoved && filepath.Base(op.Target) == ".gitkeep" {
 			t.Errorf("unexpected .gitkeep in ops: %s", op.Target)
 		}
 	}
@@ -413,13 +440,13 @@ func TestWalkDir_GitkeepFiltered(t *testing.T) {
 		"shared/agents/.gitkeep":   {Data: []byte{}},
 		"shared/agents/myagent.md": {Data: []byte("agent")},
 	}
-	ops2, err := deploy.Plan(withReal, claudeHome, []string{})
+	ops2, err := deploy.Plan(withReal, claudeHome, stateDir, []string{})
 	if err != nil {
 		t.Fatalf("Plan (withReal): %v", err)
 	}
 	var foundAgent bool
 	for _, op := range ops2 {
-		if filepath.Base(op.Target) == ".gitkeep" {
+		if op.Status != deploy.StatusRemoved && filepath.Base(op.Target) == ".gitkeep" {
 			t.Errorf("unexpected .gitkeep in ops2: %s", op.Target)
 		}
 		if strings.HasSuffix(op.Target, filepath.Join("agents", "myagent.md")) {

@@ -2,9 +2,12 @@ package cli
 
 import (
 	"errors"
+	"fmt"
+	"io"
 	"strings"
 	"testing"
 
+	"github.com/franwerner/matecito-ai/internal/setup/deploy"
 	"github.com/franwerner/matecito-ai/internal/setup/sync"
 )
 
@@ -13,14 +16,11 @@ import (
 // "if !syncOpts.Resume { ...plan/dry-run/confirm... }" short-circuit: both
 // read the resume flag from the same env var ResumeRequested() checks.
 //
-// RunE itself is not unit-tested end-to-end here: it hardcodes os.Stdin/
-// os.Stdout (not injectable), and reaching the resume branch for real would
-// require Sync's full Detect() round-trip (network calls to check binary/
-// deploy versions) and deploy.BackupDir() (real filesystem paths) — none of
-// which are seams exposed by the current design. TestSync_Resume in
-// internal/setup/sync/sync_test.go covers the actual skip/no-plan/no-prompt
-// behavior at the engine level once Resume is set; this test covers the one
-// piece install.go's RunE contributes: deriving that flag from the env.
+// installRunner.run (the RunE body) is exercised end to end by
+// TestInstallRunner_* below via injected Stdin/Stdout and Detect/Sync, so
+// this test stays narrowly about the env-var wiring itself; TestSync_Resume
+// in internal/setup/sync/sync_test.go covers the actual skip/no-plan/
+// no-prompt behavior at the engine level once Resume is set.
 func TestInstallCmd_ResumeWiring(t *testing.T) {
 	t.Run("ResumeRequested reflects MATECITO_RESUME=1", func(t *testing.T) {
 		t.Setenv("MATECITO_RESUME", "1")
@@ -74,5 +74,89 @@ func TestInstallCmd_CodegraphSuccessNoError(t *testing.T) {
 	result := sync.Result{}
 	if err := surfaceCodegraphError(result); err != nil {
 		t.Fatalf("expected nil when codegraph succeeded, got: %v", err)
+	}
+}
+
+// TestInstallRunner_Run_ShowsBreakdownInOwnPreview verifies install's own
+// "Plan:" preview (a renderer distinct from the sync engine's) includes the
+// payload breakdown and the destinos a borrar, closing the "desglose en su
+// preview propio" gap. Detect is faked to avoid the real network round-trip;
+// dryRun=true stops the run before Sync would ever be invoked.
+func TestInstallRunner_Run_ShowsBreakdownInOwnPreview(t *testing.T) {
+	var out strings.Builder
+	r := installRunner{
+		Stdin:  strings.NewReader(""),
+		Stdout: &out,
+		Stderr: io.Discard,
+		Detect: func(sync.Options) ([]sync.ComponentState, error) {
+			return []sync.ComponentState{
+				{
+					Name:           "deploy",
+					Present:        true,
+					PayloadChanged: true,
+					PayloadSummary: deploy.Summary{
+						New: 1, Changed: 2, Same: 3, Removed: 1,
+						Removals: []string{"agents/gone.md"},
+					},
+				},
+			}, nil
+		},
+		Sync: func(sync.Options) sync.Result {
+			t.Fatal("Sync must not be invoked on a dry-run")
+			return sync.Result{}
+		},
+	}
+
+	if err := r.run("v-test", true /* dryRun */, false /* yes */); err != nil {
+		t.Fatalf("run: %v", err)
+	}
+
+	got := out.String()
+	for _, want := range []string{
+		"1 nuevos, 2 cambiados, 1 a borrar, 3 iguales",
+		"agents/gone.md",
+		"(dry-run)",
+	} {
+		if !strings.Contains(got, want) {
+			t.Errorf("expected install's own preview to contain %q, got:\n%s", want, got)
+		}
+	}
+}
+
+// TestInstallRunner_Run_PlanShownOnce verifies "el plan se presenta una sola
+// vez por corrida": after showing its own preview and confirming, run must
+// set syncOpts.PlanShown = true before invoking Sync — the one piece of
+// install.go's own wiring that could previously only be checked by manual
+// code review. The fake Sync simulates the engine's own gate (it prints
+// "Plan:" itself only if PlanShown is still false), so a passing test proves
+// the combined output never shows the plan twice.
+func TestInstallRunner_Run_PlanShownOnce(t *testing.T) {
+	var out strings.Builder
+	syncCalled := false
+	r := installRunner{
+		Stdin:  strings.NewReader(""),
+		Stdout: &out,
+		Stderr: io.Discard,
+		Detect: func(sync.Options) ([]sync.ComponentState, error) {
+			return []sync.ComponentState{{Name: "deploy", Present: true, PayloadChanged: true}}, nil
+		},
+		Sync: func(opts sync.Options) sync.Result {
+			syncCalled = true
+			if !opts.PlanShown {
+				t.Error("expected syncOpts.PlanShown=true before Sync is invoked")
+				fmt.Fprintln(opts.Stdout, "Plan:") // simulates the engine's own print if not suppressed
+			}
+			return sync.Result{}
+		},
+	}
+
+	if err := r.run("v-test", false /* dryRun */, true /* yes */); err != nil {
+		t.Fatalf("run: %v", err)
+	}
+	if !syncCalled {
+		t.Fatal("expected Sync to be invoked")
+	}
+	if n := strings.Count(out.String(), "Plan:"); n != 1 {
+		t.Fatalf("expected exactly one \"Plan:\" print across the combined output, got %d in:\n%s", n, out.String())
 	}
 }

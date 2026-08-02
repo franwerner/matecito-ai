@@ -54,6 +54,16 @@ type Options struct {
 	// action, auto-confirm, and suppress the plan print — while still
 	// streaming per-action progress.
 	Resume bool
+
+	// PlanShown is true when the caller already printed its own "Plan:"
+	// preview (install's CLI preview, the TUI's confirmation screen) before
+	// invoking Sync. It suppresses the engine's own "Plan:" print so a run
+	// never shows the plan twice. It must NOT be conflated with Yes: `update
+	// --yes` sets Yes=true but never shows a plan of its own, so the engine's
+	// print is the only one that run gets — gating on Yes would silently drop
+	// it. `update` (no bespoke preview) leaves this false and gets the
+	// engine's print exactly once.
+	PlanShown bool
 }
 
 func (o Options) timeout() time.Duration {
@@ -126,10 +136,11 @@ type ComponentState struct {
 	Present        bool
 	CurrentVersion string
 	LatestVersion  string
-	PayloadChanged bool   // solo relevante para KindDeploy
-	PayloadSource  string // "embedded" o ruta local; solo relevante para KindDeploy
-	Pending        bool   // reconciliación pendiente sin semántica de versión (config ecosistema)
-	Unknown        bool   // true cuando latest no pudo obtenerse (offline / error)
+	PayloadChanged bool           // solo relevante para KindDeploy
+	PayloadSummary deploy.Summary // desglose por categoría; solo relevante para KindDeploy
+	PayloadSource  string         // "embedded" o ruta local; solo relevante para KindDeploy
+	Pending        bool           // reconciliación pendiente sin semántica de versión (config ecosistema)
+	Unknown        bool           // true cuando latest no pudo obtenerse (offline / error)
 }
 
 // configComponent es el componente coarse-grained que reconcilia la config del
@@ -265,11 +276,12 @@ func Detect(opts Options) ([]ComponentState, error) {
 		claudeHome, homeErr := deploy.ClaudeHome()
 		if homeErr == nil {
 			active, _ := manifest.ActiveIDsFromEnv()
-			ops, planErr := deploy.Plan(payloadFS, claudeHome, active)
+			ops, planErr := deploy.Plan(payloadFS, claudeHome, "", active)
 			if planErr == nil {
-				s := deploy.Summarize(ops)
+				s := deploy.Summarize(ops, claudeHome)
 				deployState.Present = true
-				deployState.PayloadChanged = s.New+s.Changed > 0
+				deployState.PayloadSummary = s
+				deployState.PayloadChanged = payloadChanged(s)
 			}
 		}
 	}
@@ -289,6 +301,14 @@ func Detect(opts Options) ([]ComponentState, error) {
 	states = append(states, configState)
 
 	return states, nil
+}
+
+// payloadChanged reports whether the payload is out of date: something new to
+// write, something changed, or something pending deletion all count equally —
+// a host with only orphans left to sweep is exactly as out of date as one with
+// new files to write (Requirement "El plan informa si hay trabajo pendiente").
+func payloadChanged(s deploy.Summary) bool {
+	return s.New+s.Changed+s.Removed > 0
 }
 
 // Sync ejecuta el ciclo completo: Detect → PlanSync → ejecutar acciones
@@ -338,17 +358,23 @@ func Sync(opts Options) Result {
 		return result
 	}
 
-	// Build a source lookup so the deploy entry can show its payload origin.
+	// Build lookups so the deploy entry can show its payload origin and its
+	// New/Changed/Removed/Same breakdown.
 	sourceByComponent := make(map[string]string, len(states))
+	summaryByComponent := make(map[string]deploy.Summary, len(states))
 	for _, s := range states {
 		if s.PayloadSource != "" {
 			sourceByComponent[s.Name] = s.PayloadSource
 		}
+		if s.Name == "deploy" {
+			summaryByComponent[s.Name] = s.PayloadSummary
+		}
 	}
 
 	// Mostrar el plan antes de ejecutar (dry-run lo imprime y sale). Se omite
-	// en Resume: el usuario ya confirmó una vez en la corrida original.
-	if !opts.Resume {
+	// en Resume (el usuario ya confirmó una vez en la corrida original) y en
+	// PlanShown (el caller — install, la TUI — ya lo mostró él mismo).
+	if !opts.Resume && !opts.PlanShown {
 		fmt.Fprintln(out, "Plan:")
 		for i, a := range active {
 			verb := "instalar"
@@ -358,6 +384,11 @@ func Sync(opts Options) Result {
 			fmt.Fprintf(out, "  %d. %s — %s\n", i+1, a.Component, verb)
 			if src, ok := sourceByComponent[a.Component]; ok {
 				fmt.Fprintf(out, "     payload: %s\n", src)
+			}
+			if s, ok := summaryByComponent[a.Component]; ok {
+				for _, line := range PayloadPlanLines(s) {
+					fmt.Fprintln(out, line)
+				}
 			}
 		}
 	}
@@ -420,12 +451,24 @@ func Sync(opts Options) Result {
 				break
 			}
 			active, _ := manifest.ActiveIDsFromEnv()
-			ops, planErr := deploy.Plan(payloadFS, claudeHome, active)
+			ops, planErr := deploy.Plan(payloadFS, claudeHome, "", active)
 			if planErr != nil {
 				runErr = planErr
 				break
 			}
-			_, runErr = deploy.Apply(payloadFS, ops, claudeHome, backupDir)
+			var applyResult deploy.ApplyResult
+			applyResult, runErr = deploy.Apply(payloadFS, ops, claudeHome, "", backupDir)
+			// Ni un preservado ni una edición pisada son un fallo de la corrida —
+			// se informan y se sigue (requirement "preservar no es fallar"). El
+			// aviso de preservado aparece una sola vez en la vida de ese archivo,
+			// así que es la única oportunidad de decirle a la persona qué puede
+			// hacer si ya no lo quiere.
+			for _, p := range applyResult.Preserved {
+				fmt.Fprintf(out, "  preservado (editado por el usuario): %s — si ya no lo querés, podés borrarlo vos\n", p)
+			}
+			for _, e := range applyResult.OverwrittenEdits {
+				fmt.Fprintf(out, "  edición pisada al borrar: %s — tu versión anterior quedó respaldada en %s\n", e.Target, e.BackupPath)
+			}
 		case configComponent:
 			runErr = install.ApplyConfigSteps(install.Options{
 				Stdout:    out,

@@ -147,11 +147,15 @@ func (m SyncModel) View() string {
 		if len(m.planActions) == 0 {
 			sb.WriteString(styles.Dimmed.Render("  Nada para hacer — todo está instalado y actualizado.") + "\n")
 		} else {
-			// Build payload-source lookup from detected states.
+			// Build payload-source and payload-summary lookups from detected states.
 			sourceByComponent := make(map[string]string, len(m.planStates))
+			summaries := make(map[string][]string, len(m.planStates))
 			for _, s := range m.planStates {
 				if s.PayloadSource != "" {
 					sourceByComponent[s.Name] = s.PayloadSource
+				}
+				if s.Name == "deploy" {
+					summaries[s.Name] = pkgsync.PayloadPlanLines(s.PayloadSummary)
 				}
 			}
 			sb.WriteString("  Plan:\n")
@@ -163,6 +167,11 @@ func (m SyncModel) View() string {
 				sb.WriteString(fmt.Sprintf("    %d. %s — %s\n", i+1, a.Component, verb))
 				if src, ok := sourceByComponent[a.Component]; ok {
 					sb.WriteString(fmt.Sprintf("       payload: %s\n", src))
+				}
+				if lines, ok := summaries[a.Component]; ok {
+					for _, line := range lines {
+						sb.WriteString("   " + line + "\n")
+					}
 				}
 			}
 			sb.WriteString("\n" + styles.Warn.Render("  ¿Ejecutar? [y/n]") + "\n")
@@ -211,6 +220,9 @@ func (m SyncModel) startSync() tea.Cmd {
 
 		opts := m.opts
 		opts.Yes = true
+		// Ya mostramos el plan en la pantalla de confirmación — el motor no
+		// debe repetirlo en el log de ejecución que transmite.
+		opts.PlanShown = true
 		opts.Stdout = pw
 		opts.Stderr = pw
 

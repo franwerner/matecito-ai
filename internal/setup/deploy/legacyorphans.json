@@ -1,0 +1,838 @@
+[
+  {
+    "root": "claude",
+    "path": "agents/project-decisions-mine.md",
+    "hashes": [
+      "714afd7dab04a84095d937dd2e66b13976ea6222f1962451ff1d4a967c0594a9"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "references/adr/README.md",
+    "hashes": [
+      "b554ee0a2e16bb73296f3aaa0f807d29b6a8c1e1e4f72fd9268a53b37386ba45",
+      "f3e3bcc590a9981eced2d74882764249189bcb2500f72103aeef6580c564aea6"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "references/adr/templates/INDEX.md",
+    "hashes": [
+      "720e4f086fc835a42245bca7a15c32c92208e5e124d2d098e7a698094d08ec69",
+      "c780a664f8e0f6fb40fd3a7c99fbfbcc697bc45002785551711189caeaf7295f"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "references/adr/templates/adr.md",
+    "hashes": [
+      "80ff162acda47af9d9c7a67bfd4555b0f3cd9c999cb61b7b8b16bc2d6ac6496d",
+      "94a601779a230de35c59f22b08a42d9258a98d2bc6c77d1b6627249b80090cd1",
+      "dc315784f3a826602287a59ee5f51b2c800dc14139b556bff9bc21fde53694c7"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "references/adr/templates/index-domain.md",
+    "hashes": [
+      "979d307385f147473d5a37ed33f459889c42af6227033ff2017fc8b6258372dd"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "references/adr/templates/index-root.md",
+    "hashes": [
+      "2ab344029ccc6370da7edc6c103eb887033fa4996e57f5f87577398e146e2ddf",
+      "c9a9e2d820c62e0f7786aabd37ce0f1b09a29cebe362cf020038438586f4309f"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "references/adr/templates/tech-adr.md",
+    "hashes": [
+      "334e46167ec1f9319d88eaf13882db5a0300181ce244905a7e1e0448fc36030e",
+      "978a99d89d520e165614a5a2f28c78b93d2e00b2b23db49cd30f6a8c2aac9ac3"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "references/adr/templates/tech-index.md",
+    "hashes": [
+      "70143a6b1c936bd218ba670a642c637b97646947134b83fbd7f05f1f2214bb74"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "references/phase-returns/sdd-apply.md",
+    "hashes": [
+      "0b774c6bd110dede7762354087e882e6cbdecd500b0add834d6786d5d4275772"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "references/phase-returns/sdd-archive.md",
+    "hashes": [
+      "7752fb09ac3d3fe9de3caecacb3dcb2a2159d1449527dc8b617ebefade8e2347"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "references/phase-returns/sdd-design.md",
+    "hashes": [
+      "42b500d30f9440d52278900c4dd0a22dc4755c3184e6ea16db446b2906debc47"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "references/phase-returns/sdd-explore.md",
+    "hashes": [
+      "430277adcd2c7a970ba81fad929bc09e9873e7877cef2deff92aefa84aa366fb"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "references/phase-returns/sdd-init.md",
+    "hashes": [
+      "e09f48d4761834d70e262cc625ee2258803dd122f23f1db49902a7d961d64b57"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "references/phase-returns/sdd-intake.md",
+    "hashes": [
+      "2b0016827593024d9c9c612dcbbbd50952f6be2aa02ec497f528c96f08aad76a"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "references/phase-returns/sdd-propose.md",
+    "hashes": [
+      "9f9fe8434f170651c539db4c1aabaded2d270922dcd6f8e0775499e4e64b8d20"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "references/phase-returns/sdd-spec.md",
+    "hashes": [
+      "5e63c83cc22c9354c556a90436bf54d4be4b101cdf8adff483f9267d915e6f5d"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "references/phase-returns/sdd-tasks.md",
+    "hashes": [
+      "0fbe29acd51472263a26b42edf81e6d8ffd5cdc59c4490308704994197e88878"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "references/phase-returns/sdd-verify.md",
+    "hashes": [
+      "064086d096d543b56581b094d66ea5152088b671a98fa54dd84f49d479051679"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/_shared/persistence-contract.md",
+    "hashes": [
+      "2755e4096da7f23ea9f51805fc44ffbd8065973dc0cd765e37796b3841a2eb19",
+      "a0e0209a0d861232c226036340ecb3c63e50242c500f8a64f2a9a25d38076f3b",
+      "c40f76f340364281a4844bb9fd970da9d0e94272dea81ff27ec76a2aa4f87a79"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/context7/SKILL.md",
+    "hashes": [
+      "72bfad88db9be7c6075cdba69b69ca9e949e1452aa2d3a888d11a9f15598296e",
+      "fc2387b25c6150cf9cc4b4c1b937c65c3c997d063632bd191578e5b3d3a41ed3"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/development-decisions-bootstrap/concerns/context/INDEX.md",
+    "hashes": [
+      "1e59ab4dadade74906192d1d5cb38c89918ebfcacb31476ac3c83657cd5abc06"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/development-decisions-bootstrap/concerns/context/context.md",
+    "hashes": [
+      "793229c42159f139c0436a369f4b229b835bcbf2d6ae5d3eba1b8742a4096430",
+      "83b8c12a8cf153e2fec48024152ddb1b0a2f634e0531433abe3fd5b91b355da1"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/SKILL.md",
+    "hashes": [
+      "430cb7f29df7f5b00c525209481332fe5f09b5f57f8e7921fa1c6c8cb3ef974b",
+      "498e3d2dda690ddbad6a25a385b26cd6b2fb91b1f34603adbdb1d67cf737a83f",
+      "93792a6e1b2cf876db2abd0c748515a5c7ef8ad85ae28d79614d14c1e0b46ec5",
+      "a4f9e516bd2e49a5b45877fb790631ebb79ed141cbd0b8b7616b8d90c3ceb984",
+      "b5d9ad2550d8ec46f365d7a3fd662999e2693b27ed13be715d6c5e22e5d3c373",
+      "c45a3a5f1ad3d8bff0b291f39695f44e525e58c6a0e638d0e9aac7a4dd91ab14",
+      "ce1498c5e22adf72ca41e0126a364c5edca9809e0632becffadd2641ef062285"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/CONCERN-TEMPLATE.md",
+    "hashes": [
+      "3a527d11ac1a02eb8bb47f11e57d42dcd9d69b1d3a2cfbd9e1adacafa15a788a",
+      "510fc1c897c184dc1a3a88c3747dc1e08ddcebdb58f744771119df5c3f1bac86",
+      "84db7de09f3819f3f64b4e9852e4fee8e5ae06e8ef91db9cdf82f3a791225e23"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/INDEX.md",
+    "hashes": [
+      "983c5b6aecfe8cf798a17b4688024556f17f340569d187141287ee4e3934735b",
+      "ca0cdabddb46b9c8aaf5759d09df0297426cfbb52eb17af6b462941c328dfb4c"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/compliance/.gitkeep",
+    "hashes": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/compliance/INDEX.md",
+    "hashes": [
+      "a0aefa4c0405701348e93fc0b1f3ad61c12b5a4b0abf0d6185e76369c8d036a6"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/context/INDEX.md",
+    "hashes": [
+      "1e59ab4dadade74906192d1d5cb38c89918ebfcacb31476ac3c83657cd5abc06",
+      "21d5a7aeba6913d7d01ea2f4f5e23cb135dcc15a612b014d43c24998c460655b"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/context/context.md",
+    "hashes": [
+      "793229c42159f139c0436a369f4b229b835bcbf2d6ae5d3eba1b8742a4096430",
+      "7a2cde9f321cc15a7d573c548e0c034417a74694d85d7270186ba0aef91766de",
+      "ac1f564c6b1cd8863fb30f183eed236c94bda17a5a8e6a59389ee7cc3226f48c"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/contracts/INDEX.md",
+    "hashes": [
+      "dd56575abfc0312da1dbbabe1e40a6225ba4ef8a191bd01b66fa5c4fb78609e6",
+      "eb813819475b7e7327f509d6a17e9593405ae1a87b501b0c728046c90d49cfeb"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/contracts/api-contract.md",
+    "hashes": [
+      "1162f9cd9ac9470f263bad9801581ecd21bf525ea119417954cb407289a2c517",
+      "69929ef2247702b1f034f83471baeb7911c1a40e52401d66a63b234cf7602f2b",
+      "9d8ade7bc255f1ee2b34109eb887f8bd2ed6a777bd06c0b3b977012604b618be"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/contracts/cli-contract.md",
+    "hashes": [
+      "08051be558fbb83fce79e2be3729a5fae4384dea445ec93d9cd149b9690e9f1c",
+      "5ea6caf708d6ec2a4afcae22e89bfabaa516d2130a0e0e994dcf8082240f866d",
+      "ae0a4e753b7a2e7f2bc921416ae2a5a1e11c1f5fbe281d41a10ce66f19832b89"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/contracts/event-contract.md",
+    "hashes": [
+      "7bd9d801c37f7ba9bb67f4b8e0163fc447ac6e309e37e32b4af8de53858a8afc",
+      "9e5ce16bee09bbf042dae91f69580a19cb09e9b39a99245d4686a4dfefd60f35",
+      "e1c921af0d4a7b07e10eaafc365d22aa3d0b4db36dd0dacf495c179954f6c1cf"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/contracts/library-contract.md",
+    "hashes": [
+      "27af0ad0b5830b64862af2025321af60e7f359d79bb4bcc29469b53c99095f6a",
+      "90499b6f0d1c03ad0010a3b5a04f4efcd6da5493811dc57493cce24e0626b39a",
+      "962144f325d623edd2851fb49333ca0f65e13431984c43c82500f12c31a09ad7"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/data/INDEX.md",
+    "hashes": [
+      "9204f4c436e45071fcf41ae8b88d15b1d3dfd96d46a68c81e2769c73a0ea5f6b",
+      "cf96d8c8894c0fc6ec2fac5479777074e142984a310816bc9a288503e8a2fa4e"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/data/data-access.md",
+    "hashes": [
+      "87880e50d870ad56e6609eb507628e30f8543dc0d2cdbadd5a6836f87c2548de",
+      "aedbd60fc05be16e26c1bd722744d3cf70c6aa84c9008789afa13fa776969128",
+      "dea64765ff8c9d732bfe8838b36621d0c606ff403270254af0078ee25ccb4c39"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/data/data-modeling.md",
+    "hashes": [
+      "00b4044fb06b81b9b84e9b049434323ddff8efa976e21f54da485f170bb7be84",
+      "159d3802b60c192e5cb3aabdfb584e834830ed4095fbc00ffb46d191fb0e9531",
+      "755e3949ca8d4ac6d0142ef59d62fa6e4fafe88755d5ca4d65ccc4b585a374d8"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/delivery/INDEX.md",
+    "hashes": [
+      "0fb66e672d68d763790ae92cf1b2c239395c61e08c64f0660ae8e91985b40f9f",
+      "b89a718dd3169ce35064e2b76143cffe57d84f52c8002c68c812fe803d0b14ca"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/delivery/arch-enforcement.md",
+    "hashes": [
+      "0e6a4e229ba3e166334f03e6bff6d0f6cd042275d7c7f07cb3e14f12e457fc1c",
+      "4091d867caad918810d378f06e04b55c0b7f433f6f4a5e32d08142fe14dad245",
+      "6813c8a47405dd75728b7cf3fc389d9a4a7016d2ec64e6017fd2a5390279c419"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/delivery/ci-quality-gates.md",
+    "hashes": [
+      "65d21db6241f9fd927afea28596e4f64d6ec4479e2e48f438ca90caf96b9040c",
+      "afa83e81c3495186f8cc84d9c3b9012a6c1015efde74db8f984420b0ede523c4",
+      "e30d9292914978c5698b824bc1be51439fc73551a73ff6bcf72cd8b6c95823b5"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/delivery/configuration.md",
+    "hashes": [
+      "243bc4dcac5370f239f8d783e30bd6a958fadc137b8e28d50401f47a30c5581f",
+      "b3d9a7a2816e6190591342936053e7d8bb5db6a440d7c46a5ce0f9169b08caa5",
+      "b407ae0f87da200fd73699b587983e2d09f98305d4b36a812a4bba15a855a6c7"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/delivery/dependency-injection.md",
+    "hashes": [
+      "3546babb038567ae33b059aac0cd09dfa636e31638dc373aadfdf9f5bffcf708",
+      "d8c17aa6e76283254f4b82dc460ef21506f9940d1dd1eca3297169d00a4270bb",
+      "dab1b7c05d137e1a3244f4ea1be0f5205dc52cb644f68ad55c4631f4609a4483"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/delivery/deployment-topology.md",
+    "hashes": [
+      "4686ad81397444d5e211868bfc58bd4807c6b7ba6ca4da67c1a3986b48392b9d",
+      "84531c2754c03865a08779f5ca386d74078cd5b1d792cf9dd900a86449f8dea1",
+      "e88e799fed99c2c2d8f3a831157336e597775eb534203032edc9fbc90f55f9de"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/delivery/documentation.md",
+    "hashes": [
+      "54048e9446adf3eb7026c1631d8af0d85834b5d208aa656fdb9e42fff1739415",
+      "712371bd60a1ee87306285baae6096b55c62c85f07c471619223999922a6a746",
+      "7dd9e10bf1a36fc83f27dcffd69c3134174f1c8dace3652ae99a2d52ec2a24b3",
+      "979d0774a4b07a1dd1f54374e20b02173d7f6b38c4d4b2fe0ca60b1e04fe840c"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/delivery/feature-flags.md",
+    "hashes": [
+      "42e2359a2146c91a8c092fbf26522a23c14451b5114917ba2a9b7088568d9376",
+      "8f40ce58dde41f82583ce3665c4eb60d06096ef5185978ecb94b7dc539cd2981",
+      "fcc49c963a2507a46eaf00070399dcd9127aed736caaebee0eab740efbeff413"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/delivery/testing-strategy.md",
+    "hashes": [
+      "598b13d0e2e8569c8b48ce3083fc830479a91b28186fc1fc0c112e91b6520f27",
+      "e645e1eeba13cb540ca9fba14b6041fe8eca1fc57e3f956c00b6f2a7f456fc9b",
+      "eee20bc8b5b2546979fa14dec77d218ffc255f1ebd9b599333014d5caa63c74f"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/domain-logic/.gitkeep",
+    "hashes": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/domain-logic/INDEX.md",
+    "hashes": [
+      "f5a6098de15adc87b7a38931c170867fc1df1b786ed4a3ba06e444f9c799313b"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/frontend/INDEX.md",
+    "hashes": [
+      "085be1dea448e5604da2551c30a1752e5870ab98a5bfa9faffef6deb14a2e878",
+      "384ba8655f1327fec5987fecaac5809b2f8c68854cfe3d07aaaa91015beaa3b5"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/frontend/accessibility.md",
+    "hashes": [
+      "488f5172c7b788216ec34fe80eeb90cb2635a991cd45e3568db61e27be56f979",
+      "55cb60afba09ba2579d9618c6f16e65247d1a25e6444fc2c5a2af67e86ac3f5e",
+      "9ec4bc111b7286f8852035f2ef99b2781262ad29240e1fbc8850dc033020404d"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/integration/.gitkeep",
+    "hashes": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/integration/INDEX.md",
+    "hashes": [
+      "bcaafa902e07dcabada32ebdb42aa31c8c6f8c2422f90e11032b7c15b2329e6a"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/lifecycle/.gitkeep",
+    "hashes": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/lifecycle/INDEX.md",
+    "hashes": [
+      "f7526e66ad6d9033c3fd0d6446bc09612fd50d0da829c44e4790bc9c86eba935"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/observability/INDEX.md",
+    "hashes": [
+      "8a423e8a0d55f6688fdcd89edd324b2cd605db80ac402b110c2c459b38105da4",
+      "e19fcb0587093150de1a198674a9f344e40d18ced7638440b1b8887291b4846b"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/observability/health-checks.md",
+    "hashes": [
+      "0c66586013ea84c3515d6ce52d116e68e279d70711f126cd0a8f2ddcb24747b0",
+      "28b1f4ac30e6431b53df17cbaffabe9dd9b9593415ba08c070d33d63b4d919a2",
+      "6c262a243e05fcf6f63fb8aa87b2262eb49f7304ce807f707d370b21ff9107cc"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/observability/logging.md",
+    "hashes": [
+      "676cafd7c9028256e7f017c3a7e3704867a0386887613731e8e7a3135391a6d5",
+      "b89459cb9c3f84cfe64fa7bb16c597da777cb191b662bec0e57c63985f7c407a",
+      "cb3b1a8ddad5ece45f79416c130ad6bf149453cf17d421bc1ad98e878b3e722c"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/observability/metrics.md",
+    "hashes": [
+      "714d4aea765072569b487490c373e24ba1e3d9fbdf8a228efefcd2acbf837c54",
+      "b6806b140cab72ff93945d73aa896c506d63444deebe14a3d0a56db7f6350da8",
+      "fdfcc2319dbf45e580f264d50dd46917e737e9f858729f0d3ef4abf15df5e5dc"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/observability/tracing.md",
+    "hashes": [
+      "06234dbe4d0f6ca39eabfa8cfd7ce666a5515abadeac5b60f2033a050792f12b",
+      "5674dec3e8a22d61f3b55e1f5e51e5020af874fb4383e534ed0f9ac3f7eb705d",
+      "667f3443d5314927c28c623c640055f7beccf3b6c2f6cb2734856ab159bfd72b"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/privacy/.gitkeep",
+    "hashes": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/privacy/INDEX.md",
+    "hashes": [
+      "8f500a0a715c39f72dc1bb1c83bdf05c09c8f42bce5d37e190f556b71cbe4b99"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/quality/INDEX.md",
+    "hashes": [
+      "1846308b752be01f212635914aeb1fa2f1a62fd471a2ec239cf0e68ce18cbcc7",
+      "9dfb17c18d07905ad1bd19b2ccce948e1c3a5abcdd8dac45e0ab54c4784fa5ea"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/quality/i18n-l10n.md",
+    "hashes": [
+      "25092d174d9cd3aaef4f1cea40dcf4681fdeb1fb255d055da3b200924a563356",
+      "3e8cbcc5e96a4a2a0e2a6f07e8d3de2ad5317d0cdae76a02b0a200dedce1e232",
+      "fe41c4f4faf55b2e11481232371d5937b29650e7734964832a41d14123535ed0"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/quality/nfr-performance.md",
+    "hashes": [
+      "8bc647ef135ce0f05c02b2f1b066eff6847b7c5384ccb4fc84e8dc38d97110b8",
+      "d42293e2f75fd76ada7c7abe5480dfb790e005cab5f2c639b93fcc07ef6ce4df",
+      "e0c92da33427cb2a0298d454bab3fa3c3be1a407707b84780acae14ddb765717"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/quality/scalability.md",
+    "hashes": [
+      "171ccfe8443cde2187b23df6c324278e29c47e1d974ae48352f2276bf7360b0f",
+      "2227be635f87d62f9c98dc426c732b24770ebc436350a69796b472c52ef7f39f",
+      "9e1126b53d4bb777f489a7e7b4f767509eb761d147f403bc8419fb0c88951783"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/release/.gitkeep",
+    "hashes": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/release/INDEX.md",
+    "hashes": [
+      "321bd6962940842e34007768e4c93a8ded5e46fdd76878ab62a9a5a91c1b9e3e"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/runtime/INDEX.md",
+    "hashes": [
+      "91217bee08286df60a0f909f73e5b9027d04bf5e51195df6d250717fd316fba9",
+      "f211a9203e4fbb88a7be1ded8a669d6dd908ec33be78b43a06ca4d5d8e42c2c3"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/runtime/background-jobs.md",
+    "hashes": [
+      "255a64633cd90c970c804d323155e3091aebcf7333c77e88fa40589ad7ff06fd",
+      "6780dc23f089193ff254525ebfb83181cf501a07b6119b117685d82b21b56b30",
+      "d16557d135512f4b6cedd6d55527f40c7eec93e428fa860f87815a9eb329c664"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/runtime/caching.md",
+    "hashes": [
+      "8040ccc275accc746bdaa8a2c149d81890003dd216c464b94c83cb41c8c00868",
+      "9c826ea40875536217a1c7e2ab1a0961b840a284667fecb236dca960bf49b0a9",
+      "febab735599d96b1469ffe8bf2f70247c481e2afcfd442a86b596c10834d6b2b"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/runtime/concurrency-async.md",
+    "hashes": [
+      "ad7155ee48ae84fd8fa19d0bf3f125bd2437cdf329282512a6649bfc09c5ddb8",
+      "b713335a90d7fab4345b2ec1957d17823ea94c55d366a5fe6799d5064c5f8063",
+      "c662b78ee709d646ecfc53c0a1f465926d9d16b82d86e916f2892e6921ee770e"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/runtime/error-handling.md",
+    "hashes": [
+      "11d512b7cea9d7ae63a6474b5169d38ed95cfa205abd16ec66d2c9421a5bf34d",
+      "666a3d59bd9e243edefb4ea31580c2cfae4c475e42d88cf2e3f0d1d1c8d94576",
+      "d15c4e45854af8aa61bb46cafb9fdbf02e158fd40cb046d0e79ce82993841936"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/runtime/resilience.md",
+    "hashes": [
+      "13267072311e0ae22cc0d7c04e76f37c6d149b1b6200adaebc0d67fbb4d8d8c8",
+      "9434237b9ab9cbd5594b093a5576479dcf8feaccd1272809a3a61dc0458eef44",
+      "c4916513dc8a03fcd752908d1aa486192450c0f7467dcdc040286cd7bbfcc38c"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/security/INDEX.md",
+    "hashes": [
+      "4d0bd6ebc094760d2052f77b48652316b382e5400b5f300f7b25e3e646ebd20d",
+      "8ca332b811b773d42c9f59a26c00936e812aea1ae1fd986fcb677556e42d96a4"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/security/auth.md",
+    "hashes": [
+      "202f845fd0721549fc3340696ab0e0dbe000cec1878d08e3b0c0f96c898ab16d",
+      "b7b596cc8f65d94e106c98dccd94d703c1e6af682aeea5ce9d400be1faea2a83",
+      "bef2dda1b5a2e1c79ef12118b3244784cfd8ec342d1cef8406ac3d0fe2297ee1"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/security/authorization.md",
+    "hashes": [
+      "3b5bedcbdac4d22edcf4772efaf03b4e4dd2cc7239181c2a831bb0aff9cf10a9",
+      "45c4a21c3d1dbc46d644671876c9a10570ce0e460650bfcf0f5ec4af709b69f8",
+      "f07698db5a2c6d4e8a49553b2dcd9f17eff76db9b472dbdbed45c67a7b7d08c1"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/security/cors.md",
+    "hashes": [
+      "45430905cc20dba21c3b4efe5b1601da1f41780fb9852ad6de577ba60d43fc12",
+      "836c1aa452f8f9321fd991999650265317cfbd1e0558535088a0f00a05d7e9ac",
+      "9a8b437336e5dc7c42c9df0c784fc66a6b82c59c3403af0589fce224c1b4359d"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/security/dependency-scanning.md",
+    "hashes": [
+      "585a397aa09d2d2cb02cfd8fd2808ffb5f25d4d522e2ba7dc9ac15612421c7d3",
+      "bf6b0ec8f6843dd03b85ac9a5692539a519b09dcff4888fd461da5899bf8ddbd",
+      "f5523c1c6744c221b396af998b1e3d5cdf3cf1cd6e03493ff17da975be844641"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/security/input-validation.md",
+    "hashes": [
+      "1db38380f59ae86dee643bec84236a99f8494d1dc863fb8c3f5fe6a1adf8bffd",
+      "d016fbdb942a1f2d6757b1419b8b154e3faaf4bc2ed5eb2fdc8e71348cef5f43",
+      "dbfa7589976ed96491df1a37ff045cf30e0057373eab5d3e242118b51bd9c86b"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/security/rate-limiting.md",
+    "hashes": [
+      "1910e77e3632204adef754222f13f88c57131f2f5e9adbe9155f54d4728e4d8d",
+      "7e64b5c117b1966626b1548ee9d017caf475b182076e0b688184e70215619b20",
+      "e1e0fa9a3baf93c41683531c6b963bf88cfe1b3840e1448cfe1c5043409f21fe"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/security/secrets-management.md",
+    "hashes": [
+      "81aff9c69e334a5ac9eadf68a4ceb06eda9942aaa3725b69877affd00cf72a91",
+      "83c62957fda9398531d3726f9c143988a3c0b6b641bd99e087a502437040488a",
+      "e66447fba88e60c1ab9db6a8ab7e52ad0aadfa53c7e0f7e54c37acd64a5e7b50"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/structure/INDEX.md",
+    "hashes": [
+      "1d767ce316fb4f5d9a44376e1021d3b40e87678169fa738e509755359dd94fed",
+      "e5d0fec4c25af722ff5f350f07fa284089bc28353546e1b9b83e9a022eda21a0"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/structure/architecture-style.md",
+    "hashes": [
+      "04afecd0f01f7b8613dc7680772109f9192d1ed7818ed6173629ce0a9d9d8bf0",
+      "771cc2bd71c0ec9c0c6341350bc5f724cbf9e284dcc9e3a0dd840f5835403b66",
+      "854fb4ad903825a08a13927dafd729501d2b844e940e4e0a2faa1616d38866b3"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/structure/folder-structure.md",
+    "hashes": [
+      "035de8d6cdd6d44d02599c0801b7f3268f688e5fb17f65d5792049f9fb0785ba",
+      "782106e4b658c1639ef2f9438c546b8e4d4d44bd0993b54a076c594798790108",
+      "a3ed64e93ddcf2d4fe141636c98cd85e8c3f660141f580b1546ea3abd6df0b6f"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/structure/inter-layer-communication.md",
+    "hashes": [
+      "1acf7b7455722e9228e9aa652aea37fd0ffd8fcdfa07cb93933bc876e4ef4ca7",
+      "2dfb15f72587e15e9c4e95e5f194be79d3e4db04107cdc4b68c0541b1deeef29",
+      "e652b62b70cd4745ad6ba7d99cac3cfb202049d56716d4d079b662df4a3cc15c"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/structure/layers-and-dependencies.md",
+    "hashes": [
+      "155fa2a15b8b034a5cc7e95ff551aeee2913194e27adf225bf08bcd21a9f382f",
+      "cbdbaa70fd94d865bf2dd956f5b49ba85afc8da6d6a3af9d54487558fae4308a",
+      "d515906bd47900aa1d2ee040c7af8ff2b98ab76b881fc372e72e797c6b1b8186"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/ux-product/.gitkeep",
+    "hashes": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/concerns/ux-product/INDEX.md",
+    "hashes": [
+      "843d961c6033ab1f22ed25812ff247573ceae2808ee06c5065f42094b91fe2ee"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/templates/INDEX.md",
+    "hashes": [
+      "a0b24149f904516e81af36434c0cb8fe47e5927909504ae66dde59fd0315883b"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/templates/adr.md",
+    "hashes": [
+      "ee6194a6af5fba72d2127f5342866eedfb72ef4bab74b8a69a2a6190a5d31b3d"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/templates/claude-md.md",
+    "hashes": [
+      "b1888f99739d5e3d518e4f690a633906a077563940894559892767f167adb7a4"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/templates/index-domain.md",
+    "hashes": [
+      "979d307385f147473d5a37ed33f459889c42af6227033ff2017fc8b6258372dd"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/templates/index-root.md",
+    "hashes": [
+      "c9a9e2d820c62e0f7786aabd37ce0f1b09a29cebe362cf020038438586f4309f"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/templates/tech-adr.md",
+    "hashes": [
+      "978a99d89d520e165614a5a2f28c78b93d2e00b2b23db49cd30f6a8c2aac9ac3"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-bootstrap/templates/tech-index.md",
+    "hashes": [
+      "70143a6b1c936bd218ba670a642c637b97646947134b83fbd7f05f1f2214bb74"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-mine/SKILL.md",
+    "hashes": [
+      "f749e1e23810406866b778f2e97959da0541de5cc68158c8ceed26e9726c6599"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-validate/SKILL.md",
+    "hashes": [
+      "2432d298c7682175a504216523f948f0a03f74ccd705d94c310fbf4761ac09ec",
+      "49bce4158190f3ed9980b2687324d3d1977399153b4f9d22b6340366fe7c472d",
+      "79a90d23353aca3acf337ddf50001b20bd98b08ec2eb875ba134328df2b86ea1"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/project-decisions-validate/coherence-rules.md",
+    "hashes": [
+      "28b2ec2ea7b513745f5a1ca350a67912c967929e1e422cb4c4f059409582a81a",
+      "735c3a46548ea4b6a202366bb6501b215364f3971ecd260caea157747bb6b342",
+      "78736c519e1eb48863ec8f2c599418863141e55b9eb6c1d2c7900257652190b7",
+      "8d1fadbb70be9268ca8e7e72990b06cb35a564a3ca72ad94a79241730d878c89"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/roadmap/INDEX-TEMPLATE.md",
+    "hashes": [
+      "27fab5794cfc6f844c3ba296359531a4316ca019372cf69d79b76c629cb5f3c4"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/roadmap/SKILL.md",
+    "hashes": [
+      "090897d628d0d2112c8a0e927c50f78f161571d61aac8a23a455f333ed8c8d0c",
+      "bfebba11948f72728802b32bbb9f308fdac345d5e2277dcf4c834c8afa0b2a41"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/roadmap/STEP-TEMPLATE.md",
+    "hashes": [
+      "90d3ae9a1529a0e2ead93d78e664353b552a35fbf654d67ff2b6d1993c785004",
+      "d6d40294d1688c75bda1c31ad86ce8c9a5420ee66b12ef9c9b537deadf1d01e7"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/sdd-verify/references/ui-scenarios-schema.md",
+    "hashes": [
+      "15da0e66fe18ecd1fe28602b7a4372b937c3009f949b64bdcc586c6e2ada7749"
+    ]
+  },
+  {
+    "root": "state",
+    "path": "deployed-manifest.json",
+    "hashes": [
+      "81f1faa8c205985ebe8aefad26ba93ea57b589921b298b3056b6a868b3b7435f"
+    ]
+  }
+]
