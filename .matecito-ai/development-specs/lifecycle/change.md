@@ -2,6 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-07-24
+- **Components:** api
 
 ## Propósito
 

@@ -10,3 +10,4 @@ Máquinas de estado de una entidad (su ciclo de vida y transiciones).
 |---|---|---|---|
 | `change` | Ciclo de vida del change (`active` ↔ `closed`) y el guard `change_closed` | Accepted | [`change.md`](change.md) |
 | `record-version` | Ciclo de vida de la versión de un record (`actual` → `congelada`): el pin congela, update-in-place vs fork, inmutabilidad | Accepted | [`record-version.md`](record-version.md) |
+| `component-check-status` | Los tres estados de un resultado de chequeo (`OK` / `Missing` / `Outdated`), sus reglas de derivación y la remediación obligatoria del `Missing` | Inferred | [`component-check-status.md`](component-check-status.md) |
