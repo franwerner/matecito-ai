@@ -249,28 +249,22 @@ var (
 	activeSyncDone  chan doneMsg
 )
 
+// waitForLineFromChannels never races lines against done: it blocks on lines
+// until the scanner goroutine closes it, and only then reads done. The
+// producer always closes pw (which drives the scanner to push every
+// remaining line and close lines) strictly before it sends on done, so
+// selecting between the two here could return done before the scanner got
+// scheduled to push a line already in flight, dropping it. Reading lines
+// first cannot deadlock: pw.Close() runs unconditionally once Sync returns,
+// so lines is guaranteed to close in finite time, and done — sent right
+// after that same Close() — is guaranteed to already be there (or arrive
+// immediately after) once lines does.
 func waitForLineFromChannels(lines chan string, done chan doneMsg) tea.Msg {
 	activeSyncLines = lines
 	activeSyncDone = done
 
-	select {
-	case line, ok := <-lines:
-		if ok {
-			return outputLineMsg{line: line}
-		}
-		msg := <-done
-		return msg
-	case msg := <-done:
-		// drenar líneas restantes antes de retornar done
-		for {
-			select {
-			case _, ok := <-lines:
-				if !ok {
-					return msg
-				}
-			default:
-				return msg
-			}
-		}
+	if line, ok := <-lines; ok {
+		return outputLineMsg{line: line}
 	}
+	return <-done
 }
