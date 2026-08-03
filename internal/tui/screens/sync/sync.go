@@ -44,8 +44,27 @@ type SyncModel struct {
 	planActions     []pkgsync.SyncAction
 	planStates      []pkgsync.ComponentState // retained to show per-component metadata (e.g. payload source) in the plan view
 	// selfReplaced indica que el binario fue actualizado; la vista muestra el
-	// aviso de reinicio manual (la TUI nunca dispara el re-exec — solo el CLI).
+	// aviso de que la sincronización se completa sola al reabrir (la TUI
+	// nunca dispara el re-exec — solo el CLI).
 	selfReplaced bool
+	// statePath sobreescribe la ruta canónica de sync-state.json para tests;
+	// vacío resuelve pkgsync.SyncStatePath() al momento de escribir (default
+	// de producción).
+	statePath string
+}
+
+// syncStatePath resuelve la ruta de sync-state.json contra la cual persistir
+// la marca de sincronización diferida: el override inyectado si está seteado
+// (tests), o la ruta canónica en caso contrario.
+func (m SyncModel) syncStatePath() string {
+	if m.statePath != "" {
+		return m.statePath
+	}
+	p, err := pkgsync.SyncStatePath()
+	if err != nil {
+		return ""
+	}
+	return p
 }
 
 // New construye un SyncModel con las opciones de sincronización inyectadas
@@ -128,6 +147,15 @@ func (m SyncModel) Update(msg tea.Msg) (nav.ChildModel, tea.Cmd) {
 		m.done = true
 		m.err = msg.err
 		if msg.result.SelfReplaced {
+			// Marcar la sincronización diferida siempre que SelfReplaced sea
+			// true, aunque nada se haya salteado esta corrida: este proceso
+			// no puede ver el payload embebido del binario nuevo, así que su
+			// plan queda stale aun donde dice "skip". No-clobber: un
+			// archivo de estado ilegible no se pisa (el error se ignora) y
+			// el aviso se muestra igual — ver el requirement homónimo.
+			if path := m.syncStatePath(); path != "" {
+				_ = pkgsync.SetPendingSync(path, true)
+			}
 			// The TUI never self-execs — stay here so the view keeps showing
 			// the restart message below instead of quitting the program.
 			m.selfReplaced = true
@@ -198,7 +226,7 @@ func (m SyncModel) View() string {
 
 	if m.selfReplaced {
 		sb.WriteString("\n" + styles.Success.Render("  matecito-ai actualizado.") + "\n")
-		sb.WriteString(styles.Dimmed.Render(fmt.Sprintf("  Re-ejecutá %s para usar la nueva versión.", "matecito-ai")) + "\n")
+		sb.WriteString(styles.Dimmed.Render("  La sincronización se completa sola la próxima vez que abras matecito-ai.") + "\n")
 		sb.WriteString("\n" + styles.Footer.Render("esc volver  ctrl+c salir"))
 		return sb.String()
 	}
@@ -223,6 +251,12 @@ func (m SyncModel) startSync() tea.Cmd {
 		// Ya mostramos el plan en la pantalla de confirmación — el motor no
 		// debe repetirlo en el log de ejecución que transmite.
 		opts.PlanShown = true
+		// La TUI es la única que setea esto: una vez que matecito-ai se
+		// reemplaza a sí mismo en esta misma corrida, deploy y config
+		// ecosistema dependen del payload embebido en este proceso (ya
+		// stale), así que se difieren al arranque siguiente en vez de
+		// reconciliar contra la versión equivocada.
+		opts.DeferPayloadOnSelfReplace = true
 		opts.Stdout = pw
 		opts.Stderr = pw
 

@@ -64,6 +64,17 @@ type Options struct {
 	// it. `update` (no bespoke preview) leaves this false and gets the
 	// engine's print exactly once.
 	PlanShown bool
+
+	// DeferPayloadOnSelfReplace, when true, skips the payload-dependent
+	// components — deploy and config ecosistema — for the rest of this run
+	// once matecito-ai itself was replaced: this process's embedded payload
+	// is now stale relative to the binary just written to disk, so
+	// reconciling against it would apply the wrong version. The caller (the
+	// TUI's sync screen) is expected to persist a pending-sync mark and
+	// finish those two components on the next startup, against the new
+	// binary's own embedded payload. The CLI never sets this — its zero
+	// value (false) keeps completing everything in the same run, as today.
+	DeferPayloadOnSelfReplace bool
 }
 
 func (o Options) timeout() time.Duration {
@@ -423,11 +434,21 @@ func Sync(opts Options) Result {
 	}
 
 	for _, a := range active {
+		// Checked per iteration against the accumulated result, not against
+		// the action's position in the plan: if a future reorder ever puts
+		// deploy/config ecosistema before matecito-ai, this degrades to
+		// running them in this same run (today's behavior) instead of
+		// skipping them for the wrong reason.
+		if opts.DeferPayloadOnSelfReplace && result.SelfReplaced && isPayloadDependent(a.Component) {
+			fmt.Fprintf(out, "\n[diferido] %s — depende del payload embebido; se completa en el próximo arranque\n", a.Component)
+			continue
+		}
+
 		fmt.Fprintf(out, "\n[%s] %s\n", actionLabel(a.Kind), a.Component)
 		var runErr error
 		switch a.Component {
 		case "matecito-ai":
-			runErr = install.InstallSelf(installOpts)
+			runErr = installSelfFn(installOpts)
 			if runErr == nil {
 				result.SelfReplaced = true
 			}
@@ -492,6 +513,21 @@ func Sync(opts Options) Result {
 
 	return result
 }
+
+// isPayloadDependent reports whether a component's Sync action reads from
+// the running process's embedded payload (deploy.ResolvePayloadFS): these
+// are exactly the components DeferPayloadOnSelfReplace can safely postpone
+// to the next startup, once the binary on disk (but not this process) is
+// the new version.
+func isPayloadDependent(component string) bool {
+	return component == "deploy" || component == configComponent
+}
+
+// installSelfFn is a substitution seam: Sync calls it instead of
+// install.InstallSelf directly so tests can simulate a successful or failed
+// self-replace without a real network download and executable swap — the
+// same seam pattern as reexec.go's reExecFn.
+var installSelfFn = install.InstallSelf
 
 func actionLabel(k ActionKind) string {
 	switch k {

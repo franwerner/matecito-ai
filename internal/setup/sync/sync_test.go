@@ -1,6 +1,7 @@
 package sync
 
 import (
+	"errors"
 	"io"
 	"os"
 	"path/filepath"
@@ -8,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/franwerner/matecito-ai/internal/setup/deploy"
+	"github.com/franwerner/matecito-ai/internal/setup/install"
 )
 
 // readTracker is an io.Reader that records whether Read was ever called, so
@@ -386,5 +388,156 @@ func TestPayloadChanged(t *testing.T) {
 				t.Errorf("payloadChanged(%+v) = %v, want %v", tc.s, got, tc.want)
 			}
 		})
+	}
+}
+
+// TestIsPayloadDependent verifies the exact component set
+// DeferPayloadOnSelfReplace is allowed to postpone: deploy and config
+// ecosistema, the two whose Sync execution reads deploy.ResolvePayloadFS —
+// nothing else.
+func TestIsPayloadDependent(t *testing.T) {
+	cases := map[string]bool{
+		"deploy":        true,
+		configComponent: true,
+		"matecito-ai":   false,
+		"engram":        false,
+		"codegraph":     false,
+	}
+	for name, want := range cases {
+		if got := isPayloadDependent(name); got != want {
+			t.Errorf("isPayloadDependent(%q) = %v, want %v", name, got, want)
+		}
+	}
+}
+
+// stubInstallSelf overrides installSelfFn for the duration of the test and
+// restores it afterward — the same substitution-seam pattern reexec.go uses
+// for reExecFn, needed here because the real install.InstallSelf performs a
+// network download and swaps the running executable, neither of which a
+// unit test may do.
+func stubInstallSelf(t *testing.T, fn func(install.Options) error) {
+	t.Helper()
+	orig := installSelfFn
+	installSelfFn = fn
+	t.Cleanup(func() { installSelfFn = orig })
+}
+
+// TestSync_DeferPayloadOnSelfReplace_SkipsPayloadDependentComponentsAfterSelfOK
+// verifies the guard behind DeferPayloadOnSelfReplace (design decision "Qué
+// se saltea"): once matecito-ai replaces itself successfully in this same
+// run, deploy and config ecosistema are deferred — while an unrelated
+// binary still runs — but only because the caller opted in. Neither
+// component's real branch (deploy.ResolvePayloadFS, ApplyConfigSteps) is
+// ever reached, which is exactly what "deferred" means: no filesystem
+// isolation is needed for this test.
+func TestSync_DeferPayloadOnSelfReplace_SkipsPayloadDependentComponentsAfterSelfOK(t *testing.T) {
+	stubInstallSelf(t, func(install.Options) error { return nil })
+
+	states := []ComponentState{
+		{Name: "matecito-ai", Present: false},
+		{Name: "widget-test", Present: false},
+		{Name: "deploy", Present: true, PayloadChanged: true},
+		{Name: configComponent, Present: true, Pending: true},
+	}
+
+	var out, errOut strings.Builder
+	result := Sync(Options{
+		Stdout:                    &out,
+		Stderr:                    &errOut,
+		PreDetected:               states,
+		Yes:                       true,
+		DeferPayloadOnSelfReplace: true,
+	})
+
+	if !result.SelfReplaced {
+		t.Fatal("expected SelfReplaced=true after a successful self install")
+	}
+	if result.HasErrors() {
+		t.Fatalf("unexpected errors: %v", result.Errors)
+	}
+
+	got := out.String()
+	if !strings.Contains(got, "widget-test") || !strings.Contains(got, "✓ OK") {
+		t.Fatalf("expected the non-payload-dependent binary to still run, got:\n%s", got)
+	}
+	if strings.Contains(got, "[actualizar] deploy") || strings.Contains(got, "[actualizar] "+configComponent) {
+		t.Fatalf("expected deploy and %s to be deferred, not executed, got:\n%s", configComponent, got)
+	}
+	if !strings.Contains(got, "[diferido] deploy") || !strings.Contains(got, "[diferido] "+configComponent) {
+		t.Fatalf("expected a deferred notice naming deploy and %s, got:\n%s", configComponent, got)
+	}
+}
+
+// TestSync_DeferPayloadOnSelfReplace_False_DoesNotSkipDeploy is the
+// CLI-symmetry guard: with the field at its zero value — exactly what
+// cli/update.go and cli/install.go leave it — deploy must still run in the
+// same run after a successful self-replace, unchanged from today.
+func TestSync_DeferPayloadOnSelfReplace_False_DoesNotSkipDeploy(t *testing.T) {
+	stubInstallSelf(t, func(install.Options) error { return nil })
+
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	payloadRoot := t.TempDir()
+	t.Chdir(payloadRoot)
+	mustWriteFile(t, filepath.Join(payloadRoot, "payload", "core", "CLAUDE.md"), []byte("# core\n"))
+
+	states := []ComponentState{
+		{Name: "matecito-ai", Present: false},
+		{Name: "deploy", Present: true, PayloadChanged: true},
+	}
+
+	var out, errOut strings.Builder
+	result := Sync(Options{
+		Stdout:      &out,
+		Stderr:      &errOut,
+		PreDetected: states,
+		Yes:         true,
+		BackupDir:   t.TempDir(),
+		// DeferPayloadOnSelfReplace left at its zero value on purpose.
+	})
+
+	if !result.SelfReplaced {
+		t.Fatal("expected SelfReplaced=true after a successful self install")
+	}
+	got := out.String()
+	if !strings.Contains(got, "[actualizar] deploy") {
+		t.Fatalf("expected deploy to run (not deferred) when DeferPayloadOnSelfReplace=false, got:\n%s", got)
+	}
+	if strings.Contains(got, "[diferido]") {
+		t.Fatalf("expected no deferred notice when DeferPayloadOnSelfReplace=false, got:\n%s", got)
+	}
+}
+
+// TestSync_DeferPayloadOnSelfReplace_SelfFails_NothingSkipped verifies the
+// symmetry guard for a failed self-replace: SelfReplaced stays false, so
+// deploy/config ecosistema must run exactly as if DeferPayloadOnSelfReplace
+// had never been set — a failed self-update must never leave the host with
+// nothing done at all.
+func TestSync_DeferPayloadOnSelfReplace_SelfFails_NothingSkipped(t *testing.T) {
+	stubInstallSelf(t, func(install.Options) error { return errors.New("boom") })
+
+	states := []ComponentState{
+		{Name: "matecito-ai", Present: false},
+		{Name: "widget-test", Present: false},
+	}
+
+	var out, errOut strings.Builder
+	result := Sync(Options{
+		Stdout:                    &out,
+		Stderr:                    &errOut,
+		PreDetected:               states,
+		Yes:                       true,
+		DeferPayloadOnSelfReplace: true,
+	})
+
+	if result.SelfReplaced {
+		t.Fatal("expected SelfReplaced=false after a failed self install")
+	}
+	got := out.String()
+	if !strings.Contains(got, "widget-test") || !strings.Contains(got, "✓ OK") {
+		t.Fatalf("expected the other component to still run despite the self failure, got:\n%s", got)
+	}
+	if strings.Contains(got, "[diferido]") {
+		t.Fatalf("expected nothing deferred when the self action itself failed, got:\n%s", got)
 	}
 }

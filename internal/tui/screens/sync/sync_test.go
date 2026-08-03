@@ -1,6 +1,8 @@
 package sync
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -14,7 +16,10 @@ import (
 // SelfReplaced, the TUI must stay on the restart-message screen and must NOT
 // emit any command that could trigger a re-exec — the only safe outcome is a
 // nil tea.Cmd. Without SelfReplaced it must behave as before: return to the
-// menu via nav.BackMsg.
+// menu via nav.BackMsg. It also covers the "marca / sin marca" half of the
+// pending-sync Requirement: SelfReplaced=true must persist the mark;
+// SelfReplaced=false must leave the state file untouched (ilegible is its
+// own test below, injecting a corrupt statePath).
 func TestUpdate_DoneMsg_SelfReplace(t *testing.T) {
 	cases := []struct {
 		name             string
@@ -38,7 +43,8 @@ func TestUpdate_DoneMsg_SelfReplace(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			m := SyncModel{}
+			statePath := filepath.Join(t.TempDir(), "sync-state.json")
+			m := SyncModel{statePath: statePath}
 
 			gotModel, cmd := m.Update(doneMsg{result: tc.result})
 
@@ -51,6 +57,9 @@ func TestUpdate_DoneMsg_SelfReplace(t *testing.T) {
 			}
 			if !sm.done {
 				t.Fatal("expected done to be true after doneMsg")
+			}
+			if pending := pkgsync.LoadPendingSync(statePath); pending != tc.wantSelfReplaced {
+				t.Fatalf("pending-sync mark = %v, want %v", pending, tc.wantSelfReplaced)
 			}
 
 			if tc.wantNilCmd {
@@ -67,6 +76,60 @@ func TestUpdate_DoneMsg_SelfReplace(t *testing.T) {
 				t.Fatalf("expected cmd to yield nav.BackMsg, got %T", cmd())
 			}
 		})
+	}
+}
+
+// TestUpdate_DoneMsg_SelfReplace_UnreadableState covers the "ilegible" half
+// of the pending-sync Requirement reaching the screen: a corrupt state file
+// must not be overwritten (no-clobber), yet the restart aviso still shows
+// exactly as when the write succeeds — Requirement "estado ilegible o
+// corrupto — no se pisa" says the screen shows its aviso regardless.
+func TestUpdate_DoneMsg_SelfReplace_UnreadableState(t *testing.T) {
+	statePath := filepath.Join(t.TempDir(), "sync-state.json")
+	corrupt := []byte("not json{{{")
+	if err := os.WriteFile(statePath, corrupt, 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	m := SyncModel{statePath: statePath}
+	gotModel, cmd := m.Update(doneMsg{result: pkgsync.Result{SelfReplaced: true}})
+
+	sm, ok := gotModel.(SyncModel)
+	if !ok {
+		t.Fatalf("Update returned %T, want SyncModel", gotModel)
+	}
+	if !sm.selfReplaced {
+		t.Fatal("expected the aviso to show even when the mark can't be written")
+	}
+	if cmd != nil {
+		t.Fatal("expected a nil cmd (no re-exec) even when the mark write fails")
+	}
+
+	got, err := os.ReadFile(statePath)
+	if err != nil {
+		t.Fatalf("ReadFile: %v", err)
+	}
+	if string(got) != string(corrupt) {
+		t.Fatalf("expected the corrupt state file untouched, got:\n%s", got)
+	}
+}
+
+// TestView_SelfReplaced_ShowsDeferredSyncMessage covers the MODIFIED
+// Requirement "Desenlace del auto-reemplazo en la interfaz interactiva": the
+// restart screen must tell the person the sync completes on its own next
+// time, not to manually re-run the binary.
+func TestView_SelfReplaced_ShowsDeferredSyncMessage(t *testing.T) {
+	m := SyncModel{done: true, selfReplaced: true}
+
+	got := m.View()
+	if !strings.Contains(got, "matecito-ai actualizado.") {
+		t.Fatalf("expected the update aviso, got:\n%s", got)
+	}
+	if !strings.Contains(got, "próxima vez") {
+		t.Fatalf("expected a message about the deferred sync completing on the next open, got:\n%s", got)
+	}
+	if strings.Contains(got, "Re-ejecutá") {
+		t.Fatalf("expected the old manual-restart message to be gone, got:\n%s", got)
 	}
 }
 
