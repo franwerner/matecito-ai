@@ -29,7 +29,6 @@ import (
 	"io/fs"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -119,11 +118,8 @@ func run() error {
 	}
 
 	// The abandoned ~/.matecito-ai/deployed-manifest.json: no code writes it
-	// anymore and it predates any commit, so it cannot be reconstructed from
-	// git — its hash is seeded from the artifact as observed on this machine.
-	if e, ok := abandonedManifestEntry(); ok {
-		entries = append(entries, e)
-	}
+	// anymore and it predates any commit, so it cannot be reconstructed from git.
+	entries = append(entries, abandonedManifestEntry())
 
 	sort.Slice(entries, func(i, j int) bool {
 		if entries[i].Root != entries[j].Root {
@@ -354,25 +350,18 @@ func repoRoot() (string, error) {
 	return strings.TrimSpace(string(out)), nil
 }
 
-// abandonedManifestEntry hashes ~/.matecito-ai/deployed-manifest.json as
-// observed on this machine, since no commit ever produced it (it comes from
-// an uncommitted, now-abandoned version). Absent on this host — some other
-// machine reconstructing the catalog would need to seed it — the entry is
-// simply skipped rather than failing the whole generation.
-func abandonedManifestEntry() (legacyEntry, bool) {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return legacyEntry{}, false
-	}
-	p := filepath.Join(home, ".matecito-ai", "deployed-manifest.json")
-	data, err := os.ReadFile(p)
-	if err != nil {
-		return legacyEntry{}, false
-	}
-	sum := sha256.Sum256(data)
+// abandonedManifestHash is the sha256 of ~/.matecito-ai/deployed-manifest.json,
+// pinned as a constant: no commit ever produced that file, so it cannot be
+// reconstructed from git. Reading it from the running machine's home directory
+// made this generator emit a different catalog depending on where it ran — the
+// entry appeared on a host that still had the file and vanished on CI, which
+// never has it. That is unverifiable by definition, so the value is fixed here.
+const abandonedManifestHash = "81f1faa8c205985ebe8aefad26ba93ea57b589921b298b3056b6a868b3b7435f"
+
+func abandonedManifestEntry() legacyEntry {
 	return legacyEntry{
 		Root:   "state",
-		Path:   path.Base(p),
-		Hashes: []string{hex.EncodeToString(sum[:])},
-	}, true
+		Path:   "deployed-manifest.json",
+		Hashes: []string{abandonedManifestHash},
+	}
 }
