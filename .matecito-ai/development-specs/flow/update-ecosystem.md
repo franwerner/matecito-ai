@@ -43,7 +43,7 @@ Reconciliar en un solo comando el estado de los componentes ya instalados —bin
 
 ## Reglas de negocio
 
-- El plan se deriva del estado observado con esta precedencia: versión más reciente desconocida → *omitir*; componente ausente → *instalar*; payload cambiado → *actualizar*; reconciliación pendiente → *actualizar*; sin versión de referencia para comparar → *omitir*; versión actual distinta de la más reciente (normalizando el prefijo `v`) → *actualizar*; en cualquier otro caso → *omitir*.
+- El plan se deriva del estado observado con esta precedencia: versión más reciente desconocida → *omitir*; componente ausente → *instalar*; **componente `matecito-ai` presente cuya versión instalada es un dev build → *omitir*, con precedencia sobre cualquier otro motivo de actualización**; payload cambiado → *actualizar*; reconciliación pendiente → *actualizar*; sin versión de referencia para comparar → *omitir*; versión actual distinta de la más reciente (normalizando el prefijo `v`) → *actualizar*; en cualquier otro caso → *omitir*.
 - La ejecución es **continue-on-error**: el fallo de un componente nunca cancela los demás.
 - El resultado de salida es binario: hubo al menos un componente fallado, o no hubo ninguno. El comando no distingue *cuál* falló en su código de salida.
 - La confirmación acepta como afirmativas `y`, `yes`, `s`, `si` y `sí`, sin distinguir mayúsculas; cualquier otra respuesta cancela.
@@ -72,6 +72,24 @@ Reconciliar en un solo comando el estado de los componentes ya instalados —bin
 - **GIVEN** un componente cuya versión instalada y cuya versión más reciente difieren únicamente en el prefijo `v`
 - **WHEN** el sistema deriva el plan
 - **THEN** las considera equivalentes y omite el componente
+
+### Scenario: dev build instalado se omite
+
+- **GIVEN** `matecito-ai` instalado como dev build y una versión más reciente distinta
+- **WHEN** el sistema deriva el plan
+- **THEN** ese componente queda *omitido*
+
+### Scenario: versión no dev build se actualiza
+
+- **GIVEN** `matecito-ai` instalado con una versión no dev build distinta de la más reciente
+- **WHEN** el sistema deriva el plan
+- **THEN** queda en *actualizar*
+
+### Scenario: el dev build no frena a los demás
+
+- **GIVEN** `matecito-ai` como dev build y otro componente desactualizado
+- **WHEN** el sistema deriva y ejecuta el plan
+- **THEN** `matecito-ai` queda *omitido* y el otro se actualiza
 
 ### Scenario: un componente falla → salida en error
 

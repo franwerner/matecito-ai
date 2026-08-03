@@ -169,10 +169,12 @@ type SyncAction struct {
 // Reglas de decisión (en orden de precedencia):
 //  1. Unknown=true → skip (no se conoce la versión latest; no bloquear al usuario).
 //  2. !Present → install.
-//  3. PayloadChanged (deploy) → update.
-//  4. LatestVersion vacío → skip (sin referencia para comparar).
-//  5. NormalizeVersion(Current) != NormalizeVersion(Latest) → update (componente desactualizado).
-//  6. Resto → skip (ya está actualizado).
+//  3. matecito-ai instalado como dev build → skip (nunca se reemplaza con la release).
+//  4. PayloadChanged (deploy) → update.
+//  5. Pending (config ecosistema) → update.
+//  6. LatestVersion vacío → skip (sin referencia para comparar).
+//  7. NormalizeVersion(Current) != NormalizeVersion(Latest) → update (componente desactualizado).
+//  8. Resto → skip (ya está actualizado).
 func PlanSync(states []ComponentState) []SyncAction {
 	actions := make([]SyncAction, 0, len(states))
 	for _, s := range states {
@@ -517,6 +519,12 @@ func decide(s ComponentState) ActionKind {
 	}
 	if !s.Present {
 		return ActionInstall
+	}
+	// A dev build's version string never matches a published tag, so without this
+	// check it would look permanently out of date; precedence over PayloadChanged/
+	// Pending keeps a dev build from being replaced by other reasons in the same run.
+	if s.Name == "matecito-ai" && agentmodel.IsDevBuild(s.CurrentVersion) {
+		return ActionSkip
 	}
 	if s.PayloadChanged {
 		return ActionUpdate

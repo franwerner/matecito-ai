@@ -294,6 +294,77 @@ func TestSync_Deploy_RealBranch_PreservesLegacyAndOverwritesEditedRegistryEntry(
 	}
 }
 
+// TestDecide_MatecitoAIDevBuild verifies the Requirement "Precedencia de
+// decisión por componente": a matecito-ai dev build is skipped regardless of
+// how it differs from the latest release, the skip is scoped to matecito-ai
+// only, and it takes precedence over PayloadChanged/Pending so no other
+// update reason can override it.
+func TestDecide_MatecitoAIDevBuild(t *testing.T) {
+	cases := []struct {
+		name string
+		s    ComponentState
+		want ActionKind
+	}{
+		{
+			name: "dev build skipped even though latest differs",
+			s:    ComponentState{Name: "matecito-ai", Present: true, CurrentVersion: "0.1.0-dev", LatestVersion: "v0.2.0"},
+			want: ActionSkip,
+		},
+		{
+			name: "non-dev build still updates normally (existing behavior intact)",
+			s:    ComponentState{Name: "matecito-ai", Present: true, CurrentVersion: "0.1.0", LatestVersion: "v0.2.0"},
+			want: ActionUpdate,
+		},
+		{
+			name: "v-prefix-only difference still treated as equal and skipped",
+			s:    ComponentState{Name: "matecito-ai", Present: true, CurrentVersion: "v0.2.0", LatestVersion: "0.2.0"},
+			want: ActionSkip,
+		},
+		{
+			name: "unknown latest version skips regardless of dev build",
+			s:    ComponentState{Name: "matecito-ai", Present: true, CurrentVersion: "0.1.0", Unknown: true},
+			want: ActionSkip,
+		},
+		{
+			name: "dev build skip has precedence over PayloadChanged/Pending",
+			s:    ComponentState{Name: "matecito-ai", Present: true, CurrentVersion: "0.1.0-dev", LatestVersion: "v0.2.0", PayloadChanged: true, Pending: true},
+			want: ActionSkip,
+		},
+		{
+			name: "the skip is scoped to matecito-ai: another component with a dev-build-shaped version updates normally",
+			s:    ComponentState{Name: "engram", Present: true, CurrentVersion: "0.1.0-dev", LatestVersion: "v0.2.0"},
+			want: ActionUpdate,
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := decide(tc.s); got != tc.want {
+				t.Errorf("decide(%+v) = %v, want %v", tc.s, got, tc.want)
+			}
+		})
+	}
+}
+
+// TestPlanSync_MatecitoAIDevBuild_DoesNotBlockOtherComponents verifies the
+// Requirement scenario "el dev build no frena a los demás": a matecito-ai dev
+// build is planned as skip while another out-of-date component in the same
+// run is still planned as update.
+func TestPlanSync_MatecitoAIDevBuild_DoesNotBlockOtherComponents(t *testing.T) {
+	states := []ComponentState{
+		{Name: "matecito-ai", Present: true, CurrentVersion: "0.1.0-dev", LatestVersion: "v0.2.0"},
+		{Name: "engram", Present: true, CurrentVersion: "0.1.0", LatestVersion: "v0.2.0"},
+	}
+
+	actions := PlanSync(states)
+
+	want := map[string]ActionKind{"matecito-ai": ActionSkip, "engram": ActionUpdate}
+	for _, a := range actions {
+		if a.Kind != want[a.Component] {
+			t.Errorf("PlanSync: %s = %v, want %v", a.Component, a.Kind, want[a.Component])
+		}
+	}
+}
+
 // TestPayloadChanged verifies the Requirement "El plan informa si hay trabajo
 // pendiente": a payload with ONLY orphans left to sweep (New=Changed=0,
 // Removed>0) counts as changed exactly like one with new or changed files.

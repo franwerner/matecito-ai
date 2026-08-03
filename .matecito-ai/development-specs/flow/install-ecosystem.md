@@ -44,7 +44,7 @@ Dejar la máquina de la persona con todo el ecosistema puesto y al día en un so
 ## Reglas de negocio
 
 - La detección del estado se hace **una sola vez** por corrida y se reutiliza para ejecutar: no se vuelve a consultar el estado remoto entre el plan y la ejecución.
-- El verbo del plan lo determina el estado del componente: ausente → *instalar*; presente pero desactualizado, con payload cambiado o con reconciliación pendiente → *actualizar*.
+- El verbo del plan lo determina el estado del componente: ausente → *instalar*; presente pero desactualizado, con payload cambiado o con reconciliación pendiente → *actualizar*. **`matecito-ai` instalado como dev build MUST NOT aparecer con verbo *actualizar* ni ser reemplazado durante la ejecución.**
 - La confirmación acepta como afirmativas `y`, `yes`, `s`, `si` y `sí`, sin distinguir mayúsculas; **cualquier otra respuesta, o el cierre de la entrada, cancela**.
 - Una vez confirmado en este comando, el motor de sincronización no vuelve a preguntar: la confirmación ocurre una sola vez por corrida.
 - El error de salida se propaga **envuelto**, conservando la causa original de cada componente fallado y nombrándolos a todos. El detalle por componente ya se mostró durante la ejecución; el error final dice cuáles fallaron, no vuelve a explicarlos.
@@ -89,6 +89,12 @@ Dejar la máquina de la persona con todo el ecosistema puesto y al día en un so
 - **GIVEN** un entorno donde todo está presente y al día
 - **WHEN** la persona corre `matecito-ai install`
 - **THEN** el sistema informa que no hay nada para hacer y termina sin plan, sin confirmación y sin cambios
+
+### Scenario: la corrida no reemplaza el dev build
+
+- **GIVEN** `matecito-ai` instalado como dev build y una release distinta disponible
+- **WHEN** la persona corre `matecito-ai install -y`
+- **THEN** el binario dev sigue en su lugar y los demás componentes se ejecutan normalmente
 
 ### Scenario: un componente falla y la corrida sigue
 
