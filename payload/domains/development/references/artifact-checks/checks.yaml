@@ -1,0 +1,148 @@
+# matecito-ai: mechanical rubric checks shared by `development-decisions-validate` (store: edr) and
+# `development-spec-validate` (store: capability-spec). Read by validate-artifact.js's check engine —
+# never by a human. Each row under `checks:` is data: a `kind` the engine already knows how to
+# evaluate, aimed at one store. Adding a check of an EXISTING kind is one row here, no code change
+# (the ratchet); a check no existing kind covers is what grows this file's `checks:` list AND the
+# engine — see `README.md` → "El ratchet" for the full rule and why the 19 kinds below are closed.
+#
+# `severity_map` only translates for display — `error|warning|nota` -> `CRITICAL|WARNING|SUGGESTION`.
+# Exit-code policy is the script's, fixed by its CLI contract; it is not derived from this map.
+#
+# `message` is always a single quoted line: `scripts/lib/yaml.js` has no block scalars. `{placeholder}`
+# slots are filled by the engine from the finding's context (the file, the slug, the glob that stopped
+# matching, ...) — never nest a `"` inside a message; use backticks for emphasis instead.
+
+severity_map: { error: CRITICAL, warning: WARNING, nota: SUGGESTION }
+
+stores:
+  edr:
+    root: ".matecito-ai/edr"
+    contract: "edr.yaml"
+    folders: [structure, runtime, data, observability, security, contracts, delivery, frontend, quality, lifecycle, integration, privacy, release, domain-logic, compliance, ux-product]
+    # Legal inside the store, outside its closed taxonomy — today only `tech/` (mini-EDRs per concrete
+    # technology, see `references/edr/templates/tech-edr.md`). Not a taxonomy domain: `folder-taxonomy`
+    # never flags it, and no other check treats it as one of the 16 domains above.
+    extra_folders: [tech]
+    # Canonical slug -> domain map. `location-by-slug` uses it to catch an EDR materialized in the
+    # wrong domain folder now that the domain comes from the path, not from a `Dominio:` header field.
+    slug_domains:
+      architecture-style: structure
+      layers-and-dependencies: structure
+      inter-layer-communication: structure
+      folder-structure: structure
+      error-handling: runtime
+      concurrency-async: runtime
+      background-jobs: runtime
+      resilience: runtime
+      caching: runtime
+      data-access: data
+      data-modeling: data
+      logging: observability
+      metrics: observability
+      tracing: observability
+      health-checks: observability
+      auth: security
+      authorization: security
+      input-validation: security
+      rate-limiting: security
+      cors: security
+      secrets-management: security
+      dependency-scanning: security
+      api-contract: contracts
+      cli-contract: contracts
+      library-contract: contracts
+      event-contract: contracts
+      configuration: delivery
+      dependency-injection: delivery
+      testing-strategy: delivery
+      arch-enforcement: delivery
+      ci-quality-gates: delivery
+      deployment-topology: delivery
+      documentation: delivery
+      feature-flags: delivery
+      accessibility: frontend
+      nfr-performance: quality
+      scalability: quality
+      i18n-l10n: quality
+  capability-spec:
+    root: ".matecito-ai/development-specs"
+    contract: "capability.yaml"
+    folders: [flow, rule, lifecycle, process]
+    extra_folders: []
+    # Sections that must carry content in an `Accepted` spec of this type — `skeleton-sections` below.
+    skeleton:
+      flow: ["## Flujo principal", "## Errores de cara al actor", "## Escenarios"]
+      rule: ["## Reglas de negocio", "## Escenarios"]
+      lifecycle: ["## Entidades y estados", "## Escenarios"]
+      process: ["## Flujo principal", "## Reglas de negocio", "## Escenarios"]
+
+checks:
+  # --- section-non-empty (4) -------------------------------------------------
+  - { kind: section-non-empty, store: edr, code: "edr.section-non-empty.decision", when_status: [Accepted], section: "## Decisión", severity: warning, message: "{file}: la sección `Decisión` está vacía pero Status es Accepted — completala o revisá si hay algo decidido." }
+  - { kind: section-non-empty, store: edr, code: "edr.section-non-empty.reason", when_status: [Pending, Deferred], section: "## Razón de omisión / aplazamiento", severity: warning, message: "{file}: Status es {status} pero la sección `Razón de omisión / aplazamiento` está vacía — falta el trigger o el motivo." }
+  - { kind: section-non-empty, store: edr, code: "edr.section-non-empty.reglas", when_status: [Accepted], section: "## Reglas verificables", severity: warning, message: "{file}: la sección `Reglas verificables` está presente pero vacía — completala con las reglas que la decisión impone, u omití la sección entera." }
+  - { kind: section-non-empty, store: capability-spec, code: "capability-spec.section-non-empty.escenarios", when_status: [Accepted], section: "## Escenarios", severity: warning, message: "{file}: Status es Accepted pero la sección `Escenarios` está vacía — sin escenarios, el comportamiento no es verificable." }
+
+  # --- section-required-when (1) ---------------------------------------------
+  - { kind: section-required-when, store: edr, code: "edr.section-required-when.alcance-estructural", when_status: [Accepted], when_domain_in: [structure], section: "## Alcance", severity: nota, message: "{file}: EDR estructural Accepted sin sección `Alcance` — una decisión espacial sin globs no es verificable; considerá agregarlos." }
+
+  # --- section-set-symmetry (1) ----------------------------------------------
+  - { kind: section-set-symmetry, store: edr, code: "edr.section-set-symmetry.alternativas-consecuencias", when_status: [Accepted], sections: ["## Alternativas consideradas", "## Consecuencias"], severity: nota, message: "{file}: tiene una de `Alternativas consideradas` / `Consecuencias` con contenido y la otra vacía — si hubo alternativas que evaluar, hay trade-offs que anotar (y viceversa)." }
+
+  # --- section-minimum (1) ----------------------------------------------------
+  - { kind: section-minimum, store: edr, code: "edr.section-minimum.solo-contexto-decision", when_status: [Accepted], required_any: ["## Alcance", "## Reglas verificables", "## Alternativas consideradas", "## Consecuencias"], severity: nota, message: "{file}: Accepted con solo `Contexto` y `Decisión` — no ancla nada ni registra trade-off; revisá si decidió algo o es prosa." }
+
+  # --- bullet-prefix (1) -------------------------------------------------------
+  - { kind: bullet-prefix, store: edr, code: "edr.bullet-prefix.regla-sin-marca", section: "## Reglas verificables", prefix_any: ["**[auto]**", "**[manual]**"], severity: nota, message: "{file}: una regla bajo `Reglas verificables` no arranca con `[auto]` o `[manual]` — no queda claro si hay algo automático cuidándola." }
+
+  # --- legacy-status (1) --------------------------------------------------------
+  - { kind: legacy-status, store: edr, code: "edr.legacy-status.superseded", header: "Status", value: "Superseded", severity: warning, message: "{file}: Status es Superseded — status deprecado; el humano decide si borrar el registro o dejarlo Accepted." }
+
+  # --- scenario-shape (1) --------------------------------------------------------
+  - { kind: scenario-shape, store: capability-spec, code: "capability-spec.scenario-shape.given-when-then", section: "## Escenarios", requires_shape: [GIVEN, WHEN, THEN], severity: warning, message: "{file}: un escenario bajo `Escenarios` no tiene GIVEN, WHEN o THEN completos." }
+
+  # --- skeleton-sections (4, one per capability-spec type) ---------------------
+  - { kind: skeleton-sections, store: capability-spec, code: "capability-spec.skeleton-sections.flow", type: flow, when_status: [Accepted], sections: ["## Flujo principal", "## Errores de cara al actor", "## Escenarios"], severity: warning, message: "{file}: spec `flow` Accepted sin contenido en {section}, una de sus secciones esqueleto." }
+  - { kind: skeleton-sections, store: capability-spec, code: "capability-spec.skeleton-sections.rule", type: rule, when_status: [Accepted], sections: ["## Reglas de negocio", "## Escenarios"], severity: warning, message: "{file}: spec `rule` Accepted sin contenido en {section}, una de sus secciones esqueleto." }
+  - { kind: skeleton-sections, store: capability-spec, code: "capability-spec.skeleton-sections.lifecycle", type: lifecycle, when_status: [Accepted], sections: ["## Entidades y estados", "## Escenarios"], severity: warning, message: "{file}: spec `lifecycle` Accepted sin contenido en {section}, una de sus secciones esqueleto." }
+  - { kind: skeleton-sections, store: capability-spec, code: "capability-spec.skeleton-sections.process", type: process, when_status: [Accepted], sections: ["## Flujo principal", "## Reglas de negocio", "## Escenarios"], severity: warning, message: "{file}: spec `process` Accepted sin contenido en {section}, una de sus secciones esqueleto." }
+
+  # --- header-in-set (1) ---------------------------------------------------------
+  - { kind: header-in-set, store: capability-spec, code: "capability-spec.header-in-set.components", header: "Components", requires: [config], severity: warning, message: "{file}: la línea `Components:` lista `{value}`, fuera del set declarado en repo.components — ¿typo, o un componente que se dejó de declarar?" }
+
+  # --- header-required-when-source (1) -------------------------------------------
+  - { kind: header-required-when-source, store: capability-spec, code: "capability-spec.header-required-when-source.components", header: "Components", requires: [config], severity: warning, message: "{file}: no tiene la línea `Components:` mientras el eje está declarado en repo.components — falta asignarle componente." }
+
+  # --- glob-drift (1) ----------------------------------------------------------
+  - { kind: glob-drift, store: edr, code: "edr.glob-drift.alcance", section: "## Alcance", requires: [root], severity: warning, message: "{file}: el glob `{glob}` de `Alcance` no matchea ningún archivo del repo — drift: el código se movió o la decisión quedó obsoleta." }
+
+  # --- folder-taxonomy (2, one per store) ---------------------------------------
+  - { kind: folder-taxonomy, store: edr, code: "edr.folder-taxonomy.carpeta-no-canonica", severity: error, message: "{folder}: carpeta bajo .matecito-ai/edr/ que no es un dominio canónico ni `tech/` — la taxonomía es cerrada." }
+  - { kind: folder-taxonomy, store: capability-spec, code: "capability-spec.folder-taxonomy.carpeta-no-canonica", severity: error, message: "{folder}: carpeta bajo .matecito-ai/development-specs/ que no es un tipo canónico (flow/rule/lifecycle/process) — la taxonomía es cerrada." }
+
+  # --- index-sync (4: file<->folder-index and folder<->root-index, per store) --
+  - { kind: index-sync, store: edr, code: "edr.index-sync.file", level: file, severity: warning, message: "{slug}: EDR-archivo y fila en `{domain}/INDEX.md` desincronizados — uno existe sin el otro." }
+  - { kind: index-sync, store: edr, code: "edr.index-sync.root", level: root, severity: warning, message: "{domain}: dominio (con INDEX.md) y fila en el índice raíz desincronizados — uno existe sin el otro." }
+  - { kind: index-sync, store: capability-spec, code: "capability-spec.index-sync.file", level: file, severity: warning, message: "{capability}: spec-archivo y fila en `{type}/INDEX.md` desincronizados — uno existe sin el otro." }
+  - { kind: index-sync, store: capability-spec, code: "capability-spec.index-sync.root", level: root, severity: warning, message: "{type}: tipo (con INDEX.md) y fila en el índice raíz desincronizados — uno existe sin el otro." }
+
+  # --- location-by-slug (1) -------------------------------------------------------
+  - { kind: location-by-slug, store: edr, code: "edr.location-by-slug.carpeta-equivocada", severity: warning, message: "{file}: el slug `{slug}` corresponde al dominio `{expected_domain}` según el catálogo, pero el archivo vive en `{folder}`." }
+
+  # --- dangling-link (3) -----------------------------------------------------------
+  - { kind: dangling-link, store: capability-spec, code: "capability-spec.dangling-link.referencias", section: "## Referencias", target_store: edr, severity: error, message: "{file}: un link bajo `Referencias` apunta a `{href}`, que no existe en .matecito-ai/edr/ — referencia colgada." }
+  - { kind: dangling-link, store: capability-spec, code: "capability-spec.dangling-link.reemplazado-por", field: replaced_by, when_status: [Deprecated], target_store: capability-spec, severity: error, message: "{file}: Deprecated con `Reemplazado por` apuntando a `{href}`, que no existe — referencia colgada." }
+  - { kind: dangling-link, store: edr, code: "edr.dangling-link.relacionados", section: "## Relacionados", target_store: edr, severity: error, message: "{file}: un link bajo `Relacionados` apunta a `{href}`, que no existe — referencia colgada." }
+
+  # --- orphan-folder (2, one per store) -------------------------------------------
+  - { kind: orphan-folder, store: edr, code: "edr.orphan-folder.dominio-vacio", severity: nota, message: "{domain}: dominio con INDEX.md pero ningún EDR — carpeta vacía en la salida; limpiá la carpeta o el índice." }
+  - { kind: orphan-folder, store: capability-spec, code: "capability-spec.orphan-folder.tipo-vacio", severity: nota, message: "{type}: tipo con INDEX.md pero ningún spec — carpeta vacía en la salida; limpiá la carpeta o el índice." }
+
+  # --- inbound-reference-count (1) --------------------------------------------------
+  - { kind: inbound-reference-count, store: capability-spec, code: "capability-spec.inbound-reference-count.rule-lifecycle-unico", applies_to_types: [rule, lifecycle], referenced_by_types: [flow, process], min_referrers: 2, severity: warning, message: "{capability}: {type} referenciado por un solo flow/process ({referrer}) — por el tie-breaker de reuso debería vivir dentro de ese spec, no como capability aparte." }
+
+  # --- deprecated-referenced (1) -----------------------------------------------------
+  - { kind: deprecated-referenced, store: capability-spec, code: "capability-spec.deprecated-referenced.todavia-vigente", when_status: [Deprecated], severity: error, message: "{file}: Deprecated pero todavía referenciado como vigente por {referrer} — actualizá la referencia o marcá el link." }
+
+  # --- store-uniqueness (1) --------------------------------------------------------
+  - { kind: store-uniqueness, store: capability-spec, code: "capability-spec.store-uniqueness.fuera-de-raiz", requires: [root], severity: error, message: ".matecito-ai/development-specs/ no es la única carpeta de ese nombre en el repo — encontrada también en `{path}`. El store nunca se parte por app." }

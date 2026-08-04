@@ -1,0 +1,94 @@
+# matecito-ai: shape of a single EDR file (`.matecito-ai/edr/<domain>/<slug>.md`) plus the rows it
+# contributes to its domain and root INDEX. Read by render-artifact.js (data -> body, data -> index
+# rows) and validate-artifact.js (one written file -> findings). Meaning and the "why" of each field
+# live in `edr.md`, the canonical template this contract mirrors — this file only fixes the
+# machine-checkable shape, so it must stay faithful to `edr.md`, not to a header field it never
+# declares. The domain an EDR belongs to comes from its path (`<domain>/<slug>.md`), never from a
+# `Dominio:` header line — that drift is closed by the `location-by-slug` check (slug -> canonical
+# domain, from the catalog in `references/artifact-checks/checks.yaml`), not by adding a field here.
+
+artifact: edr
+path: ".matecito-ai/edr/{domain}/{slug}.md"
+title: "# EDR — {title}"
+location: [domain, slug]
+statuses: [Inferred, Accepted, Pending, Deferred]
+
+header:
+  - { label: Status, field: status, emitted: always }
+  - { label: Date, field: date, emitted: always }
+  - { label: Applied pattern, field: applied_pattern, emitted: when-present }
+
+sections:
+  # Present on every status, but the Inferred invariant forces it empty regardless of what a
+  # producer supplies — mine never infers the why, and the contract is what enforces that, not
+  # the caller's discipline (see the spec's "Conditional content is contract-driven" requirement).
+  - title: "## Contexto"
+    emitted: always
+    render: prose
+    field: contexto
+    empty_on: [Inferred]
+  - title: "## Decisión"
+    emitted: on-status
+    statuses: [Accepted, Inferred]
+    render: prose
+    field: decision
+    empty_on: [Inferred]
+  # Replaces "## Decisión" when the status itself IS the reason nothing was decided yet.
+  - title: "## Razón de omisión / aplazamiento"
+    emitted: on-status
+    statuses: [Pending, Deferred]
+    render: prose
+    field: reason
+    lead: "**Status:** {status}"
+  - title: "## Evidencia (inferida)"
+    emitted: on-status
+    statuses: [Inferred]
+    render: labeled-bullets
+    bullets:
+      - { label: kind, field: evidencia.kind }
+      - { label: observado, field: evidencia.observado }
+      - { label: prevalencia, field: evidencia.prevalencia, emitted: when-present }
+  - title: "## Alcance"
+    emitted: when-present
+    render: bullets
+    field: alcance
+    format: "- `{glob}` — {description}"
+  - title: "## Reglas verificables"
+    emitted: on-status
+    statuses: [Accepted]
+    render: bullets
+    field: reglas
+    format: "- **[{mechanism}]** {rule}"
+  - title: "## Alternativas consideradas"
+    emitted: on-status
+    statuses: [Accepted]
+    render: prose
+    field: alternativas
+  - title: "## Consecuencias"
+    emitted: on-status
+    statuses: [Accepted]
+    render: prose
+    field: consecuencias
+  - title: "## Relacionados"
+    emitted: when-present
+    render: bullets
+    field: relacionados
+    format: "- `{kind}` → [{path}]({path}) — {desc}"
+
+# The caller applies these rows — the renderer never writes. `row` and `file` are always derived
+# from --data, never supplied directly (see `--schema`). The root row is per-domain, not per-EDR:
+# several EDRs materialized in one batch collapse to the same key, so "update the root INDEX once
+# at the end" is the caller deduping by `key`, not a rule it has to remember separately.
+index_entries:
+  - index: domain
+    file: ".matecito-ai/edr/{domain}/INDEX.md"
+    key: slug
+    section: "## EDRs en este dominio"
+    scaffold: "index-domain.md"
+    row: "| [{slug}.md]({slug}.md) | {status} | {trigger} |"
+  - index: root
+    file: ".matecito-ai/edr/INDEX.md"
+    key: domain
+    section: "## Dominios de este proyecto"
+    scaffold: "index-root.md"
+    row: "| `{domain}` | {domain_blurb} | [{domain}/INDEX.md]({domain}/INDEX.md) |"

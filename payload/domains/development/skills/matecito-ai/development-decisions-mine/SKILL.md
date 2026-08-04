@@ -75,7 +75,7 @@ Opciones de confirm: `accept-all` / por ítem / `none`.
 
 ### Paso 3: Materialize (thread principal — solo post-confirm)
 
-Para cada candidato aceptado/editado, el thread principal escribe el EDR con `Status: Inferred` usando `~/.claude/references/edr/templates/edr.md` (READ-ONLY). Ver "Materialización" más abajo.
+Para cada candidato aceptado/editado, el thread principal arma `--data` y delega el cuerpo y las filas de INDEX del EDR (`Status: Inferred`) a `~/.claude/scripts/render-artifact.js --type edr`. Ver "Materialización" más abajo.
 
 ---
 
@@ -207,17 +207,60 @@ El ejecutor es `scope → candidates[]` y NO escala por sí mismo; el escalado l
 
 ## Materialización de un EDR Inferred
 
-Después del confirm en el gate, para cada candidato aceptado:
+Después del confirm en el gate, para cada candidato aceptado el thread principal construye
+`--data` y **delega el cuerpo y las filas de INDEX al renderer** — nunca los compone a mano. El
+cuerpo y el INDEX salen del mismo `--data`, así que no pueden divergir.
 
-1. Leer `~/.claude/references/edr/templates/edr.md` (READ-ONLY).
-2. Completar el header: `Status: Inferred`, `Date: <hoy>`.
-3. Dejar `## Contexto`, `## Decisión`, `## Consecuencias`, `## Alternativas consideradas` **vacíos** (el humano los completa al promover a Accepted). Mine no simula el porqué: los identificadores observados van a `## Evidencia (inferida)` / `## Alcance`, nunca a un razonamiento redactado (ver `~/.claude/references/edr/README.md` → "Dónde va cada nombre").
-4. Llenar `## Evidencia (inferida)` con `kind`, `observado`, `prevalencia` (si aplica para el kind).
-5. Para `estructural`/`patrón`: llenar `## Alcance` con `proposedAlcanceGlobs`.
-6. Omitir `## Reglas verificables` (solo Accepted).
-7. Escribir en `.matecito-ai/edr/<proposedDomain>/<proposedSlug>.md`.
-8. Si la carpeta del dominio no existía: `mkdir -p .matecito-ai/edr/<proposedDomain>` y crear `INDEX.md` mínimo para el dominio.
-9. Actualizar `.matecito-ai/edr/INDEX.md` con la entrada del nuevo EDR.
+### 1. Adaptar el candidato a `--data` (el adaptador vive acá, no en el renderer)
+
+El renderer es neutral al productor: los nombres de campo son los `field:` que declara
+`~/.claude/references/edr/templates/edr.yaml` (consultable con `--schema`, ver más abajo), no algo
+que este candidato inventa. Mapeo candidato → `--data`:
+
+| Campo del candidato | Campo de `--data` |
+|---|---|
+| (fijo) | `status: "Inferred"`, `date: <hoy>` |
+| `proposedDomain` | `domain` |
+| `proposedSlug` | `slug` |
+| `proposedSlug` humanizado | `title` |
+| `kind` | `evidencia.kind` |
+| `observado` | `evidencia.observado` |
+| `prevalencia` | `evidencia.prevalencia` — omitir la clave entera si el `kind` no la trae (`config`/`ausencia`), nunca mandar `null` |
+| `proposedAlcanceGlobs` | `alcance: [{ glob, description }]` — un item por glob; `description` es el mismo `observado` (mine no redacta una descripción distinta por glob) |
+| `concern` / `proposedSlug` | `trigger` — una frase corta ("antes de tocar `<...>`") para la fila del índice de dominio |
+| `proposedDomain` (vía el catálogo de dominios de bootstrap, Paso 1) | `domain_blurb` — la línea del dominio en el catálogo; si es un dominio custom (`concern: null`), una frase corta a partir de lo observado |
+
+**No pases** `contexto`, `decision`, `consecuencias`, `alternativas` ni `reglas` — el contrato los
+deja vacíos u omitidos para `Status: Inferred` **por sí mismo** (es contract-driven, no depende de
+que el caller se abstenga); mandarlos no cambia el resultado y solo agrega ruido al `--data`.
+
+### 2. Invocar el renderer — dos invocaciones, mismo `--data`
+
+```
+node ~/.claude/scripts/render-artifact.js --type edr --data <data.json>                  # cuerpo → stdout
+node ~/.claude/scripts/render-artifact.js --type edr --data <data.json> --index-entries  # filas → stdout (JSON)
+```
+
+Un exit distinto de 0 en cualquiera de las dos es un candidato mal armado — no se escribe nada para
+ese candidato. El mensaje de stderr nombra el campo que falta o es inválido; corregí el `--data` a
+partir de ahí y reintentá (`--schema` imprime la forma completa si hace falta releerla). Nunca
+compongas el cuerpo a mano para "salvar" un candidato que el renderer rechazó: es exactamente lo que
+este script existe para impedir.
+
+### 3. Escribir — el thread principal, nunca el executor
+
+7. Escribir el **stdout de la primera invocación**, verbatim, en `.matecito-ai/edr/<domain>/<slug>.md`.
+8. Para cada entrada de `--index-entries`: si su `file` no existe, instanciarlo desde su `scaffold`
+   (`~/.claude/references/edr/templates/<scaffold>`) antes de aplicar la fila. Esto cubre tanto un
+   dominio nuevo (`index-domain.md`) como el índice **raíz** si todavía no existe —
+   `.matecito-ai/edr/INDEX.md` puede faltar aunque el store ya tenga otros dominios (por ejemplo,
+   solo `tech/`); el chequeo es "¿existe el archivo?", nunca "¿existe algo bajo `.matecito-ai/edr/`?".
+9. Aplicar la fila (`entry.row`) bajo `entry.section`, keyed por `entry.key`: reemplazá una fila
+   existente con la misma key (re-run / drift), agregá si no existe. La entrada `index: domain` se
+   aplica por cada candidato materializado; la entrada `index: root` se **acumula por `key`
+   (dominio) y se aplica una sola vez al final del batch** — varios EDRs nuevos en el mismo dominio
+   colapsan a la misma fila raíz, así que "actualizar el INDEX raíz una sola vez" es deduplicar por
+   key al final, no una cuenta aparte que llevar durante el batch.
 
 ---
 

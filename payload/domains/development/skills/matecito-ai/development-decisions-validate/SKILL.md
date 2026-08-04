@@ -20,11 +20,23 @@ La taxonomía es fija (la misma que impone `development-decisions-bootstrap`):
 **Activos:** `structure` · `runtime` · `data` · `observability` · `security` · `contracts` · `delivery` · `frontend` · `quality`
 **Reservados:** `lifecycle` · `integration` · `privacy` · `release` · `domain-logic` · `compliance` · `ux-product`
 
-Cualquier carpeta bajo `.matecito-ai/edr/` que no sea uno de estos dominios (ni `tech/`) es un hallazgo de integridad de taxonomía.
+Cualquier carpeta bajo `.matecito-ai/edr/` que no sea uno de estos dominios (ni `tech/`) es un hallazgo de integridad de taxonomía — lo detecta el motor mecánico (`folder-taxonomy` en `checks.yaml`), no vos; ver "Motor mecánico" más abajo.
 
 ## Pre-flight
 
 Leé `.matecito-ai/edr/INDEX.md`. Si no existe, no hay nada que validar → sugerí correr `development-decisions-bootstrap` y frená.
+
+## Motor mecánico (`validate-artifact.js`)
+
+La mitad mecánica de la rúbrica —presencia/vacío de sección, sincronía de índices, taxonomía de carpetas, links colgados, drift de `## Alcance`, status deprecado, ubicación por slug— vive en `~/.claude/references/artifact-checks/checks.yaml` y la evalúa el motor. **No la re-derives**: invocá el script e ingerí su salida tal cual.
+
+```
+node ~/.claude/scripts/validate-artifact.js --type edr --store .matecito-ai/edr --root <raíz del repo>
+```
+
+`--root` no tiene default — pasalo siempre con la raíz real del repo (no `.matecito-ai/edr`). Si algún chequeo resuelto lo necesita y falta, el script sale con exit 2 nombrando cuáles; en ese caso no hay JSON que ingerir, solo el mensaje en stderr.
+
+La salida es un único JSON (`findings[]`, `counts`, `skipped[]`). Cada `finding` ya trae `severity` **y** `display` (`CRITICAL`/`WARNING`/`SUGGESTION`) — **imprimí el `display` que recibís, no lo traduzcas ni lo re-deduzcas**. `skipped[]` puede traer chequeos no evaluados por falta de `.matecito-ai/config.json`/`repo.components` bajo `--root`; mencionalos en el reporte, no los silencies.
 
 ## Proceso
 
@@ -34,13 +46,14 @@ Leé `.matecito-ai/edr/INDEX.md`. Si no existe, no hay nada que validar → suge
    - Si el bootstrap te lanzó, usá la lista de fases relevantes que te pasó.
    - Si corrés standalone y podés acceder al catálogo `concerns/INDEX.md` de `development-decisions-bootstrap`, usalo.
    - Si no tenés ninguna de las dos, marcá completitud como "no verificable" y seguí con el resto (que solo necesita los EDRs).
-   - **EDRs con `Status: Inferred` NO son decisiones cerradas:** no los contés en el total de decisiones tomadas para el chequeo de completitud (no satisfacen la preocupación), y no reportes como defecto las secciones WHY/Consecuencias/Reglas vacías (se espera que estén vacías). Sí considerá `## Alcance` como ancla de drift (verificá que los globs sigan matcheando).
-4. **Leé `coherence-rules.md`** (en esta misma skill) y aplicá cada chequeo. Cada regla indica el/los dominio(s) donde viven los EDRs involucrados, así sabés qué archivos abrir.
-5. **Emití el reporte** agrupado por dominio y, dentro de cada dominio, por severidad.
+   - **EDRs con `Status: Inferred` NO son decisiones cerradas:** no los contés en el total de decisiones tomadas para el chequeo de completitud (no satisfacen la preocupación), y no reportes como defecto las secciones WHY/Consecuencias/Reglas vacías (se espera que estén vacías). Sí considerá `## Alcance` como ancla de drift (verificá que los globs sigan matcheando) — este último ya lo cubre el motor mecánico (`glob-drift`); no lo repitas a mano.
+4. **Corré el motor mecánico** (ver arriba) e ingerí su JSON.
+5. **Leé `coherence-rules.md`** (en esta misma skill, ya recortada a lo semántico) y aplicá cada chequeo restante sobre los EDRs. Cada regla indica el/los dominio(s) donde viven los EDRs involucrados, así sabés qué archivos abrir.
+6. **Emití el reporte** combinando los `findings` del motor (con su `display` tal cual) y los hallazgos semánticos, agrupado por dominio y, dentro de cada dominio, por severidad.
 
 ## Resolución de archivos por dominio
 
-La rúbrica nombra los EDRs por su slug (`auth`, `layers-and-dependencies`, etc.). Para abrir el archivo, el dominio está en la tabla de mapeo de `coherence-rules.md` o en el campo `Dominio:` del encabezado del propio EDR. Ej: `auth` → `.matecito-ai/edr/security/auth.md`.
+La rúbrica nombra los EDRs por su slug (`auth`, `layers-and-dependencies`, etc.). El dominio de un EDR sale de la carpeta donde vive (`<dominio>/<slug>.md`) — el template canónico no tiene campo `Dominio:` en el header. Para localizar el archivo de un slug nombrado en `coherence-rules.md`, usá su tabla de mapeo. Ej: `auth` → `.matecito-ai/edr/security/auth.md`. Un EDR cuya carpeta no corresponde a ese mapeo es un hallazgo del motor mecánico (`location-by-slug`), no algo que detectes vos.
 
 Las contradicciones **entre dominios** (ej: `privacy` vs `lifecycle`) requieren abrir EDRs de carpetas distintas — usá el mapeo para localizarlos.
 
@@ -83,4 +96,6 @@ Si un dominio no tiene ningún hallazgo, no lo listes. Si NO hay hallazgos en ni
 - ❌ Modificar o arreglar EDRs vos mismo → solo reportás; el usuario decide y resuelve vía update.
 - ❌ Reportar todo como CRITICAL → reservá CRITICAL para lo que rompe la arquitectura; usá WARNING/SUGGESTION para el resto.
 - ❌ Buscar EDRs con glob plano (`.matecito-ai/edr/*.md`) → los EDRs están en subcarpetas de dominio; recorré recursivo.
-- ❌ Ignorar carpetas no canónicas o mismatches `domain`/carpeta → son hallazgos de integridad de taxonomía, repórtalos.
+- ❌ Ignorar carpetas no canónicas o EDRs en el dominio equivocado según el catálogo slug→dominio → son hallazgos de integridad/ubicación que el motor mecánico ya detecta (`folder-taxonomy`, `location-by-slug`); repórtalos, no los descartes.
+- ❌ Re-derivar a mano un chequeo que ya cubre el motor mecánico (sincronía de índices, taxonomía de carpetas, links colgados, drift de `## Alcance`, secciones vacías, status deprecado, ubicación por slug) → invocá `validate-artifact.js` e ingerí su JSON; no lo dupliques leyendo los archivos vos mismo.
+- ❌ Traducir o re-clasificar la `severity`/`display` que devuelve el motor → imprimí el `display` recibido tal cual.

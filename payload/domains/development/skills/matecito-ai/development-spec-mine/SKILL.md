@@ -72,7 +72,7 @@ Opciones de confirm: `accept-all` / por ítem / `none`.
 
 ### Paso 3: Materialize (thread principal — solo post-confirm)
 
-Para cada candidato aceptado/editado, el thread principal escribe el capability-spec con `Status: Inferred` usando `~/.claude/references/spec/templates/capability.md` (READ-ONLY). Ver "Materialización" más abajo.
+Para cada candidato aceptado/editado, el thread principal arma `--data` y delega el cuerpo y las filas de INDEX del capability-spec (`Status: Inferred`) a `~/.claude/scripts/render-artifact.js --type capability-spec`. Ver "Materialización" más abajo.
 
 ---
 
@@ -169,17 +169,60 @@ El ejecutor es `scope → candidates[]` y NO escala por sí mismo; el escalado l
 
 ## Materialización de un capability-spec Inferred
 
-Después del confirm en el gate, para cada candidato aceptado:
+Después del confirm en el gate, para cada candidato aceptado el thread principal construye
+`--data` y **delega el cuerpo y las filas de INDEX al renderer** — nunca los compone a mano. El
+cuerpo y el INDEX salen del mismo `--data`, así que no pueden divergir.
 
-1. Leer `~/.claude/references/spec/templates/capability.md` (READ-ONLY).
-2. Completar el header: `Status: Inferred`, `Date: <hoy>`.
-3. Llenar la sección esqueleto de su `proposedType` (según la tabla del Paso 3 del executor) con `observado` + la evidencia observada.
-4. Si hubo `test-assertion` que corroboró el candidato: llenar `## Escenarios` con `proposedScenarios` (el Given/When/Then parseado del test).
-5. Si `repo.components` está declarado y el candidato trae `proposedComponents` (no vacío): escribir la línea `- **Components:** <componente>, ...`. Si `proposedComponents` vino vacío (ningún `paths` declarada matcheó el archivo escaneado), **no escribir la línea** — no inventar un componente por descarte.
-6. Dejar `## Propósito`, `## Actores`, `## Precondiciones`, y las secciones no-esqueleto de su tipo (`Ramas`, `Casos borde`, `Errores de cara al actor`, `Referencias`) **sin completar u omitidas** salvo que la evidencia observada las sustente directamente — mine no inventa contexto que no vio. El humano las completa/corrige al ratificar (`development-spec-bootstrap` modo update, caso "Ratificar un Inferred").
-7. Escribir en `.matecito-ai/development-specs/<proposedType>/<proposedCapability>.md`.
-8. Si la carpeta del tipo no existía: `mkdir -p .matecito-ai/development-specs/<proposedType>` y crear `INDEX.md` mínimo para el tipo.
-9. Actualizar `.matecito-ai/development-specs/INDEX.md` (raíz) y `.matecito-ai/development-specs/<proposedType>/INDEX.md` con la entrada del nuevo spec.
+### 1. Adaptar el candidato a `--data` (el adaptador vive acá, no en el renderer)
+
+El renderer es neutral al productor: los nombres de campo son los `field:` que declara
+`~/.claude/references/spec/templates/capability.yaml` (consultable con `--schema`, ver más abajo).
+A diferencia del EDR, ninguna sección del capability-spec está gateada por `Status` — todas son
+`when-present`, así que el adaptador simplemente **no incluye la clave** de lo que no observó
+(nunca manda `""` ni `[]` para simular una ausencia; la clave omitida es lo que hace que el
+renderer omita la sección entera, no una vacía). Mapeo candidato → `--data`:
+
+| Campo del candidato | Campo de `--data` |
+|---|---|
+| (fijo) | `status: "Inferred"`, `date: <hoy>` |
+| `proposedType` | `type` |
+| `proposedCapability` | `capability` |
+| `proposedCapability` humanizado | `title` |
+| `observado` (según la tabla del Paso 3 del executor: `route-handler`/`event-handler` → `flujo`; `validation` → `reglas_negocio`; `state-machine` → `entidades`) | la clave de la sección esqueleto de su `proposedType` |
+| `proposedScenarios` (solo si hubo `test-assertion` que corroboró) | `escenarios: [{ name, given, when, then }]` |
+| `proposedComponents` — **solo si no vino vacío** (gate presence-based; ver "`proposedComponents`" arriba) | `components` — si `proposedComponents` vino vacío o el campo no existe, **no incluir la clave** en absoluto; el renderer ya omite la línea `Components` cuando falta, así que el adaptador no necesita lógica propia para "no escribir la línea" |
+
+**No pases** `proposito`, `actores`, `precondiciones`, ni las secciones no-esqueleto de su tipo
+(`ramas`, `casos_borde`, `errores`, `referencias`) salvo que la evidencia observada las sustente
+directamente — mine no inventa contexto que no vio. Si no las pasás, el renderer las omite por sí
+mismo (when-present); no hace falta que el adaptador simule la ausencia. El humano las
+completa/corrige al ratificar (`development-spec-bootstrap` modo update, caso "Ratificar un
+Inferred").
+
+### 2. Invocar el renderer — dos invocaciones, mismo `--data`
+
+```
+node ~/.claude/scripts/render-artifact.js --type capability-spec --data <data.json>                  # cuerpo → stdout
+node ~/.claude/scripts/render-artifact.js --type capability-spec --data <data.json> --index-entries  # filas → stdout (JSON)
+```
+
+Un exit distinto de 0 en cualquiera de las dos es un candidato mal armado — no se escribe nada para
+ese candidato. El mensaje de stderr nombra el campo que falta o es inválido; corregí el `--data` a
+partir de ahí y reintentá (`--schema` imprime la forma completa si hace falta releerla). Nunca
+compongas el cuerpo a mano para "salvar" un candidato que el renderer rechazó.
+
+### 3. Escribir — el thread principal, nunca el executor
+
+7. Escribir el **stdout de la primera invocación**, verbatim, en `.matecito-ai/development-specs/<type>/<capability>.md`.
+8. Para cada entrada de `--index-entries`: si su `file` no existe, instanciarlo desde su `scaffold`
+   (`~/.claude/references/spec/templates/<scaffold>`) antes de aplicar la fila. Esto cubre tanto un
+   tipo nuevo (`index-type.md`) como el índice raíz si hiciera falta (en este store ya existe hoy,
+   pero el chequeo es siempre "¿existe el archivo?", nunca "¿existe el store?").
+9. Aplicar la fila (`entry.row`) bajo `entry.section`, keyed por `entry.key`: reemplazá una fila
+   existente con la misma key (re-run / drift), agregá si no existe. La entrada `index: type` se
+   aplica por cada candidato materializado; la entrada `index: root` se **acumula por `key` (tipo)
+   y se aplica una sola vez al final del batch** — varios specs nuevos del mismo tipo colapsan a la
+   misma fila raíz.
 
 ---
 

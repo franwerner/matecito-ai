@@ -2,6 +2,8 @@
 
 Lista central de chequeos que aplica `development-decisions-validate`. Es **ratchet-able**: cuando aparece una contradicción nueva, se agrega acá y queda cubierta para siempre.
 
+Retiene solo la mitad **semántica** de la rúbrica: contradicción de significado, lenguaje vago, identificadores volátiles, anotaciones de edición inline, completitud-por-concern y `Not Applicable` sin razón — nada de eso es decidible por inspección estructural. La mitad **mecánica** (presencia/vacío de sección, sincronía de índices, taxonomía de carpetas, links colgados, drift de `## Alcance`, status deprecado) vive en `~/.claude/references/artifact-checks/checks.yaml` y la evalúa `~/.claude/scripts/validate-artifact.js --type edr --store .matecito-ai/edr`; esta skill invoca ese script e ingiere su JSON en vez de re-derivar esos chequeos — ver `SKILL.md`.
+
 ## Cómo la lee el validador
 
 Cada chequeo tiene: **severidad** (CRITICAL / WARNING / SUGGESTION), una **condición** evaluada sobre los EDRs, el/los **dominio(s)** donde viven los EDRs involucrados (para localizar los archivos), y un **mensaje** (qué/por qué/sugerencia). El validador evalúa las condiciones contra `.matecito-ai/edr/<dominio>/` y reporta las que se cumplen.
@@ -35,16 +37,10 @@ Dominios reservados (aparecen solo si el proyecto los pobló vía ratchet): `lif
 
 ### Higiene de status
 
-- **[WARNING]** EDR `Accepted` sin sección "Decisión" con contenido concreto.
-- **[WARNING]** EDR `Pending` o `Deferred` sin razón ni trigger.
-- **[WARNING]** EDR con `Status: Superseded`. Ese status está deprecado — es un hallazgo de migración: el usuario borra el registro si ya no aplica, o lo deja `Accepted` si sigue vigente. El validador solo reporta; nunca borra ni modifica el archivo.
 - **[WARNING]** EDR `Not Applicable` sin razón.
-- **[SUGGESTION]** EDR `Accepted` con "Alternativas consideradas" con contenido pero sin "Consecuencias", o al revés → asimetría: si hubo alternativas que evaluar, hay trade-offs que anotar (y viceversa).
-- **[SUGGESTION]** EDR `Accepted` que solo tiene "Contexto" y "Decisión" — sin `Alcance`, `Reglas verificables`, "Alternativas consideradas" ni "Consecuencias" → no ancla nada ni registra trade-off; revisar si decidió algo o es prosa.
 
 ### Verificabilidad
 
-- **[WARNING]** EDR `Accepted` con la sección `## Reglas verificables` **presente pero vacía** (sin ítems, o solo el comentario del template) → completala con las reglas que la decisión impone, u omití la sección entera. Una sección abierta y vacía no declara nada. *(Omitirla es legítimo: hay decisiones que no se pueden violar en silencio — una elección de tecnología aparece en el manifest.)*
 - **[WARNING]** `layers-and-dependencies` `Accepted` con reglas en prosa vaga en vez de globs/paths verificables.
 - **[SUGGESTION]** Lenguaje vago ("tratá de no", "en lo posible", "idealmente", "evitar cuando se pueda") en las reglas de un EDR `Accepted`.
 
@@ -52,19 +48,6 @@ Dominios reservados (aparecen solo si el proyecto los pobló vía ratchet): `lif
 
 - **[WARNING]** Una sección de razonamiento (`Contexto` / `Decisión` / `Consecuencias` / `Alternativas consideradas`) de un EDR `Accepted` nombra **identificadores internos volátiles**: método/función (`camelCase(...)`), columna/campo de base de datos, clase interna (`*Error`, `*Service`, `*Repository`, entidad), ruta de archivo (`src/…`) o enum interno — que NO son nombre de tecnología/librería ni contrato público (endpoint, header, código de error expuesto). El razonamiento calca el código y se pudre con el primer rename. Reubicar a `## Alcance` (glob estable) o `## Reglas verificables` (ancla chequeable), o reformular en concepto. *(Heurística: backticks con identificadores tipo código en la prosa del razonamiento. El MISMO nombre en `## Reglas verificables` / `## Alcance` / `## Evidencia (inferida)` es correcto — ahí es el ancla, no un hallazgo. En `Inferred` estas secciones están vacías, así que no aplica.)* Ver `~/.claude/references/edr/README.md` → "Dónde va cada nombre".
 - **[WARNING]** Un EDR tiene **anotaciones de edición inline** en la prosa — "(actualizada `<fecha>`)", "(renombrado …)", "(por REFACTOR/Fase N)" — o ancla el razonamiento a **nombres de planificación efímeros** (slices, tickets, fases de roadmap, milestones). Es un EDR-como-changelog: la evolución la lleva git, no parches entre paréntesis; el Contexto expresa el condicionante conceptual, no cómo se llamaba el trabajo que lo trajo. Editar el EDR en el lugar y quitar la anotación inline.
-
-### Integridad de la taxonomía
-
-- **[CRITICAL]** Existe una carpeta bajo `.matecito-ai/edr/` que no es un dominio canónico ni `tech/`. La taxonomía es cerrada; un dominio nuevo es decisión de catálogo, no de proyecto.
-- **[WARNING]** El campo `Dominio:` del encabezado de un EDR no coincide con la carpeta en la que está el archivo. Mover el EDR a su carpeta correcta o corregir el campo.
-- **[WARNING]** Un EDR está listado en el índice raíz (`.matecito-ai/edr/INDEX.md`) pero su dominio no tiene `INDEX.md`, o viceversa (índice de dominio sin entrada en el raíz). Índices desincronizados.
-- **[SUGGESTION]** Un dominio tiene `INDEX.md` pero ningún EDR (carpeta de dominio vacía en la salida). Limpiar la carpeta o el índice.
-
-### Trazabilidad a código (sección `Alcance`)
-
-- **[WARNING]** Un EDR con sección `Alcance` cuyos globs no matchean ningún archivo del repo → drift: el código se movió o la decisión quedó obsoleta. *(Requiere acceso al árbol de archivos del proyecto; si no está disponible, marcar como "no verificable".)*
-- **[SUGGESTION]** Un EDR estructural (`structure` / `folder-structure` / `layers-and-dependencies`) `Accepted` sin sección `Alcance` → una decisión espacial sin globs de alcance no es verificable; considerar agregarlos.
-- **[SUGGESTION]** Una regla bajo "Reglas verificables" sin marca de cobertura al inicio (`[auto]` o `[manual]`) → no queda claro si hay algo automático cuidándola; agregar la marca.
 
 ---
 

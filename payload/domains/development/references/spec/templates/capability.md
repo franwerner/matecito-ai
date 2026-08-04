@@ -73,7 +73,7 @@
 
 <!-- Opcional. Links al EDR que gobierna el CÓMO de un comportamiento y al proposal/PRD que da el contexto de negocio. El spec no repite el contenido del EDR; lo linkea. Omitir si no hay. -->
 
-- **EDR** → [`../edr/<dominio>/<slug>.md`](../edr/<dominio>/<slug>.md) — <qué decisión gobierna este comportamiento>.
+- **EDR** → [`../../edr/<dominio>/<slug>.md`](../../edr/<dominio>/<slug>.md) — <qué decisión gobierna este comportamiento>.
 - **Contexto de negocio** → <PRD / proposal / fuente>.
 
 <!--

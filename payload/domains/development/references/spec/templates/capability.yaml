@@ -1,0 +1,89 @@
+# matecito-ai: shape of a single capability-spec file
+# (`.matecito-ai/development-specs/<type>/<capability>.md`) plus the rows it contributes to its
+# type and root INDEX. Read by render-artifact.js and validate-artifact.js. Meaning and the "why"
+# of each field live in `capability.md`, the canonical template this contract mirrors.
+#
+# Unlike the EDR, no section here is gated by Status — the four types share one template and each
+# only fills the sections its skeleton needs (see `references/spec/README.md`), so every body
+# section is `when-present`: omitted when the producer has nothing to say, never emptied. Status
+# only governs the "Reemplazado por" header line, which exists solely for Deprecated.
+
+artifact: capability-spec
+path: ".matecito-ai/development-specs/{type}/{capability}.md"
+title: "# Capability — {title}"
+location: [type, capability]
+statuses: [Inferred, Draft, Accepted, Deprecated]
+
+header:
+  - { label: Status, field: status, emitted: always }
+  - { label: Date, field: date, emitted: always }
+  - { label: Components, field: components, emitted: when-present }
+  - { label: "Reemplazado por", field: replaced_by, emitted: on-status, statuses: [Deprecated], format: "[{capability}.md]({capability}.md)" }
+
+sections:
+  - title: "## Propósito"
+    emitted: when-present
+    render: prose
+    field: proposito
+  - title: "## Actores"
+    emitted: when-present
+    render: bullets
+    field: actores
+  - title: "## Precondiciones"
+    emitted: when-present
+    render: bullets
+    field: precondiciones
+  - title: "## Flujo principal"
+    emitted: when-present
+    render: numbered
+    field: flujo
+  - title: "## Ramas / flujos alternativos"
+    emitted: when-present
+    render: bullets
+    field: ramas
+    format: "- **{condicion}** → {resultado}."
+  - title: "## Casos borde"
+    emitted: when-present
+    render: bullets
+    field: casos_borde
+    format: "- **{situacion}** → {comportamiento}."
+  - title: "## Reglas de negocio"
+    emitted: when-present
+    render: bullets
+    field: reglas_negocio
+  - title: "## Entidades y estados"
+    emitted: when-present
+    render: bullets
+    field: entidades
+    format: "- **{entidad}** — {descripcion}. Estados: {estados}."
+  - title: "## Errores de cara al actor"
+    emitted: when-present
+    render: bullets
+    field: errores
+    format: "- **{situacion}** → {respuesta}."
+  - title: "## Escenarios"
+    emitted: when-present
+    render: scenarios
+    field: escenarios
+  - title: "## Referencias"
+    emitted: when-present
+    render: bullets
+    field: referencias
+    format: "- **{label}** → {ref}."
+
+# Same caller-writes, renderer-never-writes discipline as the EDR contract. The type row is per
+# capability; the root row is per type, deduped by the caller across a batch of several capabilities
+# landing in the same type.
+index_entries:
+  - index: type
+    file: ".matecito-ai/development-specs/{type}/INDEX.md"
+    key: capability
+    section: "## Capacidades"
+    scaffold: "index-type.md"
+    row: "| `{capability}` | {blurb} | {status} | [`{capability}.md`]({capability}.md) |"
+  - index: root
+    file: ".matecito-ai/development-specs/INDEX.md"
+    key: type
+    section: "## Tipos de este proyecto"
+    scaffold: "index-root.md"
+    row: "| `{type}` | {type_blurb} | [{type}/INDEX.md]({type}/INDEX.md) |"
