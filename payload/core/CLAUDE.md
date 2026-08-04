@@ -390,10 +390,17 @@ This trigger has **two distinct confirmation moments**, do not conflate them: (1
 On the first flow request (or natural-language "do a flow for X") in a session, ASK execution mode:
 
 <!-- matecito-ai: "show final result only" contradecía el párrafo de abajo ("only skips the between-phase checkpoint") y se leía como licencia para no surfacear nada hasta el final -->
-- **Automatic** (`auto`): phases run back-to-back, skipping the between-phase checkpoint. This does NOT mean "show the final result only": gates, guards and hard-stops still surface and still wait — see the paragraph below.
+<!-- matecito-ai: la restricción "auto no empieza antes del intake" ya estaba en el INTAKE GATE y en la
+     Discovery Gate del dominio, pero NO acá — que es el único punto donde el usuario ve la opción y la
+     elige. Elegía `auto` esperando que corriera desde la primera fase, y las preguntas de discovery se
+     leían como que el modo no se estaba respetando. La restricción va donde se ofrece, no sólo donde se
+     aplica. -->
+- **Automatic** (`auto`): **from the INTAKE GATE onward**, phases run back-to-back, skipping the between-phase checkpoint. It does NOT start at the first phase, and it does NOT mean "show the final result only": gates, guards and hard-stops still surface and still wait — see the paragraph below.
 - **Interactive** (`interactive`, DEFAULT): after each phase, show summary and ask "¿Continuamos?" before the next.
 
 Cache the choice for the session.
+
+**Automatic governs the flow only once the INTAKE GATE has resolved.** Everything up to that point — the domain's discovery cycle and the confirmation of the brief — runs **interactively in every mode**, because until the user confirms the brief there is no agreed scope for an unattended run to execute against. Say this when you offer the choice: a mode presented as running the whole flow unattended, that then stops to ask the discovery questions, reads as the mode being ignored.
 
 In Interactive mode, between phases: show what the phase produced, list what's next, ask "¿Continuamos?" (YES/NO/feedback), incorporate feedback before continuing.
 
