@@ -46,11 +46,13 @@ function parseScalar(raw) {
   return v;
 }
 
-// Commas inside quotes are data, not separators.
+// Commas inside quotes or inside a nested `[...]` / `{...}` are data, not separators: a row like
+// `{ kind: x, values: [a, b] }` splits into three broken pairs when only quotes are tracked.
 function splitInline(s) {
   const out = [];
   let cur = '';
   let quote = null;
+  let depth = 0;
   for (const c of s) {
     if (quote) {
       cur += c;
@@ -58,7 +60,9 @@ function splitInline(s) {
       continue;
     }
     if (c === '"' || c === "'") { quote = c; cur += c; continue; }
-    if (c === ',') { out.push(cur); cur = ''; continue; }
+    if (c === '[' || c === '{') depth += 1;
+    else if (c === ']' || c === '}') depth -= 1;
+    else if (c === ',' && depth === 0) { out.push(cur); cur = ''; continue; }
     cur += c;
   }
   out.push(cur);
