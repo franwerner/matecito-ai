@@ -25,10 +25,23 @@ The vocabulary of the `Result` column in the Spec Compliance Matrix:
 - ❌ `FAILING`: covering test exists but failed.
 - ❌ `UNTESTED`: no covering test found.
 - ⚠️ `PARTIAL`: test passes but covers only part of the scenario.
+- ➖ `OUT-OF-SCOPE — {token}`: the scenario carries a `verification: deferred → <change>` or
+  `standing → <owner>` token (canonical definition: `~/.claude/references/spec/README.md`). Inline the
+  token verbatim in the cell — e.g. `➖ OUT-OF-SCOPE — deferred → auth-redesign` — so the owner of that
+  verification stays visible without opening another artifact.
 
 A scenario is `COMPLIANT` only when a covering test **passed at runtime**. Static inspection alone
 never yields `COMPLIANT` — that evidence belongs in the Correctness (Static Evidence) table, which is
 not a compliance verdict.
+
+<!-- matecito-ai: verification-scope-token. This paragraph owns the denominator rule; the token's own
+     form and semantics stay in `~/.claude/references/spec/README.md` — not restated here. -->
+`OUT-OF-SCOPE` is never a substitute for a real result: a `deferred`/`standing` scenario whose test ran
+and failed is `FAILING`, not `OUT-OF-SCOPE` — the token exempts missing coverage, never a negative
+outcome. The **Compliance summary** (`{N}/{total} scenarios compliant`) counts only `in-scope`
+scenarios in `{total}`: an `OUT-OF-SCOPE` row neither inflates nor dilutes it, and stays visible in the
+matrix with its token. A scenario with no `verification:` line is `in-scope` and classifies with the
+other four values, unchanged.
 
 <!-- matecito-ai: acá vive el SIGNIFICADO de las celdas, y las de coherencia de diseño no lo tenían.
      Sin esto, la columna `Verifiable per apply` del template es un dato suelto: se ve, pero nadie dice
@@ -97,6 +110,26 @@ The vocabulary of the `### Coherence (Capability-Specs)` table. Same reason for 
   for ➖.
 - `Notes` — for a divergence, the accumulated behavior the code does not honor. For a ➖ row, why it was
   skipped (non-ratified draft).
+
+<!-- matecito-ai: el resultado estructural (paso 6e) no lleva tabla propia a propósito. Es por store, no
+     por capability, así que una fila por spec repetiría el mismo dato; y lo que este reporte necesita
+     no es el detalle —el JSON del motor ya lo tiene— sino la constancia de que el chequeo corrió, que
+     es justamente lo que faltaba cuando un merge mal formado pasó tres verificaciones seguidas. -->
+Below the table, one line records the outcome of the **structural** validation (Execution Step 6e), so
+that "clean" and "never ran" stop looking the same: the command that ran, and the pre-existing finding
+counts by severity. Findings on a capability-spec **this change touched** never live here — they are
+this change's own and go under `### Issues Found` with the mapped severity. This line carries only what
+the store already owed before the change, and it never pushes the verdict.
+
+<!-- matecito-ai: verification-scope-token. This paragraph is the 6d-scoped counterpart of the OUT-OF-SCOPE
+     paragraph above; the token's own form and semantics stay in `~/.claude/references/spec/README.md`. -->
+A scenario inside an `Accepted` spec that carries a `verification: deferred → <change>` or
+`standing → <owner>` token (canonical definition: `~/.claude/references/spec/README.md`) does not, by
+itself, make the row `❌ Diverged` — its behavior is intentionally absent (`deferred`) or verified by
+exercising its owner's flow (`standing`), not by this change. Cite the token verbatim in `Notes`; the
+row still reads `✅ Yes` unless some other scenario in the same spec genuinely diverges, or that same
+token-carrying scenario's behavior was directly exercised and failed — the token exempts missing
+coverage, never a negative result.
 
 **The asymmetry with EDRs is deliberate and load-bearing.** An `Inferred` EDR is enforced; an `Inferred`
 capability-spec is not — it is a pending-ratification draft, never a contract, and can never produce a

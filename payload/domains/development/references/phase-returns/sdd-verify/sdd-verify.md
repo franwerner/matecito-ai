@@ -157,6 +157,18 @@ absence.}
 | `<type>/<capability>.md` | Accepted | ❌ Diverged | CRITICAL | {the accumulated behavior the code does not honor} |
 | `<type>/<capability>.md` | Inferred | ➖ Not checked | — | non-ratified draft — never a contract |
 
+<!-- matecito-ai: la línea estructural va acá, dentro de la sección, y no como sección propia: es por
+     store y no por capability, así que una tabla repetiría el mismo dato en cada fila. Existe para que
+     "limpio" y "no corrió" dejen de ser indistinguibles — que es como un merge mal formado pasó tres
+     verificaciones seguidas. -->
+{Structural validation (Execution Step 6e) — one line, emitted whenever that step ran; omitted when the
+change declares no New or Modified capabilities. The command, and the PRE-EXISTING finding counts by
+severity. Findings on a capability-spec this change touched do NOT appear here: they are this change's
+own and go to `### Issues Found`.}
+
+`validate-artifact.js --type capability-spec`: {N} error / {M} warning / {K} nota, ninguno sobre los
+archivos de este cambio.
+
 {Strict TDD only: insert here the sections of `## Report Template Extension` from
 `~/.claude/skills/sdd-verify/strict-tdd-verify.md`. Outside Strict TDD, nothing goes here.}
 

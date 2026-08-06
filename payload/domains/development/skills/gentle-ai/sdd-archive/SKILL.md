@@ -50,10 +50,44 @@ Read the change's delta spec from Engram (`sdd/{change-name}/spec`). For each ca
 <!-- matecito-ai: these seven bullets were in Spanish inside an English body. Translated without changing
      the instruction. The template section names (`## Escenarios`, Flujo/Ramas/…) are deliberately left
      in Spanish: they are literal titles of files that are written in Spanish, not prose. -->
-- **New capability** (the file does not exist) → create it from `capability.md`, classifying its `<type>` (`flow`/`rule`/`lifecycle`/`process`); fill its sections from the delta's `ADDED Requirements` (one scenario per `#### Scenario`).
-- **ADDED** → add the new scenarios and update the affected prose sections (Flujo/Ramas/Casos borde/Reglas/Estados/Errores) to reflect the new behavior.
-- **MODIFIED** → replace the scenario that changed and adjust the affected prose. PRESERVE every scenario and section the delta does not mention.
+<!-- matecito-ai: verification-scope-token, fourth closing pass. Three rounds in a row fixed the drift the
+     previous round found and hardened the wording to protect exactly that spot — the token's backticks,
+     then a path citation and an accent in scenario bodies — and each time the NEXT round found a new drift
+     in a part the wording never named (this time: the Purpose paragraph's own prose, "capability" retyped
+     as "capacidad"). Enumerating protected parts was the recurring defect, not which parts got named. The
+     fix is at the mechanism: the default is COPY for everything that crosses the delta → durable boundary,
+     and only what archive itself legitimately generates (because the delta never wrote it) is named as the
+     exception. -->
+- **Default: copy, don't recompose.** Any prose the delta already writes out in full, that crosses into
+  the durable spec, is carried by reproducing the delta's characters — never by re-typing, re-describing,
+  translating, re-flowing, or "correcting" it (an accent, a term, a citation, a parenthetical: none of
+  those are yours to touch while merging). This is the default for the **whole document** on that
+  boundary, not a named set of protected parts — it covers the `## Purpose`/`## Propósito` paragraph,
+  every scenario's `GIVEN`/`WHEN`/`THEN` body (including a `verification:` token line and its inline
+  Markdown markup — backticks, bold, italics — around the token's value), and any other sentence the
+  delta already wrote out in full. The verb is **copy**, not reproduce or preserve: you are moving
+  characters, not restating an idea in your own words.
+  The only content this default does NOT bind is what archive itself legitimately generates or
+  transforms because the delta never wrote it out in the first place: the file's `Status`/`Date`/
+  `Components` header, a **new** capability's `Actores`/`Reglas de negocio`/`Entidades y estados`
+  sections synthesized from the delta's `Requirements` prose (there is no literal counterpart in the
+  delta to copy from), the `INDEX.md` entries, and — when the delta's `ADDED` or `MODIFIED`
+  requirement lands on an **existing** capability — the durable prose sections (`Flujo`/`Ramas`/
+  `Casos borde`/`Reglas`/`Estados`/`Errores`) that were **already in the file before this merge** and
+  that the new or changed scenario now makes stale: reading them, deciding whether they still hold,
+  and rewriting the ones that don't is synthesis, the same kind as the New-capability case, because
+  the delta carries no literal counterpart in that section's shape to copy from — only a scenario body
+  and/or `Requirements` prose to synthesize from. This fourth exception is scoped to that pre-existing
+  prose alone: anything the delta itself writes out in full — a new scenario's `GIVEN`/`WHEN`/`THEN`
+  body, a new sentence, a rewritten `Purpose` paragraph — is still copied by the general default, even
+  on the ADDED/MODIFIED path, exactly as in the New-capability case. Outside those four, copy.
+- **New capability** (the file does not exist) → create it from `capability.md`, classifying its `<type>` (`flow`/`rule`/`lifecycle`/`process`); fill its `## Escenarios` from the delta's `ADDED Requirements` (one scenario per `#### Scenario`, copied per the default above) and its surrounding `Actores`/`Reglas de negocio`/`Entidades y estados` by synthesis, per the exception above.
+- **ADDED** → add the new scenarios (copied per the default) and update the affected prose sections (Flujo/Ramas/Casos borde/Reglas/Estados/Errores) to reflect the new behavior — that update is the fourth exception above: only the pre-existing prose the new scenario makes stale, synthesized, never the scenario itself.
+- **MODIFIED** → replace the scenario that changed (copied per the default) and adjust the affected prose — same fourth exception: the adjustment is bound to pre-existing prose the change makes stale, not to the scenario, which is copied. PRESERVE every scenario and section the delta does not mention.
 - **REMOVED** → drop the removed scenario/behavior; if a capability is left with no behavior at all, mark its spec `Deprecated` (do not delete the file).
+<!-- matecito-ai: verification-scope-token. Canonical definition lives at `~/.claude/references/spec/README.md`
+     (deployed path) — this bullet cites it, it does not redefine the token's form or semantics. -->
+- **`verification:` token** (canonical definition: `~/.claude/references/spec/README.md`) → its line is bound by the copy default above like the rest of the scenario body it belongs to; what is specific to it is a precedence rule, not a text rule: do NOT reconcile the delta's token against the durable copy's — the delta is the source, so on a MODIFIED scenario the delta's token wins outright, unmerged, same as the rest of its content. A scenario with no token merges without one.
 - If the merge would be **destructive** (losing scenarios or sections the delta does not mention) → do NOT apply it: tell the orchestrator and ask for confirmation.
 - Update the `INDEX.md` of the affected type and the root index (`development-specs/INDEX.md`).
 - **Vocabulary:** write the durable spec in domain language + public contract; NEVER volatile internal identifiers (classes, methods, columns, routes, internal errors). The *how* belongs to the code; the *why* belongs to the EDR (link it under "Referencias").
@@ -99,6 +133,8 @@ What the return must CARRY (the template fixes how it looks): which durable capa
 - NEVER archive a change that has CRITICAL issues in its verification report
 - ALWAYS merge the delta into the durable capability-specs BEFORE persisting the archive report
 - When merging into an existing capability-spec, PRESERVE scenarios and sections not mentioned in the delta
+- ALWAYS copy — never retype, re-describe, translate, or "correct" — any prose the delta already writes out in full that crosses into the durable spec: this is the default for the whole document (the `Purpose`/`Propósito` paragraph, every scenario's `GIVEN`/`WHEN`/`THEN` body, any `verification:` token line and its inline Markdown markup), not a named set of protected parts. The only exceptions are content archive itself legitimately generates because the delta never wrote it — the `Status`/`Date`/`Components` header, a new capability's synthesized `Actores`/`Reglas de negocio`/`Entidades y estados`, the `INDEX.md` entries, and — on an ADDED/MODIFIED merge onto an **existing** capability — the pre-existing `Flujo`/`Ramas`/`Casos borde`/`Reglas`/`Estados`/`Errores` prose that the new or changed scenario makes stale (synthesized, the same way as the new-capability case). That fourth exception never extends to anything the delta itself writes out in full — a new or changed scenario body is still copied, never synthesized
+- A scenario's `verification:` token (definition: `~/.claude/references/spec/README.md`) is bound by the copy rule above like the rest of its body; its one extra rule is precedence, not text: never reconcile the delta's token against the durable copy's — the delta is the source, so on a MODIFIED scenario the delta's token wins outright, unmerged
 - If the merge would be destructive (dropping scenarios/sections not named in the delta), WARN the orchestrator and ask for confirmation
 - Durable capability-specs are files under `.matecito-ai/development-specs/`; the pipeline artifacts (proposal/spec/design/tasks/verify) stay in Engram — never write them to files
 - The archive is an AUDIT TRAIL — never delete or modify archived changes
