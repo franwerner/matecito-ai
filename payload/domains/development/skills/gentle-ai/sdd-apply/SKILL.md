@@ -52,12 +52,12 @@ Before writing ANY code:
 3. Read existing code in affected files — understand current patterns
 4. Check the project's coding conventions from `config.yaml`
 
-<!-- matecito-ai: EDRs + resolve-dependency-version + codegraph before implementing — START -->
+<!-- matecito-ai: EDRs + resolve-library-docs + codegraph before implementing — START -->
 5. **Read the applicable EDRs.** If `.matecito-ai/edr/` exists, the design's "EDR Alignment" section already lists the relevant EDRs. Read their **Reglas verificables** and treat them as hard constraints on your implementation (e.g. token TTLs, error format, validation location, layer dependencies). If the design flagged an EDR conflict or an uncaptured decision as a blocker, STOP and report — do not implement around it. If you capture or edit a decision into an EDR during apply, its reasoning (Contexto/Decisión/Consecuencias/Alternativas) follows the vocabulary rule — concepts, not volatile internal identifiers; those go in `## Alcance`/`## Reglas verificables` (see `~/.claude/references/edr/README.md` → "Dónde va cada nombre").
 6. **Use the available MCP tools while implementing:**
-   - **resolve-dependency-version** — before writing a version into a manifest, adding a dependency, or writing config/API code for a library or framework, **load the `resolve-dependency-version` skill and follow it**. It is the single source of truth for this (mandatory triggers, the `context7` MCP as the only version source, and the hard "not found → report and block, never guess" rule) — do not rely on a summary here or on your own memory of versions and APIs.
+   - **resolve-library-docs** — before writing a version into a manifest, adding a dependency, or writing config/API code for a library or framework, **load the `resolve-library-docs` skill and follow it**. It is the single source of truth for this (mandatory triggers, the `context7` MCP as the only version source, and the hard "not found → report and block, never guess" rule) — do not rely on a summary here or on your own memory of versions and APIs.
    - **codegraph** (only if `.codegraph/` exists) — before changing an existing symbol (function/class/method), ask the codegraph MCP for the impact/blast-radius of that symbol to see what else depends on it, so you don't break callers, and for its callers/callees to confirm call sites. For literal-text or non-indexed files, use grep as usual.
-<!-- matecito-ai: EDRs + resolve-dependency-version + codegraph before implementing — END -->
+<!-- matecito-ai: EDRs + resolve-library-docs + codegraph before implementing — END -->
 
 #### Step 2a: Enforce Review Workload Decision
 
@@ -139,10 +139,42 @@ FOR EACH TASK:
 ├── Does the design cover what this task needs?
 │   ├── No, and the gap is a DECISION → STOP this task (see "Stopping Mid-Batch" below)
 │   └── No, but it is execution detail → resolve it and note it
+├── Does this edit reach a point the confirmed artifacts do not fix?
+│   ├── No — an artifact fixes it → apply it · `mandate: covered`
+│   ├── Yes, but no alternative was valid and you can name the concrete constraint that closed the
+│   │   others → apply it · `mandate: forced` (see "Consulting an Unmandated Fork")
+│   └── Yes, and more than one resolution was valid → apply NONE of them; the fork travels back as
+│       a question (see "Consulting an Unmandated Fork")
 ├── Write the code
 ├── Mark task as complete [x] in the tasks artifact (Step 5)
 └── Note any issues or deviations (recording is not authorization — see Rules)
 ```
+
+#### Consulting an Unmandated Fork
+
+While executing a task inside your mandate, an edit can force a SECOND choice nobody agreed to — a
+fork the spec, design, tasks or an Accepted decision record does not fix. Test it before the edit
+lands, not after:
+
+- **An artifact fixes it.** Apply what it fixes — `mandate: covered`. No stop, no gate; this is the
+  ordinary case of following the design.
+- **No alternative was valid, and you can name what closed the others** — an upstream artifact, an
+  Accepted decision record, or what leaving the point untouched broke. Apply it — `mandate: forced`
+  — and report the constraint you named in `### Mandated Departures`. If you cannot name the
+  concrete constraint, you are not in this case: treat it as the next one.
+- **More than one resolution was valid.** Apply NONE of them. Leave the point untouched, keep its
+  task open in `### Remaining Tasks`, and record the fork in `### Unmandated Forks` as a question —
+  your recommendation, if you have one, travels with it, but no edit implementing it exists in the
+  repository.
+
+The test is agnostic to what kind of content the edit touches: whether a confirmed artifact fixes
+the point, and whether more than one resolution was valid. Do not narrow it to a category of
+content — whatever a list of categories omits reads as permitted.
+
+Consulting a fork does not by itself stop the rest of the batch: keep working the tasks that do not
+depend on it. Only when a fork (or anything else) leaves nothing legal to do on the batch does it
+escalate to `### Blocker` — and even then, `### Blocker` points at the fork item rather than
+restating it (see "One blocker, one place" in the return template).
 
 #### Stopping Mid-Batch (MANDATORY)
 
@@ -226,10 +258,10 @@ two different documents with different readers.
 When saving apply-progress:
 1. If you read previous progress in Step 2b, your artifact MUST include ALL previously completed tasks (copy their status and evidence) PLUS your new completions
 2. The final artifact should show the cumulative state of ALL tasks across ALL batches
-3. **`### Deviations from Design` goes in the artifact too**, with its `verify-checks:` tokens, merged across batches — `sdd-verify` reads that copy, never your return. Putting it only in the return means verify never sees it and every deviation defaults to CRITICAL
+3. **`### Unmandated Forks` and `### Mandated Departures` go in the artifact too**, with their `mandate:` and `verify-checks:` tokens, merged across batches — `sdd-verify` reads those copies, never your return. Putting them only in the return means verify never sees them and every deviation defaults to CRITICAL
 4. **`### UI Scenario Counterparts` goes in the artifact** (Step 6b below), cumulative across batches like everything else here
 
-<!-- matecito-ai: new obligation, and it exists because of who knows what. The spec authors UI scenarios
+<!-- matecito-ai: new obligation. The spec authors UI scenarios
      in domain language — it cannot name a route or an accessible name for a control that does not exist
      yet, and it must not pin them anyway (volatile implementation identifiers do not belong in a spec).
      YOU know them without guessing: you just wrote them. Before this split, `sdd-spec` had to author the
@@ -286,15 +318,16 @@ section because you have nothing to report: it ships with a `None…` sentinel.
 
 Three things the template expects you to already know from this skill:
 
-<!-- matecito-ai: el tier de este buzón y quién lo consume están fijados en Sección D.3 + el guard del
-     fragmento de dominio; acá no se re-declaran. Lo que SÍ es tuyo: marcar el impacto en verify,
+<!-- matecito-ai: el tier de estos buzones y quién los consume están fijados en Sección D.3 + el guard
+     del fragmento de dominio; acá no se re-declaran. Lo que SÍ es tuyo: marcar el impacto en verify,
      porque vos tenés el contexto del código escrito y el orquestador no. -->
-- `### Deviations from Design` carries every place the implementation departed from the design, and
-  why, each closing with the literal token `verify-checks: yes|no` (the template defines the exact
-  shape; a missing or hedged token is read as `yes`). The token says whether it
-  touches a spec requirement or a task `criteria:`. If it does, the design artifact is now stale and
-  verify will read the deviation as a mismatch. You are the only one who can tell; the orchestrator
-  cannot.
+- `### Unmandated Forks` and `### Mandated Departures` between them carry every place the
+  implementation departs from the design — a fork you did NOT apply in the first, a deviation you
+  DID apply in the second — each item closing with two literal tokens: `mandate: covered|forced|chosen`
+  (a missing or hedged token is read as `chosen`) then `verify-checks: yes|no` (a missing or hedged
+  token is read as `yes`). `verify-checks` says whether the deviation touches a spec requirement or a
+  task `criteria:`. If it does, the design artifact is now stale and verify will read the deviation
+  as a mismatch. You are the only one who can tell; the orchestrator cannot.
 - `### Issues Found` is for problems you did NOT stop on. The blocker never goes there — it goes in
   `### Blocker`, and only there (see "Stopping Mid-Batch").
 - The `**Mode**` line is what makes the TDD sections conditional: in Strict TDD Mode the evidence
@@ -305,13 +338,13 @@ Three things the template expects you to already know from this skill:
 
 - ALWAYS read specs before implementing — specs are your acceptance criteria
 - ALWAYS follow the design decisions — don't freelance a different approach
-<!-- matecito-ai: respect the EDRs listed in the design's EDR Alignment; load the `resolve-dependency-version` skill before writing library versions or APIs; ask the codegraph MCP for a symbol's impact before changing it (see Step 2) -->
+<!-- matecito-ai: respect the EDRs listed in the design's EDR Alignment; load the `resolve-library-docs` skill before writing library versions or APIs; ask the codegraph MCP for a symbol's impact before changing it (see Step 2) -->
 - ALWAYS respect the applicable EDRs (`.matecito-ai/edr/`) as hard constraints; if an EDR conflict/uncaptured decision was flagged as a blocker, STOP and report instead of coding around it
 <!-- matecito-ai: recordatorio apuntado — la doctrina completa vive en el fragmento del dominio (cargado en Step 1), no se duplica acá -->
 - **Before writing ANY contract or definition** — domain entity, DB model/migration/schema, DTO, public/exported type, interface or enum, event payload, or config schema — apply **"Contract & definition shapes — never inferred"** from the domain fragment (`~/.claude/matecito-ai/domains/development.md`, read in Step 1). Never infer which fields it has nor their types. Pinned-and-coherent → implement it; unspecified, or pinned by something that conflicts or does not cover this case → return `blocked` proposing the FULL contract as one reviewable unit
 - ALWAYS match existing code patterns and conventions in the project
 <!-- matecito-ai: la redacción anterior ("NOTE IT ... don't silently deviate") autorizaba desviarse mientras se avisara, negando el hard-stop del kernel. El corte detalle-vs-decisión evita el rebote de bloquear por minucias. -->
-- If you discover the design is wrong or incomplete **in something the task you are about to write needs**, STOP and return with the gap and the concrete options — `blocked` if it also stops the rest of the batch, otherwise `partial` because tasks remain (status rule in "Stopping Mid-Batch"); persist your completed work first. Do NOT implement your own version and note it afterwards — noting is not authorization. If the gap does not affect what you are writing, note it and continue. The cut is between **execution detail** (an internal variable name, guard ordering, how you split a private function) and **decision** (a contract, a new dependency, which layer the logic lives in, changing the design's approach) — the canonical criterion for what counts as a decision is in `~/.claude/references/edr/README.md`. Resolve the first; raise the second
+- If you discover the design is wrong or incomplete, or an edit reaches a point the confirmed artifacts do not fix, **in something the task you are about to write needs**, run the fork test from "Consulting an Unmandated Fork" before you write it. More than one valid resolution → do NOT apply any of them; return the fork as a question — `blocked` if it also stops the rest of the batch, otherwise `partial` because tasks remain (status rule in "Stopping Mid-Batch"); persist your completed work first. No valid alternative → apply it and name the concrete constraint in `### Mandated Departures`; if you cannot name it, you are back in the first case. Do NOT implement your own version and note it afterwards — noting is not authorization, and neither is a `forced` claim with no named constraint. If the gap does not affect what you are writing, resolve it as execution detail (an internal variable name, guard ordering, how you split a private function) and continue — no test, no report needed. The canonical criterion for what counts as a decision vs. execution detail is in `~/.claude/references/edr/README.md`
 - If a task is blocked by something unexpected, STOP and report back
 <!-- matecito-ai: el STOP vive dentro del loop; marcar tareas y persistir apply-progress son pasos
      POSTERIORES. Sin esta regla quedaban dos lecturas opuestas y ambas defendibles: cortar sin
