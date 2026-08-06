@@ -103,6 +103,10 @@ sdd-explore  sdd-propose  sdd-spec  sdd-design  sdd-tasks  sdd-apply  sdd-verify
 sdd-init  sdd-onboard
 ```
 
+Ninguna se invoca directamente: llevan `disable-model-invocation: true` y `user-invocable: false`, así
+que las carga el agente de su fase leyendo su ruta desplegada. `sdd-onboard` es la excepción sin salida
+— ningún agente la lee, así que hoy es material escrito sin vía de acceso.
+
 **De capacidad** (`matecito-ai/*`): técnicas transversales, no atadas a una fase.
 
 ```

@@ -6,7 +6,7 @@
 - **Date:** <YYYY-MM-DD>
 - **Components:** <componente>, <componente> <!-- solo si el proyecto declaró `repo.components`; omitir la línea entera si el eje no está activo -->
 
-<!-- Header mínimo a propósito: el TIPO y el slug ya están en la ruta del archivo (`<type>/<capability>.md`) — no se repiten como propiedad. El historial lo lleva git. `Date` es la fecha del comportamiento vigente, no la de la última edición. Si Status es Deprecated, agregar una línea `**Reemplazado por:** [<capability>.md](<capability>.md)`. `Components` es multivaluado y cada valor debe estar en el set declarado en `repo.components` (ver `~/.claude/references/spec/README.md` → "Eje `components`"); gate presence-based: sin ese eje declarado, no se escribe esta línea. -->
+<!-- Header mínimo a propósito: el TIPO y el slug ya están en la ruta del archivo (`<type>/<capability>.md`) — no se repiten como propiedad. El historial lo lleva git. `Date` es la fecha del comportamiento vigente, no la de la última edición. Si Status es Deprecated, agregar una línea `**Reemplazado por:** [<capability>.md](<capability>.md)`. `Components` es multivaluado y cada valor debe estar en el set declarado en `repo.components` (ver `~/.claude/references/repo-components/README.md` → "Declaración" y "Gate presence-based"); gate presence-based: sin ese eje declarado, no se escribe esta línea. -->
 
 <!-- VOCABULARIO (aplica a TODAS las secciones): se escribe en el idioma del dominio + contrato público (endpoints públicos, códigos de error expuestos). NUNCA identificadores internos volátiles: clases, métodos, columnas de base de datos, errores internos, rutas de archivo. El "cómo" es del código; el "por qué" es del EDR. Ver `~/.claude/references/spec/README.md`. -->
 
@@ -65,6 +65,11 @@
 
 ### Scenario: <nombre>
 
+<!-- La línea `verification:` es OPCIONAL y va primero, antes del GIVEN. Su ausencia significa
+     `in-scope`, así que un escenario sin ella no es un escenario sin marcar. Los valores y su
+     semántica los define `~/.claude/references/spec/README.md` → "El token `verification:` por
+     escenario"; este template la muestra, no la define. -->
+- **verification:** `deferred → <cambio>`
 - **GIVEN** <estado inicial>
 - **WHEN** <acción>
 - **THEN** <resultado observable esperado>

@@ -14,7 +14,7 @@
 | Mandatory base phases | `intake → spec → apply → verify → archive` |
 | Optional add-on phases | `explore`, `propose`, `design`, `tasks` |
 | Phase agents | `sdd-*` (`sdd-intake`, `sdd-explore`, …, `sdd-archive`) |
-| Phase commands | `/sdd-*` |
+| Phase dispatch | the orchestrator dispatches the phase agent — there are no `/sdd-*` commands (see "How a phase runs") |
 | Alignment artifact | `spec` |
 | Decision record | `EDR`, stored in `.matecito-ai/edr/` |
 | Decision-record concept reference | `~/.claude/references/edr/README.md` |
@@ -22,7 +22,7 @@
 | Decision-mining executor | `development-decisions-mine` |
 | Decision-capture skill | `development-decisions-bootstrap` |
 | Exploration index | CodeGraph (`mcp__codegraph__*`), active when `.codegraph/` exists |
-| Dependency version resolution | `resolve-dependency-version` skill, backed by the `context7` MCP — the sole choke point before any version is fixed into an EDR (bootstrap's "Versión" question, mine's close-of-scan second pass) |
+| Library docs resolution (version, config, API, migration, debugging) | `resolve-library-docs` skill, backed by the `context7` MCP — the sole choke point before any version is fixed into an EDR (bootstrap's "Versión" question, mine's close-of-scan second pass) |
 | Guards | `strict-tdd`, `review-workload` |
 | Engram topic-key namespace | `sdd-init/{project}` · `sdd/{project}/testing-capabilities` · `sdd/{change-name}/{intake,explore,proposal,spec,design,tasks,apply-progress,verify-report,archive-report}` |<!-- matecito-ai: `state` removed — a declared format with no instructed producer and no consumer; recovery goes through the phase artifacts themselves. `testing-capabilities` added: it was missing from the namespace despite two phases reading it. -->
 | Init topic key | `sdd-init/{project}` |
@@ -61,17 +61,21 @@ sdd-intake → sdd-explore → sdd-propose → sdd-spec → sdd-design → sdd-t
                                            (design reads EDRs)
 ```
 
-### Commands
+<!-- matecito-ai: esta sección listaba `/sdd-init`, `/sdd-intake`, … como comandos de usuario, y no
+     existen: no hay `~/.claude/commands/` en el deploy y las 11 skills `sdd-*` llevan
+     `disable-model-invocation: true` junto con `user-invocable: false`, que cierran las dos puertas.
+     Un usuario que tipeaba `/sdd-verify` no encontraba nada, y la lista además omitía cuatro fases
+     (propose, spec, design, tasks) siendo `spec` obligatoria. Lo que se documenta ahora es la vía que
+     realmente existe. -->
+### How a phase runs
 
-- `/sdd-init` → initialize SDD context; detects stack, bootstraps persistence
-- `/sdd-intake <request>` → structure a raw request into an Intake Brief (entry phase)
-- `/sdd-explore <topic>` → investigate; reads codebase, compares approaches
-- `/sdd-apply [change]` → implement tasks in batches
-- `/sdd-verify [change]` → validate against specs + EDRs
-- `/sdd-archive [change]` → close a change, persist final state in Engram
-- `/sdd-onboard` → guided end-to-end walkthrough
+There are no `/sdd-*` slash-commands: the phase skills are not user-invocable, and the model cannot
+self-invoke them either. A phase runs one way — **the orchestrator dispatches its agent** (`sdd-intake`,
+`sdd-spec`, …), and that agent reads its own method from `~/.claude/skills/<phase>/SKILL.md`.
 
-Meta-commands (orchestrator handles them): `/sdd-new <change>`, `/sdd-continue [change]`, `/sdd-ff <name>`.
+So you ask for the work in plain language ("arreglá X", "agregá Y"); the orchestrator resolves the lane
+at the INTAKE GATE and drives the pipeline from there. Naming a phase ("corré el verify", "seguimos con
+apply") is a request to dispatch that agent, not a command the harness resolves.
 
 ### SDD Phase Read/Write
 
@@ -100,9 +104,9 @@ The "Reads" column lists the **full-lane** ideal. In `reduced`/`custom` lanes so
      phases downstream acted on values nobody confirmed. -->
 ### Brief decision flags (confirmed at the INTAKE GATE)
 
-`sdd-intake` decides these two on the user's behalf and writes them into the brief under
-`### Classification`. The orchestrator surfaces both at the INTAKE GATE, by name, with their value and
-their one-line reason. **That gate is their only confirmation** — no phase re-asks, and each reader
+`sdd-intake` decides these on the user's behalf and writes them into the brief under
+`### Classification`. The orchestrator surfaces each at the INTAKE GATE, by name, with its value and
+its one-line reason. **That gate is their only confirmation** — no phase re-asks, and each reader
 treats an absent or unconfirmed flag as `not-needed` and closes **silently**, so a flag that slips
 through the gate is a check nobody notices was skipped.
 
@@ -110,9 +114,10 @@ through the gate is a check nobody notices was skipped.
 | --- | --- | --- | --- | --- |
 | `diagram` | `- Diagram: {needed\|not-needed}` | `sdd-intake` per the diagram inference test in `## Architecture diagrams (drawio)` above | `sdd-design` | Whether a **drawio** architecture diagram is warranted. `sdd-design` only NOTES the recommendation in its `executive_summary`; the main thread renders it live via `mcp__drawio__*`. Nothing is ever written to the repo. |
 | `ui-test` | `- UI test: {needed\|not-needed}` | `sdd-intake`, by keyword inference over the request (`browser`, `page`, `form`, `screen`, `visual`, `click`, `render`), overridable explicitly in the request | `sdd-spec`, `sdd-verify` | Whether UI verification via **proofshot** is warranted. `sdd-spec` authors the `ui-scenarios` block only when this is `needed`; `sdd-verify` runs the ProofShot session only when this is `needed` AND `uiTest.available = ✅`. |
+| `components` | `- Components: {name[, name...] \| unassigned}` | `sdd-intake`, by mapping the request's scope against `repo.components[].paths` | ninguno | Nothing — it is metadata for the person confirming the gate, not a phase input. **Presence-based, unlike the two above**: with no `repo.components` declared for the project the field does not exist and is never mentioned; declared, it is multivalued and always emitted (`unassigned` when no `paths` match — never omitted to mean "no match"). |
 
-Neither flag is executed by intake: it decides, others act. Adjusting one at the gate updates the
-brief like any other correction.
+None of these is executed by intake: it decides, others (or, for `components`, no one) act. Adjusting
+one at the gate updates the brief like any other correction.
 
 ## Guards
 
@@ -136,6 +141,26 @@ This gate sits BEFORE the INTAKE GATE and does not replace it: discovery answers
 ### Return Contract Check (MANDATORY)
 Before acting on ANY phase return — before the Unresolved Decisions Guard, before routing, before dispatching anything — validate it against that phase's template at `~/.claude/references/phase-returns/<phase>/<phase>.md`. That file is the canonical shape of the return, and matching is **literal**: a title that differs in wording, casing or heading level is a section you will not find, and a gate that will not fire.
 
+<!-- matecito-ai: los cuatro chequeos vivían sólo como prosa, y el motor que los ejecuta existía sin que
+     ninguna regla lo invocara: `validate-return.js` se autodescribe como el que hace que este check
+     "stop being a human reading and comparing titles by eye", y su nombre no aparecía en ningún `.md`
+     del dominio. Comparar títulos a ojo es exactamente el modo de falla que este guard vino a cerrar,
+     así que dejarlo en manos del ojo era el defecto reproduciéndose un nivel más arriba. -->
+**Run the mechanical engine first.** Write the phase's return block to a temp file and validate it:
+
+```
+node ~/.claude/scripts/validate-return.js --phase <phase> --status <status> --file <return.md>
+```
+
+Exit 0 → clean, move on to the guards. Exit 1 → it names the violated check with a code
+(`SECTION-MISSING`, `SECTION-RELEVELLED`, `SUMMARY-CONTRADICTS-BODY`, `TOKEN-WRONG-MAILBOX`, …); handle
+it per "When something fails" below. **Exit 2 means the validator could not run at all — surface that,
+never swallow it and never fall back to reading by eye silently**: a check that quietly stops running is
+indistinguishable from a check that passes, which is the failure this guard exists to prevent.
+
+The four checks below are the **specification** of what the engine enforces and what each finding means
+— read them to interpret a finding, not to perform the comparison by hand.
+
 Four checks:
 1. **Every unconditional section is present.** The template marks which ones are always emitted. A missing unconditional section is NOT "nothing to report" — the phase is required to emit it with a `None…` sentinel instead. A section the template marks conditional is legitimately absent when its condition does not hold.
 2. **The titles match the template**, including the accepted variants it declares.
@@ -158,7 +183,7 @@ After EVERY phase returns and before dispatching the next one, inspect the retur
 
 <!-- matecito-ai: la lista de buzones vivía duplicada acá y en el contrato canónico, y cada edición
      desalineaba una de las dos copias. Este guard ya NO mantiene su propia lista: referencia la tabla. -->
-**Tier 1 — pending decision → STOP and ask.** The Tier-1 mailboxes are **exactly** the sections marked Tier 1 in the canonical mailbox table (`_shared/sdd-phase-common.md`, **Section D.3**) — read the list there. This guard does NOT keep a parallel copy of it. One matching note only: `sdd-design`'s `New Decisions` is titled `New Decisions (not yet in EDRs)` when the EDR store is active and plain otherwise — **emitted either way**, the activation gate does not suppress it. Content in any Tier-1 section means the phase produced something the user has not agreed to. Present it and wait before the next dispatch. **Automatic mode does NOT skip this gate** (same pattern as the INTAKE GATE and the mine gate).
+**Tier 1 — pending decision → STOP and ask.** The Tier-1 mailboxes are **exactly** the sections marked Tier 1 in the canonical mailbox table (`_shared/sdd-phase-common.md`, **Section D.3**) — read the list there. This guard does NOT keep a parallel copy of it. One matching note only: `sdd-design`'s `New Decisions` is titled `New Decisions (not yet in EDRs)` when the EDR store is active and plain otherwise — **emitted either way**, the activation gate does not suppress it. Content in any Tier-1 section means the phase produced something the user has not agreed to. Present it and wait before the next dispatch. **Automatic mode does NOT skip this gate** (same pattern as the INTAKE GATE and the mine gate). When a Tier-1 section's contract splits its items into `summary`/`rationale` (the phase-return contract's `items.rationale`), present each item's `summary` at the gate — that is the section's own **declared** presentation, not you judging what is brief — and reproduce an item's `rationale` verbatim, from the block already in context, only when the user asks for it.
 
 <!-- matecito-ai: `sdd-design`'s blocking test was pure self-assessment — the executor ran it in its head
      and published only the verdict. A decision whose OWN text said "this needs a queue and a worker the
@@ -184,7 +209,7 @@ for it, and do not fill one in on the phase's behalf.
      pendientes, el ejecutor terminaba duplicando contenido y el usuario confirmaba lo mismo dos
      veces (fatiga de confirmación, el fallo que este guard existe para evitar). Desde ahora el
      único buzón Tier 1 de `sdd-design` es `New Decisions`. -->
-**Tier 2 — accomplished fact or information → surface, do not block.** The Tier-2 mailboxes are **exactly** the sections marked Tier 2 in that same canonical table (`_shared/sdd-phase-common.md`, **Section D.3**) — read the list there. This guard does NOT keep a parallel copy of it either: enumerating Tier 1 by reference and Tier 2 inline was the same duplication, one tier later. Plus `risks`, which is an envelope field (D.4) and therefore not in that table, and is Tier 2 for every phase. These report what already happened or what is merely worth knowing. `Open Questions` is **informative**: it carries what does NOT fix a decision — anything that does fix one belongs in `New Decisions`, the single Tier-1 mailbox of that phase. Show them verbatim in the between-phase summary — never compress them to "no news" — and call out a deviation explicitly when it touches something `sdd-verify` will check against the design, because the design artifact is now stale.
+**Tier 2 — accomplished fact or information → surface, do not block.** The Tier-2 mailboxes are **exactly** the sections marked Tier 2 in that same canonical table (`_shared/sdd-phase-common.md`, **Section D.3**) — read the list there. This guard does NOT keep a parallel copy of it either: enumerating Tier 1 by reference and Tier 2 inline was the same duplication, one tier later. Plus `risks`, which is an envelope field (D.4) and therefore not in that table, and is Tier 2 for every phase. These report what already happened or what is merely worth knowing. `Open Questions` is **informative**: it carries what does NOT fix a decision — anything that does fix one belongs in `New Decisions`, the single Tier-1 mailbox of that phase. Show them verbatim in the between-phase summary — never compress them to "no news" — and call out a deviation explicitly when it touches something `sdd-verify` will check against the design, because the design artifact is now stale. Where a section's contract splits its items into `summary`/`rationale`, "verbatim" binds to the `summary` — the part the contract declares printable; the `rationale` still ships in the block and is reproduced verbatim on request, not printed by default.
 
 **One gate per phase, batched.** Do NOT ask item by item: collect every Tier-1 item the phase returned and present the batch with a count first ("3 decisions / 1 untraceable task") plus bulk actions (confirm all / item by item / adjust). Gate fatigue is the failure mode here — a gate the user clicks through without reading is worse than no gate. This matters most in a repo with no `.matecito-ai/edr/`, where every architectural choice lands under `New Decisions`.
 
@@ -217,6 +242,9 @@ The kernel owns the generic Spec-Mine Trigger (brownfield, `flagSpecMine`-gated,
 
 **Asymmetry vs decision-mine (important):** an `Inferred` EDR is still enforced by `sdd-verify` (its EDR-compliance step does not filter by Status), but an `Inferred` capability-spec is **NOT** verified — `sdd-verify`'s durable-capability-spec check is scoped to `Status: Accepted`, so `Inferred` (like `Draft`) is skipped and is never a contract until a human ratifies it to `Accepted` (via `development-spec-bootstrap` update mode). This guardrail is what makes it safe to keep as-built-derived `Inferred` specs in the store: they are pending-ratification drafts, not the ratified intention.
 
+## Components axis (repo-level)
+A **component** is a surface the product's consumer recognizes (`api`, `cli`, `ui`) — not every package or internal folder. The set is declared **per-project only**, in `.matecito-ai/config.json`'s top-level `repo.components` (never inherited from a global config, never folded into `domainConfig`). **Gate:** no `repo.components` declared → the axis does not exist for any consumer — no header line anywhere, no validation finding. Concept, declaration shape, and gate: `~/.claude/references/repo-components/README.md`.
+
 ## Capability-specs — development specifics
 The system's **behavior** (the WHAT) is captured as durable **capability-specs**: files under `.matecito-ai/development-specs/<type>/<capability>.md` (type ∈ `flow` | `rule` | `lifecycle` | `process`), versioned in git and **never recorded in Engram** — exactly like EDRs. Concept and templates in `~/.claude/references/spec/README.md` and `~/.claude/references/spec/templates/`.
 
@@ -224,4 +252,4 @@ The system's **behavior** (the WHAT) is captured as durable **capability-specs**
 
 **Who touches them:** `development-spec-bootstrap` authors them upfront (interview by capability, by type); `sdd-archive` merges each change's delta into them (scenario-anchored, non-destructive); `sdd-spec`/`sdd-design`/`sdd-tasks`/`sdd-verify` read them as the behavior contract; `development-spec-validate` checks coherence across them. Presence-based gate: absent store → every reader skips silently.
 
-**Components axis (opt-in, presence-based).** A capability-spec MAY carry a `- **Components:** api, ui` header line naming which surface(s) of the repo the described behavior touches — the concept, the declaration shape, and why the store never splits by app live in `~/.claude/references/spec/README.md` → "Eje `components`". The set is declared **per-project only**, in `.matecito-ai/config.json`'s top-level `repo.components` (never inherited from a global config, never folded into `domainConfig`). **Gate:** no `repo.components` declared → the axis does not exist — no header line, no validation finding. This is the axis's whole surface: the header line, nothing else — both `INDEX.md` levels are untouched. `development-spec-validate` only reports (value outside the set, a spec missing the line, or the store found outside the repo root); it never writes and never auto-consolidates.
+**Components axis (opt-in, presence-based) — the per-capability projection.** A capability-spec MAY carry a `- **Components:** api, ui` header line naming which surface(s) of the repo the described behavior touches — this line is the axis's **whole surface** inside the store: nothing else changes, both `INDEX.md` levels are untouched. Why the store never splits by app even though this line names surfaces: `~/.claude/references/spec/README.md` → "Por qué el store nunca se parte por app". `development-spec-validate` only reports (value outside the set, a spec missing the line, or the store found outside the repo root); it never writes and never auto-consolidates.

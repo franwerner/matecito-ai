@@ -68,6 +68,36 @@ Un capability-spec tiene ciclo de vida ligero:
 
 Al igual que el EDR, un capability-spec **puede** tener estado `Inferred`, con una salvaguarda estricta: un `Inferred` es un **borrador no-confiable** derivado del código as-built, NO la intención ratificada. No se infiere comportamiento *como si fuera la verdad* —eso calcaría la implementación actual, bugs incluidos—; se infiere como **candidato pendiente de ratificación humana**. Mientras esté `Inferred`, `sdd-verify` lo **ignora** (no es contrato): ese guardarraíl vuelve seguro tenerlo en el store. La intención la fija una persona al promoverlo a `Accepted` (vía `development-spec-bootstrap` modo update).
 
+## El token `verification:` por escenario
+
+Cada escenario de un capability-spec —delta de cambio o durable— MAY declarar su **alcance de
+verificación** con un token: exactamente una línea, primer bullet del bloque del escenario, **antes
+del `GIVEN`**, con la forma `- **verification:** <valor>`. El conjunto de valores es **cerrado**:
+
+| Valor | Cuándo | Qué declara |
+|---|---|---|
+| `in-scope` — por **ausencia** de la línea | El escenario es verificable con lo que el cambio construye. | Default deliberado: un escenario ya verificado no lleva marca y nada lo reetiqueta por accidente. |
+| `deferred → <cambio>` | El comportamiento que el escenario describe no existe todavía en ningún lado; su consumidor llega con el cambio nombrado. | La verificación la hereda ese cambio. |
+| `standing → <dueño>` | El comportamiento ya existe y funciona, y el delta actual no lo altera (típico en escenarios copiados verbatim al mergear un MODIFIED). | Se verifica al ejercitar el flujo del dueño nombrado. |
+
+El token es **por escenario**, nunca por requisito: dos escenarios del mismo requisito pueden llevar
+valores distintos, y el alcance de un requisito no se deriva del token de ninguno de ellos.
+
+**El token nunca rebaja el contrato.** Lo que declara `deferred`/`standing` es **quién verifica y
+cuándo**, nunca si la regla vale — la regla sigue siendo obligatoria igual que cualquier otro
+requisito.
+
+**Consecuencia aceptada.** Como el merge al archivar conserva el token verbatim, el capability-spec
+durable pasa a llevar —además del comportamiento intencionado ratificado— el **estado de
+verificación** de cada escenario. Es intencional: un lector que se topa con un `deferred` o un
+`standing` dentro de un spec `Accepted` lo lee como intención declarada, no como contaminación del
+contrato.
+
+Quién lo aplica: `sdd-verify` lo lee para no contar un escenario `deferred`/`standing` como cobertura
+faltante — nunca lo exime de un resultado negativo si el escenario corrió y falló; `sdd-archive` lo
+conserva verbatim al mergear el delta. Ninguna de las dos skills redefine acá su forma ni su
+semántica: citan este archivo y enuncian sólo su propia reacción a cada valor.
+
 ## Relación con el EDR
 
 Tres capas, no dos:
@@ -78,39 +108,9 @@ Tres capas, no dos:
 
 El spec **referencia** los EDRs que gobiernan cómo se implementa un comportamiento (sección "Referencias"), pero no repite su contenido: el spec dice *la regla*, el EDR dice *cómo se implementa esa regla y por qué así*. Ejemplo: el spec de `outbound-message` dice "no se puede enviar fuera de la ventana de 24h; al vencer, el sistema responde con error X"; el EDR dice "modelamos esa condición como una jerarquía de errores de dominio mapeada a RFC 7807, porque…".
 
-## Eje `components`
+## Componentes en el header del spec
 
-Un **componente** es una **superficie que el consumidor del producto reconoce** — `api`, `cli`, `ui` — no todo paquete o carpeta interna. Es un eje **opcional** sobre el store de capability-specs: le agrega a cada spec qué superficie(s) del repo participan del comportamiento que describe.
-
-### Declaración
-
-El set de componentes se declara **una sola vez**, en el config **del proyecto** (nunca del global), en un bloque `repo` al tope, hermano de `domains`/`domainConfig`:
-
-```json
-"repo": {
-  "components": [
-    { "name": "cli", "paths": ["cmd", "internal"] },
-    { "name": "api", "paths": ["apps/api"] },
-    { "name": "ui",  "paths": ["apps/ui"] }
-  ]
-}
-```
-
-Array de objetos: `name` (la superficie) + `paths` (una o más carpetas del repo, relativas a la raíz, donde vive). Es el **único** lugar del ecosistema donde se escribe la carpeta de un componente — el capability-spec solo referencia el `name` en su línea de header; no repite las `paths`.
-
-### La línea del header
-
-Con el eje declarado, cada capability-spec suma junto a `Status` y `Date` una línea multivaluada:
-
-```
-- **Components:** api, ui
-```
-
-Cada valor listado debe estar dentro del set declarado en `repo.components`. Es lo único que el eje agrega al store: los `INDEX.md` (raíz y de tipo) no cambian.
-
-### Gate presence-based
-
-Sin `repo.components` declarado, el eje **no existe**: ningún spec lleva la línea `Components:`, y ningún chequeo de validación se dispara por su ausencia. El eje es enteramente opt-in — un repo se comporta exactamente igual que antes de que este eje existiera hasta que alguien declara el set.
+Cada capability-spec puede sumar, junto a `Status` y `Date`, una línea multivaluada `- **Components:** api, ui` — la **proyección por-capability** del set declarado en `repo.components`. El concepto repo-level completo (qué es un componente, cómo se declara el set, el gate presence-based) vive en `~/.claude/references/repo-components/README.md`.
 
 ### Por qué el store nunca se parte por app
 
