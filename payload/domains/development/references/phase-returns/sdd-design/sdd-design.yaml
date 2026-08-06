@@ -59,7 +59,8 @@ sections:
     render: items
     field: new_decisions
     items:
-      text: text
+      text: summary
+      rationale: rationale
       token: "blocking-test"
       token_field: blocking_test
       values: [none, infra, contract, data-model]
@@ -73,7 +74,8 @@ sections:
     render: items
     field: open_questions
     items:
-      text: text
+      text: summary
+      rationale: rationale
 
   - title: "### Next Step"
     emitted: always

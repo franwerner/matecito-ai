@@ -23,7 +23,7 @@ Execute all steps from the skill directly in this context window:
 2. Read tasks artifact if present: `mem_search("sdd/{change-name}/tasks")` → if found, `mem_get_observation`; if absent (reduced/custom lane), implement directly from the spec
 3. Read design artifact if present: `mem_search("sdd/{change-name}/design")` → if found, `mem_get_observation`; if absent, there is no design to follow
 <!-- matecito-ai: EDR activation gate (presence-based); when active EDRs are a hard constraint in every lane -->
-3a. EDR activation gate: if `.matecito-ai/edr/` is absent or empty, EDRs are inactive — skip this step silently. If active: read the applicable EDRs in `.matecito-ai/edr/` — when a design exists, use the ones listed in its EDR Alignment; without a design (reduced/custom lane), read `.matecito-ai/edr/INDEX.md` for the touched domains. Treat their concrete rules as hard constraints. If a design flagged an EDR conflict/uncaptured decision as blocker → return `blocked`. Load the `resolve-dependency-version` skill before writing library versions or APIs (it owns the version-resolution rules, backed by the `context7` MCP), and ask the codegraph MCP for the impact/blast-radius of a symbol before changing it.
+3a. EDR activation gate: if `.matecito-ai/edr/` is absent or empty, EDRs are inactive — skip this step silently. If active: read the applicable EDRs in `.matecito-ai/edr/` — when a design exists, use the ones listed in its EDR Alignment; without a design (reduced/custom lane), read `.matecito-ai/edr/INDEX.md` for the touched domains. Treat their concrete rules as hard constraints. If a design flagged an EDR conflict/uncaptured decision as blocker → return `blocked`. Load the `resolve-library-docs` skill before writing library versions, config, or APIs (it owns the version-resolution and library-docs rules, backed by the `context7` MCP), and ask the codegraph MCP for the impact/blast-radius of a symbol before changing it.
 3b. Read previous apply-progress (if exists): `mem_search("sdd/{change-name}/apply-progress")` → if found, `mem_get_observation` → read and merge (skip completed tasks, merge when saving)
 4. Detect TDD mode from config or existing test patterns
 5. Implement assigned tasks: in TDD mode follow RED → GREEN → REFACTOR; in standard mode write code then verify
@@ -56,8 +56,11 @@ Also update the tasks artifact with `[x]` marks via `mem_update` (engram).
 Every field and its legal values are defined once in **Section D of
 `~/.claude/skills/_shared/sdd-phase-common.md`** — the single source of truth. This agent does
 **NOT** redefine `status` (D.1) or `detailed_report` (D.2 + D.3): emit them exactly as Section D
-specifies for `sdd-apply`, including the Tier-2 mailbox D.3 assigns to this phase — and state, per
-deviation, whether `sdd-verify` will check it against the design.
+specifies for `sdd-apply`, including both mailboxes D.3 assigns to this phase — `### Unmandated
+Forks` (Tier 1: a fork the confirmed artifacts do not fix, not applied, carrying `mandate: chosen`)
+and `### Mandated Departures` (Tier 2: a deviation you did apply, carrying `mandate: covered|forced`)
+— each item also carrying `verify-checks: yes|no`, which states, per deviation, whether `sdd-verify`
+will check it against the design.
 
 Phase-specific refinements on top of Section D:
 - `executive_summary`: one-sentence description of what was implemented (tasks done / total)
@@ -66,5 +69,5 @@ Phase-specific refinements on top of Section D:
   always legal and the correct value on `blocked` / `needs-input`
 <!-- matecito-ai: "blocked tasks" acá era el tercer destino del mismo blocker (los otros dos: `### Issues
      Found` y `### Status`), y ninguno de los tres lo consumía nadie. Un blocker, un lugar. -->
-- `risks`: unexpected complexity, or an assumption that needs validating. A blocker goes in `### Blocker` — never here, never in `### Issues Found` (that section is for problems you did NOT stop on). Deviations belong in the D.3 mailbox; and a gap that affects what you are about to write is not a risk, it is a `blocked` (see the skill's Rules)
+- `risks`: unexpected complexity, or an assumption that needs validating. A blocker goes in `### Blocker` — never here, never in `### Issues Found` (that section is for problems you did NOT stop on). Deviations belong in the D.3 mailboxes; and a gap that affects what you are about to write is not a risk, it is a `blocked` or `partial` stop with the fork returned as a question (see the skill's Rules)
 - `skill_resolution`: per D.4 — `phase-skill` when you loaded this phase's own SKILL.md <!-- matecito-ai: sin inyección -->

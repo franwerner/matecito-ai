@@ -41,7 +41,7 @@ sections:
     sentinel: true
     render: items
     field: derived_capabilities
-    items: { text: text }
+    items: { text: summary, rationale: rationale }
   - title: "### Next Step"
     emitted: always
     render: line

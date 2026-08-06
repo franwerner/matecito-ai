@@ -22,17 +22,19 @@ Contratos: `edr/structure/*`, `edr/runtime/error-handling`, `edr/delivery/config
 
 Contratos: `edr/data/data-modeling`, `edr/data/data-access-entity-framework`, `edr/data/storage-sync-model`. Tech: modernc sqlite + Ent + Atlas. Desglose detallado en [`ROADMAP-2.md`](ROADMAP-2.md).
 
-- [ ] Migraciones goose con el schema inicial:
-  - [ ] `projects` (UUID v7, identidad por `project-id`, lookup de paths por máquina, estado activo/inactivo).
-  - [ ] `changes` (por proyecto, mapeo rama↔nombre, estado `active`/`closed`).
-  - [ ] `events` (envelope `{type, payload}`, posición monótona por change, `occurred_at`, agente, idempotencia por hash del contenido canónico).
-  - [ ] Store de contenido content-addressable (dedup por hash) compartido por versiones de records y fotos de código.
-  - [ ] Versiones de records + pins de eventos a versiones (`lifecycle/record-version`).
-  - [ ] Índice/proyección de records por `(proyecto, rama)` con owning-root y soft-delete.
-  - [ ] Notas de iteración (estados `pendiente`/`entregada`/`resuelta`, anclaje change/evento/archivo+rango).
-- [ ] Timestamps `created_at`/`updated_at` en todas las tablas; sin DELETE físico (excepción: notas `pendientes`).
-- [ ] Borde de persistencia (Repository) según `edr/data/data-access-entity-framework`; schema definido en código y migraciones derivadas de él.
-- [ ] Tests de integración con SQLite real (temporal/memoria), sin mocks (`edr/delivery/testing-strategy`).
+- [x] Migraciones con el schema inicial (derivadas en código con Ent + Atlas — ver la nota de tecnología abajo, `edr/data/data-access-entity-framework` supersede la elección `goose` original de este ítem):
+  - [x] `projects` (UUID v7, identidad por `project-id`, lookup de paths por máquina, estado activo/inactivo).
+  - [x] `changes` (por proyecto, mapeo rama↔nombre, estado `active`/`closed`).
+  - [x] `events` (envelope `{type, payload}`, posición monótona por change, `occurred_at`, agente, idempotencia por hash del contenido canónico).
+  - [x] Store de contenido content-addressable (dedup por hash) compartido por versiones de records y fotos de código.
+  - [x] Versiones de records + pins de eventos a versiones (`lifecycle/record-version`).
+  - [x] Índice/proyección de records por `(proyecto, rama)` con owning-root y soft-delete.
+  - [x] Notas de iteración (estados `pendiente`/`entregada`/`resuelta`, anclaje change/evento/archivo+rango).
+- [x] Timestamps `created_at`/`updated_at` en todas las tablas; sin DELETE físico (excepción: notas `pendientes`).
+- [x] Borde de persistencia (Repository) según `edr/data/data-access-entity-framework`; schema definido en código y migraciones derivadas de él.
+- [x] Tests de integración con SQLite real (temporal/memoria), sin mocks (`edr/delivery/testing-strategy`).
+
+Desglose completo (4 batches) y decisiones detalladas en [`ROADMAP-2.md`](ROADMAP-2.md).
 
 ## Fase 3 — Identidad y registro de proyectos
 

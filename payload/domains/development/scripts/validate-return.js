@@ -143,8 +143,8 @@ function validate(rawContract, text, status) {
 
   for (const s of declared) {
     const seen = present.get(s.title);
-    if (!seen || !s.items || !s.items.token) continue;
-    problems.push(...checkTokens(s, seen, bodyText(parsed.bodies, seen)));
+    if (!seen || !s.items || !(s.items.token || s.items.tokens || s.items.rationale)) continue;
+    problems.push(...checkItems(s, seen, bodyText(parsed.bodies, seen)));
   }
 
   for (const claim of contract.summary_claims || []) {
@@ -161,40 +161,70 @@ function validate(rawContract, text, status) {
   return problems;
 }
 
-function checkTokens(section, seenTitle, body) {
+// One walk per item, checking whichever of the independent markers the section declares: its
+// token(s) (e.g. `blocking-test`, or `mandate` + `verify-checks`) and the `rationale` half of the
+// summary/rationale split. A section may declare tokens, rationale, both, or neither — neither is
+// filtered out by the caller. `tokensOf` desugars a single `token` to a one-element list, so a
+// section with one token or several walks the same loop below.
+function checkItems(section, seenTitle, body) {
   const out = [];
   if (isSentinel(body)) return out;
 
-  const token = section.items.token;
-  const legal = section.items.values || [];
-  const passing = section.items.passing || legal;
+  const tokens = tokensOf(section.items).map((t) => ({ ...t, re: new RegExp(`^[\\s·*-]*${t.name}\\s*:\\s*(.+)$`, 'i') }));
+  const wantsRationale = !!section.items.rationale;
   const lines = body.split('\n');
-  const tokenLine = new RegExp(`^[\\s·*-]*${token}\\s*:\\s*(.+)$`, 'i');
+  const rationaleLine = /^[\s·*-]*rationale\s*:\s*(.+)$/i;
 
   let items = 0;
   for (let i = 0; i < lines.length; i++) {
     if (!/^\s*[-*]\s+\S/.test(lines[i])) continue;
     items += 1;
-    let value = null;
+    const values = tokens.map(() => null);
+    let rationaleValue = null;
     for (let j = i + 1; j < lines.length; j++) {
       if (/^\s*[-*]\s+\S/.test(lines[j])) break;
-      const m = lines[j].trim().match(tokenLine);
-      if (m) { value = m[1].trim().replace(/[.`]+$/, ''); break; }
+      const trimmed = lines[j].trim();
+      for (const [k, t] of tokens.entries()) {
+        if (values[k] !== null) continue;
+        const m = trimmed.match(t.re);
+        if (m) { values[k] = m[1].trim().replace(/[.`]+$/, ''); break; }
+      }
+      if (wantsRationale && rationaleValue === null) {
+        const m = trimmed.match(rationaleLine);
+        if (m) rationaleValue = m[1].trim();
+      }
     }
     const item = lines[i].trim().slice(0, 60);
-    if (value === null) {
-      out.push({ severity: 'error', code: 'TOKEN-MISSING', message: `"${item}" carries no \`${token}:\` — an omission gets the strict reading, not the benefit of the doubt` });
-    } else if (!legal.includes(value)) {
-      out.push({ severity: 'error', code: 'TOKEN-ILLEGAL', message: `"${item}" declares \`${token}: ${value}\`, which is not one of ${JSON.stringify(legal)}` });
-    } else if (!passing.includes(value)) {
-      out.push({ severity: 'error', code: 'TOKEN-WRONG-MAILBOX', message: `"${item}" declares \`${token}: ${value}\` — that value contradicts \`${seenTitle}\`; the item belongs in the blocker section` });
+    for (const [k, t] of tokens.entries()) {
+      const value = values[k];
+      const legal = t.values || [];
+      const passing = t.passing || legal;
+      if (value === null) {
+        out.push({ severity: 'error', code: 'TOKEN-MISSING', message: `"${item}" carries no \`${t.name}:\` — an omission gets the strict reading, not the benefit of the doubt` });
+      } else if (!legal.includes(value)) {
+        out.push({ severity: 'error', code: 'TOKEN-ILLEGAL', message: `"${item}" declares \`${t.name}: ${value}\`, which is not one of ${JSON.stringify(legal)}` });
+      } else if (!passing.includes(value)) {
+        out.push({ severity: 'error', code: 'TOKEN-WRONG-MAILBOX', message: `"${item}" declares \`${t.name}: ${value}\` — that value contradicts \`${seenTitle}\`` });
+      }
+    }
+    if (wantsRationale && rationaleValue === null) {
+      out.push({ severity: 'error', code: 'RATIONALE-MISSING', message: `"${item}" carries no \`· rationale:\` — a declaring section requires both parts` });
     }
   }
 
   if (items === 0) {
-    out.push({ severity: 'error', code: 'SECTION-UNPARSEABLE', message: `\`${seenTitle}\` has content but no items to check — expected \`- \` bullets, each with its \`${token}:\`` });
+    const expected = tokens.length ? tokens.map((t) => `\`${t.name}:\``).join(' and ') : '`· rationale:`';
+    out.push({ severity: 'error', code: 'SECTION-UNPARSEABLE', message: `\`${seenTitle}\` has content but no items to check — expected \`- \` bullets, each with its ${expected}` });
   }
   return out;
+}
+
+// Mirrors `render-return.js`'s desugar: a single `token` field becomes a one-element `tokens` list,
+// so the walk below has one shape regardless of how many tokens an item declares.
+function tokensOf(items) {
+  if (items.tokens) return items.tokens;
+  if (items.token) return [{ name: items.token, field: items.token_field, values: items.values, passing: items.passing }];
+  return [];
 }
 
 // A claim only contradicts an empty sentinel when it asserts a non-zero count.
@@ -223,21 +253,34 @@ function selfCheck(contract, md) {
     .filter(Boolean)
     .map(blockMatcher);
   const inFence = new Set();
+  // Headings, inside a return fence, under which a literal `· rationale:` line appears — feeds the
+  // bidirectional check below. Tracked alongside `inFence` rather than as a second pass over `md`.
+  const rationaleUnderHeading = new Set();
+  const RATIONALE_MARKER = /·\s*rationale\s*:/i;
   let fence = null;
+  let currentHeading = null;
   for (const raw of md.split('\n')) {
     const l = raw.trim();
     if (/^`{3,}/.test(l)) {
       if (fence) {
         if (fence.isReturn) for (const h of fence.headings) inFence.add(h);
         fence = null;
+        currentHeading = null;
       } else {
         fence = { isReturn: false, headings: [] };
       }
       continue;
     }
-    if (!fence || !HEADING.test(l)) continue;
-    if (declaredBlocks.some((m) => m.test(l))) fence.isReturn = true;
-    fence.headings.push(l);
+    if (!fence) continue;
+    if (HEADING.test(l)) {
+      if (declaredBlocks.some((m) => m.test(l))) fence.isReturn = true;
+      fence.headings.push(l);
+      currentHeading = l;
+      continue;
+    }
+    if (fence.isReturn && currentHeading && RATIONALE_MARKER.test(l)) {
+      rationaleUnderHeading.add(currentHeading);
+    }
   }
 
   const allSections = contract.variants
@@ -268,6 +311,23 @@ function selfCheck(contract, md) {
     const known = allSections.some((s) => [s.title].concat(s.accepts || []).includes(title));
     if (!known) {
       problems.push({ severity: 'error', code: 'DRIFT', message: `\`${title}\` appears in the template's example blocks but the contract does not declare it` });
+    }
+  }
+
+  // Bidirectional rationale-marker rule, narrow to `render: items` sections and to this one marker.
+  // A generic "every declared item marker must appear" rule would also fail `sdd-apply.md`, whose
+  // `verify-checks` token is documented as inline prose rather than its own marker line — a defect
+  // this change neither caused nor was asked to fix.
+  for (const s of allSections) {
+    if (s.render !== 'items') continue;
+    const declares = !!(s.items && s.items.rationale);
+    const titles = [s.title].concat(s.accepts || []);
+    const shows = titles.some((t) => rationaleUnderHeading.has(t));
+    if (declares && !shows) {
+      problems.push({ severity: 'error', code: 'DRIFT', message: `\`${s.title}\` declares \`items.rationale\` but its template shows no \`· rationale:\` line under that heading` });
+    }
+    if (!declares && shows) {
+      problems.push({ severity: 'error', code: 'DRIFT', message: `\`${s.title}\` shows a \`· rationale:\` line in its template but its contract does not declare \`items.rationale\`` });
     }
   }
   return problems;

@@ -26,6 +26,14 @@ casing or heading level is a section it will not find.
 Titles are fixed. `### New Decisions` becomes `### New Decisions (not yet in EDRs)` **only** when the
 decision store is active — both forms are valid and the orchestrator accepts either.
 
+**Split into summary/rationale.** Both `### New Decisions` and `### Open Questions` declare it. Each
+item carries two parts, `summary` and `rationale`, in the `new_decisions` / `open_questions` JSON:
+`summary` is what the gate prints, `rationale` is the full reasoning — always emitted into this
+block, never printed by default. Both are non-empty, single-line strings; a missing one, or one with
+an embedded newline, fails the render naming the item and the part, and nothing reaches stdout. In
+`### New Decisions`, the `· rationale:` line sits directly below the item's `· blocking-test:` line —
+same item, same section, no separate channel.
+
 ## `status: done` — the design was produced
 
 ```markdown
@@ -51,11 +59,15 @@ If there are genuinely none: "None."}
 
 - {the choice}: {what you chose} — {alternatives weighed, and why this one}
   · blocking-test: none
+  · rationale: {one line: the full reasoning — why this choice, restated for the record even though the gate only prints the line above}
 
 ### Open Questions
 {What does NOT fix a decision: implementation doubts, things to validate during apply.
 Anything that fixes a decision belongs above, or makes you return `blocked`.
 If there are none: "None."}
+
+- {the open question, as one line}
+  · rationale: {one line: why it is open — what makes it not yours to settle here}
 
 ### Next Step
 Ready for tasks (sdd-tasks).
@@ -91,11 +103,12 @@ fixes and why, and what it breaks here.}
 **What unblocks it**: {the answer you need.}
 
 ### New Decisions
-{The ones that DO pass the blocking test and hold regardless of how the blocker resolves.
+{The ones that DO pass the blocking test and hold regardless of how the blocker resolves, same shape
+as `done` — each item still needs both `summary` and `· rationale:`.
 If every decision is subordinate to the blocker: "None — all pending decisions depend on the blocker."}
 
 ### Open Questions
-{As above.}
+{As above — same shape as `done`, each item with its `· rationale:`.}
 
 ### Next Step
 None. This phase cannot continue until the blocker is resolved.

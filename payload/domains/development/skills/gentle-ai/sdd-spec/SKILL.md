@@ -307,7 +307,13 @@ Two things that file makes explicit and that this phase gets wrong most often:
      contrato. La lista de archivos no es prosa que se pueda comprimir: o está completa o miente.
      Y el conteo: `wc -w` cuenta cada guion de viñeta y cada flecha como palabra — reportó 724 sobre
      643 reales, así que ese ejecutor plegó contenido por ~80 palabras que no existían. -->
-- **Size budget**: Spec artifact MUST be under 650 words. Prefer requirement tables over narrative descriptions. Each scenario: 3-5 lines max. **Two sections do NOT count against this budget and are never dropped or trimmed to fit it**: the `## UI Scenarios` block, and `## Scope` — the file list is `sdd-apply`'s only source of what to touch, since it does not read the intake brief. **Count only tokens containing a letter or a digit** — bare bullet dashes, arrows and em-dashes are not words, and `wc -w` overcounts by ~10%: budget on the real figure, never fold content to satisfy an inflated one
+<!-- matecito-ai: el cap numérico (650 palabras) se quitó. Estaba mal calibrado y el síntoma lo probó: una
+     spec que el usuario ratificó salía en ~665 ANTES de cualquier enmienda, así que el tope no medía
+     "spec inflada", medía "spec normal" — y lo único que producía era plegar contenido para entrar.
+     Eso es exactamente la falla que las dos excepciones de abajo existen para frenar, sólo que
+     llegando por la puerta del número en vez de por la del ejecutor apurado. La presión hacia tablas
+     y escenarios cortos se queda; el número no. -->
+- **Size budget**: Keep the artifact tight — prefer requirement tables over narrative descriptions, and hold each scenario to 3-5 lines. **There is no word cap**: the length follows the change's real surface, and folding content to hit a number is the failure this budget exists to prevent, not its purpose. **Never drop or trim the `## UI Scenarios` block or `## Scope`** to make the artifact shorter — the file list is `sdd-apply`'s only source of what to touch, since it does not read the intake brief.
 - Return envelope per **Section D** from `~/.claude/skills/_shared/sdd-phase-common.md`.
 
 ## RFC 2119 Keywords Quick Reference

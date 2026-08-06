@@ -38,6 +38,12 @@ Neither has been agreed to yet: the guard raises the batch and the user confirms
 spec runs. It is never a `None` case — a proposal always fixes an approach and always touches some
 capability; if you genuinely cannot name them, you do not have a proposal, you have a `blocked`.
 
+**Split into summary/rationale.** Each item declares two parts, `summary` and `rationale`, in the
+`scope_unconfirmed` JSON: `summary` is what the gate prints, `rationale` is the full reasoning behind
+it — always emitted into this block, never printed by default. Both are non-empty, single-line
+strings; a missing one, or one with an embedded newline, fails the render naming the item and the
+part, and nothing reaches stdout.
+
 Only two statuses have a shape here: `done` and `blocked`. This phase's skill does not designate
 `needs-input`, and a proposal is written whole or not at all, so `partial` does not arise.
 
@@ -56,16 +62,14 @@ Only two statuses have a shape here: `done` and `blocked`. This phase's skill do
 - **Risk Level**: {Low/Medium/High}
 
 ### Scope and approach (unconfirmed)
-**Approach**: {the approach this proposal fixes, and what you weighed against it and discarded.
-If the alternatives differ in new infrastructure, in the public contract or in the data model,
-this is not yours to fix — return `blocked` instead.}
+- **Approach**: {the approach this proposal fixes, and what you weighed against it and discarded. If the alternatives differ in new infrastructure, in the public contract or in the data model, this is not yours to fix — return `blocked` instead.}
+  · rationale: {one line: the full reasoning behind this approach and why it beat the alternatives}
 
-**Capability mapping**: {which capabilities this change touches, as `New` or `Modified`, exactly
-as the artifact's `## Capabilities` section states them. `sdd-spec` consumes this as its contract:
-a New becomes a full spec, a Modified becomes a delta against the durable capability-spec of that
-name. A wrong name here silently writes the delta against the wrong capability.}
+- **Capability mapping**: {which capabilities this change touches, as `New` or `Modified`, exactly as the artifact's `## Capabilities` section states them. `sdd-spec` consumes this as its contract: a New becomes a full spec, a Modified becomes a delta against the durable capability-spec of that name. A wrong name here silently writes the delta against the wrong capability.}
+  · rationale: {one line: what in the artifact's Affected Areas or Request grounds this mapping}
 
-**In scope / deferred**: {what this proposal deliberately leaves out, if the boundary is not obvious.}
+- **In scope / deferred**: {what this proposal deliberately leaves out, if the boundary is not obvious.}
+  · rationale: {one line: why this boundary and not another}
 
 ### Next Step
 Ready for specs (sdd-spec) or design (sdd-design).
@@ -109,9 +113,9 @@ was not sure" is not a reason to block.}
 
 ### Scope and approach (unconfirmed)
 {Emitted here too — it is unconditional. Carry whatever IS settled: the parts of the approach the
-blocker does not touch, and the capability mapping if you could name it. When the blocker is
-precisely the approach or the mapping, say so and point at `### Blocker` instead of repeating it:
-"Depends on the blocker above."}
+blocker does not touch, and the capability mapping if you could name it. Each item still needs both
+`summary` and `· rationale:`, same as `done`. When the blocker is precisely the approach or the
+mapping, say so and point at `### Blocker` instead of repeating it: "Depends on the blocker above."}
 
 ### Next Step
 None. This phase cannot continue until the blocker is resolved.

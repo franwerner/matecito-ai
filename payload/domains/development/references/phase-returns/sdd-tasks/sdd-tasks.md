@@ -26,6 +26,12 @@ casing or heading level is a section it will not find.
 
 Titles are fixed and this phase declares no variants of them.
 
+**Split into summary/rationale.** `### Tasks not traceable to spec/design` declares it. Each item
+carries two parts, `summary` and `rationale`, in the `untraceable_tasks` JSON: `summary` is what the
+gate prints, `rationale` is the full reasoning — always emitted into this block, never printed by
+default. Both are non-empty, single-line strings; a missing one, or one with an embedded newline,
+fails the render naming the item and the part, and nothing reaches stdout.
+
 ## `status: done` — the breakdown was produced
 
 ```markdown
@@ -46,11 +52,14 @@ Titles are fixed and this phase declares no variants of them.
 {The recommended order and why — what has to exist before what. One short paragraph.}
 
 ### Tasks not traceable to spec/design
-{Every task that links to NO spec requirement and to nothing the design establishes, each with
-what motivated it (a gap you found, an implied prerequisite, a project convention). This is work
+{Every task that links to NO spec requirement and to nothing the design establishes. This is work
 the user did not ask for: it is where silent scope creep enters — it lands in the checklist, gets
 implemented and gets verified without anyone having agreed to it. Do NOT drop those tasks and do
-NOT fold them in as if they came from the spec; list them and let the user decide.
+NOT fold them in as if they came from the spec; list them and let the user decide. One item per task:
+
+- {the task, as one line}
+  · rationale: {one line: what motivated it — a gap you found, an implied prerequisite, a project convention}
+
 If every task traces: "None — every task links to spec or design."}
 
 ### Review Workload Forecast
@@ -101,7 +110,8 @@ this case, state both sides: what it fixes and why, and what it breaks here.}
 **What unblocks it**: {the answer you need.}
 
 ### Tasks not traceable to spec/design
-{As above, over the tasks you did write. If you wrote none: "None — no tasks were written."}
+{As above, same shape, over the tasks you did write — each item still needs both `summary` and
+`· rationale:`. If you wrote none: "None — no tasks were written."}
 
 ### Review Workload Forecast
 - Estimated changed lines: {your best estimate over the scope as briefed, or "not estimable — the breakdown is incomplete"}

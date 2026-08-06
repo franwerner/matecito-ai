@@ -131,6 +131,15 @@ get past a failure** — the failure is the contract telling you the content is 
 being in the way. If the script cannot run at all, say so in your return rather than substituting a
 hand-made block that nothing checked.
 
+**The summary/rationale split.** A section whose contract declares `items.rationale` splits each of
+its items into two required parts: `summary` (what gates print) and `rationale` (the full reasoning
+— always emitted into this block, never printed by default). Both are non-empty, single-line strings
+— supply them per item as `{ summary: "...", rationale: "..." }` in your JSON. A missing one, or one
+with an embedded newline, fails the render naming the item and the part, and nothing reaches stdout —
+the same contract as any other missing field. This does not change the principle above: you still
+never hand-write the block, and `--schema` tells you, section by section, whether it wants this
+two-field shape or the plain one.
+
 **`~/.claude/references/phase-returns/<your-phase>/<your-phase>.md` is what you read to know WHAT
 belongs in each section** — the rationale, the examples, and the reason each rule exists. It is the
 authority on meaning; the `.yaml` beside it is the authority on shape. The orchestrator validates what
@@ -166,15 +175,31 @@ fixes which section belongs to which phase.
 | `sdd-design` | `### New Decisions` — or `### New Decisions (not yet in EDRs)` when the decision store is active; **both titles are valid and the orchestrator accepts either** | 1 | always |
 | `sdd-design` | `### Open Questions` | 2 | always |
 | `sdd-tasks` | `### Tasks not traceable to spec/design` | 1 | always |
-| `sdd-apply` | `### Deviations from Design` | 2 | always |
+| `sdd-apply` | `### Unmandated Forks` | 1 | always |
+| `sdd-apply` | `### Mandated Departures` | 2 | always |
 | `sdd-verify` | `## Decision Gaps` | — | only when `flagDecisionGaps` is on |
 | `sdd-verify` | `## UI Verdict` | — | only when the UI check applies |
 
-**Tier 1** stops the flow and asks the user; **Tier 2** is surfaced but does not block. `sdd-verify`'s
-`## Decision Gaps` is not a tier section: it feeds the kernel's post-verify mine gate, and it exists
-only under its flag. Gate behavior lives in the domain fragment
-(`~/.claude/matecito-ai/domains/development.md`, `## Guards`) — it reads this table and keeps no
-parallel copy of it.
+**Tier 1** stops the flow and asks the user; **Tier 2** is surfaced but does not block. `sdd-apply`'s
+two rows are not a Tier-1/Tier-2 pair over the same content: `### Unmandated Forks` carries a fork
+the confirmed artifacts do not fix and that `sdd-apply` did NOT apply (its item's `mandate:` token is
+always `chosen`); `### Mandated Departures` carries what it DID apply, either because an artifact
+already fixed the point (`mandate: covered`) or because no alternative was valid and the constraint
+is named (`mandate: forced`). A missing or hedged `mandate:` is read as `chosen`, so an absorbed
+deviation nobody can back with a named constraint routes to the Tier-1 section by default, never the
+cheap way past the gate. `sdd-verify`'s `## Decision Gaps` is not a tier section: it feeds the
+kernel's post-verify mine gate, and it exists only under its flag. Gate behavior lives in the domain
+fragment (`~/.claude/matecito-ai/domains/development.md`, `## Guards`) — it reads this table and
+keeps no parallel copy of it.
+
+**Seven of these mailboxes split each item into `summary`/`rationale`**: `sdd-propose`'s `Scope and
+approach`, `sdd-spec`'s `Derived capabilities`, both `sdd-design` rows (`New Decisions` and `Open
+Questions`), `sdd-tasks`'s `Tasks not traceable`, and both `sdd-apply` rows (`Unmandated Forks` and
+`Mandated Departures`) — their `.yaml` contract declares `items.rationale`. Emission stays total:
+both parts always land in `detailed_report`. Printing only the `summary` at the gate is that
+section's own **declared** presentation, fixed by its contract — never an assistant judging what
+counts as brief. The `rationale` is reproduced verbatim, from the block already in context, the
+moment it is asked for.
 
 Everything marked **always** is emitted even when there is nothing to report, with a `None…`
 sentinel — that is what lets the orchestrator tell "nothing to raise" from "the phase dropped the

@@ -35,6 +35,12 @@ delta gets merged into. Emit it **always** — with the `None — mapping was ex
 the upstream proposal carried its own Capabilities section — because a missing section and an empty
 one mean opposite things to the guard.
 
+**Split into summary/rationale.** Each item declares two parts, `summary` and `rationale`, in the
+`derived_capabilities` JSON: `summary` is what the gate prints, `rationale` is the full reasoning —
+always emitted into this block, never printed by default. Both are non-empty, single-line strings; a
+missing one, or one with an embedded newline, fails the render naming the item and the part, and
+nothing reaches stdout.
+
 Only two statuses have a shape here: `done` and `blocked`. This phase's skill does not designate
 `needs-input`, and a spec is written whole or not at all, so `partial` does not arise.
 
@@ -58,9 +64,13 @@ Only two statuses have a shape here: `done` and `blocked`. This phase's skill do
 
 ### Derived capabilities (unconfirmed)
 {The capability mappings you derived because the upstream artifact carried no Capabilities section
-— an intake brief in a `reduced` lane, or a proposal in the older format — one per item, each with
-what you derived it from (Affected Areas, the brief's structured Request). These are NOT contract
-until the main thread confirms them.
+— an intake brief in a `reduced` lane, or a proposal in the older format. One item per mapping, each
+with two parts:
+
+- {the capability you derived, as `New` or `Modified`, and its name}
+  · rationale: {one line: what you derived it from — the brief's Affected Areas, its structured Request}
+
+These are NOT contract until the main thread confirms them.
 If the mapping came explicit from the proposal's Capabilities section: "None — mapping was explicit."}
 
 ### Next Step
@@ -106,8 +116,9 @@ pinned by something that conflicts or does not cover this case.}
 field and its type — as ONE reviewable unit, never field by field.}
 
 ### Derived capabilities (unconfirmed)
-{Any mapping you derived that holds regardless of how the blocker resolves. If the blocker IS the
-derivation: "None — the derivation is the blocker; see above."}
+{Any mapping you derived that holds regardless of how the blocker resolves, same shape as `done` —
+each item still needs both `summary` and `· rationale:`. If the blocker IS the derivation:
+"None — the derivation is the blocker; see above."}
 
 ### Next Step
 None. This phase cannot continue until the blocker is resolved.

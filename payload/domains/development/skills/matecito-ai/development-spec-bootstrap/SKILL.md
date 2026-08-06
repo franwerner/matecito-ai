@@ -94,7 +94,7 @@ find . -maxdepth 2 -iname 'PRD*' -o -iname 'README*' -o -iname '*proposal*' 2>/d
 
 Con eso sabés: si hay specs previos (→ modo update), si el store quedó materializado **fuera de la raíz** (antipatrón — ver "El store nunca se parte por app" abajo), si el eje `components` ya está declarado, qué manifiestos hay (candidatos al set de componentes), qué EDRs existen (para linkear), y si hay un PRD del que derivar las capabilities.
 
-**El store nunca se parte por app.** El comportamiento casi nunca respeta el límite de una sola app (ver `~/.claude/references/spec/README.md` → "Eje `components`" para el porqué completo). Si el `find` de arriba encuentra un `development-specs/` fuera de `.matecito-ai/`, o si te piden crear el store dentro de una app puntual: **no lo hagas en silencio y no lo discutas** — explicá el porqué (partir el store fuerza un dueño arbitrario o un spec duplicado que diverge) y **ofrecé** declarar el eje `components` en su lugar. Consolidar un store ya existente fuera de la raíz es **destructivo** (puede haber contenido divergente) — ofrecelo, nunca lo hagas automático.
+**El store nunca se parte por app.** El comportamiento casi nunca respeta el límite de una sola app (ver `~/.claude/references/spec/README.md` → "Por qué el store nunca se parte por app" para el porqué completo). Si el `find` de arriba encuentra un `development-specs/` fuera de `.matecito-ai/`, o si te piden crear el store dentro de una app puntual: **no lo hagas en silencio y no lo discutas** — explicá el porqué (partir el store fuerza un dueño arbitrario o un spec duplicado que diverge) y **ofrecé** declarar el eje `components` en su lugar. Consolidar un store ya existente fuera de la raíz es **destructivo** (puede haber contenido divergente) — ofrecelo, nunca lo hagas automático.
 
 ### Inferencia del set de componentes (una vez, editable)
 
@@ -104,7 +104,7 @@ Si el pre-flight no encontró `repo.components` ya declarado y encontraste **má
 
 Esta propuesta es **editable en la ratificación**: un solo manifiesto puede respaldar un componente cuyas `paths` un humano tiene que separar en más de una carpeta (ej. un `cli` cuyo manifiesto vive en la raíz pero cuyo código spanea `cmd/` + `internal/` — el manifiesto no lo dice, lo dice quien conoce el repo). Marcadores de workspace (`pnpm-workspace.yaml`, `go.work`, etc.) son pista secundaria que **confirma** partición intencional, no la descubre por sí sola.
 
-Con **un solo manifiesto** de proyecto no propongas set alguno — la declaración queda manual (ver `~/.claude/references/spec/README.md` → "Declaración" para la forma exacta del bloque `repo`).
+Con **un solo manifiesto** de proyecto no propongas set alguno — la declaración queda manual (ver `~/.claude/references/repo-components/README.md` → "Declaración" para la forma exacta del bloque `repo`).
 
 Nada se escribe sin confirmación explícita: al ratificar, editá `.matecito-ai/config.json` del **proyecto** (nunca el config global — `repo` es per-project only) agregando o completando el bloque `repo.components` top-level, hermano de `domains`/`domainConfig`, preservando el resto del archivo intacto. Avisá que quedó declarado.
 
@@ -165,7 +165,7 @@ Procedimiento genérico del motor, para cualquier tipo:
    - **Errores de cara al actor** — el contrato de error observable.
 4. **Escenarios.** Por cada regla/rama/borde relevante, escribí un Given/When/Then. Es el paso que vuelve verificable la capability; no lo saltees.
 5. **Referencias.** Si algún comportamiento está gobernado por un EDR existente (lo viste en pre-flight), linkealo. Si notás que falta un EDR (una decisión técnica no tomada), anotalo como pregunta abierta para `development-decisions-bootstrap` — no lo resuelvas acá.
-6. **Componentes** (solo si `repo.components` está declarado — gate presence-based, ver `~/.claude/references/spec/README.md` → "Eje `components`"). Preguntá por **comportamiento**, no por implementación: de las secciones que ya recorriste (Actores, Flujo principal, Reglas de negocio…), ¿qué superficies del set participan? Es una inferencia **por spec**, independiente de la del set: el set sale de los manifiestos del repo; esta sale de qué comportamiento describe la capability. Confirmá antes de escribir la línea (ej. "esta capability toca `api` y `ui`, ¿correcto?"). Si el set no está declarado, saltá este paso entero — no lo preguntes.
+6. **Componentes** (solo si `repo.components` está declarado — gate presence-based, ver `~/.claude/references/repo-components/README.md` → "Gate presence-based"). Preguntá por **comportamiento**, no por implementación: de las secciones que ya recorriste (Actores, Flujo principal, Reglas de negocio…), ¿qué superficies del set participan? Es una inferencia **por spec**, independiente de la del set: el set sale de los manifiestos del repo; esta sale de qué comportamiento describe la capability. Confirmá antes de escribir la línea (ej. "esta capability toca `api` y `ui`, ¿correcto?"). Si el set no está declarado, saltá este paso entero — no lo preguntes.
 7. **Self-check de vocabulario** antes de escribir: ningún identificador interno volátil en ninguna sección. Reformulá a idioma de dominio / contrato público, o mové el ancla técnica a un link en "Referencias".
 8. **Materializá** el spec en `.matecito-ai/development-specs/<type>/<capability>.md`.
 

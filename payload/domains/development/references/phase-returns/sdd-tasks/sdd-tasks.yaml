@@ -33,7 +33,7 @@ sections:
     sentinel: true
     render: items
     field: untraceable_tasks
-    items: { text: text }
+    items: { text: summary, rationale: rationale }
   - title: "### Review Workload Forecast"
     emitted: always
     render: labeled-bullets

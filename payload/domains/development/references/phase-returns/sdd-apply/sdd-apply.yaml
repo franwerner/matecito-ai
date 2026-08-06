@@ -38,20 +38,37 @@ sections:
     when: strict_tdd
     render: line
     field: test_summary
-  - title: "### Deviations from Design"
+  # A fork the confirmed artifacts do not fix, admitting more than one valid resolution: not applied,
+  # travels back as a question. `mandate` here is legal only as `chosen` — any other value is in the
+  # wrong section and belongs in `### Mandated Departures` below.
+  - title: "### Unmandated Forks"
+    emitted: always
+    tier: 1
+    sentinel: true
+    render: items
+    field: unmandated_forks
+    items:
+      text: summary
+      rationale: rationale
+      tokens:
+        - { name: mandate, field: mandate, values: [covered, forced, chosen], passing: [chosen] }
+        - { name: verify-checks, field: verify_checks, values: [yes, no], passing: [yes, no] }
+  # A deviation that WAS applied — either a confirmed artifact fixed it (`covered`) or no alternative
+  # was valid and the constraint is named (`forced`). `verify-checks` keeps both values legal here:
+  # this mailbox reports accomplished facts, and the token only tells `sdd-verify` how to classify
+  # each one.
+  - title: "### Mandated Departures"
     emitted: always
     tier: 2
     sentinel: true
     render: items
-    field: deviations
+    field: mandated_departures
     items:
-      text: text
-      token: "verify-checks"
-      token_field: verify_checks
-      values: [yes, no]
-      # Both values are legal here: this mailbox reports accomplished facts, and the token only tells
-      # `sdd-verify` how to classify each one. Nothing belongs in another section.
-      passing: [yes, no]
+      text: summary
+      rationale: rationale
+      tokens:
+        - { name: mandate, field: mandate, values: [covered, forced, chosen], passing: [covered, forced] }
+        - { name: verify-checks, field: verify_checks, values: [yes, no], passing: [yes, no] }
   - title: "### Blocker"
     emitted: conditional
     when: has_blocker

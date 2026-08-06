@@ -23,7 +23,8 @@ casing or heading level is a section it will not find.
 | `### Files Changed` | always | the orchestrator, as context — and `sdd-verify` reads it from the artifact (Strict TDD coverage) |
 | `### TDD Cycle Evidence` | only in **Strict TDD Mode** | the orchestrator, as context; `sdd-verify` reads it from the artifact |
 | `### Test Summary` | only in **Strict TDD Mode** | the orchestrator, as context |
-| `### Deviations from Design` | always | Unresolved Decisions Guard — **Tier 2** |
+| `### Unmandated Forks` | always | Unresolved Decisions Guard — **Tier 1** |
+| `### Mandated Departures` | always | Unresolved Decisions Guard — **Tier 2** |
 | `### Blocker` | only when a blocker stopped you | the orchestrator: it puts the question to the user |
 | `### Issues Found` | always | the orchestrator, as context — **never** the blocker |
 | `### Remaining Tasks` | always | the orchestrator, to route: continuation batch vs verify |
@@ -36,6 +37,15 @@ The two conditional TDD sections are gated on the `**Mode**` line of the block, 
 line is part of the header: `Strict TDD` means both sections must be there, `Standard` means both
 are legitimately absent. That is the only condition — a batch cut short still ships the evidence
 table (see `~/.claude/skills/sdd-apply/strict-tdd.md`).
+
+**Split into summary/rationale.** Both `### Unmandated Forks` and `### Mandated Departures` declare
+it. Each item carries two parts, `summary` and `rationale`, in the `unmandated_forks` /
+`mandated_departures` JSON: `summary` is what the gate prints, `rationale` is the full reasoning —
+always emitted into this block, never printed by default. Both are non-empty, single-line strings; a
+missing one, or one with an embedded newline, fails the render naming the item and the part, and
+nothing reaches stdout. Each item also carries two tokens, each on its own `· ` line, in this fixed
+order: `mandate: covered|forced|chosen`, then `verify-checks: yes|no`, then `· rationale:` last —
+same item, same section.
 
 ## Which status
 
@@ -89,22 +99,47 @@ What each column means, and what counts as evidence, is in `~/.claude/skills/sdd
 - **Approval tests** (refactoring): {N}, or "None — no refactoring tasks"
 - **Pure functions created**: {N}
 
-<!-- matecito-ai: la declaración era prosa libre y `sdd-verify` tenía que interpretarla — una frase
-     ambigua caía en "no declarado" y escalaba a CRITICAL. El token la vuelve determinista: el
-     ejecutor tiene el contexto para decidirlo, el lector no tiene que adivinarlo. -->
-### Deviations from Design
-{One entry per deviation, each with this exact shape:
+<!-- matecito-ai: two Tier sections replace the old single mailbox — the guard classifies by section,
+     so an unresolved fork routes to Tier 1 (consult before applying) and everything you did apply
+     routes to Tier 2 (surface, don't block). Each item's tokens are literal, not prose — a phrase the
+     reader has to interpret is how "no declaration" and "declared clean" become indistinguishable. -->
+### Unmandated Forks
+{One entry per point the confirmed artifacts do not fix, where more than one resolution was valid.
+You applied NONE of them — the point stays untouched, its task stays open in `### Remaining Tasks`,
+and the fork travels back as a question before the next dispatch:
 
-- {what departed from the design, and why} — `verify-checks: yes|no`
+- {the fork, phrased so the user can answer it without reading the rest — naming the task it blocks
+  — plus your recommended resolution, if you have one}
+  · mandate: chosen
+  · verify-checks: yes|no
+  · rationale: {the resolutions that were valid, and why you recommend the one you do}
+
+`mandate: chosen` is the only legal value in this section — an item whose mandate is `covered` or
+`forced` belongs in `### Mandated Departures` instead.
+If none: "None."}
+
+### Mandated Departures
+{One entry per point where the implementation departs from the design and you DID apply it without
+consulting — because a confirmed artifact already fixed the point (`mandate: covered`), or no
+alternative was valid and you can name the concrete constraint that closed the others
+(`mandate: forced`):
+
+- {what you applied — for `forced`, name the constraint: an upstream artifact, an Accepted decision
+  record, or what leaving the point untouched broke}
+  · mandate: covered|forced
+  · verify-checks: yes|no
+  · rationale: {one line: the full reasoning behind the deviation — always emitted here, never printed at the gate by default}
 
 `verify-checks:` is a **literal token, not prose** — `sdd-verify` matches it to classify the
 deviation. Answer `yes` when the deviation touches a spec requirement or a task `criteria:`: the
 design artifact is now stale and verify will read it as a mismatch. Answer `no` when it is pure
 execution detail that nothing verifiable covers. You are the only one with the context to say
 which; the orchestrator is not, and verify will not guess.
-**A deviation with no token, or with a hedged one, is treated as `yes`** — the strict default, so
-that forgetting to declare is never the cheap way past the gate.
-If none: "None — implementation matches design."}
+**A deviation with no `verify-checks:` token, or a hedged one, is treated as `yes`** — the strict
+default, so forgetting to declare is never the cheap way past the gate. **A missing or hedged
+`mandate:` is treated as `chosen`** — an item you cannot back with a named `covered` or `forced`
+constraint was never legally absorbed; it belongs in `### Unmandated Forks` instead.
+If none: "None."}
 
 ### Issues Found
 {Problems discovered while implementing that did NOT stop you: a fragile test, a pre-existing
@@ -146,7 +181,10 @@ blocker is what stopped you — a batch that simply ran out of assigned tasks ha
 block. On an early exit the table still ships: one row per completed cycle, plus a row for the task
 you stopped on showing the last stage it reached (e.g. RED written, GREEN never run).}
 
-### Deviations from Design
+### Unmandated Forks
+{As above.}
+
+### Mandated Departures
 {As above.}
 
 ### Blocker
@@ -201,7 +239,10 @@ happened".
 
 {Strict TDD Mode only → `### TDD Cycle Evidence` and `### Test Summary`, as in `partial`.}
 
-### Deviations from Design
+### Unmandated Forks
+{As above.}
+
+### Mandated Departures
 {As above.}
 
 ### Blocker
@@ -253,7 +294,7 @@ the artifact; the next `sdd-apply` batch and `sdd-verify` read only the artifact
      recibe. Se declara acá porque este archivo es la fuente del formato de esta fase. -->
 ### Format of the `apply-progress` artifact
 
-Three sections are **mandatory** in the persisted artifact, and all three are cumulative — each batch
+Four sections are **mandatory** in the persisted artifact, and all four are cumulative — each batch
 merges its own into what previous batches left:
 
 ```markdown
@@ -267,11 +308,18 @@ Never drop a task a previous batch completed — that is what makes the next bat
 {Every file touched, from every batch, with what was done to it. `sdd-verify` reads THIS copy
 to scope its Strict TDD coverage check — it is not only orchestrator context.}
 
-### Deviations from Design
-{Every deviation from every batch, each in the exact shape this template declares above,
-including its `verify-checks: yes|no` token. `sdd-verify` reads THIS copy — not the return —
-to classify each deviation. A deviation that reaches the orchestrator and not the artifact
-is a deviation `sdd-verify` will never see.}
+### Unmandated Forks
+{Every fork from every batch that reached this point unresolved, each in the exact shape this
+template declares above, including its `mandate: chosen` and `verify-checks: yes|no` tokens and its
+`· rationale:` line. `sdd-verify` reads THIS copy — not the return — alongside `### Mandated
+Departures` below, to find every declared deviation.}
+
+### Mandated Departures
+{Every deviation from every batch that you applied without consulting, each in the exact shape this
+template declares above, including its `mandate: covered|forced` and `verify-checks: yes|no` tokens
+and its `· rationale:` line. `sdd-verify` reads THIS copy — not the return — to classify each
+deviation. A deviation that reaches the orchestrator and not the artifact is a deviation `sdd-verify`
+will never see; a rationale that never left the return is a rationale nobody persisted.}
 
 <!-- matecito-ai: artifact-only section, and deliberately so — it is INPUT for sdd-verify's browser run,
      not something the orchestrator gates on. It lives here because the spec authors UI scenarios in
@@ -298,7 +346,8 @@ THIS copy and marks CRITICAL when it is missing while Strict TDD was on — see
 `~/.claude/skills/sdd-verify/strict-tdd-verify.md`.}
 ```
 
-**`### Deviations from Design` goes in BOTH places**, with the same content: in the return, because
-the Unresolved Decisions Guard reads it there as Tier 2; in the artifact, because `sdd-verify` reads
-it there to apply the `verify-checks` classification. Same reason the TDD evidence lives in both.
-Dropping either copy breaks a different consumer, and neither failure is loud.
+**`### Unmandated Forks` and `### Mandated Departures` go in BOTH places**, with the same content: in
+the return, because the Unresolved Decisions Guard reads them there — Tier 1 and Tier 2
+respectively; in the artifact, because `sdd-verify` reads both there to find every declared deviation
+and apply the `verify-checks` classification. Same reason the TDD evidence lives in both. Dropping
+either copy breaks a different consumer, and neither failure is loud.
