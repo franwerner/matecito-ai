@@ -94,13 +94,27 @@ function renderLabeledBullets(section, data) {
   return out.join('\n');
 }
 
+// matecito-ai: `verification` is optional and leads the scenario, before GIVEN — its ABSENCE carries
+// meaning (`in-scope`), so a scenario without the line is not an unmarked scenario. Unknown fields
+// abort instead of being dropped: this renderer writes durable capability-specs, and content
+// disappearing from one without an error is the exact failure the token was introduced to close.
+const SCENARIO_FIELDS = ['name', 'given', 'when', 'then', 'verification'];
+
 function renderScenarios(section, data) {
   const items = get(data, section.field) || [];
   return items.map((s, i) => {
     for (const k of ['name', 'given', 'when', 'then']) {
       if (!present(s[k])) fail(`\`${section.field}[${i}]\` is missing \`${k}\` — every scenario needs name/given/when/then`);
     }
-    return `### Scenario: ${s.name}\n\n- **GIVEN** ${s.given}\n- **WHEN** ${s.when}\n- **THEN** ${s.then}`;
+    for (const k of Object.keys(s)) {
+      if (!SCENARIO_FIELDS.includes(k)) {
+        fail(`\`${section.field}[${i}]\` carries unknown field \`${k}\` — this renderer emits only ${SCENARIO_FIELDS.join(', ')}, so it would be dropped without a trace`);
+      }
+    }
+    const lines = [];
+    if (present(s.verification)) lines.push(`- **verification:** ${s.verification}`);
+    lines.push(`- **GIVEN** ${s.given}`, `- **WHEN** ${s.when}`, `- **THEN** ${s.then}`);
+    return `### Scenario: ${s.name}\n\n${lines.join('\n')}`;
   }).join('\n\n');
 }
 
@@ -217,7 +231,7 @@ function schema(contract) {
     if (s.render === 'labeled-bullets') {
       for (const b of s.bullets || []) out.push(`  ${b.field}: string${b.emitted === 'when-present' ? ' [optional]' : ''}   ("${b.label}")`);
     } else if (s.render === 'scenarios') {
-      out.push(`  ${s.field}: [{ name, given, when, then }]`);
+      out.push(`  ${s.field}: [{ name, given, when, then, verification? }]   (verification is optional — its absence means \`in-scope\`; any other field aborts the render)`);
     } else if (s.format) {
       const keys = [...new Set([...s.format.matchAll(/\{(\w+)\}/g)].map((m) => m[1]))];
       out.push(`  ${s.field}: [{ ${keys.join(', ')} }]   (each item rendered as "${s.format}")`);
@@ -228,9 +242,24 @@ function schema(contract) {
     }
   }
 
+  // matecito-ai: este bloque enumeraba index/key/file/section/scaffold y nunca los placeholders del
+  // `row:`. Los campos que sólo el row consume (`blurb`, `trigger`, …) no aparecían en ninguna parte
+  // del schema, así que un agente que lo seguía al pie renderizaba bien el artefacto y moría en la
+  // segunda llamada — y tres skills instruyen exactamente esa secuencia de dos invocaciones.
+  const declared = new Set([
+    ...(contract.location || []),
+    'title', 'status', 'path',
+    ...(contract.header || []).map((h) => h.field),
+    ...(contract.sections || []).map((s) => s.field),
+  ]);
   out.push('', '--index-entries (pass the same --data; a second invocation, no writes):');
   for (const e of contract.index_entries || []) {
     out.push(`  ${e.index}: ${e.key} keys a row into ${e.file} under "${e.section}" (scaffold: ${e.scaffold} when the file is absent)`);
+    const rowFields = [...new Set([...String(e.row || '').matchAll(/\{(\w+)\}/g)].map((m) => m[1]))];
+    const extra = rowFields.filter((f) => !declared.has(f));
+    if (extra.length) {
+      out.push(`    row needs ${extra.map((f) => `\`${f}\``).join(', ')} — supplied for this row only, absent from the artifact body above`);
+    }
   }
   return out.join('\n') + '\n';
 }

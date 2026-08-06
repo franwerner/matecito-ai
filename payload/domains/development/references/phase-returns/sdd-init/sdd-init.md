@@ -77,7 +77,8 @@ default.
 {In `none` mode: "None — inline only, nothing persisted."}
 
 ### Next Step
-Ready for `/sdd-intake <request>` (or `/sdd-explore <topic>` to investigate first).
+Ready for intake — hand the orchestrator the request and it dispatches `sdd-intake` (or `sdd-explore`
+first, to investigate).
 ```
 
 ## `status: blocked` — the project cannot be initialized as-is

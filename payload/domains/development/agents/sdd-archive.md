@@ -57,8 +57,8 @@ specifies for `sdd-archive`.
 Phase-specific refinements on top of Section D:
 - `executive_summary`: one-sentence confirmation that the change is archived and closed
 - `artifacts`: topic_keys or file paths written (e.g. `sdd/{change-name}/archive-report`, the durable capability-specs merged)
-- `next_recommended`: `none` — the normal value here, since the change is complete; a new
-  `/sdd-new` only when follow-up work is genuinely needed
+- `next_recommended`: `none` — the normal value here, since the change is complete; a new cycle only
+  when follow-up work is genuinely needed
 - `risks`: risks and assumptions left standing — e.g. artifacts that could not be merged or archived
   cleanly. Per D.4 this is never the destination of a decision the user owns nor of an ambiguity you
   resolved by assuming
