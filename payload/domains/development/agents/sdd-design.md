@@ -15,7 +15,7 @@ tools: Read, Edit, Write, Bash, mcp__codegraph, mcp__context7, mcp__plugin_engra
 # matecito-ai: mcp__context7 granted at server level (never individual tool names, same form as
 # mcp__codegraph above) — used only when about to name a library as an option under `### New
 # Decisions` (Step 4a). Deliberately NO `skills:` field: the trigger and the criterion live in the
-# `resolve-dependency-version` skill, reached via a directed `Read` of its deployed path, not a preload.
+# `resolve-library-docs` skill, reached via a directed `Read` of its deployed path, not a preload.
 ---
 
 You are the SDD **design** executor. Do this phase's work yourself. Do NOT delegate further.
@@ -62,7 +62,7 @@ Execute all steps from the skill directly in this context window:
 <!-- matecito-ai: routed, not duplicated — the full rule with its rationale lives in the skill (Step 2c);
      this is only the trigger, the deployed path and the why. sdd-design has no `Skill` tool and no
      `skills:` field on purpose (see frontmatter note), so this is a directed `Read`, never a preload. -->
-4a. Before naming a library as an option under `### New Decisions`, Read `~/.claude/skills/resolve-dependency-version/SKILL.md` and follow it: it resolves the library's current version and support/deprecation status through context7 before you state the option. A design that proposes no library skips this entirely.
+4a. Before naming a library as an option under `### New Decisions`, Read `~/.claude/skills/resolve-library-docs/SKILL.md` and follow it: it resolves the library's current version and support/deprecation status through context7 before you state the option. A design that proposes no library skips this entirely.
 <!-- matecito-ai: align with EDRs; block on conflict; flag uncovered decisions -->
 4b. Align decisions with existing EDRs (cite them). If the design contradicts an Accepted EDR → return `blocked`. If an applicable Accepted EDR is internally inconsistent, or did not foresee this case and following it would break something → return `blocked` with both sides and the options; never comply knowing it breaks something. Emit New Decisions in BOTH places — `## New Decisions` in the artifact AND `### New Decisions` **in your return** (the orchestrator's guard reads the return only) — with the architectural choices this change requires, **always, store or no store**; only the "(not yet in EDRs)" suffix, the domain citation and the bootstrap recommendation are gated on the store existing.
 <!-- matecito-ai: the blocking test was self-assessed — run in the executor's head, verdict published

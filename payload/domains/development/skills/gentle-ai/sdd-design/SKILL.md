@@ -121,12 +121,12 @@ If the project has `.matecito-ai/development-specs/` (durable capability-specs u
 `## New Decisions` can include a library as one of the alternatives you propose to the user. Left to
 itself, this phase would state those options from training memory — a version one or two majors
 behind, an API shape or a support/deprecation status that no longer holds. That is exactly the failure
-`resolve-dependency-version` exists to prevent, and it is already the ecosystem's single choke point
+`resolve-library-docs` exists to prevent, and it is already the ecosystem's single choke point
 for this (the domain fragment names it as the sole version-resolution path; bootstrap, mine and apply
 all defer to it instead of copying its criterion) — so this step routes to it rather than repeating it.
 
 **Before naming a library as one of the options under `## New Decisions`**, read
-`~/.claude/skills/resolve-dependency-version/SKILL.md` (the deployed path — this phase has no `Skill`
+`~/.claude/skills/resolve-library-docs/SKILL.md` (the deployed path — this phase has no `Skill`
 tool and no `skills:` preload, so a directed `Read` is how you reach it) and follow it. It resolves the
 library's current version and support/deprecation status through the `context7` MCP, corroborated
 against the ecosystem's remote lookup, and reports any discrepancy between the two rather than
@@ -328,8 +328,8 @@ Three things that file makes explicit and that this phase gets wrong most often:
 <!-- matecito-ai: EDRs are binding — respect Accepted EDRs in .matecito-ai/edr/; never contradict one silently (report as blocker); flag uncovered decisions for capture via development-decisions-bootstrap (see Step 2a) -->
 - ALWAYS read `.matecito-ai/edr/` (if present) before designing; treat Accepted EDRs as binding constraints and surface conflicts as blockers — including the case where the EDR itself is the inconsistent one, or did not foresee this case (Step 2a)
 - ALWAYS emit New Decisions in BOTH places — `## New Decisions` in the artifact and `### New Decisions` **in your return** — whether or not `.matecito-ai/edr/` exists (Step 2a-bis). The guard reads the return only. Only the EDR-naming parts are gated on the store; the detection is not. A repo with no captured decisions is the one that most needs its architectural choices raised, not the one where they pass silently. **What lands in this section is filtered by the blocking test below** — a decision the test catches returns `blocked` instead of being filed here
-<!-- matecito-ai: recordatorio apuntado — la regla completa con su porqué vive en `resolve-dependency-version` (Step 2c), no se duplica acá. -->
-- **Before naming a library as an option under `## New Decisions`**, read `~/.claude/skills/resolve-dependency-version/SKILL.md` and follow it (Step 2c) — it resolves the version and support/deprecation status through context7 before you state the option. Never restate its version-choice criterion inline
+<!-- matecito-ai: recordatorio apuntado — la regla completa con su porqué vive en `resolve-library-docs` (Step 2c), no se duplica acá. -->
+- **Before naming a library as an option under `## New Decisions`**, read `~/.claude/skills/resolve-library-docs/SKILL.md` and follow it (Step 2c) — it resolves the version and support/deprecation status through context7 before you state the option. Never restate its version-choice criterion inline
 <!-- matecito-ai: recordatorio apuntado — la doctrina completa vive en el fragmento del dominio (cargado en Step 1), no se duplica acá. Aplica sobre todo a la sección "Interfaces / Contracts". -->
 - **Before pinning ANY contract or definition** in the design — domain entity, DB model/migration/schema, DTO, public/exported type, interface or enum, event payload, or config schema (this is what the "Interfaces / Contracts" section materializes) — apply **"Contract & definition shapes — never inferred"** from the domain fragment (`~/.claude/matecito-ai/domains/development.md`, read in Step 1). Never infer which fields it has nor their types. Pinned-and-coherent upstream → carry it through; unspecified, or pinned by something that conflicts or does not cover this case → return `blocked` proposing the FULL contract as one reviewable unit
 - Every decision MUST have a rationale (the "why")

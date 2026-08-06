@@ -228,7 +228,7 @@ Si el usuario quiere un tema que no está en el catálogo:
 
 1. Tratalo con el procedimiento genérico, haciéndole 2-3 preguntas para extraer qué decide, opciones y qué materializar.
 2. **Asignale un dominio canónico.** Mirá el "criterio de pertenencia" en cada `concerns/<dominio>/INDEX.md` para decidir dónde encaja (incluí los reservados: `lifecycle`, `integration`, `privacy`, `release`, `domain-logic`, `compliance`, `ux-product`). No inventés un dominio nuevo. Si genuinamente no encaja en ninguno, es señal de que falta un dominio en la taxonomía — eso es una decisión de catálogo, avisале al usuario, no lo resuelvas en el repo.
-3. Materializá el EDR en `.matecito-ai/edr/<dominio>/<slug>.md`. Una fase custom es **siempre solo para este proyecto**: no toques el catálogo `concerns/` (es read-only, se deploya desde el repo matecito-ai). Si el concern merece sumarse al catálogo para todos los proyectos, eso se hace editando `payload/domains/development/skills/.../concerns/` en el repo matecito-ai (ver "Ratchet"), no desde acá.
+3. Materializá el EDR en `.matecito-ai/edr/<dominio>/<slug>.md`. Una fase custom es **siempre solo para este proyecto**: no toques el catálogo `concerns/` (es read-only, se deploya desde el repo matecito-ai). Si el concern merece sumarse al catálogo para todos los proyectos, eso se hace editando `payload/domains/development/skills/matecito-ai/development-decisions-bootstrap/concerns/` en el repo matecito-ai (ver "Ratchet"), no desde acá.
 
 ---
 
@@ -252,7 +252,7 @@ Tres preguntas rápidas (pueden ir en un turno):
 <!-- matecito-ai: choke point único — cualquier otro punto de entrada (paso 6 de "Cómo tratar una fase",
      modo update) llega a esta misma pregunta en vez de resolver la versión por su cuenta. No dupliques
      esta resolución en otro lado. -->
-1. **Versión.** Si el manifest la tiene, mostrala como default — pero confirmala contra documentación vigente antes de fijarla; si el manifest no la tiene, la resolución te aporta la versión actual. Usá la skill `resolve-dependency-version` (corrés en el thread principal, que ya tiene el MCP que necesita) para esta resolución.
+1. **Versión.** Si el manifest la tiene, mostrala como default — pero confirmala contra documentación vigente antes de fijarla; si el manifest no la tiene, la resolución te aporta la versión actual. Usá la skill `resolve-library-docs` (corrés en el thread principal, que ya tiene el MCP que necesita) para esta resolución.
 2. **Por qué (1-2 líneas).** Si no tiene una razón clara, sugerí una y pedí confirmación.
 3. **Alternativas descartadas (1 línea).** 1-3 que se consideraron, o "ninguna evaluada" (información honesta).
 

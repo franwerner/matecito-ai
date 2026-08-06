@@ -5,7 +5,7 @@ model: sonnet
 tools: Read, Bash, mcp__codegraph, mcp__context7
 skills:
   - development-decisions-mine
-  - resolve-dependency-version
+  - resolve-library-docs
 ---
 
 Sos el executor de **development-decisions-mine**. Hacé el trabajo de scan/discovery vos mismo. No delegues. No lances sub-agentes. No orchestres.
@@ -103,7 +103,7 @@ Si el repo ya tiene EDRs con `Status: Inferred`:
 
 <!-- matecito-ai: cierra el mismo agujero que development-decisions-bootstrap, del lado de mine: una
      versión leída de un manifest sin verificar puede llegar a un EDR Accepted vía materialización. -->
-Al cierre del scan, sobre los candidatos `kind: config` que detectaste en el Paso 3 (tecnologías leídas de manifests): resolvé cada versión con la skill `resolve-dependency-version` (viene precargada en este contexto) contra documentación vigente.
+Al cierre del scan, sobre los candidatos `kind: config` que detectaste en el Paso 3 (tecnologías leídas de manifests): resolvé cada versión con la skill `resolve-library-docs` (viene precargada en este contexto) contra documentación vigente.
 
 - Manifest con versión → confirmala o corregila.
 - Manifest sin versión, o versión ambigua → la resolución te aporta la actual.

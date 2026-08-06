@@ -1,9 +1,9 @@
 ---
-name: resolve-dependency-version
-description: Defines when and how to consult the context7 MCP for current library documentation — version resolution before installing or pinning ANY dependency, library/framework configuration, API usage, version migrations, and library-specific debugging. USE THIS SKILL whenever you are about to add or install a dependency, write a version into a manifest (package.json, go.mod, requirements.txt, Cargo.toml, …), write configuration or API calls for a library/framework, migrate a library across versions, or debug an error specific to a library. Your training data is stale for versions and APIs — resolve them, never recall them.
+name: resolve-library-docs
+description: Defines when and how to consult the context7 MCP for current library documentation — covers version resolution before installing or pinning ANY dependency, library/framework configuration, API usage, cross-version migrations, and library-specific debugging; not version resolution alone. USE THIS SKILL whenever you are about to add or install a dependency, write a version into a manifest (package.json, go.mod, requirements.txt, Cargo.toml, …), write configuration or API calls for a library/framework, migrate a library across versions, or debug an error specific to a library. Your training data is stale for versions and APIs — resolve them, never recall them.
 ---
 
-# context7 — current library docs before you act
+# resolve-library-docs — current library docs before you act
 
 ## The problem this solves
 
