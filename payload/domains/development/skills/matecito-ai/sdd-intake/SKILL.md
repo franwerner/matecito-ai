@@ -114,6 +114,26 @@ both at the INTAKE GATE. Neither is executed here — this phase decides, others
 Absence is not neutral: both downstream gates read a missing flag as "does not apply" and close
 **silently**, so a flag you drop is a check nobody notices was skipped.
 
+<!-- matecito-ai: a THIRD classification value, but not a third "downstream flag" — it has no phase
+     reader. Presence-based on `repo.components`, same gate family as EDRs and capability-specs. -->
+Plus **`components`**, multivalued — unlike `diagram` and `ui-test`, **no phase reads it**: it is
+metadata for the person who ratifies it at the INTAKE GATE, nothing more. It exists only when the
+project's `repo.components` set is declared (**presence-based gate**, per
+`~/.claude/references/repo-components/README.md`): with no set declared in the project config, do
+not emit the bullet and do not mention components anywhere in the brief. With the set declared:
+
+- **Infer** it by mapping the request's scope against `repo.components[].paths`. Emit the line
+  **always** when the axis is active — an absent `Components` line with the set declared is an
+  anomaly, the same weight as a missing `Diagram`, never "the axis doesn't apply here".
+- **Multivalued**: name every component whose `paths` cover the request's scope, comma-separated,
+  using each component's exact `name`. Never a path, a folder, a path prefix, or an invented label.
+- **No match → `unassigned`**: if no declared `paths` cover the request's scope, emit the line with
+  the single token `unassigned`. Do NOT omit the line to mean "nothing matched" — that omission means
+  the axis is off, and conflating the two erases the difference between "this repo doesn't use the
+  axis" and "this change didn't land on any declared surface".
+- **Ratified once**, at the INTAKE GATE alongside `diagram` and `ui-test`. No later phase re-asks,
+  re-infers, or decides it on its own.
+
 ### Step 4: Triage — recommend a lane
 
 Recommend a lane. You only **recommend**; the orchestrator surfaces it and the user confirms or adjusts — never apply a lane unilaterally.
@@ -188,7 +208,12 @@ Persist the same content (Step 6).
   discovery form is answered.
 - **Classification** — Step 3's output: type, domains touched, size, plus the two downstream flags
   `diagram` and `ui-test`, each with its one-line reason. The flags are not optional extras: they
-  exist nowhere else, and the phases that read them close silently when they are absent.
+  exist nowhere else, and the phases that read them close silently when they are absent. Plus
+  **`Components`**, multivalued and reader-less (Step 3) — emit it only when `repo.components` is
+  declared for this project; when you render the return block (Step 7's tool), supply the boolean
+  that gates this bullet (`components_axis_active`) explicitly: `true` with the line rendered, `false`
+  when the set is not declared, never omitted — an omitted gate boolean fails the render, it does not
+  read as "off".
 - **Discovery answers** — the user's answers **verbatim**. Never paraphrase one into something more
   convenient, never fill in a gap they left open.
 - **Triage** — the lane from Step 4 (base + enabled add-ons) with one line on why. A recommendation,
@@ -221,6 +246,8 @@ This brief is the entry artifact for the flow. The next phase reads it as its st
 - Be honest in triage: trivial changes should skip the full flow.
 <!-- matecito-ai: explicit rule — the flags used to drop out of the brief with nothing complaining. -->
 - ALWAYS emit both downstream flags (`diagram`, `ui-test`) under `### Classification` on Pass 2, whatever their value (Step 3). This phase is their only producer; `sdd-design` and `sdd-spec`/`sdd-verify` are their only readers, and each treats an absent flag as `not-needed` **silently**. Decide them — never generate a diagram, never run proofshot.
+<!-- matecito-ai: presence-based, reader-less on purpose — never treat it like diagram/ui-test's "absent = not-needed" silence, because a set-declared repo with a missing line is the anomaly, not the default. -->
+- `Components` is presence-based, not absence-tolerant: with `repo.components` declared, emit the line on EVERY Pass-2 brief — a missing line is an anomaly, not "the axis doesn't apply". With no set declared, never emit it and never mention components. It has NO phase reader — do not invent one, do not use it to scope any later phase's work. When rendering the return (Step 7), the gate boolean (`components_axis_active`) is REQUIRED and explicit — never omit it hoping it defaults to "off".
 <!-- matecito-ai: la forma del retorno tiene UNA fuente. Si volvés a escribirla acá, creaste la copia que este cambio vino a eliminar. -->
 - The SHAPE of your return is `~/.claude/references/phase-returns/sdd-intake/sdd-intake.md` — both blocks, all four statuses. Follow it literally and never reconstruct it from memory (Step 7). This skill defines WHAT goes in each section, never how the section looks.
 - Return envelope per **Section D** from `~/.claude/skills/_shared/sdd-phase-common.md`.

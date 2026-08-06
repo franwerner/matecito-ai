@@ -105,6 +105,13 @@ empty the guard is skipped silently and the section is absent with it — no men
 in the brief. That absence is a legitimate return, not a dropped section. When the store IS active
 the section is emitted, including in the all-clear case.
 
+The `Components` bullet **inside** `### Classification` has the same kind of gate, one level deeper:
+it is a **conditional bullet**, present only when `repo.components` is declared in the project config
+(`components_axis_active`). Resolved false, the bullet is legitimately absent from `### Classification`
+— no mention of components anywhere in the brief. Resolved true, it is required like any other bullet:
+supply it or the render fails naming the field. Unlike `Diagram` and `UI test`, no phase reads this
+value — it is metadata for the person confirming the gate.
+
 ## `status: done` — Pass 2, the brief
 
 ```markdown
@@ -122,6 +129,8 @@ the section is emitted, including in the all-clear case.
      al persistir el brief se perdían, y el lector downstream no los encontraba. Van en el brief. -->
 - Diagram: {needed|not-needed} — {one line why}
 - UI test: {needed|not-needed} — {one line why}
+{If `repo.components` is declared: "- Components: {name[, name...] | unassigned}" — omit this bullet
+entirely when the project config declares no `repo.components`.}
 
 ### Discovery answers
 - {question}: {answer verbatim — never paraphrased into something more convenient}

@@ -43,11 +43,26 @@ function derive(spec, data) {
   fail(`unknown derived value \`${spec}\``);
 }
 
+// A section with a single `token` field desugars to a one-element `tokens` list here, so the render
+// and validate loops have exactly one shape to walk regardless of how many tokens an item carries.
+// `sdd-design`'s single-token contract goes through this path unchanged — same output either way.
+function tokensOf(items) {
+  if (items.tokens) return items.tokens;
+  if (items.token) return [{ name: items.token, field: items.token_field, values: items.values, passing: items.passing }];
+  return [];
+}
+
 // --- rendering ------------------------------------------------------------
 
 function renderLabeledBullets(section, data) {
   const out = [];
   for (const b of section.bullets || []) {
+    // Same shape as the section-level gate below: required, never defaulted to "off" when omitted.
+    if (b.emitted === 'conditional') {
+      const gate = data[b.when];
+      if (gate === undefined) fail(`missing required field \`${b.when}\` — it decides whether "${b.label}" is emitted, and guessing it is how a bullet goes missing`);
+      if (!gate) continue;
+    }
     let value;
     if (b.derived) value = derive(b.derived, data);
     else {
@@ -84,20 +99,37 @@ function renderItems(section, data) {
   const spec = section.items || {};
   const out = [];
   for (const [i, item] of list.entries()) {
-    const text = typeof item === 'string' ? item : item[spec.text || 'text'];
-    if (!text) fail(`\`${section.field}[${i}]\` has no \`${spec.text || 'text'}\``);
+    const textField = spec.text || 'text';
+    const text = typeof item === 'string' ? item : item[textField];
+    if (!text) fail(`\`${section.field}[${i}]\` has no \`${textField}\``);
+    if (String(text).includes('\n')) fail(`\`${section.field}[${i}].${textField}\` spans multiple lines — each part must be a single line`);
     out.push(`- ${text}`);
-    if (!spec.token) continue;
 
-    const value = typeof item === 'object' ? item[spec.token_field] : undefined;
-    if (value === undefined) fail(`\`${section.field}[${i}]\` has no \`${spec.token_field}\` — the token is what proves the test ran`);
-    if (spec.values && !spec.values.includes(value)) {
-      fail(`\`${section.field}[${i}].${spec.token_field}\` is "${value}", not one of ${JSON.stringify(spec.values)}`);
+    // One or more tokens, in declared order — a single `token` desugars to one via `tokensOf`.
+    for (const t of tokensOf(spec)) {
+      const value = typeof item === 'object' ? item[t.field] : undefined;
+      if (value === undefined) fail(`\`${section.field}[${i}]\` has no \`${t.field}\` — a declared token is required, never inferred`);
+      if (t.values && !t.values.includes(value)) {
+        fail(`\`${section.field}[${i}].${t.field}\` is "${value}", not one of ${JSON.stringify(t.values)}`);
+      }
+      // matecito-ai: el mensaje nombraba la contradicción y no la salida. El ejecutor que declara
+      // honestamente un valor no-`passing` tiene a dónde ir —su propia skill se lo dice— pero acá
+      // llegaba un error que sólo le decía que estaba mal, en el momento en que más barato es
+      // recordarle dónde va el ítem.
+      if (t.passing && !t.passing.includes(value)) {
+        fail(`\`${section.field}[${i}].${t.field}\` is "${value}", which contradicts ${section.title} — an item with this token does not belong in that section: return \`blocked\` and file it under \`### Blocker\` instead`);
+      }
+      out.push(`  · ${t.name}: ${value}`);
     }
-    if (spec.passing && !spec.passing.includes(value)) {
-      fail(`\`${section.field}[${i}].${spec.token_field}\` is "${value}", which contradicts ${section.title} — that item belongs in the blocker section`);
+
+    // `items.rationale` IS the opt-in for the summary/rationale split (see the phase-return `.md`).
+    // Both parts are required and single-line — a section with this key never emits a half item.
+    if (spec.rationale) {
+      const rationale = typeof item === 'object' ? item[spec.rationale] : undefined;
+      if (!rationale) fail(`\`${section.field}[${i}]\` has no \`${spec.rationale}\` — a declaring section requires both parts`);
+      if (String(rationale).includes('\n')) fail(`\`${section.field}[${i}].${spec.rationale}\` spans multiple lines — each part must be a single line`);
+      out.push(`  · rationale: ${rationale}`);
     }
-    out.push(`  · ${spec.token}: ${value}`);
   }
   return out.join('\n');
 }
@@ -274,20 +306,23 @@ function schema(contract) {
       for (const l of s.lists || []) out.push(`  ${l.field}: [string]   ("${l.label}"; empty list renders "None")`);
     } else if (s.render === 'labeled-bullets') {
       for (const b of s.bullets || []) {
-        if (b.derived) out.push(`  (derived from ${b.derived.split(':')[1]} — do NOT supply "${b.label}")`);
-        else if (b.format) out.push(`  ${b.field}: { ${keysOf(b.format).join(', ')} }   (rendered as "${b.format}")`);
-        else out.push(`  ${b.field}: string`);
+        const bWhen = b.emitted === 'conditional' ? ` [emitted only when \`${b.when}\` is true]` : '';
+        if (b.derived) out.push(`  (derived from ${b.derived.split(':')[1]} — do NOT supply "${b.label}")${bWhen}`);
+        else if (b.format) out.push(`  ${b.field}: { ${keysOf(b.format).join(', ')} }   (rendered as "${b.format}")${bWhen}`);
+        else out.push(`  ${b.field}: string${bWhen}`);
+        if (b.emitted === 'conditional') out.push(`  ${b.when}: boolean   (required — decides whether "${b.label}" bullet is emitted)`);
       }
     } else if (s.render === 'fields') {
       out.push(`  ${s.lead}: string`);
       for (const f of s.fields || []) out.push(`  ${f.field}: string   ("${f.label}")`);
     } else if (s.render === 'items') {
       const spec = s.items || {};
-      const shape = spec.token
-        ? `[{ ${spec.text || 'text'}: string, ${spec.token_field}: ${JSON.stringify(spec.passing || spec.values)} }]`
-        : `[{ ${spec.text || 'text'}: string }]`;
-      out.push(`  ${s.field}: ${shape}`);
+      const fields = [`${spec.text || 'text'}: string`];
+      for (const t of tokensOf(spec)) fields.push(`${t.field}: ${JSON.stringify(t.passing || t.values)}`);
+      if (spec.rationale) fields.push(`${spec.rationale}: string`);
+      out.push(`  ${s.field}: [{ ${fields.join(', ')} }]`);
       out.push(`  (empty list renders the "None." sentinel — never omit the field)`);
+      if (spec.rationale) out.push(`  (${spec.text || 'text'} and ${spec.rationale} are both required, single-line, non-empty — ${spec.text || 'text'} prints at the gate, ${spec.rationale} never does by default)`);
     } else if (s.render === 'line') {
       out.push(`  ${s.field}: string`);
     }
