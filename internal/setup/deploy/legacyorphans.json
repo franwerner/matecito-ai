@@ -800,6 +800,13 @@
   },
   {
     "root": "claude",
+    "path": "skills/resolve-dependency-version/SKILL.md",
+    "hashes": [
+      "73aa3739f304e3bec6d8a2224f33c62a8c9babde5c89f17bd11e70ce2852153b"
+    ]
+  },
+  {
+    "root": "claude",
     "path": "skills/roadmap/INDEX-TEMPLATE.md",
     "hashes": [
       "27fab5794cfc6f844c3ba296359531a4316ca019372cf69d79b76c629cb5f3c4"
