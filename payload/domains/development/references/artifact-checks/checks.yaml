@@ -3,7 +3,7 @@
 # never by a human. Each row under `checks:` is data: a `kind` the engine already knows how to
 # evaluate, aimed at one store. Adding a check of an EXISTING kind is one row here, no code change
 # (the ratchet); a check no existing kind covers is what grows this file's `checks:` list AND the
-# engine — see `README.md` → "El ratchet" for the full rule and why the 19 kinds below are closed.
+# engine — see `README.md` → "El ratchet" for the full rule and why the 20 kinds below are closed.
 #
 # `severity_map` only translates for display — `error|warning|nota` -> `CRITICAL|WARNING|SUGGESTION`.
 # Exit-code policy is the script's, fixed by its CLI contract; it is not derived from this map.
@@ -134,9 +134,13 @@ checks:
   # este check no filtra por store: resuelve la ruta relativa contra el árbol y verifica que exista.
   # Un link mal contado en niveles se reportaba como si el problema fuera el store destino, que es la
   # pista equivocada — el lector va a buscar un EDR faltante en vez de contar los `../`.
-  - { kind: dangling-link, store: capability-spec, code: "capability-spec.dangling-link.referencias", section: "## Referencias", target_store: edr, severity: error, message: "{file}: un link bajo `Referencias` apunta a `{href}`, que no resuelve a ningún archivo existente — referencia colgada." }
+  - { kind: dangling-link, store: capability-spec, code: "capability-spec.dangling-link.referencias", section: "## Referencias", target_store: capability-spec, severity: error, message: "{file}: un link bajo `Referencias` apunta a `{href}`, que no resuelve a ningún archivo existente — referencia colgada." }
   - { kind: dangling-link, store: capability-spec, code: "capability-spec.dangling-link.reemplazado-por", field: replaced_by, when_status: [Deprecated], target_store: capability-spec, severity: error, message: "{file}: Deprecated con `Reemplazado por` apuntando a `{href}`, que no existe — referencia colgada." }
   - { kind: dangling-link, store: edr, code: "edr.dangling-link.relacionados", section: "## Relacionados", target_store: edr, severity: error, message: "{file}: un link bajo `Relacionados` apunta a `{href}`, que no existe — referencia colgada." }
+
+  # --- cross-store-link (2, one per store: store closure) -----------------------
+  - { kind: cross-store-link, store: capability-spec, code: "capability-spec.cross-store-link.fuera-de-store", scan: body, target_store: capability-spec, requires: [root], severity: warning, message: "{file}: un link del cuerpo apunta a `{href}`, fuera de `.matecito-ai/development-specs/` — el store de capability-specs es cerrado." }
+  - { kind: cross-store-link, store: edr, code: "edr.cross-store-link.fuera-de-store", scan: body, target_store: edr, requires: [root], severity: warning, message: "{file}: un link del cuerpo apunta a `{href}`, fuera de `.matecito-ai/edr/` — el store de EDRs es cerrado." }
 
   # --- orphan-folder (2, one per store) -------------------------------------------
   - { kind: orphan-folder, store: edr, code: "edr.orphan-folder.dominio-vacio", severity: nota, message: "{domain}: dominio con INDEX.md pero ningún EDR — carpeta vacía en la salida; limpiá la carpeta o el índice." }

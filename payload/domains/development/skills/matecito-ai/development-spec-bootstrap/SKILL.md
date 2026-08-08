@@ -27,7 +27,7 @@ El concepto canónico —qué cuenta como capability-spec, la separación con el
 
 A diferencia de `development-decisions-bootstrap`, esta skill **no tiene catálogo de datos**: las capabilities no son una taxonomía fija, se **descubren por proyecto**. Lo único fijo es la **taxonomía de tipos**, que vive acá mismo (abajo). Todo el motor es este `SKILL.md`.
 
-- **Entrada:** la descripción del sistema + el PRD/proposal si existe + los EDRs ya definidos (para linkear, no repetir).
+- **Entrada:** la descripción del sistema + el PRD/proposal si existe + los EDRs ya definidos (para no repetir su contenido; la relación con ellos queda conceptual, nunca un link).
 - **Salida:** capability-specs en `.matecito-ai/development-specs/<type>/<capability>.md`, con índice raíz (enruta por tipo) + un `INDEX.md` por tipo.
 
 ---
@@ -73,7 +73,7 @@ Si `.matecito-ai/development-specs/INDEX.md` ya existe con contenido: **NO rehag
 
 **Permití `Draft`.** Una capability puede quedar `Draft` (le faltan escenarios o bordes) con una nota de qué falta. Mejor un spec honesto en Draft que uno inventado en Accepted.
 
-**Linkeá al EDR, no lo repitas.** Cuando un comportamiento está gobernado por una decisión técnica ya escrita en un EDR, referencialo en "Referencias"; no copies el cómo/por qué al spec.
+**No repitas el EDR, y no lo linkees.** Cuando un comportamiento está gobernado por una decisión técnica ya escrita en un EDR, el spec no lo copia ni lo referencia — decí el comportamiento en lenguaje de dominio. El store de capability-specs es cerrado: no nombra ni linkea el store de EDRs.
 
 ---
 
@@ -85,14 +85,14 @@ Antes de la primera pregunta, inspeccioná el repo:
 ls -la
 test -d .matecito-ai/development-specs && echo "--- specs existentes (por tipo) ---" && find .matecito-ai/development-specs -name '*.md' | sort
 find . -type d -name 'development-specs' -not -path './.matecito-ai/development-specs' 2>/dev/null | sort   # antipatrón: store fuera de la raíz — recorré TODO el árbol, no solo .matecito-ai/
-test -d .matecito-ai/edr && echo "--- EDRs a linkear ---" && find .matecito-ai/edr -name '*.md' | sort
+test -d .matecito-ai/edr && echo "--- EDRs existentes (contexto conceptual, no se linkean) ---" && find .matecito-ai/edr -name '*.md' | sort
 test -f .matecito-ai/config.json && grep -A 20 '"repo"' .matecito-ai/config.json   # ¿el eje components ya está declarado?
 find . -maxdepth 3 \( -name 'package.json' -o -name 'go.mod' -o -name 'pyproject.toml' -o -name 'Cargo.toml' -o -name 'pom.xml' -o -name 'build.gradle' -o -name '*.csproj' -o -name 'composer.json' -o -name 'Gemfile' \) 2>/dev/null | sort   # candidatos a componente: directorios con manifiesto de proyecto propio
 test -f CLAUDE.md && echo "--- CLAUDE.md ---" && cat CLAUDE.md
 find . -maxdepth 2 -iname 'PRD*' -o -iname 'README*' -o -iname '*proposal*' 2>/dev/null | head
 ```
 
-Con eso sabés: si hay specs previos (→ modo update), si el store quedó materializado **fuera de la raíz** (antipatrón — ver "El store nunca se parte por app" abajo), si el eje `components` ya está declarado, qué manifiestos hay (candidatos al set de componentes), qué EDRs existen (para linkear), y si hay un PRD del que derivar las capabilities.
+Con eso sabés: si hay specs previos (→ modo update), si el store quedó materializado **fuera de la raíz** (antipatrón — ver "El store nunca se parte por app" abajo), si el eje `components` ya está declarado, qué manifiestos hay (candidatos al set de componentes), qué EDRs existen (contexto conceptual — el store de specs no los linkea ni los nombra), y si hay un PRD del que derivar las capabilities.
 
 **El store nunca se parte por app.** El comportamiento casi nunca respeta el límite de una sola app (ver `~/.claude/references/spec/README.md` → "Por qué el store nunca se parte por app" para el porqué completo). Si el `find` de arriba encuentra un `development-specs/` fuera de `.matecito-ai/`, o si te piden crear el store dentro de una app puntual: **no lo hagas en silencio y no lo discutas** — explicá el porqué (partir el store fuerza un dueño arbitrario o un spec duplicado que diverge) y **ofrecé** declarar el eje `components` en su lugar. Consolidar un store ya existente fuera de la raíz es **destructivo** (puede haber contenido divergente) — ofrecelo, nunca lo hagas automático.
 
@@ -164,9 +164,9 @@ Procedimiento genérico del motor, para cualquier tipo:
    - **Entidades y estados** (lifecycle) — transiciones y qué las dispara.
    - **Errores de cara al actor** — el contrato de error observable.
 4. **Escenarios.** Por cada regla/rama/borde relevante, escribí un Given/When/Then. Es el paso que vuelve verificable la capability; no lo saltees.
-5. **Referencias.** Si algún comportamiento está gobernado por un EDR existente (lo viste en pre-flight), linkealo. Si notás que falta un EDR (una decisión técnica no tomada), anotalo como pregunta abierta para `development-decisions-bootstrap` — no lo resuelvas acá.
+5. **Referencias.** `## Referencias` es sólo para relacionar esta capability con otra del **mismo store** (`../<type>/<capability>.md`) — linkeala si aplica. No es el lugar para nombrar ni linkear un EDR: la relación con la decisión técnica que gobierna este comportamiento queda conceptual (ver vocabulario), nunca materializada como link. Si notás que falta una decisión técnica sin tomar, anotalo como pregunta abierta para `development-decisions-bootstrap` — no lo resuelvas ni lo linkees acá.
 6. **Componentes** (solo si `repo.components` está declarado — gate presence-based, ver `~/.claude/references/repo-components/README.md` → "Gate presence-based"). Preguntá por **comportamiento**, no por implementación: de las secciones que ya recorriste (Actores, Flujo principal, Reglas de negocio…), ¿qué superficies del set participan? Es una inferencia **por spec**, independiente de la del set: el set sale de los manifiestos del repo; esta sale de qué comportamiento describe la capability. Confirmá antes de escribir la línea (ej. "esta capability toca `api` y `ui`, ¿correcto?"). Si el set no está declarado, saltá este paso entero — no lo preguntes.
-7. **Self-check de vocabulario** antes de escribir: ningún identificador interno volátil en ninguna sección. Reformulá a idioma de dominio / contrato público, o mové el ancla técnica a un link en "Referencias".
+7. **Self-check de vocabulario** antes de escribir: ningún identificador interno volátil en ninguna sección, y ninguna sección nombra ni linkea un EDR u otro artefacto fuera del store. Reformulá el ancla técnica a idioma de dominio / contrato público — sin válvula de escape: no se mueve a un link en "Referencias" ni a ningún otro lado fuera del spec.
 8. **Materializá** el spec en `.matecito-ai/development-specs/<type>/<capability>.md`.
 
 ---
@@ -235,11 +235,11 @@ Los templates son el **contrato canónico** y viven en `~/.claude/references/spe
 
 ## Anti-patterns que esta skill evita
 
-- ❌ Nombrar identificadores internos volátiles (clases, métodos, columnas, rutas, errores internos) en cualquier sección → idioma de dominio + contrato público; el ancla técnica va como link al EDR en "Referencias".
+- ❌ Nombrar identificadores internos volátiles (clases, métodos, columnas, rutas, errores internos) en cualquier sección → idioma de dominio + contrato público. El ancla técnica se reformula, punto — no hay válvula de escape hacia "Referencias" ni hacia ningún link al EDR.
 - ❌ Escribir el *por qué* o el *cómo* en el spec → eso es EDR (por qué) o código (cómo). El spec es el *qué hace*.
 - ❌ Afirmar comportamiento sin un escenario Given/When/Then que lo verifique → toda regla/rama/borde relevante lleva su escenario.
 - ❌ Quedarse en el happy path → empujar los casos borde es el valor de la skill.
-- ❌ Repetir el contenido de un EDR en el spec → linkearlo, no copiarlo.
+- ❌ Repetir el contenido de un EDR en el spec → no lo copies ni lo linkees; decí el comportamiento en lenguaje de dominio — la relación con el EDR queda conceptual, nunca un link.
 - ❌ Inventar tipos nuevos por proyecto → la taxonomía de tipos es fija (`flow`/`rule`/`lifecycle`/`process`).
 - ❌ Tirar todas las preguntas en un turno → una por turno.
 - ❌ Dumpear la lista de capabilities sin clasificarlas por tipo → la enumeración siempre viene agrupada por tipo.

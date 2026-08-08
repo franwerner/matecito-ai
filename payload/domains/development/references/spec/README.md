@@ -2,7 +2,7 @@
 
 Referencia canónica del **concepto** de capability-spec. Es la fuente de verdad de la *idea*; cualquier skill o agente que trabaje con specs apunta acá en vez de redefinirla. La *estructura/plantilla* concreta se define por separado (`templates/capability.md`); esto define qué cuenta como capability-spec y qué no.
 
-Un capability-spec es la contraparte del EDR. El **EDR** captura *qué se eligió y por qué* (la decisión técnica y su justificación). El **capability-spec** captura *qué hace el sistema* (el comportamiento). Son ortogonales y se referencian, no se solapan.
+Un capability-spec es la contraparte del EDR. El **EDR** captura *qué se eligió y por qué* (la decisión técnica y su justificación). El **capability-spec** captura *qué hace el sistema* (el comportamiento). Son ortogonales: no se solapan, y la relación entre los dos es **conceptual, no un link** — ver «Relación con el EDR».
 
 ## Qué ES un capability-spec
 
@@ -21,6 +21,7 @@ Responde: *"qué debe hacer el sistema ante cada situación, y cómo se verifica
 - **No es una tarea ni un plan.** Una unidad de trabajo se ejecuta y se termina; el spec perdura y gobierna. El plan de cómo llegar al comportamiento es otra cosa.
 - **No es el delta de un cambio.** El artefacto efímero que produce la fase `sdd-spec` (en Engram, `sdd/{change}/spec`) describe lo que un cambio AGREGA/MODIFICA/QUITA; el capability-spec es el **estado acumulado y durable** resultante. El delta se materializa en el capability-spec al archivar el cambio.
 - **No es un modelo de datos.** Las entidades aparecen por su **semántica de dominio y sus invariantes de comportamiento**, no por su forma de persistencia (esa es una decisión de datos → EDR).
+- **No es una referencia de identidad a otro store.** El store de capability-specs es **cerrado**: ningún spec linkea ni nombra por título o slug un EDR, un PRD/proposal ni ningún otro artefacto fuera de `.matecito-ai/development-specs/`. La relación con el EDR (y con el código) es conceptual, no una referencia — ver «Relación con el EDR» y «Principio de store cerrado».
 
 ## Tipos y organización
 
@@ -106,7 +107,15 @@ Tres capas, no dos:
 - **EDR** → *qué se eligió y por qué* (la decisión técnica: tecnología, patrón, política, y su justificación en prosa).
 - **código** → el *cómo* literal (la implementación paso a paso).
 
-El spec **referencia** los EDRs que gobiernan cómo se implementa un comportamiento (sección "Referencias"), pero no repite su contenido: el spec dice *la regla*, el EDR dice *cómo se implementa esa regla y por qué así*. Ejemplo: el spec de `outbound-message` dice "no se puede enviar fuera de la ventana de 24h; al vencer, el sistema responde con error X"; el EDR dice "modelamos esa condición como una jerarquía de errores de dominio mapeada a RFC 7807, porque…".
+Las tres capas siguen existiendo, pero la relación entre el spec y el EDR es **conceptual, no un link**: el store de capability-specs es cerrado (ver «Principio de store cerrado» abajo), así que ningún spec identifica un EDR concreto — ni con un link markdown, ni nombrándolo por título o slug en prosa. El spec puede decir *que* el porqué de una regla vive en una decisión de ingeniería, sin decir *cuál*: "no se puede enviar fuera de la ventana de 24h; al vencer, el sistema responde con error X, según la política de manejo de errores vigente" es legal — identificar el EDR puntual no lo es.
+
+La sección `## Referencias` del template sobrevive, redefinida: es para linkear **otros capability-specs de este mismo store** (spec → spec), nunca un EDR ni ningún artefacto fuera de `.matecito-ai/development-specs/`.
+
+### Principio de store cerrado
+
+Un capability-spec MUST NOT referenciar ningún artefacto fuera de `.matecito-ai/development-specs/` — ni con un link markdown, ni nombrando su título o slug en prosa. Cuenta como referencia cruzada tanto un link que resuelve a un archivo real fuera del store (existir no lo vuelve legal) como nombrar la identidad de un artefacto de otro store. La regla espejo aplica al EDR: un EDR no referencia ningún capability-spec. Los links **intra-store** (spec → spec, EDR → EDR) siguen siendo legales.
+
+Cada store se valida contra su propio cierre en dos mitades: la **mecánica** — a qué store apunta un link — la evalúa el kind `cross-store-link` (`~/.claude/references/artifact-checks/README.md`); la **semántica** — nombrar el otro store por título o slug en prosa, sin link — la evalúan las rúbricas de `development-spec-validate` y `development-decisions-validate`.
 
 ## Componentes en el header del spec
 

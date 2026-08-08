@@ -30,9 +30,9 @@ Cada chequeo tiene: **severidad** (CRITICAL / WARNING / SUGGESTION), una **condi
 - **[WARNING]** Un `flow`/`process` referencia una **entidad o estado** que ningún spec `lifecycle` (ni ninguna sección "Entidades y estados") define → estado colgado.
 - **[WARNING]** Un spec referencia una **transición de estado** que el `lifecycle` de esa entidad no contempla.
 
-## Referencias
+## Cierre de store
 
-- **[SUGGESTION]** Un comportamiento claramente gobernado por una decisión técnica (ej: una política de reintentos, un formato de error) no linkea ningún EDR → puede faltar el EDR o la referencia. (Solo sugerencia: no todo comportamiento tiene un EDR.)
+- **[WARNING]** Un spec nombra un EDR — por id, título o slug — en **prosa** (fuera de un link markdown: eso ya lo cubre el kind mecánico `cross-store-link` de `~/.claude/references/artifact-checks/checks.yaml`) → el store de capability-specs es cerrado; la relación con el EDR es conceptual (ver `~/.claude/references/spec/README.md` → «Relación con el EDR»), nunca una identidad citada. **No aplica** a nombrar un artefacto del propio flujo SDD (un cambio, una fase, un batch, una topic key de Engram) cuando el spec lo usa como sujeto del comportamiento que especifica — eso es vocabulario de dominio, no una referencia cruzada de store.
 
 ## Vocabulario (separación qué-hace vs cómo)
 

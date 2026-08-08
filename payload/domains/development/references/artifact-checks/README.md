@@ -16,7 +16,7 @@ presencia/vacío de sección, sincronía índice↔archivo, un link que resuelve
 fuera de la taxonomía. Cada **fila** bajo `checks:` es una instancia concreta de un kind: a qué store
 apunta, con qué severidad, con qué mensaje. Un kind es código; una fila es dato.
 
-## Los 19 kinds
+## Los 20 kinds
 
 | Kind | Qué chequea |
 |---|---|
@@ -34,7 +34,8 @@ apunta, con qué severidad, con qué mensaje. Un kind es código; una fila es da
 | `folder-taxonomy` | Una carpeta dentro del store que no es ni un dominio/tipo canónico ni una carpeta legal fuera de la taxonomía (`extra_folders`). |
 | `index-sync` | Un artefacto y su fila de índice — a nivel archivo↔carpeta o carpeta↔raíz — donde uno existe sin el otro. |
 | `location-by-slug` | Un artefacto cuyo slug corresponde, según el catálogo, a un dominio distinto de la carpeta donde vive. |
-| `dangling-link` | Un link markdown que no resuelve a nada — ni en el store propio ni en el store que declara como destino. |
+| `dangling-link` | Un link markdown cuyo destino no resuelve a ningún archivo real — no importa el store. |
+| `cross-store-link` | Un link markdown que resuelve a un archivo real, pero fuera del store que `target_store` declara como destino — existir no lo vuelve legal. |
 | `orphan-folder` | Una carpeta de dominio/tipo con `INDEX.md` pero sin ningún artefacto real adentro. |
 | `inbound-reference-count` | Una capability compartible referenciada por un solo consumidor — candidata a vivir adentro de ese consumidor en vez de aparte. |
 | `deprecated-referenced` | Un artefacto `Deprecated` todavía linkeado como si estuviera vigente. |

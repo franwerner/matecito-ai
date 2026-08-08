@@ -76,15 +76,14 @@
 
 ## Referencias
 
-<!-- Opcional. Links al EDR que gobierna el CÓMO de un comportamiento y al proposal/PRD que da el contexto de negocio. El spec no repite el contenido del EDR; lo linkea. Omitir si no hay. -->
+<!-- Opcional. Links a otros capability-specs de este mismo store que se relacionan con este comportamiento — nunca a un EDR, un PRD/proposal ni ningún artefacto fuera de `.matecito-ai/development-specs/`: el store es cerrado, y esa relación se explica en prosa, sin materializarla como link. Omitir si no hay. -->
 
-- **EDR** → [`../../edr/<dominio>/<slug>.md`](../../edr/<dominio>/<slug>.md) — <qué decisión gobierna este comportamiento>.
-- **Contexto de negocio** → <PRD / proposal / fuente>.
+- **<capability-spec relacionado>** → [`../<type>/<capability>.md`](../<type>/<capability>.md) — <qué relación tiene con este comportamiento>.
 
 <!--
 Notas del contrato (no van en el capability-spec generado):
 - No hay sección `Historial`. El historial de ediciones lo lleva git.
 - Nombres de sección y prosa en español; header (`Status`, `Date`) en inglés.
-- Self-check antes de dar por escrito el spec: releé todas las secciones y por cada nombre de clase/método/columna/archivo/error interno, reformulá la frase en lenguaje de dominio o contrato público. Si de verdad hace falta anclar a una decisión técnica, va como link en "Referencias" (al EDR), no inline.
+- Self-check antes de dar por escrito el spec: releé todas las secciones y por cada nombre de clase/método/columna/archivo/error interno, reformulá la frase en lenguaje de dominio o contrato público. El store es cerrado: ninguna sección — ni siquiera «Referencias» — linkea ni nombra por título/slug un EDR, un PRD/proposal ni ningún artefacto fuera de `.matecito-ai/development-specs/`; si hace falta anclar a una decisión técnica, la relación queda en prosa, conceptual, sin identificar el artefacto.
 - Toda sección marcada "Omitir si no aplica" se borra entera cuando no aplica — no se deja vacía ni con "N/A".
 -->

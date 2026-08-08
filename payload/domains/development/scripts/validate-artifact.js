@@ -211,14 +211,61 @@ function componentNames(configJson) {
   return configJson.repo.components.map((c) => c.name);
 }
 
+// `fs.realpathSync`, tolerant of anything that stops it from resolving (missing target, broken
+// symlink, or a race where the path is removed between an earlier `existsSync` and this call). A
+// documentation checker has no safe "correct" answer for a path it cannot resolve, so it never
+// throws here — it returns the best textual path it has (`path.resolve(p)`) and lets the caller's
+// own `missing`/`out-of-store` verdicts carry the consequence, instead of crashing the whole run.
+function realpathOrResolved(p) {
+  try {
+    return fs.realpathSync(p);
+  } catch (e) {
+    return path.resolve(p);
+  }
+}
+
+// Whether `resolvedPath` crosses `storeRoot`'s own segments (e.g. `.matecito-ai/edr`) at a directory
+// boundary, anywhere UNDER `repoRoot` — not just as a literal prefix, and never outside `repoRoot`. A
+// layout where each sub-app nests its own `.matecito-ai/edr/` (this repo's `apps/api/`, `apps/ui/`)
+// still resolves under the same declared root, because the segment check runs on the path relative to
+// the repo, at any depth. Anchoring to `repoRoot` first is what stops the match from also firing on a
+// sibling project's own `.matecito-ai/...` store elsewhere on disk (same segments, different repo).
+//
+// Both sides are resolved through `realpathOrResolved` — not just `path.resolve` — before comparing:
+// `path.resolve`/`path.relative` are purely textual, so a symlink INSIDE the repo pointing at a real
+// file OUTSIDE it would still read as "under repoRoot" on the text alone, even though the actual file
+// it dereferences to lives elsewhere. Resolving `repoRoot` too (not only `resolvedPath`) matters just
+// as much: comparing a real path against an unresolved one is comparing pears to apples, and would
+// misfire the moment the repo itself sits behind a symlink (a home directory that is itself a link, a
+// worktree, `/tmp` on macOS being `/private/tmp`, …).
+function fallsUnderStoreRoot(resolvedPath, storeRoot, repoRoot) {
+  const realResolved = realpathOrResolved(resolvedPath);
+  const realRepo = realpathOrResolved(repoRoot);
+  const relToRepo = path.relative(realRepo, realResolved);
+  if (relToRepo.startsWith('..') || path.isAbsolute(relToRepo)) return false;
+  const target = storeRoot.split('/').filter(Boolean);
+  const segs = relToRepo.split(path.sep).join('/').split('/').filter(Boolean);
+  for (let i = 0; i + target.length <= segs.length; i++) {
+    if (target.every((t, j) => segs[i + j] === t)) return true;
+  }
+  return false;
+}
+
 // A link found in `artifact` resolves relative to the store's own parent directory (both stores in
-// this ecosystem live as siblings under `.matecito-ai/`), so cross-store links (`../edr/...`) and
-// same-store links (`slug.md`, `../<domain>/slug.md`) resolve through the same path, uniformly.
-function resolveStoreLink(ctx, artifact, href) {
-  if (isExternalHref(href)) return true;
+// this ecosystem live as siblings under `.matecito-ai/`, however deep that `.matecito-ai/` sits — a
+// repo root or a sub-app), so cross-store links (`../edr/...`) and same-store links (`slug.md`,
+// `../<domain>/slug.md`) resolve through the same path, uniformly. `targetStoreType` is the row's own
+// `target_store` — the only store the resolved link is legal against; a link that resolves to a real
+// file outside that store's root is `out-of-store`, not `ok`.
+function resolveStoreLink(ctx, artifact, href, targetStoreType) {
+  if (isExternalHref(href)) return 'ok';
   const from = path.posix.join(ctx.ownBase, artifact.relPath);
   const targetRel = libStore.resolveRelativeLink(from, href);
-  return fs.existsSync(path.join(ctx.commonParent, targetRel));
+  const resolvedPath = path.join(ctx.commonParent, targetRel);
+  if (!fs.existsSync(resolvedPath)) return 'missing';
+  const targetRoot = ((ctx.stores || {})[targetStoreType] || {}).root;
+  if (targetRoot && !fallsUnderStoreRoot(resolvedPath, targetRoot, ctx.root)) return 'out-of-store';
+  return 'ok';
 }
 
 function findDirsNamed(root, name) {
@@ -483,7 +530,38 @@ const ENGINE = {
           if (body) links = libStore.extractLinks(body);
         }
         for (const link of links) {
-          if (!resolveStoreLink(ctx, a, link.href)) out.push(mkFinding(row, { file: a.relPath, href: link.href }));
+          if (resolveStoreLink(ctx, a, link.href, row.target_store) === 'missing') out.push(mkFinding(row, { file: a.relPath, href: link.href }));
+        }
+      }
+    }
+    return out;
+  },
+
+  // Sweeps the FULL body of every artifact of `row.store` (`scan: body`) — or just its declared
+  // `section`/`field` when `scan: section` — for any link that resolves to a real file outside
+  // `row.target_store`'s root. Unlike `dangling-link`, a missing target is not this kind's concern
+  // (it stays silent on `missing`); only `out-of-store` fires here.
+  'cross-store-link': (rows, ctx) => {
+    const out = [];
+    for (const row of rows) {
+      for (const a of ctx.artifacts) {
+        if (row.when_status && !row.when_status.includes(a.header['Status'])) continue;
+        let links;
+        if (row.scan === 'body') {
+          links = libStore.extractLinks(a.text);
+        } else if (row.field) {
+          const raw = a.header[FIELD_LABELS[row.field] || row.field];
+          links = raw ? libStore.extractLinks(raw) : [];
+        } else if (row.section) {
+          const body = libStore.extractSection(a.text, row.section);
+          links = body ? libStore.extractLinks(body) : [];
+        } else {
+          links = [];
+        }
+        for (const link of links) {
+          if (resolveStoreLink(ctx, a, link.href, row.target_store) === 'out-of-store') {
+            out.push(mkFinding(row, { file: a.relPath, href: link.href }));
+          }
         }
       }
     }
@@ -954,6 +1032,7 @@ function main() {
       ownBase: path.basename(storeArg),
       commonParent: path.dirname(storeArg),
       configJson,
+      stores: checksConfig.stores,
     };
 
     const byKind = {};

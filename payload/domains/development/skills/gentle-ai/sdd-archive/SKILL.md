@@ -90,7 +90,7 @@ Read the change's delta spec from Engram (`sdd/{change-name}/spec`). For each ca
 - **`verification:` token** (canonical definition: `~/.claude/references/spec/README.md`) → its line is bound by the copy default above like the rest of the scenario body it belongs to; what is specific to it is a precedence rule, not a text rule: do NOT reconcile the delta's token against the durable copy's — the delta is the source, so on a MODIFIED scenario the delta's token wins outright, unmerged, same as the rest of its content. A scenario with no token merges without one.
 - If the merge would be **destructive** (losing scenarios or sections the delta does not mention) → do NOT apply it: tell the orchestrator and ask for confirmation.
 - Update the `INDEX.md` of the affected type and the root index (`development-specs/INDEX.md`).
-- **Vocabulary:** write the durable spec in domain language + public contract; NEVER volatile internal identifiers (classes, methods, columns, routes, internal errors). The *how* belongs to the code; the *why* belongs to the EDR (link it under "Referencias").
+- **Vocabulary:** write the durable spec in domain language + public contract; NEVER volatile internal identifiers (classes, methods, columns, routes, internal errors). The *how* belongs to the code; the *why* belongs to the EDR — that relation stays conceptual, never a link or a name under "Referencias" (the store is closed; `## Referencias` is for spec→spec links only).
 
 In `none` mode there is no durable store to update — skip this step.
 
