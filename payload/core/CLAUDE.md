@@ -492,6 +492,14 @@ Sub-agents launch with a fresh context and NO memory. The orchestrator controls 
 - **Non-flow delegation:** orchestrator searches Engram (`mem_search`) for relevant prior context and passes it in the prompt; sub-agent saves discoveries via `mem_save` before returning.
 - **Flow phases:** sub-agent reads its required artifacts directly from Engram (orchestrator passes topic-key references, not content). Each phase writes its own artifact.
 
+<!-- matecito-ai: single pointer, not a generalized rule. `sdd-verify` is the ONE named exception to
+     one-agent-per-phase dispatch in this pipeline; its partition lives in the development domain
+     fragment, not here, and this line does not offer the pattern to any other phase. -->
+`sdd-verify` is the single named exception to the one-agent-per-phase pattern above: the orchestrator
+may dispatch it as several concurrent instances in one message, each scoped to a group of checks, then
+consolidate their fragments into one report. The partition itself lives in the development domain
+fragment, not here.
+
 No skill registry, no compact-rule injection: skills are loaded via the native `<available_skills>` mechanism. No per-phase model table: Claude Code controls the model.
 
 #### Phase Read/Write principle

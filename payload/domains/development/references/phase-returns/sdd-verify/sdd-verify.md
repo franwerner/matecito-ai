@@ -12,12 +12,26 @@ The exact shape of what this phase hands back to the orchestrator. The orchestra
 return against this file: it matches section titles literally, so a title that differs in wording,
 casing or heading level is a section it will not find.
 
+<!-- matecito-ai: verification fan-out. This file's shape does NOT change — the same sections, same
+     titles, same order, same conditionality as before. What changed is who produces the block: the
+     orchestrator now dispatches N sub-verifiers (one per group with an active gate) in a single
+     message, and assembles this exact block from their fragments instead of getting it whole from one
+     agent. `subverifier-groups.md` owns that partition and the merge; this file still owns the shape. -->
+**This block is produced by consolidation, not by a single agent.** `sdd-verify` runs as a fan-out: the
+orchestrator dispatches, in one message, one sub-verifier per group whose gate is active (see
+`~/.claude/references/phase-returns/sdd-verify/subverifier-groups.md`), each returning only the data
+keys its group owns, and merges every fragment into exactly one block matching this file. No section
+below changed shape because of this — a section still exists (or doesn't) under the same condition it
+always did; only its *source* is now a union of sub-reports instead of one agent's own work. The
+orchestrator is also the only one who persists it — a sub-verifier never calls `mem_save`.
+
 - **Fields of the envelope**: Section D of `~/.claude/skills/_shared/sdd-phase-common.md`. Not repeated here.
 - **This file**: the `detailed_report` block — which sections, in which order, with which titles, per status.
 - **Meaning of the cells**: `~/.claude/skills/sdd-verify/references/report-format.md` — the compliance
   status vocabulary (`COMPLIANT` / `FAILING` / `UNTESTED` / `PARTIAL`) and what counts as execution
   evidence. That file owns what a cell *means*; this one owns what the report *looks like*. They
   never restate each other.
+- **Who owns which section's source data**: `~/.claude/references/phase-returns/sdd-verify/subverifier-groups.md` — the group → data-key mapping, the Sub-Report envelope, and the merge algorithm.
 
 ## Sections of this phase
 

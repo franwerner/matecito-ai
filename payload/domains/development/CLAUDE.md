@@ -77,6 +77,29 @@ So you ask for the work in plain language ("arreglá X", "agregá Y"); the orche
 at the INTAKE GATE and drives the pipeline from there. Naming a phase ("corré el verify", "seguimos con
 apply") is a request to dispatch that agent, not a command the harness resolves.
 
+<!-- matecito-ai: verification fan-out. `sdd-verify` used to run as ~9 serial steps in one agent
+     (~30 min wall-clock). This section is the domain's account of why it now runs as N concurrent
+     sub-verifiers instead — the partition itself (which group owns which check, the Sub-Report
+     contract, the merge) is NOT restated here; it lives in `subverifier-groups.md` so the skill, the
+     agent and this fragment cite one definition instead of drifting apart. -->
+### Verification fan-out (`sdd-verify` only)
+
+`sdd-verify` is the **sole exception** to "the orchestrator dispatches its agent" above: instead of one
+`sdd-verify` instance running every check in series, the orchestrator dispatches, **in a single
+message**, one `sdd-verify` instance per group whose gate is active — so their runs overlap in time
+instead of chaining. Each instance receives a `group` (one of `execution`, `correctness`,
+`design-coherence`, `edr-coherence`, `spec-coherence`, `ui`, `decision-gaps`) and returns only that
+group's fragment; the orchestrator merges every fragment into the single `## Verification Report` and
+persists it once. The Executor boundary still holds for every instance: none of them dispatches
+anything, including each other.
+
+The full partition — which group owns which check, the gate that turns each on, the Sub-Report
+envelope, and the mechanical merge — is defined once at
+`~/.claude/references/phase-returns/sdd-verify/subverifier-groups.md`. Read it before dispatching or
+consolidating a verify run; this fragment does not keep a second copy of it. This exception is scoped
+to `sdd-verify` alone — no other phase in the pipeline fans out, and this section is not an invitation
+to add one.
+
 ### SDD Phase Read/Write
 
 | Phase | Reads | Writes |

@@ -20,12 +20,30 @@ metadata:
 
 Run when the orchestrator launches verification for an SDD change. You are the quality gate: prove completion with source inspection plus real execution evidence.
 
+<!-- matecito-ai: verification fan-out. The orchestrator dispatches N instances of this skill in ONE
+     message — one per group whose gate is active — instead of a single instance doing every check in
+     series. `subverifier-groups.md` fixes the partition; this file's Hard Rules and Execution Steps
+     stay the checks themselves, unchanged, and each instance runs only the subset its group owns. -->
+### Group Scope (read before anything else)
+
+You are dispatched for **one** of seven named groups (`execution`, `correctness`, `design-coherence`,
+`edr-coherence`, `spec-coherence`, `ui`, `decision-gaps`) — the orchestrator names it. Read
+`~/.claude/references/phase-returns/sdd-verify/subverifier-groups.md` first: it maps each Execution
+Step below to the group that owns it, and defines the Sub-Report you return **instead of** the full
+`## Verification Report` in "Output Contract" (that block is what the *orchestrator* assembles from
+every dispatched group's Sub-Report — see "Output Contract" for where the split falls).
+
+Run only the steps your group owns. A step owned by a different group is not yours: do not run it, do
+not check it, and say nothing about it in your Sub-Report. Being dispatched for a group also means its
+**gate is already active** — you do not re-check EDR-store presence, capability-spec-store presence,
+`ui-test`, or `flagDecisionGaps`; the orchestrator resolved that before dispatching you.
+
 ## Hard Rules
 
 <!-- matecito-ai: `apply-progress` faltaba en esta lista aunque el agente sí lo recupera: es donde viaja
      la declaración de desvíos de `sdd-apply` (paso 6), sin la cual no se puede clasificar un desvío.
      El brief entra por el flag `ui-test` (paso 3b), que nunca estuvo en el spec. -->
-- Read the intake brief, proposal, spec, design, tasks, and apply-progress before judging implementation.
+- Read the intake brief, proposal, spec, design, tasks, and apply-progress before judging implementation — but only the ones your group's steps actually need (see "Group Scope" above); do not fetch an artifact no step of yours reads.
 <!-- matecito-ai: apply-progress is no longer only the deviations and the file list — it carries the
      executable half of the UI scenarios, without which the browser run has nothing to drive. -->
 - UI verification pairs the spec's **behavioral** scenarios with the **executable counterparts** in apply-progress, by `name`. A behavioral scenario with no counterpart is `UNTESTED`/CRITICAL; a missing counterparts section while the spec declares scenarios is CRITICAL, never a silent skip.
@@ -47,7 +65,10 @@ Run when the orchestrator launches verification for an SDD change. You are the q
      (deployed path) — this bullet cites it, it does not redefine the token's form or semantics. -->
 - Read each scenario's `verification:` token (canonical definition: `~/.claude/references/spec/README.md`). A `deferred`/`standing` scenario is never classified `UNTESTED`, never raises a CRITICAL for missing coverage, and never pushes the verdict to FAIL for that reason; report it with its token so the owner of that verification stays visible, and exclude it from the compliance summary's denominator. The token exempts missing coverage, never a negative result: a `deferred`/`standing` scenario whose test ran and failed is still `FAILING`. A scenario with no `verification:` line is `in-scope` and classifies exactly as before this rule existed.
 - Do not fix issues; report them for the orchestrator/user.
-- Persist `verify-report` to Engram (engram mode) or inline-only (none mode). <!-- matecito-ai: engram-only -->
+<!-- matecito-ai: persistence moved to the orchestrator, once, after the merge — see "Group Scope" above.
+     A sub-verifier that persisted its own fragment would produce one `verify-report` write per group
+     instead of one per run, and none of those partial writes would be the consolidated report. -->
+- Never call `mem_save`. There is exactly one `verify-report` per run; the orchestrator persists it once, after merging every dispatched group's Sub-Report.
 - If Strict TDD is active, load `strict-tdd-verify.md` from this skill directory; if inactive, never load it.
 <!-- matecito-ai: el flag `ui-test` lo decide y lo escribe `sdd-intake` en su brief; el spec nunca lo
      llevó ni lo mencionó. Leerlo del spec devolvía siempre "ausente", y como el gate cierra en
@@ -59,7 +80,10 @@ Run when the orchestrator launches verification for an SDD change. You are the q
      (violación de un hard-stop) — y sólo CRITICAL bloquea el archivado. -->
 - A design deviation is CRITICAL unless `sdd-apply` declared it not verifiable against the design; see Execution Step 6.
 <!-- matecito-ai: la forma del retorno dejó de vivir acá. Una copia inline más era una copia más para desincronizar — que es exactamente cómo `## Decision Gaps` y `## UI Verdict` terminaron sin lugar en el reporte. -->
-- Return the Section D envelope from `~/.claude/skills/_shared/sdd-phase-common.md`, carrying the `detailed_report` block **exactly as `~/.claude/references/phase-returns/sdd-verify/sdd-verify.md` defines it**.
+<!-- matecito-ai: this used to say "return the Section D envelope" — that is now the ORCHESTRATOR's job,
+     performed once after every dispatched group's Sub-Report is in. A group-scoped instance of this
+     skill returns the Sub-Report envelope from `subverifier-groups.md` instead; see "Group Scope". -->
+- Return the Sub-Report envelope `~/.claude/references/phase-returns/sdd-verify/subverifier-groups.md` defines — never the Section D phase envelope and never the full `## Verification Report` block.
 
 ## Decision Gates
 
@@ -99,12 +123,20 @@ Run when the orchestrator launches verification for an SDD change. You are the q
 
 ## Execution Steps
 
+<!-- matecito-ai: each step below still belongs to exactly one group, per `subverifier-groups.md` — this
+     note is not repeated at every step; "Group Scope" above already says run only your own. -->
+Run only the steps `subverifier-groups.md` maps to your assigned group; every other step is not yours.
+
 1. Load relevant skills via shared SDD Section A.
-2. Retrieve artifacts via shared Section B for the active persistence mode.
+2. Retrieve artifacts via shared Section B for the active persistence mode — scoped to what your group's own steps need (see "Group Scope").
 3. Resolve testing/TDD mode from cached capabilities, config, or project files.
 <!-- matecito-ai: el flag sale del brief de intake (`### Classification` → `UI test:`), NO del spec —
      el spec no lo contiene. El brief siempre existe porque intake es fase base, así que no hay fallback. -->
-3b. UI-test gate: read `ui-test` from the **intake brief** (`sdd/{change-name}/intake`, line `- UI test: {needed|not-needed}` under `### Classification`) and `uiTest.available` from `sdd/{project}/testing-capabilities` (literal key, in its `### UI Test` table — canonical-keys list in `~/.claude/skills/sdd-init/references/init-details.md`). If `ui-test != needed` OR `uiTest.available = ❌` OR either is absent → silently skip all UI steps (3c–3e, 3f). No mention, no UI Verdict section. The scenarios come in two halves: the **behavioral** ones from the spec's `ui-scenarios` block and their **executable counterparts** from `### UI Scenario Counterparts` in apply-progress (step 3b-bis).
+<!-- matecito-ai: this gate is now resolved by the ORCHESTRATOR, before dispatch — it decides whether
+     the `ui` group is even launched. No sub-verifier runs this step; `subverifier-groups.md` starts the
+     `ui` group's ownership at 3b-bis, deliberately after this one. Kept here as the record of what the
+     orchestrator's gate check does, and because 3b-bis reads "the gate passed" as its precondition. -->
+3b. UI-test gate (orchestrator, pre-dispatch — not run by any sub-verifier): read `ui-test` from the **intake brief** (`sdd/{change-name}/intake`, line `- UI test: {needed|not-needed}` under `### Classification`) and `uiTest.available` from `sdd/{project}/testing-capabilities` (literal key, in its `### UI Test` table — canonical-keys list in `~/.claude/skills/sdd-init/references/init-details.md`). If `ui-test != needed` OR `uiTest.available = ❌` OR either is absent → do not dispatch the `ui` group at all; the consolidated report carries no mention and no UI Verdict section. The scenarios come in two halves: the **behavioral** ones from the spec's `ui-scenarios` block and their **executable counterparts** from `### UI Scenario Counterparts` in apply-progress (step 3b-bis).
 <!-- matecito-ai: two halves (schema Parts 1 and 2) because the spec cannot know a route or an accessible
      name before the code exists, and must not pin them anyway. Pairing is by `name` — the key this phase
      already used for the verdict table, not a new coupling. -->
@@ -112,7 +144,7 @@ Run when the orchestrator launches verification for an SDD change. You are the q
 3c. Static validation (counterparts found): for every counterpart, reject any step target matching `@e\d+`. A matched target is CRITICAL — fail that scenario immediately.
 3d. ProofShot session (gate and static validation passed): generate a collision-safe `outputDir` (`proofshot-artifacts/{change}-{timestamp}-{random}/`); `proofshot start --run "{uiTest.devServer.command}" --port {port} --output {outputDir}` (same `### UI Test` table); for EACH scenario drive its steps then take a LIVE agent-browser `snapshot` and evaluate `visible`/`text_contains` STATE assertions against it; after ALL scenarios `proofshot stop`; read `SUMMARY.md` aggregates `consoleErrorCount`/`serverErrorCount` for the session-level ERROR GATE; delete `{outputDir}/session.webm` by default (retain only with explicit `retain-video` flag).
 3e. SPLIT verdict: `ui-verdict = (all STATE assertions PASS) AND (error gate PASS)`; any FAIL → CRITICAL → blocks archive.
-3f. Emit `## UI Verdict` in the report — a CONDITIONAL section, present only when this gate passed. It carries the per-scenario STATE results, the session-level ERROR GATE (`consoleErrorCount`, `serverErrorCount`, PASS/FAIL) and the artifact path `proofshot-artifacts/{outputDir}/`. Its position and exact shape are fixed by `~/.claude/references/phase-returns/sdd-verify/sdd-verify.md` — including its `##` level, which the UI gate matches literally.
+3f. Return `ui_verdict` and `error_gate` in your Sub-Report — the `ui` group's data keys, per your row in `subverifier-groups.md`. They carry the per-scenario STATE results, the session-level ERROR GATE (`consoleErrorCount`, `serverErrorCount`, PASS/FAIL) and the artifact path `proofshot-artifacts/{outputDir}/`. The orchestrator renders them as `## UI Verdict` in the consolidated report, at the position and `##` level `~/.claude/references/phase-returns/sdd-verify/sdd-verify.md` fixes — you do not render that markdown section yourself.
 4. Count completed and incomplete tasks.
 5. Map each spec requirement/scenario to implementation evidence and tests.
 <!-- matecito-ai: verification-scope-token. Definition owned by `~/.claude/references/spec/README.md`; this step only applies it while building the matrix. -->
@@ -147,17 +179,23 @@ Run when the orchestrator launches verification for an SDD change. You are the q
    Partition its JSON findings **by file**. A finding on a capability-spec this change created or modified is this change's own: map the tool's severity (`error` → CRITICAL, `warning` → WARNING, `nota` → SUGGESTION) and list it under `### Issues Found`. Every other finding is pre-existing — a store carries defects from changes that are not yours, and letting them push the verdict makes every verify fail for reasons nobody in this change caused. Report those as a single count line in `### Coherence (Capability-Specs)` `Notes`, never as findings. If the store does not exist, skip.
 <!-- matecito-ai: decision-gap confirmation hook
 Active ONLY when flagDecisionGaps=true (does NOT depend on EDRs existing). When active: read the tasks artifact; collect all `· edr: <domain>/<slug>` whose file `.matecito-ai/edr/<domain>/<slug>.md` does NOT exist — these are the decision gaps. For each gap: (a) check the task is `[x]` (complete); (b) check its `criteria:` passes in the shipped code (static inspection or test result). If (a) and (b) → `implemented: yes`; otherwise `implemented: no`. La sección viaja DENTRO del bloque que devolvés (que es el mismo texto que persistís): el gate del orquestador sólo lee el retorno, así que una sección que quedara únicamente en la copia persistida no dispararía nada. Si tiene al menos un `yes`, el orquestador puede disparar el mine gate post-verify. When flag off: do NOT add the section, do NOT mention anything — byte-identical behavior to before. -->
-6c. (Decision-gap confirmation — flag-gated) When `flagDecisionGaps=true` (regardless of EDR presence): from the tasks artifact collect all `· edr: <domain>/<slug>` refs whose target file does NOT exist → these are decision gaps. For each: confirm task is `[x]` AND `criteria:` passes in shipped code → mark `implemented: yes/no`. Emit `## Decision Gaps` as a CONDITIONAL section of the report you return — position, columns and `##` level fixed by `~/.claude/references/phase-returns/sdd-verify/sdd-verify.md`, which the mine gate matches literally. Silent when flag off: omit the section entirely, never empty.
+6c. (Decision-gap confirmation) Being dispatched for the `decision-gaps` group already means `flagDecisionGaps=true`: from the tasks artifact collect all `· edr: <domain>/<slug>` refs whose target file does NOT exist → these are decision gaps. For each: confirm task is `[x]` AND `criteria:` passes in shipped code → mark `implemented: yes/no`. Return `decision_gaps` in your Sub-Report. The orchestrator renders it as `## Decision Gaps` in the consolidated report — position, columns and `##` level fixed by `~/.claude/references/phase-returns/sdd-verify/sdd-verify.md`, which the mine gate matches literally.
 7. Run test, build/type-check, and coverage commands when available.
 8. Build the behavioral compliance matrix from actual test results.
-9. Persist and return the verification report.
+<!-- matecito-ai: this step used to persist AND return the full report — both are now the orchestrator's,
+     once, after merging every dispatched group. See "Group Scope" and "Output Contract" below. -->
+9. Return your Sub-Report (see "Output Contract" below). Do not persist anything.
 
 ## Output Contract
 
 <!-- matecito-ai: el contrato dice QUÉ tiene que llevar el reporte; la FORMA vive una sola vez, en el template. Antes esta sección era una tercera descripción del mismo bloque (con la plantilla y con el contrato del ejecutor) y las tres divergían. -->
-Return the `## Verification Report` block **exactly as `~/.claude/references/phase-returns/sdd-verify/sdd-verify.md` defines it** — sections, titles, order, which ones are conditional, and what changes per status. Follow it literally: the orchestrator validates your return against that same file, matching titles literally, so a section you drop, rename or re-level is a gate that never fires.
+<!-- matecito-ai: this section used to say "return the block" — that instruction now belongs to the
+     ORCHESTRATOR, once, after merging every dispatched group. What follows is still true of the
+     CONSOLIDATED report (so "what the report must carry" stands), but what YOU personally return is
+     the Sub-Report from "Group Scope" / `subverifier-groups.md`, carrying only your group's keys. -->
+The `## Verification Report` block **exactly as `~/.claude/references/phase-returns/sdd-verify/sdd-verify.md` defines it** — sections, titles, order, which ones are conditional, and what changes per status — is what the **orchestrator** assembles from every dispatched group's Sub-Report, not what any single one of you returns. You return the Sub-Report; the orchestrator validates the *consolidated* block against that same file, matching titles literally, so a section any group drops, renames or re-levels in its own fragment is a gate that never fires downstream.
 
-What the report must CARRY (the template fixes how it looks): change identity and mode; task completeness; real build/test/coverage execution evidence; the spec compliance matrix; correctness and design-coherence tables; issues grouped as CRITICAL/WARNING/SUGGESTION; and a final verdict `PASS`, `PASS WITH WARNINGS`, or `FAIL`. Plus the conditional sections, each only when its gate holds: `### Coherence (EDRs)` (step 6b, whenever the decision store is active), `### Coherence (Capability-Specs)` (step 6d, whenever that store is active), the Strict TDD extension, `## UI Verdict` (step 3f), and `## Decision Gaps` (step 6c).
+What the consolidated report must CARRY (the template fixes how it looks): change identity and mode; task completeness; real build/test/coverage execution evidence; the spec compliance matrix; correctness and design-coherence tables; issues grouped as CRITICAL/WARNING/SUGGESTION; and a final verdict `PASS`, `PASS WITH WARNINGS`, or `FAIL`. Plus the conditional sections, each only when its gate holds: `### Coherence (EDRs)` (step 6b, whenever the decision store is active), `### Coherence (Capability-Specs)` (step 6d, whenever that store is active), the Strict TDD extension, `## UI Verdict` (step 3f), and `## Decision Gaps` (step 6c). Your own contribution to each is exactly the data key(s) your row in `subverifier-groups.md` owns.
 
 <!-- matecito-ai: la regla del veredicto tenía que seguir a la recalibración del desvío: si un desvío
      CRITICAL pudiera convivir con un PASS, subir la severidad no cambiaría nada aguas abajo. -->
@@ -165,7 +203,12 @@ Verdict rules for design coherence: a CRITICAL `DESIGN-DEVIATION` forbids `PASS`
 
 ## References
 
-- `~/.claude/references/phase-returns/sdd-verify/sdd-verify.md` — **the** shape of the report you return (and persist). Read it before writing the report.
+- `~/.claude/references/phase-returns/sdd-verify/subverifier-groups.md` — the group partition, the
+  Sub-Report contract you actually return, and the merge the orchestrator runs over it. Read this
+  **before** the return template below.
+- `~/.claude/references/phase-returns/sdd-verify/sdd-verify.md` — **the** shape of the *consolidated*
+  report the orchestrator assembles and persists. Read it to know where your data keys land, not as
+  the thing you personally emit.
 - [references/report-format.md](references/report-format.md) — compliance statuses and what counts as command evidence: the meaning of the cells the template lays out.
 - `~/.claude/references/spec/README.md` — canonical definition of the `verification:` token (form, values, default by absence). This skill only cites it and applies its own reaction to each value; it never redefines the token.
 <!-- matecito-ai: el schema dejó de ser privado de esta skill: ahora es contrato compartido entre quien
@@ -173,4 +216,4 @@ Verdict rules for design coherence: a CRITICAL `DESIGN-DEVIATION` forbids `PASS`
      despliega a `~/.claude/references/`. La ruta relativa vieja ya no resuelve. -->
 - `~/.claude/references/ui-scenarios-schema.md` — the UI-scenario contract, shared by **three** phases: Part 1 the behavioral half (`sdd-spec`), Part 2 the executable counterparts (`sdd-apply`), **Part 3 execution and coverage — yours**. Read Part 3 before running the UI step, and Part 2 to know the shape of what you are executing.
 - [strict-tdd-verify.md](strict-tdd-verify.md) — load only when Strict TDD is active.
-- `~/.claude/skills/_shared/sdd-phase-common.md` — skill loading, retrieval, persistence, and return envelope.
+- `~/.claude/skills/_shared/sdd-phase-common.md` — Sections A and B bind you (skill loading, retrieval); Section D does not — see "Group Scope".
