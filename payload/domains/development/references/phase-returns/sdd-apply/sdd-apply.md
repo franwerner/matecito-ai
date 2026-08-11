@@ -15,6 +15,15 @@ casing or heading level is a section it will not find.
 - **Fields of the envelope**: Section D of `~/.claude/skills/_shared/sdd-phase-common.md`. Not repeated here.
 - **This file**: the `detailed_report` block — which sections, in which order, with which titles, per status.
 
+<!-- matecito-ai: parallel-batch note — added when the isolated/consolidation split landed. -->
+**A batch with two or more independence-marked tasks runs a different shape for HALF of it.** An
+**isolated run** does not return this block at all — it returns a **Task Run Report**, defined once in
+`~/.claude/references/phase-returns/sdd-apply/parallel-batch.md`, and persists nothing. Everything below
+this point — the `## Implementation Progress` block, its sections, `status` resolution, the Merge
+Protocol, the artifact format — is what the **consolidation run** produces, exactly as a serial batch
+always has. Read `parallel-batch.md` first if you are dispatched as, or are consolidating, a parallel
+batch; this file does not repeat its content.
+
 ## Sections of this phase
 
 | Section | Emitted | Read by |
@@ -320,6 +329,22 @@ template declares above, including its `mandate: covered|forced` and `verify-che
 and its `· rationale:` line. `sdd-verify` reads THIS copy — not the return — to classify each
 deviation. A deviation that reaches the orchestrator and not the artifact is a deviation `sdd-verify`
 will never see; a rationale that never left the return is a rationale nobody persisted.}
+
+<!-- matecito-ai: artifact-only, and only present when a parallel batch actually ran — it is the
+     integration record `parallel-batch.md` promises, not something a serial batch produces or needs.
+     Absence here is legitimate for a serial batch, the same way the UI/TDD sections below are
+     legitimate absences outside their own conditions. -->
+### Integration Log
+{CONDITIONAL — only when this artifact accumulates the result of at least one parallel batch; absent
+otherwise. Cumulative across every parallel batch this change has run, in the shape
+`~/.claude/references/phase-returns/sdd-apply/parallel-batch.md` fixes:
+
+| Order | Task | Result | Commit | Worktree kept |
+|-------|------|--------|--------|----------------|
+
+`Order` is the ascending task-id order the consolidation run actually integrated in — what makes the
+order legible without re-deriving it from the branch. A task whose result was `not-implemented`,
+`base-mismatch`, or a cherry-pick conflict gets a row too, with `Commit: —`.}
 
 <!-- matecito-ai: artifact-only section, and deliberately so — it is INPUT for sdd-verify's browser run,
      not something the orchestrator gates on. It lives here because the spec authors UI scenarios in

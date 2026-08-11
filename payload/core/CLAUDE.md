@@ -514,6 +514,16 @@ Resolved by the canonical **"Phase agent launch — model & flag forwarding"** r
 
 For a continuation apply batch: search `<domain>/{change-name}/apply-progress`. If found, tell the sub-agent to read it first and MERGE (not overwrite) its new progress.
 
+<!-- matecito-ai: this rule assumed one dispatch role per apply batch — read-and-merge, one writer. A
+     domain fragment MAY declare more than one role for the same phase (e.g. an isolated role that
+     never persists, alongside a consolidation role that does — see development's Phase fan-out). This
+     note keeps the kernel rule domain-agnostic while making room for that split, instead of the domain
+     fragment having to contradict it. -->
+**When the domain's own fragment declares more than one dispatch role for this phase**, this
+continuity rule binds only the role the fragment names as the writer. A role the fragment says never
+persists does not read `apply-progress` either — same single-writer principle, read and write both
+follow the one role the fragment names.
+
 #### Engram Topic Key Format
 
 The domain fragment declares its topic-key namespace. Retrieve via `mem_search` → `mem_get_observation` (search results are truncated).

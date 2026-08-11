@@ -12,6 +12,9 @@ Decisiones sobre cómo se organiza el payload del repo (dónde vive cada concept
 | [two-scripts-render-and-validate.md](two-scripts-render-and-validate.md) | Accepted | Vas a agregar una herramienta que produzca o audite artefactos durables, o te tienta unificar producción y auditoría en un solo ejecutable. |
 | [contract-pair-in-templates.md](contract-pair-in-templates.md) | Accepted | Vas a crear el contrato máquina de una familia de artefactos, o a decidir dónde vive un esquema. |
 | [root-index-cardinality-per-domain-type.md](root-index-cardinality-per-domain-type.md) | Accepted | Vas a materializar una tanda de artefactos durables y tenés que actualizar los índices del store. |
+| [dispatch-batch-bound-integration.md](dispatch-batch-bound-integration.md) | Accepted | Vas a tocar cómo se despacha o integra un batch de implementación paralelo. |
+| [consolidation-run-is-the-integrator.md](consolidation-run-is-the-integrator.md) | Accepted | Vas a decidir quién ejecuta la integración de un batch paralelo. |
+| [phase-fanout-two-cases.md](phase-fanout-two-cases.md) | Accepted | Vas a tocar la prosa de fan-out del pipeline o a agregar un tercer caso de despacho concurrente. |
 
 ## No aplican en este dominio
 

@@ -70,35 +70,56 @@ sdd-intake → sdd-explore → sdd-propose → sdd-spec → sdd-design → sdd-t
 ### How a phase runs
 
 There are no `/sdd-*` slash-commands: the phase skills are not user-invocable, and the model cannot
-self-invoke them either. A phase runs one way — **the orchestrator dispatches its agent** (`sdd-intake`,
-`sdd-spec`, …), and that agent reads its own method from `~/.claude/skills/<phase>/SKILL.md`.
+self-invoke them either. A phase runs by **the orchestrator dispatching its agent** (`sdd-intake`,
+`sdd-spec`, …), and that agent reads its own method from `~/.claude/skills/<phase>/SKILL.md`. Most
+phases dispatch as exactly one agent, one call, one return; two named cases fan out into more than one
+dispatch instead — see "Phase fan-out" below.
 
 So you ask for the work in plain language ("arreglá X", "agregá Y"); the orchestrator resolves the lane
 at the INTAKE GATE and drives the pipeline from there. Naming a phase ("corré el verify", "seguimos con
 apply") is a request to dispatch that agent, not a command the harness resolves.
 
-<!-- matecito-ai: verification fan-out. `sdd-verify` used to run as ~9 serial steps in one agent
-     (~30 min wall-clock). This section is the domain's account of why it now runs as N concurrent
-     sub-verifiers instead — the partition itself (which group owns which check, the Sub-Report
-     contract, the merge) is NOT restated here; it lives in `subverifier-groups.md` so the skill, the
-     agent and this fragment cite one definition instead of drifting apart. -->
-### Verification fan-out (`sdd-verify` only)
+<!-- matecito-ai: phase fan-out. `sdd-verify` used to run as ~9 serial steps in one agent (~30 min
+     wall-clock); that account is unchanged below. `sdd-apply` gained a second, independent fan-out
+     case for a batch with independence-marked tasks — the mechanism, dispatch shape and consolidation
+     step differ enough from verify's that each keeps its own definition file; only the naming and the
+     exclusivity clause are shared prose. Neither partition is restated here — verify's lives in
+     `subverifier-groups.md`, apply's in `parallel-batch.md` — so the skill, the agent and this
+     fragment cite one definition each instead of drifting apart. -->
+### Phase fan-out (the two declared cases)
 
-`sdd-verify` is the **sole exception** to "the orchestrator dispatches its agent" above: instead of one
-`sdd-verify` instance running every check in series, the orchestrator dispatches, **in a single
-message**, one `sdd-verify` instance per group whose gate is active — so their runs overlap in time
-instead of chaining. Each instance receives a `group` (one of `execution`, `correctness`,
-`design-coherence`, `edr-coherence`, `spec-coherence`, `ui`, `decision-gaps`) and returns only that
-group's fragment; the orchestrator merges every fragment into the single `## Verification Report` and
-persists it once. The Executor boundary still holds for every instance: none of them dispatches
-anything, including each other.
+Two phases fan out instead of running as a single dispatch. Both are named here on purpose: naming
+only one would read as licence to add a third without its own change — it is not.
 
-The full partition — which group owns which check, the gate that turns each on, the Sub-Report
-envelope, and the mechanical merge — is defined once at
-`~/.claude/references/phase-returns/sdd-verify/subverifier-groups.md`. Read it before dispatching or
-consolidating a verify run; this fragment does not keep a second copy of it. This exception is scoped
-to `sdd-verify` alone — no other phase in the pipeline fans out, and this section is not an invitation
-to add one.
+**`sdd-verify`.** Instead of one instance running every check in series, the orchestrator dispatches,
+**in a single message**, one `sdd-verify` instance per group whose gate is active — so their runs
+overlap in time instead of chaining. Each instance receives a `group` (one of `execution`,
+`correctness`, `design-coherence`, `edr-coherence`, `spec-coherence`, `ui`, `decision-gaps`) and returns
+only that group's fragment; the orchestrator merges every fragment into the single `## Verification
+Report` and persists it once. Full partition — which group owns which check, the gate that turns each
+on, the Sub-Report envelope, and the mechanical merge —
+`~/.claude/references/phase-returns/sdd-verify/subverifier-groups.md`.
+
+**`sdd-apply`, for each `· parallel-group: <id>` with two or more tasks.** Eligibility is evaluated
+**per group**, never over the whole tasks artifact — two groups of two are two eligible rounds, not one
+eligible batch of four. For each eligible group's round, the orchestrator dispatches, in one message,
+one `sdd-apply` **isolated run** per task of that group — each in its own worktree, each closing with
+exactly one commit on its own branch, none of them writing `apply-progress` or marking a task. Once the
+round returns, the orchestrator dispatches a further `sdd-apply` **consolidation run** — no isolation, a
+second mode of the same agent, never the orchestrator and never a new agent — which cherry-picks every
+commit onto the working branch one at a time, in ascending task-id order, and is the round's only
+writer. Groups never mix in the same round; rounds run one after another, in ascending order of each
+group's lowest task id. A group with no marks, or fewer than two members, runs the unchanged
+single-dispatch path. Before forming any round, the orchestrator validates the tasks artifact's marks by
+script — see "Parallel-mark validation" under Guards, below. Full mechanism — eligibility, the base
+handshake, the commit convention, the Task Run Report, integration and conflict handling —
+`~/.claude/references/phase-returns/sdd-apply/parallel-batch.md`.
+
+Each case has its own shape and its own definition file; read the one for the phase you are dispatching
+or consolidating — this fragment does not keep a second copy of either. The Executor boundary still
+holds for every dispatched instance in both cases: none of them dispatches anything, including each
+other. **This exception is scoped to exactly these two phases** — no other phase in the pipeline fans
+out, and this section is not an invitation to add a third without its own change.
 
 ### SDD Phase Read/Write
 
@@ -114,6 +135,10 @@ to add one.
 | `sdd-design` | proposal + **intake brief (always, for the `diagram` flag)** + **EDRs** + **durable capability-specs** (required) | `design` |
 | `sdd-tasks` | spec + design + **durable capability-specs touched** (required) | `tasks` |
 | `sdd-apply` | tasks + spec (incl. the behavioral `ui-scenarios`) + design + apply-progress | `apply-progress` (incl. `### UI Scenario Counterparts` — the **executable** half, with the real routes and locators it built) |
+<!-- matecito-ai: parallel-batch note — the row above is the full-lane, single-dispatch ideal; a batch
+     with independence-marked tasks splits it across the two fan-out roles instead of changing the row. -->
+| ↳ isolated run (parallel batch) | tasks (its one task) + spec + design — never `apply-progress` | nothing (single-writer rule — returns a Task Run Report, see `parallel-batch.md`) |
+| ↳ consolidation run (parallel batch) | the batch's N Task Run Reports + prior `apply-progress` | `apply-progress` (as above, plus `### Integration Log`) |
 | `sdd-verify` | spec (incl. the behavioral `ui-scenarios`) + design + tasks + apply-progress (incl. the **counterparts**, paired by `name`) + **intake brief (always, for the `ui-test` flag)** + **EDRs touched** + **capability-specs touched** | `verify-report` |
 | `sdd-archive` | all artifacts | `archive-report` + **durable capability-specs (merge)** |
 
@@ -199,6 +224,23 @@ Four checks:
 **When something fails**, do NOT fill it in yourself and do NOT silently continue — that is the whole point. Surface it: name the phase, the missing, malformed or contradicted section, and let the user choose — proceed treating it as empty, re-run that phase, or adjust. On a check-4 contradiction, quote the two claims side by side and add one factual line, not a verdict: the body is what the gates and the downstream phases read, and the `Summary` is read by nobody else. Which of the two is right is not yours to settle. Re-running re-executes the phase in full (for `sdd-apply`, a re-dispatch is a continuation batch, not a re-emission): say so when you offer it.
 
 **When everything checks out, say nothing** and move on to the guards. This check only speaks when something is wrong.
+
+<!-- matecito-ai: sdd-tasks-parallel-group-contract — the tasks artifact's `· parallel-group:` marks
+     were "as emitted" with no mechanical check anywhere, one level below the Return Contract Check.
+     Same principle, one artifact down: a script gates it, never eyeballing. -->
+### Parallel-Mark Validation (MANDATORY)
+Before the orchestrator forms any `sdd-apply` batch from a tasks artifact's `· parallel-group:` marks
+(see "Phase fan-out" → `sdd-apply` above), validate it mechanically:
+
+```
+node ~/.claude/scripts/validate-parallel-marks.js --file <tasks artifact>
+```
+
+Exit 0 → clean, no output, form the batch. Exit 1 → one line per finding, naming the offending task;
+that task alone degrades to serial (unmarked) — the finding never halts the phase or the rest of its
+group. Exit 2 → the check could not run at all: surface that, never record the artifact as clean, and
+form no batch from the marks — every task takes the serial path. Full contract — the closed list of
+three malformed shapes, eligibility per group — `~/.claude/references/phase-returns/sdd-apply/parallel-batch.md`.
 
 <!-- matecito-ai: los buzones de cada fase (Open Questions, New Decisions, Deviations, Derived capabilities, risks) existían sin que nadie los consumiera: eran el lugar barato donde depositar lo no resuelto y seguir. Este guard los convierte en disparador. -->
 ### Unresolved Decisions Guard (MANDATORY)

@@ -33,6 +33,6 @@ Las decisiones están organizadas por **dominio**. Este índice te dice qué dom
 
 ## Estado y mantenimiento
 
-- Última actualización: 2026-08-06
+- Última actualización: 2026-08-10
 - **Actualizar una decisión:** editá el EDR en el lugar, sea cambio menor o de fondo. El historial lo lleva git.
 - **Decisión nueva:** creá el EDR en su dominio y sumá la fila al índice de ese dominio (y, si el dominio es nuevo en el proyecto, a este índice raíz).

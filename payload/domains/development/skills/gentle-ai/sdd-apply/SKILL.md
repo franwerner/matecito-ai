@@ -27,6 +27,13 @@ From the orchestrator:
 - The specific task(s) to implement (e.g., "Phase 1, tasks 1.1-1.3")
 - Artifact store mode (`engram | none`) <!-- matecito-ai: openspec/hybrid removidos -->
 - Delivery strategy and resolved workload decision (`ask-on-risk | auto-chain | single-pr | exception-ok`, plus PR slice or `size:exception` when applicable)
+<!-- matecito-ai: parallel-batch fields — only present for the two modes that need them. -->
+- **`mode`** (only when this dispatch is part of a parallel batch): `isolated` or `consolidation`.
+  Absent → you are running **serial mode**, exactly as before this field existed.
+  - `isolated`: your one assigned task, the `base` sha, and `isolation: "worktree"` already set on your
+    launch.
+  - `consolidation`: the batch's N **Task Run Reports**, verbatim, and no isolation.
+  Full mechanics for both: `~/.claude/references/phase-returns/sdd-apply/parallel-batch.md`.
 
 ## Execution and Persistence Contract
 
@@ -38,8 +45,34 @@ From the orchestrator:
      defecto enseña a ignorar los `required`. Mismo arreglo que ya se hizo en `sdd-tasks`. -->
 - **engram**: Read `sdd/{change-name}/spec` (**required** — the floor). Read `sdd/{change-name}/tasks`, `sdd/{change-name}/design` and `sdd/{change-name}/proposal` **when they exist** — in `reduced` / `custom` lanes those phases may not have run, and their absence is normal, not an error. Keep the tasks observation ID when there is one: you mark tasks complete via `mem_update(id: {tasks-observation-id}, content: "...")`. Save progress as `sdd/{change-name}/apply-progress`.
 - **none**: Return progress only. Do not update project artifacts.
+<!-- matecito-ai: single-writer rule (parallel-batch EDR) — an isolated run persists NOTHING, in either
+     artifact-store mode: no `mem_save`, no `mem_update`, not even under `engram`. -->
+- **`mode: isolated`**: writes nothing, regardless of artifact-store mode — no `mem_save`, no
+  `mem_update`. It reads what Step 2 needs (spec/design/tasks for its one task) and returns a Task Run
+  Report. Persistence is the consolidation run's job alone.
 
 ## What to Do
+
+<!-- matecito-ai: mode fork — read this before Step 2. Steps 1-7 below are still the ONE definition of
+     what this phase does; a mode does not get its own duplicate copy of them, it gets told which of
+     them apply and in what order. Full mechanics for the two non-serial modes live in
+     `parallel-batch.md`; this section is the map, not a second copy. -->
+### Mode Branch (read before Step 2)
+
+- **`mode: isolated`** → Steps 1, 2, 2a, 3 apply as written. **Skip Step 2b entirely** — an isolated
+  run neither reads nor writes `apply-progress` (single-writer rule). Run the new **Step 3b: Base
+  Handshake** before Step 4. Step 4 implements your one assigned task. Run the new **Step 4a: Commit**
+  immediately after. Step 6b (if the spec carries `ui-scenarios:`) authors its counterparts **into your
+  Task Run Report**, not into a persisted artifact. **Skip Steps 5 and 6 entirely.** Step 7 returns the
+  **Task Run Report** (`parallel-batch.md`), never `## Implementation Progress`.
+- **`mode: consolidation`** → **skip Step 4** — you integrate already-implemented work, you do not
+  implement. Run Step 2b to read prior `apply-progress` if any. Run the **Integration procedure**
+  (`parallel-batch.md` → "Consolidation run: integrate, then write once") over every Task Run Report
+  the batch returned. Then run Steps 5 and 6 **once**, over the union of everything the reports carry.
+  Step 7 returns `## Implementation Progress` exactly as always, and the artifact gains `### Integration
+  Log`.
+- **No `mode` field (serial)** → every step below applies exactly as it always has. Nothing in this
+  section changes serial mode.
 
 ### Step 1: Load Skills
 Follow **Section A** from `~/.claude/skills/_shared/sdd-phase-common.md`.
@@ -81,7 +114,11 @@ Also check for `Chain strategy` in the tasks artifact. If present and not `pendi
 
 If neither delivery decision nor chain strategy is present, STOP before writing code and return `blocked` with: `Workload decision required before apply: estimated work may exceed 400 changed lines. Ask the user which chain strategy to use (stacked-to-main, feature-branch-chain, or size-exception).`
 
-#### Step 2b: Read Previous Apply-Progress (if exists)
+#### Step 2b: Read Previous Apply-Progress — Consolidation/Serial Mode only
+
+<!-- matecito-ai: an isolated run never reaches this step — see "Mode Branch" above. Kept as its own
+     step (not folded away) because Consolidation and Serial Mode still need it exactly as before. -->
+
 
 Before starting work, check for existing apply-progress:
 
@@ -125,6 +162,18 @@ If Strict TDD Mode is active (either from orchestrator injection or self-discove
 - The verify phase WILL reject your work if the TDD Evidence table is missing or incomplete
 
 **There is no silent fallback.** If you resolved Strict TDD as active, you follow it or you report failure. You do NOT quietly switch to Standard Mode.
+
+### Step 3b: Base Handshake — Isolated Run Mode only
+
+<!-- matecito-ai: must run before ANY write. Full definition, including the consolidation-side Level 2
+     re-check, lives in parallel-batch.md — this is the isolated run's half of it. -->
+Before writing anything:
+1. `git rev-parse HEAD` must equal the `base` sha you received.
+2. `git status --porcelain` must be empty.
+
+Either check failing → implement **nothing**. Skip straight to Step 7 and return `Result:
+not-implemented`, `Why not: base-not-established`. Do not attempt the task on an unverified base — see
+`~/.claude/references/phase-returns/sdd-apply/parallel-batch.md` → "The base handshake (two levels)".
 
 ### Step 4: Implement Tasks (Standard Workflow)
 
@@ -214,7 +263,32 @@ problems you did not stop on), and NOT in `risks` (D.4 forbids routing a decisio
 through it). `### Status` may point at it — `Stopped at task {id} — see Blocker` — never restate it.
 Carry the envelope per **Section D** of `~/.claude/skills/_shared/sdd-phase-common.md`.
 
-### Step 5: Mark Tasks Complete
+**Isolated Run Mode**, this section still applies to your one task — a fork with more than one valid
+resolution leaves nothing legal to write. If it leaves the WHOLE task with nothing committable, skip
+Step 4a and return `Result: not-implemented`, `Why not:` pointing at the fork item. If it only leaves
+part of the task unresolved and the rest is legitimately separable and complete, commit what you did
+finish (Step 4a) and carry the fork in your report's `### Unmandated Forks` — same test, same tokens,
+just reported in the Task Run Report instead of `### Unmandated Forks` of `## Implementation Progress`.
+
+### Step 4a: Commit — Isolated Run Mode only
+
+<!-- matecito-ai: exactly one commit, format cited by reference from the `git` skill — NOT invoked, and
+     neither its interactive atomicity loop nor its "no commit sin compilar" gate apply here. Full
+     rationale: parallel-batch.md → "Isolated run: task, then one commit", and the EDR it cites. -->
+Before returning control, commit **exactly once**. The message follows the format, types, scope,
+subject rules and hard attribution rules of `~/.claude/skills/git/SKILL.md` — read for its **format
+only**, cited by reference, never invoked as a skill call. You do NOT run its interactive atomicity
+STOP-and-ask loop (there is no human to ask inside isolation) and you do NOT gate the commit on the
+code compiling (`sdd-verify`, at the end of the batch, is where that check belongs).
+
+If Step 3b or the fork test above left you with nothing to commit, skip this step — you already
+returned `not-implemented`.
+
+### Step 5: Mark Tasks Complete — Consolidation/Serial Mode only
+
+<!-- matecito-ai: an isolated run never reaches this step — single-writer rule, see "Mode Branch" and
+     Step 6 below. Kept exactly as it always was for Consolidation and Serial Mode. -->
+
 
 This step runs on EVERY exit path, including an early stop mid-batch (see "Stopping Mid-Batch"):
 whatever you actually finished gets marked, even if you did not reach the end of the batch.
@@ -235,7 +309,13 @@ checklist below shows the shape of the artifact's content, not a file to edit:
 - [ ] 1.3 Add auth routes to `internal/server/server.go`  ← still pending
 ```
 
-### Step 6: Persist Progress
+### Step 6: Persist Progress — Consolidation/Serial Mode only
+
+<!-- matecito-ai: an isolated run never reaches this step — single-writer rule, see "Mode Branch" above.
+     In Consolidation Mode, this step runs AFTER the Integration procedure
+     (parallel-batch.md → "Consolidation run: integrate, then write once"), over the union of every
+     Task Run Report the batch returned — not over your own implementation, because a consolidation
+     run does not implement anything. -->
 
 **This step is MANDATORY on EVERY exit path — do NOT skip it.** It is not the last step of the happy
 path: it also runs when you stop mid-batch and return `blocked` or `partial` (see "Stopping
@@ -260,6 +340,7 @@ When saving apply-progress:
 2. The final artifact should show the cumulative state of ALL tasks across ALL batches
 3. **`### Unmandated Forks` and `### Mandated Departures` go in the artifact too**, with their `mandate:` and `verify-checks:` tokens, merged across batches — `sdd-verify` reads those copies, never your return. Putting them only in the return means verify never sees them and every deviation defaults to CRITICAL
 4. **`### UI Scenario Counterparts` goes in the artifact** (Step 6b below), cumulative across batches like everything else here
+5. **Consolidating a parallel batch:** merge `Files Changed`, `Unmandated Forks`, `Mandated Departures`, the UI counterparts and the TDD evidence out of every Task Run Report the batch returned — same merge rules as above, just sourced from N reports instead of your own work — and add/extend `### Integration Log` (`~/.claude/references/phase-returns/sdd-apply/parallel-batch.md`), cumulative across every parallel batch this change has run
 
 <!-- matecito-ai: new obligation. The spec authors UI scenarios
      in domain language — it cannot name a route or an accessible name for a control that does not exist
@@ -278,6 +359,11 @@ For each behavioral scenario in that block, author its **executable counterpart*
 real `url` you implemented, the `steps` that reach the state its `when` describes, and the `expect`
 assertions that express its `then`. It goes in the artifact under `### UI Scenario Counterparts`, merged
 across batches.
+
+**Isolated Run Mode**: you still author these — you are the one who knows the routes and locators for
+the task you just implemented — but they land in your **Task Run Report**'s `### UI Scenario
+Counterparts`, not in a persisted artifact. The consolidation run merges them into `apply-progress` at
+Step 6.
 
 Three things that make this fail quietly if you get them wrong:
 
@@ -308,6 +394,11 @@ surface you built. If you cannot translate a `then` into an assertion, that is a
      `### Status`. Ahora vive en un único archivo, el mismo contra el que el orquestador valida el
      retorno (Return Contract Check). Mantener además una copia acá sería volver a tener dos
      formatos que se desincronizan. -->
+
+**Isolated Run Mode returns the Task Run Report, not this section's block.** Follow
+`~/.claude/references/phase-returns/sdd-apply/parallel-batch.md` → "Task Run Report" literally instead
+— same idea (fixed shape, a validator's expectations, no improvising), different template. The rest of
+this Step 7 describes the **Consolidation/Serial Mode** return only.
 
 **Follow `~/.claude/references/phase-returns/sdd-apply/sdd-apply.md` literally.** That file is the canonical
 shape of this phase's return: which sections, in which order, with which titles, which ones are
@@ -350,6 +441,11 @@ Three things the template expects you to already know from this skill:
      POSTERIORES. Sin esta regla quedaban dos lecturas opuestas y ambas defendibles: cortar sin
      persistir (perdiendo el registro de código ya escrito) o persistir igual. Se fija: siempre persistir. -->
 - ALWAYS persist completed work before returning control. A stop mid-batch (`blocked` or `partial`) still runs Step 5 and Step 6 first — mark what you finished, save `apply-progress` with the real state, then return. The code is already in the repo; leaving it unrecorded makes the next batch re-implement it. See "Stopping Mid-Batch"
+<!-- matecito-ai: single-writer rule — see the EDR and parallel-batch.md. Stated as its own bullet
+     because the rule right above ("ALWAYS persist") would otherwise read as universal, and it is not
+     universal for Isolated Run Mode. -->
+- **Isolated Run Mode is the one exception to "ALWAYS persist"**: it persists NOTHING — no `apply-progress`, no task marking — by design (single-writer rule). Its one job is one commit and one Task Run Report; the consolidation run is the only writer. Do not run Steps 5/6 there, and do not read Step 2b there — see "Mode Branch" and `parallel-batch.md`
+- **The base handshake runs before any write, in Isolated Run Mode.** An unverified base (`HEAD != base`, or a dirty `git status --porcelain`) means implementing nothing — report `not-implemented / base-not-established` instead of guessing at what the worktree actually contains. See Step 3b and `parallel-batch.md` → "The base handshake"
 - If workload forecast requires a decision and none was provided, STOP before writing code (nothing was written yet, so there is no completed work to persist)
 - When applying a chained/stacked PR slice, keep the batch autonomous: one deliverable scope, verification included, and clear rollback boundary
 - When applying `size:exception`, state it explicitly in apply-progress and the return summary
