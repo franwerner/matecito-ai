@@ -24,12 +24,17 @@ Execute all steps from the skill directly in this context window:
 **First, resolve your mode from the launch prompt** (`~/.claude/references/phase-returns/sdd-apply/parallel-batch.md`):
 
 - **`mode: isolated`** — read spec/design/tasks for your one assigned task (steps 1-3 below, skip
-  3b/read-previous-progress), read the applicable EDRs (3a), run the **base handshake** before writing
-  anything (`git rev-parse HEAD == base` AND `git status --porcelain` empty — either failing, implement
-  nothing and report `not-implemented / base-not-established`), implement that one task (4-6), author
-  its UI counterparts if applicable (7b) into your report, **commit exactly once** (format cited from
-  `~/.claude/skills/git/SKILL.md`, not invoked, no interactive atomicity loop, no compile gate), and
-  return the **Task Run Report** — never mark tasks, never call `mem_save`/`mem_update`.
+  3b/read-previous-progress), read the applicable EDRs (3a), **reposition your worktree onto `base`**
+  before anything else — first read your own branch name from inside the worktree (`git rev-parse
+  --abbrev-ref HEAD`; never the working branch's name, since worktrees share a ref store and resetting
+  it from inside a worktree moves it everywhere and orphans commits), then run
+  `git checkout -B <your-branch> <base>` (a failed repositioning implements nothing),
+  then run the **base handshake** before writing anything (`git rev-parse HEAD == base` AND
+  `git status --porcelain` empty — either failing, implement nothing and report `not-implemented /
+  base-not-established`), implement that one task (4-6), author its UI counterparts if applicable (7b)
+  into your report, **commit exactly once** (format cited from `~/.claude/skills/git/SKILL.md`, not
+  invoked, no interactive atomicity loop, no compile gate), and return the **Task Run Report** — never
+  mark tasks, never call `mem_save`/`mem_update`.
 - **`mode: consolidation`** — skip implementation entirely. Take the batch's N Task Run Reports
   (verbatim, in your prompt), re-check each commit's parent against `base` (Level 2), then
   `git cherry-pick` each in ascending task-id order: clean → record integrated, worktree/branch removal

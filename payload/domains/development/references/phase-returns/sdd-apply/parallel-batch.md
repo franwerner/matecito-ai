@@ -1,6 +1,7 @@
 <!-- matecito-ai: sole home of the sdd-apply parallel-batch mechanism — eligibility, isolation, the
-     base handshake, the commit convention, the Task Run Report shape, integration mechanics and
-     conflict handling. This is the SECOND declared case of Phase fan-out (see
+     uncommitted-work gate, repositioning onto the local base, the base handshake, the commit
+     convention, the Task Run Report shape, integration mechanics and conflict handling. This is the
+     SECOND declared case of Phase fan-out (see
      `~/.claude/matecito-ai/domains/development.md` → "Phase fan-out"); the first is
      `subverifier-groups.md`. No `.yaml` pair: the Task Run Report is a bespoke block nothing renders
      or validates mechanically, exactly like `sdd-verify`'s Sub-Report — `sdd-apply.yaml` stays the
@@ -12,9 +13,14 @@ Applies to a tasks artifact whenever at least one `· parallel-group: <id>` id h
 members — eligibility is stated and evaluated **per group**, never over the artifact as a whole (four
 marked tasks split into two groups of two are two eligible batches run in successive rounds, not one
 eligible batch of four; see "One group is one batch" below). A group with fewer than two members, an
-unmarked task, no tasks artifact at all (`reduced`/`custom` lanes), or a dirty `git status --porcelain`
-at dispatch time all run **serial mode**: today's single-agent path, unchanged by this file. Serial mode
-is not documented here because nothing about it changed.
+unmarked task, or no tasks artifact at all (`reduced`/`custom` lanes) runs **serial mode**: today's
+single-agent path, unchanged by this file. Serial mode is not documented here because nothing about it
+changed.
+
+A dirty `git status --porcelain` at dispatch time no longer degrades a round to serial by itself — see
+"Uncommitted-Work Gate" below. Its three outcomes decide the round's fate; "work on the branch, no
+worktree" is the only one of them that reaches serial mode, and it is reached only by the user's choice,
+never automatically.
 
 ## Eligibility (the mark, not an inference)
 
@@ -71,13 +77,125 @@ never infers its own mode:
 
 Before forming any batch, the orchestrator runs `validate-parallel-marks.js` against the tasks artifact
 (see "Validated mechanically, before a batch is formed" above) — this is a precondition of everything
-below, not a separate step elsewhere. For the round in play, the orchestrator reads `HEAD` of the
-working branch once, records it as `base`, and dispatches every task of that group in **one message** —
-N `Task` tool calls, each with its own task, `base`, and `isolation: "worktree"`. It waits for the whole
-batch to return before dispatching the consolidation run (batch-bound dispatch — background
-per-completion dispatch is rejected; see the EDR). Then it moves to the next group's round, in ascending
-order of each group's lowest task id. The worktree shares the repository's object store and history:
-isolation materializes only the versioned files, never a second copy of history.
+below, not a separate step elsewhere. For each eligible round, immediately after that validation and
+before capturing `base`, the orchestrator runs the **Uncommitted-Work Gate** (below). Once the gate
+clears — silently, or through a chosen outcome — the orchestrator reads `HEAD` of the working branch,
+records it as `base`, and dispatches every task of that group in **one message** — N `Task` tool calls,
+each with its own task, `base`, and `isolation: "worktree"`. It waits for the whole batch to return
+before dispatching the consolidation run (batch-bound dispatch — background per-completion dispatch is
+rejected; see the EDR). Then it moves to the next group's round, in ascending order of each group's
+lowest task id. The worktree shares the repository's object store and history: isolation materializes
+only the versioned files, never a second copy of history.
+
+## Uncommitted-Work Gate
+
+Before dispatching a round that will use worktree isolation — after `validate-parallel-marks.js`, before
+the orchestrator captures `HEAD` as that round's `base` — the orchestrator inspects the main repo's
+uncommitted changes. It runs once per **eligible round**, not once per phase run (`base` is captured per
+round, so a single phase-wide pass would miss a round that got dirtied mid-phase), and it does not
+re-prompt within the same phase run when the dirty set is unchanged from its last check. A serial
+dispatch and the consolidation run never trigger it — no worktree is in play, so there is nothing to
+warn about.
+
+**Legal inputs, closed list: the dirty file list, `repo.components[].paths`
+(`~/.claude/references/repo-components/README.md`), and the brief's `Components` line.** Task titles are
+never parsed for paths — they are prose, not a field, and cross-referencing them against dirty files is
+explicitly out of scope.
+
+**Entry.** `git status --porcelain --untracked-files=all`, run from the main repo's root.
+`--untracked-files=all` is deliberate over the default: an untracked (`??`) file is exactly the kind of
+change that never travels into a worktree (see "Repositioning onto `base`" below), so it is exactly what
+this gate must not miss. A rename takes its new path. When the dirty (and especially untracked) list is
+large, the warning and the notice below print the first 20 entries plus a count of the rest — this caps
+what prints, never the mapping or the decision to warn.
+
+**Mapping (only with `repo.components` declared).** A dirty file belongs to **every** component whose
+`paths` is a segment-prefix of its path — multivalued, no arbitration between matches. A file matching no
+component is an **orphan**.
+
+**Decision:**
+- **No `repo.components` declared** → always warn when there are dirty files, listing them with no
+  attempt to map them to anything, and present the three outcomes below.
+- **`repo.components` declared, and the mapped components intersect the brief's `Components` line** →
+  warn, naming the dirty files and the components that intersected, and present the three outcomes.
+- **`repo.components` declared, no intersection, but there is an orphan file, or the brief's
+  `Components` is `unassigned`, or it names something `repo.components` does not declare** → a **soft
+  notice** mentioning it. It neither blocks nor forces a choice among the three outcomes — the decision
+  stays the user's, made freely, not funneled through this gate.
+- **`repo.components` declared, no intersection, no orphan, and `Components` names something that does
+  exist** → total silence — not even a mention that the gate ran.
+
+**Three outcomes — nothing dispatches until the user picks one, not even in Automatic mode:**
+
+| Outcome | What happens |
+|---|---|
+| **Commit first** | The user commits. The orchestrator re-reads the working branch's `HEAD` and uses that new sha as this round's `base`; the tree is clean and the round dispatches isolated, normally. If the tree is still dirty and still intersects after the commit, the gate re-runs and presents the three outcomes again. |
+| **Continue anyway** | The round dispatches isolated as-is, `base` already captured, the warning understood. The consolidation run records the notice (below). |
+| **Work on the branch, no worktree** | The round degrades to the serial path on the working branch — no worktree, no fan-out, uncommitted work available to it. No isolated run is dispatched for this round. |
+
+Silence from the user is not consent: with no answer, nothing dispatches — not isolated, not serial, not
+even in Automatic mode.
+
+**Notice.** Only "continue anyway" leaves a trace — commit-first leaves its commit as the record, and
+"no worktree" removes the risk instead of accepting it. The orchestrator carries what triggered the
+notice (the round, the dirty files, the intersecting components) in the consolidation run's launch
+prompt; the consolidation run alone writes it (single-writer rule, see the EDR), artifact-only — never
+the rendered return, never `sdd-apply.yaml` — as a cumulative section of `apply-progress`:
+
+```markdown
+### Uncommitted-Work Notice
+| Round | Dirty files | Components | Choice |
+|-------|-------------|------------|--------|
+| <group id> | <paths, comma-separated> | <components that intersected, or —> | continue-anyway |
+```
+
+Only "continue anyway" adds a row — a clean round, one resolved by commit-first, or one degraded to
+serial, adds none.
+
+## Repositioning onto `base` (before the handshake)
+
+The harness's worktree starting point is not the working base — it can be `origin/<branch>`, behind the
+working branch's local `HEAD` whenever there are unpushed local commits, which is the common case. An
+isolated run MUST reposition its worktree onto the `base` sha it received **before** running the Level 1
+handshake and before writing anything.
+
+**`<branch>` is the worktree's own branch — never the working branch.** Read it from inside the
+worktree, before repositioning: `git rev-parse --abbrev-ref HEAD` (the harness already checked the
+worktree out onto an ephemeral branch of its own, typically `worktree-agent-<hex>`). The mechanism:
+`git checkout -B <branch> <base>`, using that same name — it works because the worktree shares the
+repository's object store, so the `base` sha is reachable from inside it. Repositioning does not replace
+the handshake; it precedes it — the handshake still runs afterward exactly as it always has.
+
+**Using the working branch's name instead (e.g. `main`) is a bug, not a variant — worktrees share the
+repository's ref store.** `git checkout -B <working-branch> <base>` run inside a worktree resets that
+ref **globally**: every worktree checked out on that same branch name (including the main working
+directory) moves with it, and any commit that was only reachable through the branch's old tip becomes
+orphaned — no ref points at it any longer, even though `git worktree list` still shows the other
+worktrees "on" that name, now silently repositioned to `base` alongside this one. This is not a
+theoretical risk: it is exactly what a run that skips "read your own branch name first" produces.
+Determine `<branch>` from the worktree itself, every time — never assume it, never reuse the name of the
+branch you are trying to reach.
+
+Repositioning onto a base the worktree already sits on is inert: it neither fails nor changes the
+worktree's content, and the handshake still passes.
+
+**A failed repositioning implements nothing.** Base unreachable, a git error, any reason — the run MUST
+NOT implement anything, MUST NOT continue on the harness's starting point, and MUST NOT retry on an
+unverified base. Report `Result: not-implemented`, `Why not: base-not-established` — the same value the
+handshake itself produces, no new vocabulary — with the concrete failure reason left legible on that
+line.
+
+**This obligation belongs to every isolated run, not only the parallel batch.** The parallel batch is
+today's only invoker; that is a fact about the moment, not the scope of the rule. Any future mechanism
+that adopts worktree isolation without touching this file inherits the same repositioning,
+unconditionally.
+
+**Uncommitted work in the main repo never reaches an isolated run — before or after repositioning.** A
+worktree is a checkout of a commit: an uncommitted new file is simply absent inside it, an uncommitted
+modification to a versioned file reads as its last committed content, and `git status --porcelain` inside
+the isolated run's worktree comes back empty regardless of what the main repo's tree looks like. This is
+what makes the handshake's "clean tree" half satisfiable by construction, and it is the premise the
+Uncommitted-Work Gate (above) acts on.
 
 ## The base handshake (two levels)
 
@@ -100,16 +218,19 @@ inspection.
 
 ## Isolated run: task, then one commit
 
-1. Run the base handshake (Level 1). Fails → report `not-implemented / base-not-established`, done.
-2. Implement the assigned task per Steps 2-4 of `~/.claude/skills/sdd-apply/SKILL.md` — same reading,
+1. Reposition the worktree onto `base` — reading `<branch>` from inside the worktree first, never the
+   working branch's name (see "Repositioning onto `base` (before the handshake)" above). Fails → report
+   `not-implemented / base-not-established`, done.
+2. Run the base handshake (Level 1). Fails → report `not-implemented / base-not-established`, done.
+3. Implement the assigned task per Steps 2-4 of `~/.claude/skills/sdd-apply/SKILL.md` — same reading,
    same fork test, same UI-counterpart obligation. **Do not** run Steps 5/6 (mark tasks, persist
    `apply-progress`) — those belong to the consolidation run only (single-writer rule, see the EDR).
-3. Commit **exactly once**, before returning control. The message follows the format, types, scope,
+4. Commit **exactly once**, before returning control. The message follows the format, types, scope,
    subject rules and hard attribution rules of `~/.claude/skills/git/SKILL.md` **cited by reference,
    not invoked** — this run does not call that skill and does not run its interactive atomicity
    STOP-and-ask loop (there is no human to ask inside an isolated run) or its "no commit without
    compiling" gate (that check is deferred to the end-of-batch `sdd-verify`).
-4. Return the **Task Run Report** (below). Never the `## Implementation Progress` block — that shape
+5. Return the **Task Run Report** (below). Never the `## Implementation Progress` block — that shape
    belongs to the consolidation run alone.
 
 An isolated run that needs work outside its own task **reports it**; it does not dispatch anything — the
@@ -162,16 +283,23 @@ from its branch; the branch ref itself is untouched unless explicitly deleted. R
 path>` when it is still there to report; when it is not (harness already reclaimed it), the branch is
 still the thing to point someone at for inspection.
 
-**Verified: the consolidation run CAN remove a harness-created worktree — but only via `unlock` first.**
-A bare `git worktree remove <path>` on a worktree the harness created fails with exit 128: `fatal:
-cannot remove a locked working tree, lock reason: claude agent agent-<id> (pid <n>) — use 'remove -f -f'
-to override or unlock first`. The harness leaves every worktree it creates **locked**, not
-permission-restricted — that is the actual cause, not a guess. `git worktree unlock <path>` followed by
-`git worktree remove <path>` works: both exit 0, and the worktree disappears from `git worktree list`.
-**`remove -f -f` is never used** — the override is not needed once `unlock` runs first, and this run has
-no standing authorization for a forced removal. The branch itself survives the directory removal —
-`worktree-agent-<hex>` still exists after `remove` — so deleting it is the separate, explicit `git
-branch -D` step. Where and when this sequence runs: "Cleanup (after the loop, once)", below.
+**Verified: the consolidation run CAN remove a harness-created worktree — but only via `unlock` first,
+and `unlock` succeeding does not guarantee `remove` will.** A bare `git worktree remove <path>` on a
+worktree the harness created fails with exit 128: `fatal: cannot remove a locked working tree, lock
+reason: claude agent agent-<id> (pid <n>) — use 'remove -f -f' to override or unlock first`. The harness
+leaves every worktree it creates **locked**, not permission-restricted — that is the actual cause, not a
+guess. `git worktree unlock <path>` clears that lock. The following `git worktree remove <path>` is a
+**second, independent** check: verified, it can still fail on its own, exit 128, with a **different**
+message — `fatal: '<path>' contains modified or untracked files, use --force to delete it` — when the
+worktree carries modified or untracked files at the moment of removal (a run's own build output, an edit
+left behind outside the one commit it made). This is not the lock failure recurring; `unlock` already
+succeeded, and repeating it does not help. When neither failure fires, `unlock` then `remove` both exit
+0 and the worktree disappears from `git worktree list`.
+**`remove -f -f` is never used, for either failure** — the override is not needed once `unlock` runs
+first, and this run has no standing authorization for a forced removal; a `remove` that still fails is
+recorded, not forced past. The branch itself survives the directory removal — `worktree-agent-<hex>`
+still exists after a successful `remove` — so deleting it is the separate, explicit `git branch -D` step.
+Where and when this sequence runs: "Cleanup (after the loop, once)", below.
 
 ## Consolidation run: integrate, then write once
 
@@ -208,16 +336,20 @@ For each cleanly integrated task, in the same ascending task-id order:
 1. `git worktree unlock <path>` — the harness leaves every worktree it creates **locked**, not
    permission-restricted; a bare `remove` on it fails with exit 128. `unlock` is the verified way past
    that lock (see "Isolation and the worktree directory" above).
-2. `git worktree remove <path>` — after `unlock`, this exits 0 and the worktree disappears from `git
-   worktree list`.
-3. `git branch -D <branch>` — the branch survives step 2 untouched (verified: it is still listed after
-   `remove`), so deleting it is its own explicit step.
+2. `git worktree remove <path>` — after a successful `unlock`, this **usually** exits 0 and the worktree
+   disappears from `git worktree list`. It can still fail on its own, exit 128, `fatal: '<path>' contains
+   modified or untracked files, use --force to delete it` — a **second, distinct** failure mode from the
+   lock (see "Isolation and the worktree directory" above), reachable even though `unlock` succeeded.
+3. `git branch -D <branch>` — the branch survives step 2 untouched whether step 2 succeeded or failed
+   (verified: it is still listed after a successful `remove`), so deleting it is its own explicit step.
 
-**Never `git worktree remove -f -f`.** The forced override is not needed once `unlock` runs first, and
-this run has no standing authorization for it. A failure at any of the three steps is not blocking — the
-task is already integrated regardless of whether its worktree gets cleaned up — so record what actually
-happened (`removed` / `left` / `remove failed` / `branch kept`) in the Integration Log's `Worktree kept`
-column and continue to the next task.
+**Never `git worktree remove -f -f`, for either failure mode.** The forced override is not needed once
+`unlock` runs first, and this run has no standing authorization for it — a `remove` that still fails
+after a successful `unlock` (lock persisting, or leftover modified/untracked files) is recorded, not
+forced past. A failure at any of the three steps is not blocking — the task is already integrated
+regardless of whether its worktree gets cleaned up — so record what actually happened (`removed` /
+`left` / `remove failed` / `branch kept`) in the Integration Log's `Worktree kept` column and continue to
+the next task.
 
 After cleanup: run Steps 5 and 6 of `~/.claude/skills/sdd-apply/SKILL.md` **once**, over the union of
 every report — mark every completed, integrated task `[x]`; merge `Files Changed`, `Unmandated Forks`,

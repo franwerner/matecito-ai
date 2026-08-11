@@ -102,18 +102,23 @@ on, the Sub-Report envelope, and the mechanical merge —
 
 **`sdd-apply`, for each `· parallel-group: <id>` with two or more tasks.** Eligibility is evaluated
 **per group**, never over the whole tasks artifact — two groups of two are two eligible rounds, not one
-eligible batch of four. For each eligible group's round, the orchestrator dispatches, in one message,
-one `sdd-apply` **isolated run** per task of that group — each in its own worktree, each closing with
-exactly one commit on its own branch, none of them writing `apply-progress` or marking a task. Once the
+eligible batch of four. Before dispatching an eligible round, the orchestrator runs the
+**Uncommitted-Work Gate** (see "Uncommitted-Work Gate" under Guards, below); a dirty tree no longer
+degrades a round to serial by itself — the gate's three outcomes decide that. For each eligible group's
+round, the orchestrator dispatches, in one
+message, one `sdd-apply` **isolated run** per task of that group — each repositioning its worktree onto
+the working branch's **local** `HEAD` before writing anything (never the harness's starting point, which
+can be `origin/<branch>` and lag behind unpushed local commits), each in its own worktree, each closing
+with exactly one commit on its own branch, none of them writing `apply-progress` or marking a task. Once the
 round returns, the orchestrator dispatches a further `sdd-apply` **consolidation run** — no isolation, a
 second mode of the same agent, never the orchestrator and never a new agent — which cherry-picks every
 commit onto the working branch one at a time, in ascending task-id order, and is the round's only
 writer. Groups never mix in the same round; rounds run one after another, in ascending order of each
 group's lowest task id. A group with no marks, or fewer than two members, runs the unchanged
 single-dispatch path. Before forming any round, the orchestrator validates the tasks artifact's marks by
-script — see "Parallel-mark validation" under Guards, below. Full mechanism — eligibility, the base
-handshake, the commit convention, the Task Run Report, integration and conflict handling —
-`~/.claude/references/phase-returns/sdd-apply/parallel-batch.md`.
+script — see "Parallel-mark validation" under Guards, below. Full mechanism — eligibility, the
+uncommitted-work gate, repositioning onto the local base, the base handshake, the commit convention, the
+Task Run Report, integration and conflict handling — `~/.claude/references/phase-returns/sdd-apply/parallel-batch.md`.
 
 Each case has its own shape and its own definition file; read the one for the phase you are dispatching
 or consolidating — this fragment does not keep a second copy of either. The Executor boundary still
@@ -241,6 +246,22 @@ that task alone degrades to serial (unmarked) — the finding never halts the ph
 group. Exit 2 → the check could not run at all: surface that, never record the artifact as clean, and
 form no batch from the marks — every task takes the serial path. Full contract — the closed list of
 three malformed shapes, eligibility per group — `~/.claude/references/phase-returns/sdd-apply/parallel-batch.md`.
+
+<!-- matecito-ai: uncommitted-work-gate — short guard that points, same shape as Parallel-Mark
+     Validation above; the full mechanism (when it runs, the component mapping and its fallback, the
+     three outcomes, the orphan case, the notice) lives once in parallel-batch.md, never duplicated
+     here. -->
+### Uncommitted-Work Gate (MANDATORY)
+For each eligible `sdd-apply` round that will use worktree isolation, immediately after
+`validate-parallel-marks.js` and **before** the orchestrator reads `HEAD` as that round's `base`,
+inspect the main repo's uncommitted changes. Clean tree, or dirty with no relevant intersection →
+silent, nothing to do. Dirty and relevant → present exactly three outcomes (commit first · continue
+anyway · work on the branch without a worktree) and dispatch nothing until the user picks one, not even
+in Automatic mode; picking "continue anyway" leaves a trace the consolidation run records. A serial
+dispatch and the consolidation run never trigger this gate; it does not re-ask within the same phase run
+when the dirty set hasn't changed. Full mechanism — legal inputs, the component mapping (and its
+fallback when the project declares no `repo.components`), the orphan case, the notice shape —
+`~/.claude/references/phase-returns/sdd-apply/parallel-batch.md` → "Uncommitted-Work Gate".
 
 <!-- matecito-ai: los buzones de cada fase (Open Questions, New Decisions, Deviations, Derived capabilities, risks) existían sin que nadie los consumiera: eran el lugar barato donde depositar lo no resuelto y seguir. Este guard los convierte en disparador. -->
 ### Unresolved Decisions Guard (MANDATORY)

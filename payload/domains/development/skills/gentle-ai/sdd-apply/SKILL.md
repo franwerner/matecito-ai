@@ -60,8 +60,8 @@ From the orchestrator:
 ### Mode Branch (read before Step 2)
 
 - **`mode: isolated`** → Steps 1, 2, 2a, 3 apply as written. **Skip Step 2b entirely** — an isolated
-  run neither reads nor writes `apply-progress` (single-writer rule). Run the new **Step 3b: Base
-  Handshake** before Step 4. Step 4 implements your one assigned task. Run the new **Step 4a: Commit**
+  run neither reads nor writes `apply-progress` (single-writer rule). Run the new **Step 3b: Reposition,
+  Then Base Handshake** before Step 4. Step 4 implements your one assigned task. Run the new **Step 4a: Commit**
   immediately after. Step 6b (if the spec carries `ui-scenarios:`) authors its counterparts **into your
   Task Run Report**, not into a persisted artifact. **Skip Steps 5 and 6 entirely.** Step 7 returns the
   **Task Run Report** (`parallel-batch.md`), never `## Implementation Progress`.
@@ -163,15 +163,31 @@ If Strict TDD Mode is active (either from orchestrator injection or self-discove
 
 **There is no silent fallback.** If you resolved Strict TDD as active, you follow it or you report failure. You do NOT quietly switch to Standard Mode.
 
-### Step 3b: Base Handshake — Isolated Run Mode only
+### Step 3b: Reposition, Then Base Handshake — Isolated Run Mode only
 
-<!-- matecito-ai: must run before ANY write. Full definition, including the consolidation-side Level 2
-     re-check, lives in parallel-batch.md — this is the isolated run's half of it. -->
+<!-- matecito-ai: repositioning must run before ANY write, and it precedes the handshake rather than
+     replacing it. Full definition — the mechanism, the failed-repositioning verdict, and why the
+     obligation reaches every worktree-isolated run, not only this batch — lives in parallel-batch.md,
+     "Repositioning onto `base` (before the handshake)"; the handshake itself, including the
+     consolidation-side Level 2 re-check, lives in the same file's "The base handshake (two levels)".
+     This step is the isolated run's half of both. -->
 Before writing anything:
-1. `git rev-parse HEAD` must equal the `base` sha you received.
-2. `git status --porcelain` must be empty.
+1. Reposition your worktree onto `base`. First read your own branch name from inside the worktree:
+   `git rev-parse --abbrev-ref HEAD` (the harness already checked you out onto an ephemeral branch of
+   your own, typically `worktree-agent-<hex>`) — **never** the working branch's name (e.g. `main`), even
+   if you know it: worktrees share the ref store, and `git checkout -B <working-branch> <base>` run
+   inside a worktree resets that ref **globally**, moving every worktree checked out on that name and
+   orphaning any commit only reachable through its old tip. Then: `git checkout -B <your-branch> <base>`
+   — this works because the worktree shares the repository's object store. If it fails for any reason
+   (base unreachable, a git error), implement **nothing**: do not continue on the harness's starting
+   point and do not retry on an unverified base. Skip straight to Step 7 and return `Result:
+   not-implemented`, `Why not: base-not-established`, with the concrete failure reason legible on that
+   line.
+2. Run the base handshake:
+   a. `git rev-parse HEAD` must equal the `base` sha you received.
+   b. `git status --porcelain` must be empty.
 
-Either check failing → implement **nothing**. Skip straight to Step 7 and return `Result:
+Either handshake check failing → implement **nothing**. Skip straight to Step 7 and return `Result:
 not-implemented`, `Why not: base-not-established`. Do not attempt the task on an unverified base — see
 `~/.claude/references/phase-returns/sdd-apply/parallel-batch.md` → "The base handshake (two levels)".
 
@@ -445,7 +461,7 @@ Three things the template expects you to already know from this skill:
      because the rule right above ("ALWAYS persist") would otherwise read as universal, and it is not
      universal for Isolated Run Mode. -->
 - **Isolated Run Mode is the one exception to "ALWAYS persist"**: it persists NOTHING — no `apply-progress`, no task marking — by design (single-writer rule). Its one job is one commit and one Task Run Report; the consolidation run is the only writer. Do not run Steps 5/6 there, and do not read Step 2b there — see "Mode Branch" and `parallel-batch.md`
-- **The base handshake runs before any write, in Isolated Run Mode.** An unverified base (`HEAD != base`, or a dirty `git status --porcelain`) means implementing nothing — report `not-implemented / base-not-established` instead of guessing at what the worktree actually contains. See Step 3b and `parallel-batch.md` → "The base handshake"
+- **Repositioning onto `base`, then the base handshake, both run before any write, in Isolated Run Mode.** The harness's worktree starting point is not the working base (it can be `origin/<branch>`, behind local `HEAD`) — reposition via `git checkout -B <your-branch> <base>`, where `<your-branch>` is read from inside the worktree (`git rev-parse --abbrev-ref HEAD`) and is **never the working branch's name**: worktrees share the ref store, so resetting the working branch from inside a worktree moves it everywhere and orphans commits. A failed repositioning, or an unverified base after it (`HEAD != base`, or a dirty `git status --porcelain`), both mean implementing nothing — report `not-implemented / base-not-established` instead of guessing at what the worktree actually contains. See Step 3b and `parallel-batch.md` → "Repositioning onto `base`" and "The base handshake"
 - If workload forecast requires a decision and none was provided, STOP before writing code (nothing was written yet, so there is no completed work to persist)
 - When applying a chained/stacked PR slice, keep the batch autonomous: one deliverable scope, verification included, and clear rollback boundary
 - When applying `size:exception`, state it explicitly in apply-progress and the return summary
