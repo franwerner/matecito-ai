@@ -85,11 +85,12 @@ Chain strategy: <stacked-to-main|feature-branch-chain|size-exception|pending>
 
 ## Phase 1: {Phase Name} (e.g., Infrastructure / Foundation)
 
-<!-- matecito-ai: each task carries an indented sub-line with `criteria:` (MANDATORY) and, only when EDRs are active and the task touches a decision, `· edr: <domain>/<slug>` (OPTIONAL). Do NOT touch the `- [ ]`: apply marks progress by flipping `- [ ]` → `- [x]` on the task line. The EDR ref is slug-based (`structure/layering`), never numeric. -->
+<!-- matecito-ai: each task carries an indented sub-line with `criteria:` (MANDATORY) and, only when EDRs are active and the task touches a decision, `· edr: <domain>/<slug>` (OPTIONAL). Do NOT touch the `- [ ]`: apply marks progress by flipping `- [ ]` → `- [x]` on the task line. The EDR ref is slug-based (`structure/layering`), never numeric. A task MAY also carry a further indented `· parallel-group: <id>` sub-line — its own line, never folded into the `criteria:` line and never on the `- [ ]` line — declaring which tasks run concurrently; see "Parallel-group mark" below. -->
 - [ ] 1.1 {Concrete action — what file, what change}
       criteria: {observable check — input → result}  · edr: {<domain>/<slug> | omit}
 - [ ] 1.2 {Concrete action}
       criteria: {observable check}
+      · parallel-group: {<id> | omit}
 
 ## Phase 2: {Phase Name} (e.g., Core Implementation)
 
@@ -131,6 +132,33 @@ Each task MUST be:
 Active ONLY when flagDecisionGaps=true (does NOT depend on EDRs existing). When active: for EACH task that touches a decision, emit `· edr: <domain>/<slug>` mapped to a catalog concern, whether or not the EDR exists — this overrides the flag-off rule of "omit edr if there is no `.matecito-ai/edr/`". Then, for each `· edr:`, check whether `.matecito-ai/edr/<domain>/<slug>.md` exists: if NOT, the ref is a dangling decision gap — leave it as-is (do not modify or mark it). With zero EDRs, every decision is a gap (bootstrap the first ones). The dangling refs in the artifact are the gap list that sdd-verify consumes. When flag off: byte-identical behavior to before, no mention. -->
 - (Decision-gap detection — flag-gated) When `flagDecisionGaps=true` (regardless of EDR presence): emit a concern-mapped `· edr:` for each decision-touching task even if no EDR exists yet; a `· edr:` whose target file is absent under `.matecito-ai/edr/` is a decision gap — leave it verbatim (the dangling ref IS the signal; with zero EDRs every decision is a gap → bootstrap). Silent when flag off.
 
+### Parallel-group mark
+
+<!-- matecito-ai: this is the canonical definition `sdd-apply`'s `parallel-batch.md` cites instead of
+     assuming a form — see its `## Eligibility` section. Defined once, here; do not restate it there. -->
+
+A task MAY carry **exactly one** further indented sub-line, of the same family as `criteria:` and
+`· edr:`: `· parallel-group: <id>`, on its own line, never on the `- [ ]` line. `<id>` is a short
+token naming a group; it carries no meaning beyond identity — two tasks are in the same group if and
+only if their ids are equal.
+
+- **Optional; absence means serial** — today's behavior. Do NOT infer a group for an unmarked task,
+  and do NOT require re-marking any existing tasks artifact.
+- **Same id ⇒ concurrently safe, and ONLY when it is.** Give two tasks the same id ONLY when they can
+  run at the same time without conflicting. Two tasks that would collide (e.g. both rewrite the same
+  file) MUST NOT share an id — each is still markable, just in a group of its own.
+- **One group is one batch.** Tasks sharing an id run together; tasks with different ids never mix in
+  the same batch — each group is its own round. Never merge two ids because their tasks look
+  independent of each other; that is the inference this mark exists to remove.
+- **A group of one is legal**, not malformed — it simply yields no fan-out for that task.
+- **The mark is a form, not prose.** It is the only way to declare parallel eligibility; the emitted
+  artifact carries no free-text note about which tasks are parallel.
+
+### The per-task line budget with the mark
+
+A marked task's cap is **three lines**: the `- [ ]` line, the `criteria:` sub-line, and the
+`· parallel-group:` sub-line. An unmarked task keeps the existing two-line cap — see "Size budget"
+below.
 
 ### Review Workload Forecast Rules
 
@@ -243,7 +271,7 @@ Three things the template expects you to already know from this skill:
 <!-- matecito-ai: una tarea sin origen no está prohibida — pero se declara, no se cuela -->
 - Every task MUST link to a spec requirement or to something the design establishes. A task that links to neither is not forbidden (a real gap or an implied prerequisite may warrant it) but it MUST be declared under `### Tasks not traceable to spec/design` in your return — never folded in silently
 - If the project uses TDD, integrate test-first tasks: RED task (write failing test) → GREEN task (make it pass) → REFACTOR task (clean up)
-<!-- matecito-ai: budget subido de 530 → 800 palabras para absorber la sub-línea `criteria:` (criteria + edr) por tarea. -->
-- **Size budget**: Tasks artifact MUST be under 800 words. Each task: the `- [ ]` line + one indented `criteria:` sub-line (max 2 lines total). Use checklist format, not paragraphs.
+<!-- matecito-ai: budget subido de 530 → 800 palabras para absorber la sub-línea `criteria:` (criteria + edr) por tarea; el cap por tarea sube de 2 a 3 líneas cuando lleva `· parallel-group:`. -->
+- **Size budget**: Tasks artifact MUST be under 800 words. Each task: the `- [ ]` line + one indented `criteria:` sub-line (2 lines total) — 3 lines total for a task that also carries `· parallel-group:`. Use checklist format, not paragraphs.
 - **Review workload guard**: ALWAYS include the Review Workload Forecast. If likely above 400 changed lines, recommend chained PRs and honor the received delivery strategy for whether a decision/exception is needed before apply.
 - Return envelope per **Section D** from `~/.claude/skills/_shared/sdd-phase-common.md`.

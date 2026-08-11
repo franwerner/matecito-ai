@@ -29,7 +29,11 @@ Execute all steps from the skill directly in this context window:
 4b. Add a verifiable `criteria:` sub-line per task; add an optional `· edr:` ref only when the task touches an active decision
 <!-- matecito-ai: decision-gap detection — ONLY when flagDecisionGaps=true (does NOT depend on EDRs existing). With the flag ON, emit `· edr: <domain>/<slug>` (mapped to a concern) for each task that touches a decision, whether or not the EDR exists — overrides the flag-off rule of "omit edr if there is no .matecito-ai/edr/". Then, for each `· edr:`, check whether `.matecito-ai/edr/<domain>/<slug>.md` exists; if NOT, it is a decision gap: the dangling ref stays in the artifact as-is (do not delete or mark it). The set of dangling refs IS the gap list. With zero EDRs, every decision is a gap (bootstrap). When flag off: behavior exactly as today, no mention. -->
 4c. (Decision-gap detection) When `flagDecisionGaps=true` (regardless of EDR presence): emit a concern-mapped `· edr:` for each decision-touching task even with no EDRs yet; then for each `· edr:`, if `.matecito-ai/edr/<domain>/<slug>.md` does not exist it is a flagged decision gap — carry it verbatim. Silent when flag off.
-5. Mark which tasks can run in parallel vs sequential
+<!-- matecito-ai: the form is defined once in the SKILL ("Parallel-group mark"); this step only tells
+     the agent to emit it — never restate the form here. -->
+5. For tasks that can run concurrently, add a `· parallel-group: <id>` sub-line per the SKILL's
+   "Parallel-group mark" definition — same id ⇒ same batch, ONLY when genuinely independent; leave
+   it off for anything that must run serial (today's default)
 6. Persist tasks to active backend
 
 Do NOT implement — produce the checklist only.
