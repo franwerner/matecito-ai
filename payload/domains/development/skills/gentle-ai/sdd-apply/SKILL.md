@@ -113,9 +113,9 @@ Then you MUST confirm the orchestrator/user provided a resolved delivery path:
 2. **`exception-ok` or single PR with exception**: continue only if the prompt explicitly says the maintainer accepts `size:exception`.
 3. **`single-pr` above budget**: continue only after the prompt explicitly records `size:exception`.
 
-Also check for `Chain strategy` in the tasks artifact. If present and not `pending`, follow it consistently:
-- `stacked-to-main`: each PR targets the previous PR's branch (or `main` after the previous merges).
-- `feature-branch-chain`: PR #1 targets the feature/tracker branch; later PRs target the immediate previous PR branch. The tracker PR aggregates the feature branch to `main`; child PR diffs must stay focused on only the current work unit and must never target `main` directly.
+Also check for `Chain strategy` in the tasks artifact. If present and not `pending`, follow it consistently. **How the base branch is resolved and named explicitly is defined once, in `~/.claude/skills/git/SKILL.md`** ("Pull Request Base Branch") — read it there; this step states only the two strategies' own topology:
+- `stacked-to-main`: each PR targets the previous PR's branch; the last PR in the stack targets the working branch.
+- `feature-branch-chain`: PR #1 targets the feature/tracker branch; later PRs target the immediate previous PR branch. The tracker PR's base is the working branch; child PR diffs must stay focused on only the current work unit and must never target the working branch directly.
 
 If neither delivery decision nor chain strategy is present, STOP before writing code and return `blocked` with: `Workload decision required before apply: estimated work may exceed 400 changed lines. Ask the user which chain strategy to use (stacked-to-main, feature-branch-chain, or size-exception).`
 

@@ -175,6 +175,51 @@ Razones:
 | Commit con `Co-Authored-By: Claude` | Commit sin atribución de IA |
 | `WIP` mergeado a main | (squash o reescribir antes de mergear) |
 
+## Pull Request Base Branch
+
+Applies whenever a pull request is opened — by the flow or by a person — for any branch in this repository.
+
+### Resolving the base
+
+The base branch MUST be the **working branch** — the branch checked out in the repository's **main**
+working tree (never a worktree's own branch), i.e. the branch the PR's head branch was created from.
+Read it from the repository when the PR is opened — never let the tool's own default-branch fallback
+supply it. The repository's default branch MUST NOT be used as the base unless it *is* the working
+branch.
+
+If the command is issued from inside a worktree, resolve the working branch from the **main working
+tree's** checked-out branch, never the worktree's own task branch (e.g. `worktree-agent-<hex>`).
+
+This rule creates no branch and emits no warning: when the working branch happens to be the
+repository's default, the PR targets it exactly as it does today — no forcing a feature branch, no
+warning about working on the default.
+
+### Naming the base explicitly
+
+Every PR-opening command MUST name the base explicitly:
+
+```
+gh pr create --base <working-branch>
+```
+
+Omitting `--base` is a malformed command **even when the tool's fallback would have produced the same
+branch** — the omission is the defect, not the outcome. When the PR is opened through a web UI, set the
+base selector deliberately to the working branch instead of accepting whatever comes pre-filled.
+
+### Chain destinations
+
+No instruction may name a literal branch (e.g. `main`) as the destination of a PR — every destination
+is expressed as the working branch or as another PR's branch:
+
+- **`feature-branch-chain`**: PR #1 targets the feature/tracker branch, and each later child PR targets
+  the immediate previous PR branch (both unchanged). The **tracker PR's base is the working branch**;
+  child PRs never target the working branch directly.
+- **`stacked-to-main`**: the same rule governs its last hop — the final PR in the stack targets the
+  working branch, not a literal branch name.
+
+The `Chain strategy` token values (`stacked-to-main`, `feature-branch-chain`, `size-exception`,
+`pending`) are unaffected — they are opaque identifiers, not descriptions of a base.
+
 ## Workflow rápido (para la IA)
 
 1. **Leer el estado actual** (`git status`, `git diff`) — sin editar nada.

@@ -174,9 +174,9 @@ If the estimate is **High** or likely above 400 lines:
      sdd-intake. Y encima era redundante: el Review Workload Guard del orquestador YA pregunta esto
      después de esta fase y antes de apply, que es donde corresponde. Vos documentás las opciones
      para que la decisión se pueda tomar; no la tomás ni la pedís. -->
-4. **Document the three chain strategies in the forecast** so the user can choose when the guard asks. You do NOT ask and you do NOT choose: you have no channel to the user, and the orchestrator's Review Workload Guard puts this question after your phase and before apply. Lay them out:
-   - **Stacked PRs to main** — each PR merges to main in order. Fast iteration, fix on the go. Best for speed-first teams and independent slices.
-   - **Feature Branch Chain** — the feature/tracker branch accumulates the final integration; PR #1 targets the tracker branch, later PRs target the immediate previous PR branch so each child diff stays focused. Only the tracker merges to main. Best for rollback control and coordinated releases.
+4. **Document the three chain strategies in the forecast** so the user can choose when the guard asks. You do NOT ask and you do NOT choose: you have no channel to the user, and the orchestrator's Review Workload Guard puts this question after your phase and before apply. **How a PR's base is resolved and named explicitly is defined once, in `~/.claude/skills/git/SKILL.md`** ("Pull Request Base Branch") — read it there; the descriptions below state only each strategy's own topology. Lay them out:
+   - **Stacked PRs** — each PR targets the previous PR's branch in order; the last PR in the stack targets the working branch, not a fixed branch name. Fast iteration, fix on the go. Best for speed-first teams and independent slices.
+   - **Feature Branch Chain** — the feature/tracker branch accumulates the final integration; PR #1 targets the tracker branch, later PRs target the immediate previous PR branch so each child diff stays focused. Only the tracker merges to the working branch. Best for rollback control and coordinated releases.
    - **size:exception** — keep it as a single PR with maintainer approval. Best for generated code, migrations, or vendor diffs.
 
    Set `Chain strategy: pending` unless the orchestrator handed you an already-resolved one in the launch prompt. `pending` is the correct, expected value here — not a gap you should fill in.
@@ -199,7 +199,7 @@ Chain strategy: stacked-to-main|feature-branch-chain|size-exception|pending
 
 You may keep the table for readability, but the plain-text lines are the guard contract.
 
-For `feature-branch-chain`, suggested work units SHOULD name the intended base boundary: PR #1 base = feature/tracker branch; PR #2 base = PR #1 branch; PR #3 base = PR #2 branch. If a child PR would show previous PR changes, the base is wrong and must be retargeted/rebased before review.
+For `feature-branch-chain`, suggested work units SHOULD name the intended base boundary: PR #1 base = feature/tracker branch; PR #2 base = PR #1 branch; PR #3 base = PR #2 branch. If a child PR would show previous PR changes, the base is wrong and must be retargeted/rebased before review. How each of these bases is resolved and named explicitly on the actual `gh pr create` (or equivalent) call is defined once, in `~/.claude/skills/git/SKILL.md` ("Pull Request Base Branch") — this section only names the intended boundaries.
 
 ### Phase Organization Guidelines
 
