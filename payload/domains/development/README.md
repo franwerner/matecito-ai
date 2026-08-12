@@ -134,8 +134,6 @@ Lo que aparece en la pantalla de configuración del dominio (resuelto por-proyec
 - **Models per agent** (`models`) — qué modelo usa cada fase (`sdd-intake`, `sdd-spec`, `sdd-design`, …). Sin valor configurado, cada agente usa su default curado.
 - **Strict TDD** (`strictTdd`, default `false`) — si está activo, `apply` y `verify` siguen test-first.
 
-> **Sin flag de captura de decisiones.** `development` no tiene `flagDecisionGaps`: la captura ocurre siempre, en el flujo — cada fase que llega a una decisión la propone en su retorno, el gate del lane la ratifica una sola vez, y `sdd-apply` la materializa como EDR `Accepted` en el mismo paso que implementa el código que gobierna. Mecanismo completo: [`in-flow-capture.md`](../../../references/decision-capture/in-flow-capture.md) (ruta desplegada: `~/.claude/references/decision-capture/in-flow-capture.md`).
-
 ## Ver también
 
 - [Guía profunda del flujo SDD](../../../docs/guide/README.md) — cómo funciona todo de punta a punta: fases, herramientas y la capa de decisiones (bootstrap / validate / mine).

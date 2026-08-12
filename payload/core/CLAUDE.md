@@ -190,9 +190,7 @@ Pass the resolved value as the Task tool's `model` parameter. If a config file i
 
 **Unsupported-model fallback (reactive, can't be pre-checked):** valid model values are Claude Code aliases (`opus`/`sonnet`/`haiku`/`fable`); the orchestrator cannot know in advance which the running Claude supports. Forward the resolved value as-is. If the Task launch fails because the model alias is unknown/unsupported on this install (e.g. `fable` on an older Claude), retry the SAME launch with the `model` parameter OMITTED so the agent's frontmatter default applies — identical to step 3's "default" path. Degrade to the frontmatter default, never to the conversation model, and never block the phase.
 
-**`flagDecisionGaps` resolution (relevant only for a domain whose fragment does NOT declare its own decision-capture mechanism — see the override clause under "Decision-Gap Capture (mine gate)" below):** per-domain, same precedence — per-project `domainConfig[<active domain>].flagDecisionGaps` → global `domainConfig[<active domain>].flagDecisionGaps` → `false` (a pre-per-domain flat top-level `flagDecisionGaps` auto-migrates into `domainConfig.development` on read). Resolve once per session, cache, **only for a domain this applies to** — a domain that declares its own mechanism (`development`, per its fragment) never resolves this flag and never evaluates any of the hooks below; there is nothing to cache. The gate is INTENT (the flag), NOT decision-record presence: when resolved `true` for an applicable domain, the tasks phase runs the decision-gap detection hook (dangling decision-record refs), the verify phase runs the confirmation hook and emits `## Decision Gaps`, and the orchestrator evaluates the mine gate post-verify (see Decision-Gap Capture note below) — this works even when the domain's decision-record store does not exist yet (every decision-touching task is then a gap, and mine bootstraps the first records through the confirm gate). When resolved `false`: all three hooks are silently skipped — no output, no mention, behavior identical to before this flag existed.
-
-**`flagSpecMine` resolution (relevant for the session-start / post-init spec-mine trigger):** per-domain, same precedence — per-project `domainConfig[<active domain>].flagSpecMine` → global `domainConfig[<active domain>].flagSpecMine` → `false`. Resolve once per session, cache. The gate is INTENT (the flag), NOT capability-spec-store presence: when resolved `true`, the orchestrator evaluates the brownfield spec-mine trigger at session start / post-`sdd-init` (see the Spec-Mine Trigger note below) — a repo with mineable code but an absent/sparse `.matecito-ai/development-specs/` gets an offered Mode A mine. When resolved `false`: the trigger is silently skipped — no output, no mention, behavior identical to before this flag existed. This is a sibling of `flagDecisionGaps` (same typed-flag resolution shape) but drives a **different, non-flow** hook: it is Mode A brownfield only, with NO in-flow tasks/verify hook and NO post-verify boundary dispatch.
+**`flagSpecMine` resolution (relevant for the session-start / post-init spec-mine trigger):** per-domain, same precedence — per-project `domainConfig[<active domain>].flagSpecMine` → global `domainConfig[<active domain>].flagSpecMine` → `false`. Resolve once per session, cache. The gate is INTENT (the flag), NOT capability-spec-store presence: when resolved `true`, the orchestrator evaluates the brownfield spec-mine trigger at session start / post-`sdd-init` (see the Spec-Mine Trigger note below) — a repo with mineable code but an absent/sparse `.matecito-ai/development-specs/` gets an offered Mode A mine. When resolved `false`: the trigger is silently skipped — no output, no mention, behavior identical to before this flag existed. This drives a **non-flow** hook: it is Mode A brownfield only, with NO in-flow tasks/verify hook and NO post-verify boundary dispatch.
 
 **Domain guard resolution:** the active domain may define guards (e.g. strict TDD) with their own resolution; that lives in the domain fragment and reuses the precedence above.
 
@@ -200,7 +198,6 @@ Pass the resolved value as the Task tool's `model` parameter. If a config file i
 - [ ] Read both config files (per-project, then global).
 - [ ] Resolve `model` by the precedence above; omit the param if unresolved.
 - [ ] Resolve any domain guards declared by the active domain fragment.
-- [ ] Resolve `flagDecisionGaps` — **only for a domain that does not declare its own decision-capture mechanism** (see the override clause under "Decision-Gap Capture (mine gate)" below); cache for boundary dispatch evaluation. Skip entirely for a domain that declares its own.
 - [ ] Resolve `flagSpecMine`; cache for the session-start / post-init spec-mine trigger evaluation.
 <!-- /matecito-ai:behavior -->
 
@@ -369,7 +366,7 @@ Every domain MUST declare that row. A fragment without it leaves this guard with
 <!-- matecito-ai: Spec-Mine Trigger — brownfield, flag-gated, Mode A ONLY. NOT the post-verify decision mine gate. -->
 ### Spec-Mine Trigger (brownfield, flag-gated)
 
-A session-start / post-`sdd-init` hook that OFFERS to reconstruct the accumulated behavior (capability-specs) of an existing repo from its as-built code. This is **Mode A brownfield only** — there is **NO in-flow hook** on the tasks/verify phases and **no post-verify boundary dispatch**. Do NOT confuse it with the **Decision-Gap Capture (mine gate)**, which is a *different* mechanism that runs *after verify* off `flagDecisionGaps`; this trigger runs *before any flow work* off `flagSpecMine`.
+A session-start / post-`sdd-init` hook that OFFERS to reconstruct the accumulated behavior (capability-specs) of an existing repo from its as-built code. This is **Mode A brownfield only** — there is **NO in-flow hook** on the tasks/verify phases and **no post-verify boundary dispatch**. Do NOT confuse it with the **Decision-Gap Capture (mine gate)**, which is a *different* mechanism that runs *after verify*, triggered by the verify-report itself (see below); this trigger runs *before any flow work* off `flagSpecMine`.
 
 **Gate = INTENT (the flag), NOT store presence.** Resolve `flagSpecMine` per the canonical rule in the `matecito-ai:behavior` zone.
 - `flagSpecMine = false` → **TOTAL SILENCE**: this trigger does not exist. Zero evaluation, zero mention, behavior identical to before the flag existed.
@@ -476,15 +473,14 @@ Each phase returns: `status`, `executive_summary`, `artifacts`, `next_recommende
 whether the active domain's fragment declares its own decision-capture mechanism (read the fragment;
 this kernel does not enumerate which domains do). If it does, **this entire gate does not run for that
 domain** — no trigger check, no dispatch, no mention — the domain's own mechanism is what's in effect,
-end to end: its `flagDecisionGaps` never resolves, none of the three hooks below ever fire for it, and
-its post-verify boundary dispatch is nothing — decision capture there already happened, through
-whatever moment its own mechanism ratifies and materializes. A domain whose fragment declares no such
-mechanism inherits this gate unchanged.
+end to end: none of the hooks below ever fire for it, and its post-verify boundary dispatch is nothing
+— decision capture there already happened, through whatever moment its own mechanism ratifies and
+materializes. A domain whose fragment declares no such mechanism inherits this gate unchanged.
 
 After verify returns, for a domain that does NOT declare its own mechanism, evaluate this gate
 **before** dispatching archive:
 
-**Trigger condition:** `flagDecisionGaps` resolved `true` AND the verify-report contains a `## Decision Gaps` section with at least one row where `implemented? = yes`.
+**Trigger condition:** the verify-report contains a `## Decision Gaps` section with at least one row where `implemented? = yes`.
 
 <!-- matecito-ai: the scope used to include "any `## Alcance` hint from the tasks artifact". Two problems,
      chained: `## Alcance` is a section of the decision-record TEMPLATE, and the `tasks` artifact has
@@ -497,7 +493,7 @@ After verify returns, for a domain that does NOT declare its own mechanism, eval
 
 **Gate (main thread):** present candidates ordered by confidence, grouped by domain, with a summary first ("N high / M to review / K questions") and bulk actions (accept-all-high / per-domain / per-item); for many, present in rounds by domain. Nothing is written without explicit confirm (Automatic mode does NOT skip this gate). Confirmed candidates are materialized as `[Inferred]` decision records per the domain's store — write the files and update the store INDEX **once at the end**; the records live ONLY as files, never recorded in Engram. Then proceed to archive.
 
-**When NOT triggered** (flag off, or no implemented gaps): skip silently — proceed directly to archive with no mention of this gate. This gate NEVER blocks archive when the condition is not met. (Store absence does NOT skip the gate: with no records, every decision-touching task is a gap, and mine bootstraps the first records through the confirm gate.)
+**When NOT triggered** (no implemented gaps): skip silently — proceed directly to archive with no mention of this gate. This gate NEVER blocks archive when the condition is not met. (Store absence does NOT skip the gate: with no records, every decision-touching task is a gap, and mine bootstraps the first records through the confirm gate.)
 
 **Invariant:** the mine executor NEVER writes decision records directly; the gate and materialize step require explicit user confirmation in the main thread. Automatic mode does NOT skip the candidate gate — it is always user-confirmed (same pattern as the INTAKE GATE).
 

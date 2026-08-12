@@ -1,6 +1,5 @@
 {
   "strictTdd": false,
-  "flagDecisionGaps": false,
   "repo": {
     "components": [
       { "name": "cli", "paths": ["cmd", "internal", "payload"] },

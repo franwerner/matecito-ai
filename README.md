@@ -150,9 +150,10 @@ Se editan desde la TUI (`matecito-ai` → _Configuración_), organizada en **Gen
 - **Por dominio** — cada dominio expone su propia config desde su contrato (`domainConfig.<dominio>`):
   - **Modelo por agente** — qué modelo usa cada fase del dominio. Sin valor configurado, cada agente usa su default curado.
   - **Guards** — p. ej. **Strict TDD** (test-first en `apply`/`verify`) en development.
-  - **Auto-mine** (`flagDecisionGaps`) — opt-in, off por default. Detecta decisiones implementadas sin decision record durante el flujo; al cerrar, ofrece minarlas como records `Inferred` (siempre con tu confirmación). **Auto-mine ADR** en development, **Auto-mine DDR** en design.
 
-La config de un dominio solo aparece si el dominio está **activo**.
+La config de un dominio solo aparece si el dominio está **activo**. La captura de decisiones no es
+config: corre siempre, sin interruptor — cada dominio con su propio mecanismo (ver
+[la guía](docs/guide/05-auto-mine.md)).
 
 ## Documentación
 

@@ -1,6 +1,6 @@
 ---
 name: design-decisions-mine
-description: Minería de decisiones de DISEÑO desde el archivo Figma conectado de un proyecto. Produce candidatos a DDR con Status Inferred a partir de evidencia de tokens, componentes, patrones repetidos o ausencias. Dos modos — Mode A (scan del archivo Figma invocado por la skill) y Mode B (in-flow, opt-in via flagDecisionGaps). Usá esta skill cuando el usuario pida "minear decisiones de diseño", "encontrar DDRs que faltan", "¿qué decisiones de diseño hay implícitas en el Figma?", o cuando el orchestrator dispare el boundary dispatch post-verify con gaps implementados.
+description: Minería de decisiones de DISEÑO desde el archivo Figma conectado de un proyecto. Produce candidatos a DDR con Status Inferred a partir de evidencia de tokens, componentes, patrones repetidos o ausencias. Dos modos — Mode A (scan del archivo Figma invocado por la skill) y Mode B (in-flow, siempre activo). Usá esta skill cuando el usuario pida "minear decisiones de diseño", "encontrar DDRs que faltan", "¿qué decisiones de diseño hay implícitas en el Figma?", o cuando el orchestrator dispare el boundary dispatch post-verify con gaps implementados.
 ---
 
 # Design Decisions Mine
@@ -38,9 +38,9 @@ Estas dos invariantes son la columna vertebral de la skill. Cualquier desviació
 **Invariante 1 — DDRs nunca obligatorios; el ejecutor recibe un scope, no decide nada.** El ejecutor NO lee config, NO resuelve el flag, NO se ramifica por modo: recibe un **scope** de su caller y lo procesa. La intención (si correr) vive en el caller:
 
 - invocación directa de la skill → scope = archivo Figma completo.
-- el orquestador (con `flagDecisionGaps` resuelto en true + gaps implementados) → scope = la gap list.
+- el orquestador (con gaps implementados en el verify-report) → scope = la gap list.
 
-Con flag off el orquestador no invoca → silencio total. La dependencia dura del ejecutor es el **catálogo de design concerns** (siempre presente), de donde sale la taxonomía de surfaces — NO los DDR generados. La ausencia de `.matecito-ai/ddr/` NO bloquea: "nada decidido todavía" → cada candidato es un hueco y mine puede bootstrapear (crear la carpeta + los primeros DDR) tras el confirm. La presencia de un DDR se chequea **por-candidato** (dedup), nunca como gate global.
+La dependencia dura del ejecutor es el **catálogo de design concerns** (siempre presente), de donde sale la taxonomía de surfaces — NO los DDR generados. La ausencia de `.matecito-ai/ddr/` NO bloquea: "nada decidido todavía" → cada candidato es un hueco y mine puede bootstrapear (crear la carpeta + los primeros DDR) tras el confirm. La presencia de un DDR se chequea **por-candidato** (dedup), nunca como gate global.
 
 **Invariante 2 — Nunca auto-materializar.** El executor NO tiene capacidad de escritura de DDRs en la fase discover. La materialización es un paso separado, alcanzable solo después de un confirm explícito del usuario en el gate del thread principal.
 
@@ -138,7 +138,7 @@ La confianza hace exactamente dos cosas: (a) **routear** cada candidato (draft I
 
 ## Mode A — Scan del archivo Figma (invocado por la skill)
 
-Mode A corre cuando el usuario pide explícitamente minear decisiones de diseño del archivo Figma. Es independiente del flag `flagDecisionGaps`. NO requiere que `.matecito-ai/ddr/` exista: si no existe, cada candidato es un hueco nuevo y mine puede bootstrapear la carpeta + los primeros DDR tras el confirm.
+Mode A corre cuando el usuario pide explícitamente minear decisiones de diseño del archivo Figma. Es independiente de Mode B (in-flow). NO requiere que `.matecito-ai/ddr/` exista: si no existe, cada candidato es un hueco nuevo y mine puede bootstrapear la carpeta + los primeros DDR tras el confirm.
 
 ### Flujo
 
@@ -157,24 +157,24 @@ Mode A corre cuando el usuario pide explícitamente minear decisiones de diseño
 
 ---
 
-## Mode B — In-flow gap detection (opt-in, flagDecisionGaps)
+## Mode B — In-flow gap detection (siempre activo)
 
-Mode B es **un contexto de invocación**, no una lógica distinta del ejecutor: el orquestador, cuando `flagDecisionGaps` resuelve a `true` y hay gaps implementados, invoca al ejecutor con scope = la gap list. **El ejecutor NO lee config ni resuelve el flag** — eso lo hace el orquestador (ver CLAUDE.md, regla "design agent launch" + "Decision-Gap Capture"), igual que con el modelo. Con flag off el orquestador no invoca: silencio total. La presencia de `.matecito-ai/ddr/` NO condiciona nada — sin DDRs los huecos se bootstrapean; la existencia de un DDR se chequea por-candidato (dedup).
+Mode B es **un contexto de invocación**, no una lógica distinta del ejecutor: el orquestador, cuando hay gaps implementados en el verify-report, invoca al ejecutor con scope = la gap list. **El ejecutor NO lee config ni decide nada** — la intención de correr vive en el caller (ver CLAUDE.md, regla "design agent launch" + "Decision-Gap Capture"), igual que con el modelo. La presencia de `.matecito-ai/ddr/` NO condiciona nada — sin DDRs los huecos se bootstrapean; la existencia de un DDR se chequea por-candidato (dedup).
 
 ### Hooks en el flow design (contratos mínimos)
 
 **design-tasks (hook de detección):**
 - Un gap = una task que lleva `· ddr: <surface>/<slug>` cuyo DDR destino NO existe bajo `.matecito-ai/ddr/`.
 - Las referencias `· ddr:` colgadas son la lista de gaps — se cargan verbatim en el artifact `tasks` (ningún campo nuevo).
-- Solo cuando flag-on; si no → omitir silenciosamente. NO depende de que existan DDRs: con cero DDRs, toda `· ddr:` que toque una decisión apunta a algo inexistente, así que todo es hueco (bootstrap de los primeros).
+- Siempre activo, sin condición. NO depende de que existan DDRs: con cero DDRs, toda `· ddr:` que toque una decisión apunta a algo inexistente, así que todo es hueco (bootstrap de los primeros).
 
 **design-verify (hook de confirmación):**
 - Para cada gap detectado en tasks (referencia `· ddr:` colgada), confirmar que: (a) la task correspondiente está completa, (b) su `criteria:` pasó contra el archivo Figma embarcado.
 - Emitir una sección `## Decision Gaps` en el verify-report: `| surface/slug | task | implemented? |`.
-- Solo cuando flag-on.
+- Siempre activo, sin condición.
 
 **Boundary dispatch (verify→archive — dispatch condicional del orchestrator):**
-- Trigger: `flagDecisionGaps resuelto-true` AND el verify-report lista ≥1 gap implementado.
+- Trigger: el verify-report lista ≥1 gap implementado.
 - El orchestrator despacha el executor de mine Mode B: le pasa `change-name`, la lista de gaps implementados (`surface/slug` + hint de `Alcance`), y el root del repo.
 - El executor minea el **archivo Figma real embarcado** (evidencia fuerte post-ship: los styles/components quedaron definidos).
 - Retorna `candidates[]`; el thread principal presenta el gate; confirmed → materializar DDRs Inferred.

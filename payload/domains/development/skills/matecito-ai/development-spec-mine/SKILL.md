@@ -125,7 +125,7 @@ La confianza hace exactamente dos cosas: (a) **routear** cada candidato (draft I
 
 ## Mode A — Brownfield scan (único modo)
 
-A diferencia de `development-decisions-mine`, spec-mine **no tiene Mode B**: corre siempre como scan brownfield, invocado por la skill directamente O disparado por el flag `flagSpecMine` (mirror tipado de `flagDecisionGaps`) tras `sdd-init`/inicio de sesión, cuando el repo tiene código pero `.matecito-ai/development-specs/` está ausente o disperso. NO requiere que el store exista: si no existe, cada candidato es un hueco nuevo y mine puede bootstrapear la carpeta + los primeros specs tras el confirm.
+A diferencia de `development-decisions-mine`, spec-mine **no tiene Mode B**: corre siempre como scan brownfield, invocado por la skill directamente O disparado por el flag `flagSpecMine` (tri-estado, aislado por dominio) tras `sdd-init`/inicio de sesión, cuando el repo tiene código pero `.matecito-ai/development-specs/` está ausente o disperso. NO requiere que el store exista: si no existe, cada candidato es un hueco nuevo y mine puede bootstrapear la carpeta + los primeros specs tras el confirm.
 
 ### Flujo
 
@@ -146,7 +146,7 @@ A diferencia de `development-decisions-mine`, spec-mine **no tiene Mode B**: cor
 
 ## Trigger del flag (referencia — implementación en Fase 5)
 
-El flag `flagSpecMine` (mirror tipado de `flagDecisionGaps`) dispara Mode A cuando resuelve `true`: el orquestador, post-`sdd-init` (o primer comando de flow de la sesión) sobre un repo con código pero store ausente/disperso, despacha spec-mine sobre el repo completo → gate obligatorio. Flag off → silencio total, comportamiento idéntico a antes de que el flag existiera. La resolución del flag y su wiring en config/TUI son responsabilidad de la Fase 5 de `development-spec-mine`; esta skill solo documenta el punto de disparo — el ejecutor NUNCA lee el flag (Invariante 1).
+El flag `flagSpecMine` dispara Mode A cuando resuelve `true`: el orquestador, post-`sdd-init` (o primer comando de flow de la sesión) sobre un repo con código pero store ausente/disperso, despacha spec-mine sobre el repo completo → gate obligatorio. Flag off → silencio total, comportamiento idéntico a antes de que el flag existiera. La resolución del flag y su wiring en config/TUI son responsabilidad de la Fase 5 de `development-spec-mine`; esta skill solo documenta el punto de disparo — el ejecutor NUNCA lee el flag (Invariante 1).
 
 ---
 

@@ -1,8 +1,8 @@
 # 06 — Auto-mine de specs (`flagSpecMine`)
 
-[← 05 Auto-mine de EDRs](05-auto-mine.md) · [Índice](README.md) · Siguiente: [07 — Herramientas →](07-herramientas.md)
+[← 05 Captura de decisiones](05-auto-mine.md) · [Índice](README.md) · Siguiente: [07 — Herramientas →](07-herramientas.md)
 
-> Esta página describe el auto-mine de **capability-specs**, el contrato observable del dominio **development** (ver [03](03-fases.md#spec-base)). El mecanismo de fondo (Mode A brownfield, gate obligatorio, `Inferred` como borrador no-confiable) es el mismo motor que el auto-mine de EDRs ([05](05-auto-mine.md)); esta página cubre dónde diverge para specs.
+> Esta página describe el auto-mine de **capability-specs**, el contrato observable del dominio **development** (ver [03](03-fases.md#spec-base)). El mecanismo de fondo (Mode A brownfield, gate obligatorio, `Inferred` como borrador no-confiable) es el mismo motor que el mine de EDRs y DDRs ([05](05-auto-mine.md)); esta página cubre dónde diverge para specs.
 
 `mine` (spec) tiene **un solo modo**:
 
@@ -12,7 +12,7 @@ No hay Mode B in-flow. Esto es una **asimetría deliberada** frente al auto-mine
 
 ## El gate es la INTENCIÓN, no la presencia de specs
 
-`flagSpecMine` es **opt-in, off por default**, hermano directo de `flagDecisionGaps` (mismo tipo, misma precedencia por-dominio). Con el flag off: silencio total. Con el flag on, el orquestador **ofrece** Mode A (en una línea, declinable en una palabra) cuando detecta un repo con código pero con `.matecito-ai/development-specs/` ausente o escaso — al iniciar sesión o después de `sdd-init`. Escasez = el store no existe, o sus specs cubren solo una fracción chica del código con comportamiento (muchas rutas / máquinas de estado / validaciones / handlers sin capability-spec).
+`flagSpecMine` es **opt-in, off por default**: tri-estado (sin valor ≠ `false` ≠ `true`), aislado por dominio, resuelto por la cadena proyecto → global → `false`. Con el flag off: silencio total. Con el flag on, el orquestador **ofrece** Mode A (en una línea, declinable en una palabra) cuando detecta un repo con código pero con `.matecito-ai/development-specs/` ausente o escaso — al iniciar sesión o después de `sdd-init`. Escasez = el store no existe, o sus specs cubren solo una fracción chica del código con comportamiento (muchas rutas / máquinas de estado / validaciones / handlers sin capability-spec).
 
 Hay **dos confirmaciones distintas**, no las confundas: (1) la **oferta-a-escanear** — antes de cualquier scan; declinarla significa que no se escanea nada; y (2) el **gate de materialización** — después del scan, sobre los candidatos reales.
 
@@ -29,7 +29,7 @@ ratificar   → development-spec-bootstrap (modo update): revisa/corrige, agrega
 sdd-verify  → a partir de ahí lo exige (SPEC-VIOLATION si el código diverge)
 ```
 
-No hay hooks en `tasks`/`verify` ni boundary dispatch para specs — a diferencia del auto-mine de EDRs, que sí engancha ahí (ver [05](05-auto-mine.md#el-flujo-fase-por-fase)). El único disparador de spec-mine es su propio trigger post-`sdd-init`.
+No hay hooks en `tasks`/`verify` ni boundary dispatch para specs — a diferencia del mine gate de DDRs en design, que sí engancha ahí (ver [05](05-auto-mine.md#mecanismo-de-design-mine-gate-post-verify-fase-por-fase)). El único disparador de spec-mine es su propio trigger post-`sdd-init`.
 
 ## `Inferred` es un borrador, no la verdad
 

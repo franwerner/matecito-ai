@@ -34,8 +34,8 @@ type ConfigMenuModel struct {
 }
 
 func New(ctx ProjectContext, scope agentmodel.Scope) ConfigMenuModel {
-	// Shared (cross-domain) entries. Auto-mine (flagDecisionGaps) is now per-domain
-	// (rendered inside each domain's config screen), not a top-level entry.
+	// Shared (cross-domain) entries. Per-domain flags (e.g. flagSpecMine) render
+	// inside each domain's own config screen, not as a top-level entry.
 	entries := []menuEntry{
 		{label: "Dominios (global)", screen: nav.ScreenDomains},
 	}

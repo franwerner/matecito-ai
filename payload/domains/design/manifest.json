@@ -12,7 +12,6 @@
   "mcp": ["engram", "figma", "canva", "skillsmp"],
   "binaries": ["engram"],
   "config": [
-    { "key": "models", "type": "agent-models", "label": "Models per agent" },
-    { "key": "flagDecisionGaps", "type": "bool", "label": "Auto-mine DDR", "default": false }
+    { "key": "models", "type": "agent-models", "label": "Models per agent" }
   ]
 }

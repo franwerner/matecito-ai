@@ -175,9 +175,6 @@ quedan documentados abajo por trazabilidad, no como contrato vigente:
 - ~~`sdd-verify` confirmaba gaps y emitía `## Decision Gaps` solo con el flag on~~ — reemplazado por:
   `sdd-verify`'s grupo `decision-gaps` corre siempre (sin flag) y valida estructura + código-que-
   corresponde de lo que `sdd-apply` ya materializó, no huecos detectados post-hoc.
-- ~~el orquestador despachaba este ejecutor en Mode B cuando `flagDecisionGaps` resolvía true~~ —
-  reemplazado por: nada — la materialización ya ocurrió dentro de `sdd-apply`, no hay huecos que minar
-  después de verify.
 
 Si en el futuro algún otro contexto de `development` necesitara volver a invocar Mode B, el ejecutor
 sigue siendo capaz (`scope → candidates[]`, sin cambios) — simplemente hoy no hay ningún caller que lo

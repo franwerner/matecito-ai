@@ -40,12 +40,11 @@ const DefaultDomain = "development"
 
 // DomainConfig holds the per-domain settings (M7): model-per-agent overrides
 // (scoped to that domain's agents) and the domain's guards (e.g. strictTdd for
-// development). Shared settings (domains, flagDecisionGaps) stay top-level.
+// development). Shared settings (domains) stay top-level.
 type DomainConfig struct {
-	Models           map[string]string `json:"models,omitempty"`
-	StrictTdd        *bool             `json:"strictTdd,omitempty"`
-	FlagDecisionGaps *bool             `json:"flagDecisionGaps,omitempty"`
-	FlagSpecMine     *bool             `json:"flagSpecMine,omitempty"`
+	Models       map[string]string `json:"models,omitempty"`
+	StrictTdd    *bool             `json:"strictTdd,omitempty"`
+	FlagSpecMine *bool             `json:"flagSpecMine,omitempty"`
 	// Settings holds generic manifest-declared fields (enum/bool beyond the typed
 	// ones above), keyed by the field key. Lets a domain add config without a Go
 	// struct change.
@@ -68,9 +67,9 @@ type Repo struct {
 }
 
 // Config holds the persisted configuration for matecito-ai.
-// StrictTdd, FlagDecisionGaps and FlagSpecMine use pointers so that key-absent
-// (nil) is distinct from false — necessary for the per-project-vs-global
-// precedence resolution (spec R5.6/S8.5).
+// StrictTdd and FlagSpecMine use pointers so that key-absent (nil) is
+// distinct from false — necessary for the per-project-vs-global precedence
+// resolution (spec R5.6/S8.5).
 type Config struct {
 	// Shared (cross-domain).
 	// Domains lists the area domains installed for this scope. Empty/absent
@@ -87,17 +86,16 @@ type Config struct {
 	// Legacy top-level keys (pre-M7 / pre-per-domain-flag). Read for backward
 	// compatibility and folded into DomainConfig[DefaultDomain] by normalize();
 	// never written back.
-	Models           map[string]string `json:"models,omitempty"`
-	StrictTdd        *bool             `json:"strictTdd,omitempty"`
-	FlagDecisionGaps *bool             `json:"flagDecisionGaps,omitempty"`
-	FlagSpecMine     *bool             `json:"flagSpecMine,omitempty"`
+	Models       map[string]string `json:"models,omitempty"`
+	StrictTdd    *bool             `json:"strictTdd,omitempty"`
+	FlagSpecMine *bool             `json:"flagSpecMine,omitempty"`
 }
 
 // normalize folds legacy top-level Models/StrictTdd into DomainConfig[DefaultDomain]
 // and clears them, so consumers always see the nested (M7) shape and Save writes
 // only the new form. Idempotent.
 func (c *Config) normalize() {
-	if len(c.Models) == 0 && c.StrictTdd == nil && c.FlagDecisionGaps == nil && c.FlagSpecMine == nil {
+	if len(c.Models) == 0 && c.StrictTdd == nil && c.FlagSpecMine == nil {
 		return
 	}
 	dev := c.ensureDomain(DefaultDomain)
@@ -107,15 +105,11 @@ func (c *Config) normalize() {
 	if c.StrictTdd != nil && dev.StrictTdd == nil {
 		dev.StrictTdd = c.StrictTdd
 	}
-	if c.FlagDecisionGaps != nil && dev.FlagDecisionGaps == nil {
-		dev.FlagDecisionGaps = c.FlagDecisionGaps
-	}
 	if c.FlagSpecMine != nil && dev.FlagSpecMine == nil {
 		dev.FlagSpecMine = c.FlagSpecMine
 	}
 	c.Models = nil
 	c.StrictTdd = nil
-	c.FlagDecisionGaps = nil
 	c.FlagSpecMine = nil
 }
 
@@ -169,22 +163,6 @@ func (c *Config) SetDomainModelOverride(domain, agent, model string) {
 // SetDomainStrictTdd sets the strictTdd flag for domain.
 func (c *Config) SetDomainStrictTdd(domain string, v *bool) {
 	c.ensureDomain(domain).StrictTdd = v
-}
-
-// DomainFlagDecisionGaps returns the flagDecisionGaps pointer for domain (nil if unset).
-func (c *Config) DomainFlagDecisionGaps(domain string) *bool {
-	if c == nil || c.DomainConfig == nil {
-		return nil
-	}
-	if dc := c.DomainConfig[domain]; dc != nil {
-		return dc.FlagDecisionGaps
-	}
-	return nil
-}
-
-// SetDomainFlagDecisionGaps sets the flagDecisionGaps flag for domain.
-func (c *Config) SetDomainFlagDecisionGaps(domain string, v *bool) {
-	c.ensureDomain(domain).FlagDecisionGaps = v
 }
 
 // DomainFlagSpecMine returns the flagSpecMine pointer for domain (nil if unset).

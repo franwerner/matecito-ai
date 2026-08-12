@@ -112,24 +112,6 @@ func TestLoad_Migration(t *testing.T) {
 	}
 }
 
-func TestNormalize_FlagDecisionGapsMigrates(t *testing.T) {
-	// a legacy flat top-level flagDecisionGaps folds into development on load
-	dir := t.TempDir()
-	path := filepath.Join(dir, "config.json")
-	writeJSON(t, path, map[string]interface{}{"flagDecisionGaps": true})
-
-	cfg, err := agentmodel.Load(path)
-	if err != nil {
-		t.Fatalf("Load: %v", err)
-	}
-	if p := cfg.DomainFlagDecisionGaps(agentmodel.DefaultDomain); p == nil || !*p {
-		t.Errorf("legacy flagDecisionGaps should migrate to development; got %v", p)
-	}
-	if cfg.FlagDecisionGaps != nil {
-		t.Error("legacy top-level flagDecisionGaps should be cleared after normalize")
-	}
-}
-
 func TestNormalize_FlagSpecMineMigrates(t *testing.T) {
 	// a legacy flat top-level flagSpecMine folds into development on load
 	dir := t.TempDir()
@@ -149,7 +131,7 @@ func TestNormalize_FlagSpecMineMigrates(t *testing.T) {
 }
 
 func TestDomainFlagSpecMine_NilFalseTrue(t *testing.T) {
-	// nil/false/true precedence, mirroring DomainFlagDecisionGaps semantics
+	// nil/false/true precedence, isolated per domain
 	cfg := &agentmodel.Config{}
 	if p := cfg.DomainFlagSpecMine(agentmodel.DefaultDomain); p != nil {
 		t.Errorf("expected nil for unset flagSpecMine, got %v", p)
@@ -190,7 +172,7 @@ func TestNormalize_RepoNotFolded(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "config.json")
 	writeJSON(t, path, map[string]interface{}{
-		"flagDecisionGaps": true,
+		"flagSpecMine": true,
 		"repo": map[string]interface{}{
 			"components": []map[string]interface{}{
 				{"name": "cli", "paths": []string{"cmd", "internal"}},
@@ -202,8 +184,8 @@ func TestNormalize_RepoNotFolded(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
-	if p := cfg.DomainFlagDecisionGaps(agentmodel.DefaultDomain); p == nil || !*p {
-		t.Errorf("legacy flagDecisionGaps should migrate to development; got %v", p)
+	if p := cfg.DomainFlagSpecMine(agentmodel.DefaultDomain); p == nil || !*p {
+		t.Errorf("legacy flagSpecMine should migrate to development; got %v", p)
 	}
 	if cfg.Repo == nil || len(cfg.Repo.Components) != 1 || cfg.Repo.Components[0].Name != "cli" {
 		t.Errorf("repo should survive normalize() untouched, got %+v", cfg.Repo)

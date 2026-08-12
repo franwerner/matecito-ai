@@ -326,9 +326,9 @@ one and only channel `sdd-apply` reads a ratified proposal from — see
      existe comando ni status de re-emisión, y re-despachar re-ejecuta la fase entera (en `sdd-apply`
      un re-despacho está definido como batch de continuación, no como re-emisión). -->
 <!-- matecito-ai: esta frase decía "las enumeradas en D.3", y era cierta hasta que D.3 sumó una fila
-     CONDICIONAL (`## Decision Gaps`, sólo con su flag activo). Leída al pie, convertía la ausencia
-     normal de esa sección en retorno roto → un gate espurio en cada verify. El corte es la columna
-     "Emitted", no la pertenencia a la tabla. -->
+     CONDICIONAL (`## Decision Gaps`, sólo cuando el cambio materializó al menos un decision record).
+     Leída al pie, convertía la ausencia normal de esa sección en retorno roto → un gate espurio en cada
+     verify. El corte es la columna "Emitted", no la pertenencia a la tabla. -->
 **Omitted → depends on whether the section was unconditional.** Only sections declared **unconditional** are broken when missing — in the mailbox table of `_shared/sdd-phase-common.md`, **Section D.3**, those are the rows marked `always`; that table also carries conditional rows, which follow the rule below. The phase's own return template (`~/.claude/references/phase-returns/<phase>/<phase>.md`) marks the same distinction for every section it declares, mailbox or not. A section that the phase's own skill declares **conditional**, and whose condition does not hold, is **legitimately absent** — not a broken return, no gate, no mention (e.g. `sdd-intake`'s `### Early guard (EDRs)` when the EDR store is inactive, the UI verdict when the UI check does not apply, the TDD evidence table outside Strict TDD). <!-- matecito-ai: the first example used to be `## EDR Conflicts`, which exists only in the design ARTIFACT and never in a return — precisely the artifact/return confusion these rules exist to close. The other two really are return sections. -->
 
 When an **unconditional** section is missing, do NOT assume there was nothing and do NOT silently dispatch the next phase — but do not demand a "re-emission" either: no such command or status exists, and re-dispatching re-runs the whole phase (for `sdd-apply` a re-dispatch is defined as a **continuation batch**, not a re-emission). Handle it with what exists: treat the omission as unresolved Tier-1 content and open the same gate you would open for real content, naming the phase and the missing section, and let the user pick — proceed as if empty / re-run that phase / adjust. You own the channel; the decision is theirs, not a repair you improvise.
@@ -338,24 +338,19 @@ After `sdd-tasks` and before `sdd-apply`, inspect `Review Workload Forecast`. If
 
 <!-- matecito-ai: development declares its OWN decision-capture mechanism, per the kernel's override
      clause (`~/.claude/matecito-ai.md` → "Decision-Gap Capture (mine gate)"). This is why: propose ·
-     ratify once · materialize in apply, instead of the kernel's generic post-verify mine + flag. Full
+     ratify once · materialize in apply, instead of the kernel's generic post-verify mine. Full
      mechanism — the proposal shape, the ratification gate per lane, the materialization contract, the
      INDEX writer, and `sdd-verify`'s two checks — lives once in the reference below; this guard only
-     states that it is MANDATORY and points at it. `design`, which declares none, is unaffected. -->
+     states that it is MANDATORY and points at it. `design`, which declares its own post-verify
+     mechanism, is unaffected. -->
 ### In-Flow Decision Capture (MANDATORY)
-`development` does NOT use the kernel's generic Decision-Gap Capture (mine gate) or its
-`flagDecisionGaps` flag — neither exists for this domain (see "development has no decision-capture
-flag" below). Instead, every phase that reaches an architecture decision proposes it in its own
-return, the lane's gate ratifies it exactly once, and `sdd-apply` materializes it as an `Accepted` EDR
-in the same step that implements the governing code — no post-verify mining pass. Full mechanism:
-`~/.claude/references/decision-capture/in-flow-capture.md`. Read it before touching any of: `sdd-spec`'s
-or `sdd-design`'s `### New Decisions` mailbox, `sdd-apply`'s materialization step, or `sdd-verify`'s
-`decision-gaps` group.
-
-**development has no decision-capture flag.** `flagDecisionGaps` does not exist for this domain — not
-in its manifest, not in its config documentation, not as a condition anywhere in its phases. A value a
-project's config still carries from before this change (`flagDecisionGaps: false`, inherited) is inert
-here: nothing reads it, and the mechanism above runs unconditionally regardless of what it says.
+`development` does NOT use the kernel's generic Decision-Gap Capture (mine gate) — this domain declares
+its own mechanism instead (see the kernel's override clause). Every phase that reaches an architecture
+decision proposes it in its own return, the lane's gate ratifies it exactly once, and `sdd-apply`
+materializes it as an `Accepted` EDR in the same step that implements the governing code — no
+post-verify mining pass. Full mechanism: `~/.claude/references/decision-capture/in-flow-capture.md`.
+Read it before touching any of: `sdd-spec`'s or `sdd-design`'s `### New Decisions` mailbox,
+`sdd-apply`'s materialization step, or `sdd-verify`'s `decision-gaps` group.
 
 ## Spec-Mine — development specifics
 The kernel owns the generic Spec-Mine Trigger (brownfield, `flagSpecMine`-gated, Mode A only). In development the spec-mining executor is `development-spec-mine`; confirmed candidates are materialized as capability-specs with `Status: Inferred` under `.matecito-ai/development-specs/<type>/<capability>.md` (type ∈ `flow` | `rule` | `lifecycle` | `process`) and the `.matecito-ai/development-specs/INDEX.md` is updated **once at the end**; the specs live ONLY as `.md`, never recorded in Engram — same as EDRs and capability-specs generally.

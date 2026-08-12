@@ -121,7 +121,10 @@ Regla transversal a todas las fases y skills: explicar el **porqué** detrás de
 Lo que aparece en la pantalla de configuración del dominio (resuelto por-proyecto → global → default):
 
 - **Models per agent** (`models`) — qué modelo usa cada fase (`design-intake`, `design-brief`, `design-system`, …). Sin valor configurado, cada agente usa su default curado.
-- **Auto-mine DDR** (`flagDecisionGaps`, default `false`) — opt-in. Con el flag on: `design-tasks` marca cada decisión de marca como `· ddr: <surface>/<slug>` (exista o no el DDR), `design-verify` confirma cuáles se implementaron (sección `## Decision Gaps`), y al cerrar el orquestador dispara `design-decisions-mine` —que lee el archivo Figma vivo (styles/components)— y ofrece materializar las decisiones como DDRs `Inferred` (siempre con tu confirmación). Ratificás `Inferred → Accepted` con `design-decisions-bootstrap` en modo update. Aparte, `design-verify` compara los DDRs `Accepted` contra el estado real de Figma (drift): cualquier divergencia es un `DDR-VIOLATION`. Canva queda fuera (sin tokens legibles).
+
+## Captura de decisiones (siempre activa)
+
+No es una opción de configuración: `design` la corre sin interruptor, en todo cambio. `design-tasks` marca cada decisión de marca como `· ddr: <surface>/<slug>` (exista o no el DDR), `design-verify` confirma cuáles se implementaron (sección `## Decision Gaps`), y al cerrar el orquestador dispara `design-decisions-mine` —que lee el archivo Figma vivo (styles/components)— y ofrece materializar las decisiones como DDRs `Inferred` (siempre con tu confirmación). Ratificás `Inferred → Accepted` con `design-decisions-bootstrap` en modo update. Aparte, `design-verify` compara los DDRs `Accepted` contra el estado real de Figma (drift): cualquier divergencia es un `DDR-VIOLATION`. Canva queda fuera (sin tokens legibles).
 
 ## Ver también
 
