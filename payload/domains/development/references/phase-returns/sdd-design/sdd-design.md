@@ -31,8 +31,18 @@ item carries two parts, `summary` and `rationale`, in the `new_decisions` / `ope
 `summary` is what the gate prints, `rationale` is the full reasoning — always emitted into this
 block, never printed by default. Both are non-empty, single-line strings; a missing one, or one with
 an embedded newline, fails the render naming the item and the part, and nothing reaches stdout. In
-`### New Decisions`, the `· rationale:` line sits directly below the item's `· blocking-test:` line —
-same item, same section, no separate channel.
+`### New Decisions`, the `· rationale:` line sits directly below the item's two tokens (`·
+blocking-test:` then `· record:`) — same item, same section, no separate channel.
+
+<!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism:
+     ~/.claude/references/decision-capture/in-flow-capture.md — this note only fixes the token itself. -->
+**The `· record:` token.** Every item under `### New Decisions` also carries `· record:
+<domain>/<slug>` — the EDR identity the proposal would occupy if ratified. It is **free-form**: the
+engine accepts any present, non-null value (a token declared without a closed `values` set), but it is
+still **required** — an item missing the line fails `TOKEN-MISSING` at the Return Contract Check, the
+same strict reading as any other omitted token. This is what `sdd-apply` reads, verbatim from the
+ratified proposal forwarded in its dispatch prompt, to materialize the record in the same step that
+implements the code it governs.
 
 ## `status: done` — the design was produced
 
@@ -59,6 +69,7 @@ If there are genuinely none: "None."}
 
 - {the choice}: {what you chose} — {alternatives weighed, and why this one}
   · blocking-test: none
+  · record: {domain}/{slug}
   · rationale: {one line: the full reasoning — why this choice, restated for the record even though the gate only prints the line above}
 
 ### Open Questions

@@ -58,7 +58,7 @@ orchestrator is also the only one who persists it — a sub-verifier never calls
 | `### Coherence (Capability-Specs)` | only when the capability-spec store is active | the orchestrator: proof the check ran, which spec a CRITICAL cites, and which specs were skipped as drafts |
 | *Strict TDD extension* | only in Strict TDD mode | the orchestrator, as evidence |
 | `## UI Verdict` | only when the UI gate passed | the orchestrator: a FAIL is CRITICAL and blocks archive |
-| `## Decision Gaps` | only when `flagDecisionGaps` is on | the kernel's post-verify **mine gate** |
+| `## Decision Gaps` | only when the change materialized at least one decision record | the orchestrator: a CRITICAL finding here is `FAIL`, same as any other coherence check — see `~/.claude/references/decision-capture/in-flow-capture.md` |
 | `### Issues Found` | always | the orchestrator: what goes back to `sdd-apply` |
 | `### Verdict` | always | the orchestrator, to route: archive or back to apply |
 
@@ -72,7 +72,9 @@ gate that never fires.
 **The conditional sections are conditional in the strict sense** of the Return Contract Check: when
 their condition does not hold they are simply ABSENT, and that is a valid return. They carry no
 `None` sentinel — unlike the unconditional sections, whose absence is a broken return. Concretely:
-with `flagDecisionGaps` off, never emit `## Decision Gaps`, not even empty; with the UI gate not
+when this change materialized no decision record, never emit `## Decision Gaps`, not even empty (see
+`in-flow-capture.md` — this is unconditional on any flag, `development` has none; the section's own
+condition is `apply-progress`'s `### Decisions Materialized` carrying ≥1 row); with the UI gate not
 passed, never mention the UI step at all; outside Strict TDD, no TDD evidence; with the decision store
 absent or empty, no `### Coherence (EDRs)` — naming EDRs at all when the store is inactive contradicts
 the activation gate's total-silence rule.
@@ -214,14 +216,25 @@ every row is `❌ Missing` / `❌ UNTESTED`, and one CRITICAL states the UI chec
 
 ## Decision Gaps
 
-{CONDITIONAL — emit ONLY when `flagDecisionGaps` is on. Its presence does NOT depend on the EDR
-store existing: with no store, every decision-touching task is a gap. One row per `· edr:
-<domain>/<slug>` ref in the tasks artifact whose file does not exist. With the flag off, omit the
-whole section — never emit it empty.}
+{CONDITIONAL — emit ONLY when this change materialized at least one decision record: `apply-progress`'s
+`### Decisions Materialized` table carries ≥1 row. No flag — `development` has none (see
+`~/.claude/references/decision-capture/in-flow-capture.md`). A change that materialized nothing gets
+no section, not even empty. One row per `### Decisions Materialized` entry:}
 
-| domain/slug | task | implemented? |
-|-------------|------|--------------|
-| {domain}/{slug} | {task title} | yes / no |
+| Record | Task | Structure | Backing |
+|--------|------|-----------|---------|
+| {domain}/{slug} | {task id} | OK | OK |
+| {domain}/{slug} | {task id} | CRITICAL — {finding from `validate-artifact.js --file`} | — |
+| {domain}/{slug} | {task id} | CRITICAL — not materialized: {reason from apply's `result` column} | — |
+| {domain}/{slug} | {task id} | OK | CRITICAL — no code outside `.matecito-ai/edr/` in this task's Files Changed |
+
+{`Structure` runs `validate-artifact.js --type edr --file .matecito-ai/edr/<domain>/<slug>.md` — OK on
+exit 0, CRITICAL naming the finding otherwise. A `result: failed` row from `apply-progress` skips
+straight to a `Structure` CRITICAL naming the failure reason, with `Backing` as `—` (there is no file
+to check backing against). `Backing` is a mechanical join, never a search: OK when the implementing
+task's `### Files Changed` rows include at least one path outside `.matecito-ai/edr/`, CRITICAL when
+every path that task touched is under `.matecito-ai/edr/`. Coherence BETWEEN records is out of scope
+here — that is `development-decisions-validate`'s job.}
 
 ### Issues Found
 **CRITICAL**: {list or None}
@@ -241,8 +254,10 @@ are evidence, not softer verdicts of their own. A `➖ Not checked` row influenc
 draft is the rule, not a finding. A design deviation marked CRITICAL in `### Coherence (Design)` is
 `FAIL` too — only a deviation `sdd-apply` declared not
 verifiable against the design is a WARNING, and it caps the verdict at `PASS WITH WARNINGS`.
-`## Decision Gaps` is the one section that does **not** influence the verdict — it is input for a
-gate that runs after this phase, never a finding.
+A CRITICAL `Structure` or `Backing` finding in `## Decision Gaps` is `FAIL` as well, exactly like the
+other coherence sections — it stopped being input for a post-verify gate the moment `development`
+started materializing its records during `sdd-apply` itself; there is no later mining pass left for it
+to feed (`~/.claude/references/decision-capture/in-flow-capture.md`).
 
 ## `status: blocked` — verification could not be performed
 

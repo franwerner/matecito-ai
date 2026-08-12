@@ -19,8 +19,9 @@
 | Decision record | `EDR`, stored in `.matecito-ai/edr/` |
 | Decision-record concept reference | `~/.claude/references/edr/README.md` |
 | Canonical catalog | `design-patterns` at `~/.claude/references/design-patterns/` (`Applied pattern: X` → `patterns/<x>.md`) |
-| Decision-mining executor | `development-decisions-mine` |
-| Decision-capture skill | `development-decisions-bootstrap` |
+| Decision-capture mechanism | in-flow — propose (per phase) → ratify once (lane gate) → materialize (`sdd-apply`); no flag, no post-verify mine gate — `~/.claude/references/decision-capture/in-flow-capture.md` |
+| Decision-mining executor | `development-decisions-mine` — standalone brownfield scan (Mode A) only; its in-flow Mode B has no `development` caller |
+| Decision-capture skill | `development-decisions-bootstrap` — standalone use only, no flow hook |
 | Exploration index | CodeGraph (`mcp__codegraph__*`), active when `.codegraph/` exists |
 | Library docs resolution (version, config, API, migration, debugging) | `resolve-library-docs` skill, backed by the `context7` MCP — the sole choke point before any version is fixed into an EDR (bootstrap's "Versión" question, mine's close-of-scan second pass) |
 | Guards | `strict-tdd`, `review-workload` |
@@ -139,7 +140,7 @@ out, and this section is not an invitation to add a third without its own change
 | `sdd-spec` | proposal (required) + **intake brief (always, for the `ui-test` flag)** + **durable capability-spec** (for Modified Capabilities) | `spec` (incl. the **behavioral** `ui-scenarios` when `ui-test: needed` — domain language, no routes or locators) |
 | `sdd-design` | proposal + **intake brief (always, for the `diagram` flag)** + **EDRs** + **durable capability-specs** (required) | `design` |
 | `sdd-tasks` | spec + design + **durable capability-specs touched** (required) | `tasks` |
-| `sdd-apply` | tasks + spec (incl. the behavioral `ui-scenarios`) + design + apply-progress | `apply-progress` (incl. `### UI Scenario Counterparts` — the **executable** half, with the real routes and locators it built) |
+| `sdd-apply` | tasks + spec (incl. the behavioral `ui-scenarios`) + design + apply-progress + **ratified decision proposals, forwarded verbatim in the dispatch prompt** (never re-read from Engram or an artifact — see `in-flow-capture.md`) | `apply-progress` (incl. `### UI Scenario Counterparts` — the **executable** half, with the real routes and locators it built — and `### Decisions Materialized`, when it materialized at least one ratified proposal) |
 <!-- matecito-ai: parallel-batch note — the row above is the full-lane, single-dispatch ideal; a batch
      with independence-marked tasks splits it across the two fan-out roles instead of changing the row. -->
 | ↳ isolated run (parallel batch) | tasks (its one task) + spec + design — never `apply-progress` | nothing (single-writer rule — returns a Task Run Report, see `parallel-batch.md`) |
@@ -291,6 +292,21 @@ reading the decision and re-running the test yourself:
 The token is the only evidence the test ran at all. Do not accept a decision's prose as a substitute
 for it, and do not fill one in on the phase's behalf.
 
+<!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism, the ratification
+     gate per lane, the materialization contract: in-flow-capture.md. This is the orchestrator-side
+     half — WHO forwards the ratified text and WHEN — that neither sdd-spec/sdd-design (who propose)
+     nor sdd-apply (who materializes) can instruct on their own, since it is the launch-prompt
+     construction step between them. -->
+**Forwarding a ratified `record:` item to `sdd-apply`.** Every item ratified (confirmed or adjusted) at
+this gate under `New Decisions` — `sdd-spec`'s conditional mailbox or `sdd-design`'s — carries a
+`record: <domain>/<slug>` token. Forward that item's ratified text (the adjusted summary/rationale if
+the user corrected it at this gate, not the originally-proposed one) verbatim, in the launch prompt of
+the `sdd-apply` dispatch that implements the task governing it — never re-written into an Engram key,
+never left for `sdd-apply` to re-derive. A rejected item is dropped here and forwarded nowhere: no
+record gets materialized for it, and the code implementing its task proceeds regardless. This is the
+one and only channel `sdd-apply` reads a ratified proposal from — see
+`~/.claude/references/decision-capture/in-flow-capture.md`.
+
 <!-- matecito-ai: `New Decisions` y `Open Questions` se solapaban — las dos recibían decisiones
      pendientes, el ejecutor terminaba duplicando contenido y el usuario confirmaba lo mismo dos
      veces (fatiga de confirmación, el fallo que este guard existe para evitar). Desde ahora el
@@ -320,8 +336,26 @@ When an **unconditional** section is missing, do NOT assume there was nothing an
 ### Review Workload Guard (MANDATORY)
 After `sdd-tasks` and before `sdd-apply`, inspect `Review Workload Forecast`. If chained PRs recommended / 400-line budget risk High / decision needed → apply cached `delivery_strategy` (`ask-on-risk` default: STOP and ask chained PRs vs `size:exception`). Automatic mode does not override this guard.
 
-## Decision-Gap Capture — development specifics
-The kernel owns the generic mine gate. In development the mining executor is `development-decisions-mine`; confirmed candidates are materialized as `[Inferred]` `.md` EDRs and the `.matecito-ai/edr/INDEX.md` is updated **once at the end**; the EDRs live ONLY as `.md`, never recorded in Engram.
+<!-- matecito-ai: development declares its OWN decision-capture mechanism, per the kernel's override
+     clause (`~/.claude/matecito-ai.md` → "Decision-Gap Capture (mine gate)"). This is why: propose ·
+     ratify once · materialize in apply, instead of the kernel's generic post-verify mine + flag. Full
+     mechanism — the proposal shape, the ratification gate per lane, the materialization contract, the
+     INDEX writer, and `sdd-verify`'s two checks — lives once in the reference below; this guard only
+     states that it is MANDATORY and points at it. `design`, which declares none, is unaffected. -->
+### In-Flow Decision Capture (MANDATORY)
+`development` does NOT use the kernel's generic Decision-Gap Capture (mine gate) or its
+`flagDecisionGaps` flag — neither exists for this domain (see "development has no decision-capture
+flag" below). Instead, every phase that reaches an architecture decision proposes it in its own
+return, the lane's gate ratifies it exactly once, and `sdd-apply` materializes it as an `Accepted` EDR
+in the same step that implements the governing code — no post-verify mining pass. Full mechanism:
+`~/.claude/references/decision-capture/in-flow-capture.md`. Read it before touching any of: `sdd-spec`'s
+or `sdd-design`'s `### New Decisions` mailbox, `sdd-apply`'s materialization step, or `sdd-verify`'s
+`decision-gaps` group.
+
+**development has no decision-capture flag.** `flagDecisionGaps` does not exist for this domain — not
+in its manifest, not in its config documentation, not as a condition anywhere in its phases. A value a
+project's config still carries from before this change (`flagDecisionGaps: false`, inherited) is inert
+here: nothing reads it, and the mechanism above runs unconditionally regardless of what it says.
 
 ## Spec-Mine — development specifics
 The kernel owns the generic Spec-Mine Trigger (brownfield, `flagSpecMine`-gated, Mode A only). In development the spec-mining executor is `development-spec-mine`; confirmed candidates are materialized as capability-specs with `Status: Inferred` under `.matecito-ai/development-specs/<type>/<capability>.md` (type ∈ `flow` | `rule` | `lifecycle` | `process`) and the `.matecito-ai/development-specs/INDEX.md` is updated **once at the end**; the specs live ONLY as `.md`, never recorded in Engram — same as EDRs and capability-specs generally.

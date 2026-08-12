@@ -197,11 +197,17 @@ function checkItems(section, seenTitle, body) {
     const item = lines[i].trim().slice(0, 60);
     for (const [k, t] of tokens.entries()) {
       const value = values[k];
-      const legal = t.values || [];
-      const passing = t.passing || legal;
       if (value === null) {
         out.push({ severity: 'error', code: 'TOKEN-MISSING', message: `"${item}" carries no \`${t.name}:\` — an omission gets the strict reading, not the benefit of the doubt` });
-      } else if (!legal.includes(value)) {
+        continue;
+      }
+      // A token declared without `values` is free-form (e.g. `record: <domain>/<slug>`): any present,
+      // non-null value passes — mirrors `render-return.js`'s `if (t.values && ...)` guard on the render
+      // side. A token that DOES declare `values` keeps the exact legal/passing checks below, unchanged.
+      if (!t.values) continue;
+      const legal = t.values;
+      const passing = t.passing || legal;
+      if (!legal.includes(value)) {
         out.push({ severity: 'error', code: 'TOKEN-ILLEGAL', message: `"${item}" declares \`${t.name}: ${value}\`, which is not one of ${JSON.stringify(legal)}` });
       } else if (!passing.includes(value)) {
         out.push({ severity: 'error', code: 'TOKEN-WRONG-MAILBOX', message: `"${item}" declares \`${t.name}: ${value}\` — that value contradicts \`${seenTitle}\`` });

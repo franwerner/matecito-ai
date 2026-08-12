@@ -31,10 +31,11 @@ Execute all steps from the skill directly in this context window:
   `git checkout -B <your-branch> <base>` (a failed repositioning implements nothing),
   then run the **base handshake** before writing anything (`git rev-parse HEAD == base` AND
   `git status --porcelain` empty — either failing, implement nothing and report `not-implemented /
-  base-not-established`), implement that one task (4-6), author its UI counterparts if applicable (7b)
-  into your report, **commit exactly once** (format cited from `~/.claude/skills/git/SKILL.md`, not
-  invoked, no interactive atomicity loop, no compile gate), and return the **Task Run Report** — never
-  mark tasks, never call `mem_save`/`mem_update`.
+  base-not-established`), implement that one task (4-6, incl. materializing any ratified decision
+  proposal it carries — 5b), author its UI counterparts if applicable (7b) into your report, **commit
+  exactly once** (format cited from `~/.claude/skills/git/SKILL.md`, not invoked, no interactive
+  atomicity loop, no compile gate), and return the **Task Run Report** — never mark tasks, never call
+  `mem_save`/`mem_update`.
 - **`mode: consolidation`** — skip implementation entirely. Take the batch's N Task Run Reports
   (verbatim, in your prompt), re-check each commit's parent against `base` (Level 2), then
   `git cherry-pick` each in ascending task-id order: clean → record integrated, worktree/branch removal
@@ -54,6 +55,20 @@ Execute all steps from the skill directly in this context window:
 3b. Read previous apply-progress (if exists — Consolidation/Serial Mode only, Isolated Run Mode never reaches this): `mem_search("sdd/{change-name}/apply-progress")` → if found, `mem_get_observation` → read and merge (skip completed tasks, merge when saving)
 4. Detect TDD mode from config or existing test patterns
 5. Implement assigned tasks: in TDD mode follow RED → GREEN → REFACTOR; in standard mode write code then verify
+<!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism: in-flow-capture.md. -->
+5b. If a task you just implemented carries a ratified decision proposal (forwarded verbatim in your
+   launch prompt, never re-read from Engram or an artifact), materialize it in this SAME step: build
+   each `Reglas verificables` item as `{ mechanism: auto|manual, rule }` — never a bare string, and
+   `mechanism` reflects whether the task actually established a test/lint/schema/CI check for it —
+   render the EDR body (`render-artifact.js --type edr --data`) and write it yourself to
+   `.matecito-ai/edr/<domain>/<slug>.md` — the script never writes to disk — then render the
+   `--index-entries` JSON (second, separate invocation, also no write). Serial mode applies those rows
+   to both INDEX files immediately; Isolated Run Mode carries them, unapplied, in its Task Run Report
+   (single-writer split — see `parallel-batch.md`). Record the outcome in `### Decisions Materialized`
+   (`record | task | result`). A failed materialization does NOT mark this task `[x]` and is named
+   explicitly in your return — the code you already wrote is not reverted. Full mechanism:
+   `~/.claude/references/decision-capture/in-flow-capture.md`. No ratified proposal for this task →
+   skip silently.
 6. Match existing code patterns and conventions
 7. Mark each task `[x]` complete as you finish it (Consolidation/Serial Mode only)
 <!-- matecito-ai: the spec authors UI scenarios in domain language — it cannot name a route or an accessible

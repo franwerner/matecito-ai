@@ -27,6 +27,11 @@ From the orchestrator:
 - The specific task(s) to implement (e.g., "Phase 1, tasks 1.1-1.3")
 - Artifact store mode (`engram | none`) <!-- matecito-ai: openspec/hybrid removidos -->
 - Delivery strategy and resolved workload decision (`ask-on-risk | auto-chain | single-pr | exception-ok`, plus PR slice or `size:exception` when applicable)
+<!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism: in-flow-capture.md. -->
+- **Ratified decision proposals**, forwarded verbatim (never re-read from Engram or an artifact): for
+  each task that implements one, its `<domain>/<slug>` identity plus the ratified summary/rationale —
+  what you materialize as an `Accepted` EDR in the same step you implement that task (Step 4b below).
+  No ratified proposal in this batch → nothing to materialize, no mention.
 <!-- matecito-ai: parallel-batch fields — only present for the two modes that need them. -->
 - **`mode`** (only when this dispatch is part of a parallel batch): `isolated` or `consolidation`.
   Absent → you are running **serial mode**, exactly as before this field existed.
@@ -211,9 +216,50 @@ FOR EACH TASK:
 │   └── Yes, and more than one resolution was valid → apply NONE of them; the fork travels back as
 │       a question (see "Consulting an Unmandated Fork")
 ├── Write the code
+├── Materialize any ratified decision proposal this task carries (Step 4b below) — same step
 ├── Mark task as complete [x] in the tasks artifact (Step 5)
 └── Note any issues or deviations (recording is not authorization — see Rules)
 ```
+
+#### Step 4b: Materialize Ratified Decision Proposals (same step as the implementing task)
+
+<!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism, the ratification
+     gate per lane, the INDEX-writer split, and `sdd-verify`'s two checks:
+     `~/.claude/references/decision-capture/in-flow-capture.md` — this step only fixes what YOU do. -->
+
+For each ratified proposal forwarded in your launch prompt that this task implements:
+
+1. Build the EDR's `--data` JSON per `node ~/.claude/scripts/render-artifact.js --type edr --schema`:
+   `status: Accepted`, `domain`/`slug` from the proposal's `record:` token, `title` from its summary,
+   the rest of the body (`Reglas verificables`, `Alternativas consideradas`, `Consecuencias`) from the
+   proposal's rationale plus what the task itself establishes. Each `Reglas verificables` item is
+   `{ mechanism, rule }` — `mechanism: auto` when a test/lint/schema/CI check enforces it,
+   `mechanism: manual` when nothing does; never a bare string. The renderer's `- **[{mechanism}]**
+   {rule}` output is what `validate-artifact.js`'s `bullet-prefix` check expects (see
+   `in-flow-capture.md` → "Materialization"), and an item missing `mechanism` ships unmarked.
+2. `node ~/.claude/scripts/render-artifact.js --type edr --data <file>` → the record's body — **write
+   it yourself** to `.matecito-ai/edr/<domain>/<slug>.md`. The script renders to stdout only; it never
+   writes to disk in either invocation (confirmed by execution — see `in-flow-capture.md`).
+3. `node ~/.claude/scripts/render-artifact.js --type edr --data <file> --index-entries` → the domain
+   and root INDEX rows, as JSON, in a **second, separate call** (no write either).
+   - **Serial mode**: apply those rows to `.matecito-ai/edr/<domain>/INDEX.md` and the root
+     `.matecito-ai/edr/INDEX.md` yourself, right now, scaffolding an absent INDEX from
+     `references/edr/templates/index-domain.md` / `index-root.md` if needed.
+   - **Isolated Run Mode**: do NOT touch either INDEX file. Carry the rows, unapplied, in your Task Run
+     Report's `### Decisions Materialized` — the consolidation run applies them once, after its
+     cherry-pick loop, deduping the root row by `domain` (see `parallel-batch.md`).
+4. Record the outcome — `record | task | result` — in `apply-progress`'s (or your Task Run Report's)
+   `### Decisions Materialized`. `result` is `materialized` on success, or `failed: <reason>` on any
+   failure (invalid data, the renderer refusing to run, an impossible write).
+
+**A failed materialization does NOT mark the implementing task complete.** Do not leave a partial or
+malformed record on disk. Name the failed proposal explicitly in your return (`### Decisions
+Materialized` row, plus `### Issues Found` or `### Blocker` depending on severity) — the code you
+already wrote for the task is NOT reverted; the gap is exactly what `sdd-verify`'s `decision-gaps`
+group is built to find.
+
+No ratified proposal in your launch prompt, or none of them map to a task in this batch → skip this
+step entirely, no mention, no `### Decisions Materialized` section.
 
 #### Consulting an Unmandated Fork
 
@@ -356,7 +402,9 @@ When saving apply-progress:
 2. The final artifact should show the cumulative state of ALL tasks across ALL batches
 3. **`### Unmandated Forks` and `### Mandated Departures` go in the artifact too**, with their `mandate:` and `verify-checks:` tokens, merged across batches — `sdd-verify` reads those copies, never your return. Putting them only in the return means verify never sees them and every deviation defaults to CRITICAL
 4. **`### UI Scenario Counterparts` goes in the artifact** (Step 6b below), cumulative across batches like everything else here
-5. **Consolidating a parallel batch:** merge `Files Changed`, `Unmandated Forks`, `Mandated Departures`, the UI counterparts and the TDD evidence out of every Task Run Report the batch returned — same merge rules as above, just sourced from N reports instead of your own work — and add/extend `### Integration Log` (`~/.claude/references/phase-returns/sdd-apply/parallel-batch.md`), cumulative across every parallel batch this change has run
+<!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism: in-flow-capture.md. -->
+4b. **`### Decisions Materialized` goes in the artifact too** (Step 4b above), cumulative across batches — `sdd-verify`'s `decision-gaps` group reads THIS copy, never your return, to build its check list. Present only when at least one batch materialized a ratified proposal; absent otherwise, same as the other conditional sections here
+5. **Consolidating a parallel batch:** merge `Files Changed`, `Unmandated Forks`, `Mandated Departures`, the UI counterparts, the TDD evidence, and `### Decisions Materialized` out of every Task Run Report the batch returned — same merge rules as above, just sourced from N reports instead of your own work — and add/extend `### Integration Log` (`~/.claude/references/phase-returns/sdd-apply/parallel-batch.md`), cumulative across every parallel batch this change has run. Then apply every carried-forward `--index-entries` row **once**, deduping the root INDEX row by `domain` (see `parallel-batch.md` → "Materializing decision records") — this is the consolidation run's job alone, never an isolated run's
 
 <!-- matecito-ai: new obligation. The spec authors UI scenarios
      in domain language — it cannot name a route or an accessible name for a control that does not exist
@@ -469,6 +517,8 @@ Three things the template expects you to already know from this skill:
      signal is a `ui-scenarios:` block in the spec. Missing it is silent at apply time and CRITICAL at
      verify — which is exactly the failure shape this ecosystem keeps paying for. -->
 - **If the spec carries a `ui-scenarios:` block, the executable counterparts are part of your deliverable** (Step 6b), in the artifact under `### UI Scenario Counterparts`, cumulative across batches. You are the only phase that knows the real routes and locators — you wrote them; the spec authors the behavioral half in domain language precisely because it cannot know them. `name` matches verbatim, targets are role+name or CSS and never `@e\d+`, and every behavioral scenario gets a counterpart: one missing is `UNTESTED`/CRITICAL at verify. Contract in **Part 2** of `~/.claude/references/ui-scenarios-schema.md`
+<!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism: in-flow-capture.md. -->
+- **If your launch prompt forwards a ratified decision proposal, materializing it is part of your deliverable** (Step 4b), in the SAME step you implement the task it governs — never a separate pass. Write the `.md` body yourself (`render-artifact.js` never writes to disk), and never open a second confirmation for it: ratification already happened at the gate. A failed materialization does not mark the task complete and is named explicitly; the code already written is not reverted. NEVER read `sdd/{change-name}/decisions` or any similar Engram key looking for it — it does not exist; the only channel is your dispatch prompt
 - NEVER implement tasks that weren't assigned to you
 - Skill loading is handled in Step 1 — follow any loaded skills strictly when writing code
 - If Strict TDD Mode is active (Step 3), load `strict-tdd.md` and follow its cycle INSTEAD of Step 4

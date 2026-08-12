@@ -11,6 +11,8 @@ El objetivo es que las decisiones queden **registradas y verificables**, no impl
 
 > **Nota sobre "EDR".** Usamos el término en sentido amplio: el catálogo cubre *decisiones* (con trade-offs reales), *convenciones* (acuerdos de estilo) y *políticas* (reglas verificables), sin distinguirlas con una etiqueta. No todo lo que se captura es "arquitectura" en sentido estricto, pero todo merece quedar escrito, fechado y justificado — que es lo que aporta el formato EDR.
 
+> **Rol standalone, explícito.** Esta skill se invoca **directamente**, fuera del flujo SDD — al arrancar un proyecto, al revisar/actualizar decisiones existentes, o cuando el usuario la pide por nombre. No tiene ningún hook dentro de las fases `sdd-*`: el flujo captura sus propias decisiones en-vivo, propuestas por la fase que las encuentra y materializadas por `sdd-apply` en el mismo paso que implementa el código que gobiernan (mecanismo completo en `~/.claude/references/decision-capture/in-flow-capture.md`). Cuando ambos caminos podrían producir el mismo registro — una decisión que el flujo ya capturó y que el usuario también querría revisar acá — el registro que el flujo materializó es el vigente; esta skill lo lee y lo actualiza como cualquier otro EDR existente (modo update), nunca lo duplica.
+
 ---
 
 ## Qué es (y qué no es) un EDR

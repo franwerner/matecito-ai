@@ -47,6 +47,15 @@ Execute all steps from the skill directly in this context window:
    Derive each entry from the Given/When/Then scenarios of step 4, for the capabilities with a visual
    surface. Do NOT copy the flag itself into the spec: it lives in the brief, and `sdd-verify` reads it
    from there. Flag `not-needed` or absent → skip silently.
+<!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism: in-flow-capture.md. -->
+4d. Recognize decisions — only when the brief's `### Triage` line lists NO `design` add-on
+   (`decisions_gate_here`). If a genuine architecture decision surfaced while writing the delta spec
+   (approach, contract, dependency, boundary, where a responsibility lives) and no confirmed upstream
+   artifact already fixes it: run `sdd-design`'s blocking test (new infra / public contract / data
+   model). Differs in an axis → return `blocked`. Differs in none → propose it under `### New
+   Decisions` in your return, same item shape as `sdd-design`'s (`· blocking-test:` + `· record:
+   <domain>/<slug>` + `· rationale:`). Lane HAS `design` → skip this step entirely, no mention —
+   `sdd-design`'s mailbox is the single ratification gate.
 5. Persist spec to active backend
 
 Do NOT design implementation — specs describe WHAT, not HOW.

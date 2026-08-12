@@ -24,14 +24,15 @@ casing or heading level is a section it will not find.
 | `### Coverage` | always | the orchestrator, as context |
 | `### Blocker` | only on `status: blocked` | the orchestrator: it puts the question to the user |
 | `### Derived capabilities (unconfirmed)` | always | Unresolved Decisions Guard — **Tier 1** |
+| `### New Decisions` | conditional — only when the lane running has no `design` add-on active | Unresolved Decisions Guard — **Tier 1** |
 | `### Next Step` | always | the orchestrator, to route |
 
 Titles are fixed. This phase declares no accepted variants of them.
 
-`### Derived capabilities (unconfirmed)` is the **only Tier-1 mailbox** of this phase. It is what
-makes the Unresolved Decisions Guard fire: a derived capability mapping is a guess about which
-durable capability-spec this change belongs to, and at archive that mapping decides which file the
-delta gets merged into. Emit it **always** — with the `None — mapping was explicit.` sentinel when
+`### Derived capabilities (unconfirmed)` is the **only unconditional** Tier-1 mailbox of this phase.
+It is what makes the Unresolved Decisions Guard fire: a derived capability mapping is a guess about
+which durable capability-spec this change belongs to, and at archive that mapping decides which file
+the delta gets merged into. Emit it **always** — with the `None — mapping was explicit.` sentinel when
 the upstream proposal carried its own Capabilities section — because a missing section and an empty
 one mean opposite things to the guard.
 
@@ -40,6 +41,22 @@ one mean opposite things to the guard.
 always emitted into this block, never printed by default. Both are non-empty, single-line strings; a
 missing one, or one with an embedded newline, fails the render naming the item and the part, and
 nothing reaches stdout.
+
+<!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism:
+     ~/.claude/references/decision-capture/in-flow-capture.md — this section only fixes the RETURN shape. -->
+`### New Decisions` is this phase's **conditional** Tier-1 mailbox — the ratification gate for an
+architecture decision this phase finds, in a lane where `sdd-design` will NOT also run (so no later
+mailbox would ever ratify it). Emit it, with content or with the `None.` sentinel, **only** when
+`decisions_gate_here` is `true` — read from the intake brief's `### Triage` line (`Lane: ... —
+add-ons: [...]`): `true` iff `design` is NOT one of the add-ons listed. When `design` IS active, omit
+this section entirely — `sdd-design`'s own `### New Decisions` is the single gate, and emitting a
+second one here would ask the user to ratify the same decision twice. Same title as `sdd-design`'s
+plain variant, byte-identical, because it is the same mailbox concept surfacing one lane earlier — the
+Unresolved Decisions Guard applies the identical rule to it. Each item carries `summary` +
+`· rationale:` (same split as above) plus two tokens: `· blocking-test:` (identical meaning and values
+to `sdd-design`'s — see `sdd-design.md`, "The blocking-test token") and `· record: <domain>/<slug>` —
+the EDR identity the proposal would occupy if ratified, free-form (no closed value set), still
+required (an item missing the token fails `TOKEN-MISSING`, the strict reading of an omission).
 
 Only two statuses have a shape here: `done` and `blocked`. This phase's skill does not designate
 `needs-input`, and a spec is written whole or not at all, so `partial` does not arise.
@@ -72,6 +89,19 @@ with two parts:
 
 These are NOT contract until the main thread confirms them.
 If the mapping came explicit from the proposal's Capabilities section: "None — mapping was explicit."}
+
+### New Decisions
+{Emitted ONLY when `decisions_gate_here` is true (no `design` add-on in this lane) — omit the section
+entirely, do not even print "None.", when `design` is active. When emitted: the architectural choices
+this phase found that pass the blocking test (see `sdd-design.md`, "The blocking-test token" — same
+test, same values). One item per decision:
+
+- {the choice}: {what you chose} — {alternatives weighed, and why this one}
+  · blocking-test: none
+  · record: {domain}/{slug}
+  · rationale: {one line: the full reasoning}
+
+If genuinely none: "None."}
 
 ### Next Step
 Ready for design (sdd-design). If design already exists, ready for tasks (sdd-tasks).

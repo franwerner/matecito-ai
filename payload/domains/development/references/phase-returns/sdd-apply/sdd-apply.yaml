@@ -21,7 +21,20 @@ sections:
     field: files_changed
     columns:
       - { key: file, label: File }
+      - { key: task, label: Task }
       - { key: action, label: Action }
+  # In-flow decision capture (development-specifics; see ../../decision-capture/in-flow-capture.md).
+  # Emitted only when this run materialized at least one ratified proposal — a run that materialized
+  # nothing carries no section at all, not even the sentinel (same shape as the two TDD sections below).
+  - title: "### Decisions Materialized"
+    emitted: conditional
+    when: has_decisions_materialized
+    render: table
+    field: decisions_materialized
+    columns:
+      - { key: record, label: Record }
+      - { key: task, label: Task }
+      - { key: result, label: Result }
   # Gated on Strict TDD, which the `Mode` header states. Absent outside it, and that is legitimate.
   - title: "### TDD Cycle Evidence"
     emitted: conditional

@@ -35,8 +35,12 @@ every dispatched group's Sub-Report — see "Output Contract" for where the spli
 
 Run only the steps your group owns. A step owned by a different group is not yours: do not run it, do
 not check it, and say nothing about it in your Sub-Report. Being dispatched for a group also means its
-**gate is already active** — you do not re-check EDR-store presence, capability-spec-store presence,
-`ui-test`, or `flagDecisionGaps`; the orchestrator resolved that before dispatching you.
+**gate is already active** — you do not re-check EDR-store presence, capability-spec-store presence, or
+`ui-test`; the orchestrator resolved that before dispatching you. **`decision-gaps` is dispatched on
+every run, unconditionally — no flag, and it does not depend on `.matecito-ai/edr/` existing** (see
+`~/.claude/references/decision-capture/in-flow-capture.md`); whether the change materialized anything to
+check is something the `decision-gaps` group determines itself, from `apply-progress`, not something
+resolved before you are dispatched.
 
 ## Hard Rules
 
@@ -79,6 +83,8 @@ not check it, and say nothing about it in your Sub-Report. Being dispatched for 
      es o detalle de ejecución (no es asunto de esta fase) o una decisión tomada sin preguntar
      (violación de un hard-stop) — y sólo CRITICAL bloquea el archivado. -->
 - A design deviation is CRITICAL unless `sdd-apply` declared it not verifiable against the design; see Execution Step 6.
+<!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism: in-flow-capture.md. -->
+- Check every decision record `apply-progress` reports as materialized (`### Decisions Materialized`) — no flag, every `development` change; a change that materialized nothing performs the check and finds nothing to report, it does not skip the check. See Execution Step 6c.
 <!-- matecito-ai: la forma del retorno dejó de vivir acá. Una copia inline más era una copia más para desincronizar — que es exactamente cómo `## Decision Gaps` y `## UI Verdict` terminaron sin lugar en el reporte. -->
 <!-- matecito-ai: this used to say "return the Section D envelope" — that is now the ORCHESTRATOR's job,
      performed once after every dispatched group's Sub-Report is in. A group-scoped instance of this
@@ -111,6 +117,11 @@ not check it, and say nothing about it in your Sub-Report. Being dispatched for 
 | Design deviation carrying `verify-checks: no` — found under either section | WARNING — execution detail, not this phase's business. |
 <!-- matecito-ai: EDR violation in the changed code is CRITICAL -->
 | Changed code violates an EDR it touched | CRITICAL `EDR-VIOLATION` (cite the EDR). |
+<!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism: in-flow-capture.md. -->
+| `apply-progress` materializes no decision record (`### Decisions Materialized` absent or empty) | `records_in_change: false` — no `## Decision Gaps` section, not even empty. |
+| Materialized row's `result` is `failed: <reason>` | CRITICAL — Structure names the reason; Backing `—`. |
+| `validate-artifact.js --type edr --file` finds a structural violation | CRITICAL, naming the finding — Structure column. |
+| Implementing task's `### Files Changed` set is entirely under `.matecito-ai/edr/` | CRITICAL — Backing column: no code corresponds to the decision. |
 | `ui-test != needed` OR `uiTest.available` absent or ❌ | Skip UI step silently — no mention, no UI Verdict section. |
 | Behavioral scenario with no counterpart in apply-progress | CRITICAL `UNTESTED` for that scenario. |
 | Counterpart declaring `covers: partial: …` | WARNING with what it leaves out — **even when it PASSES**. |
@@ -177,9 +188,31 @@ Run only the steps `subverifier-groups.md` maps to your assigned group; every ot
    ```
 
    Partition its JSON findings **by file**. A finding on a capability-spec this change created or modified is this change's own: map the tool's severity (`error` → CRITICAL, `warning` → WARNING, `nota` → SUGGESTION) and list it under `### Issues Found`. Every other finding is pre-existing — a store carries defects from changes that are not yours, and letting them push the verdict makes every verify fail for reasons nobody in this change caused. Report those as a single count line in `### Coherence (Capability-Specs)` `Notes`, never as findings. If the store does not exist, skip.
-<!-- matecito-ai: decision-gap confirmation hook
-Active ONLY when flagDecisionGaps=true (does NOT depend on EDRs existing). When active: read the tasks artifact; collect all `· edr: <domain>/<slug>` whose file `.matecito-ai/edr/<domain>/<slug>.md` does NOT exist — these are the decision gaps. For each gap: (a) check the task is `[x]` (complete); (b) check its `criteria:` passes in the shipped code (static inspection or test result). If (a) and (b) → `implemented: yes`; otherwise `implemented: no`. La sección viaja DENTRO del bloque que devolvés (que es el mismo texto que persistís): el gate del orquestador sólo lee el retorno, así que una sección que quedara únicamente en la copia persistida no dispararía nada. Si tiene al menos un `yes`, el orquestador puede disparar el mine gate post-verify. When flag off: do NOT add the section, do NOT mention anything — byte-identical behavior to before. -->
-6c. (Decision-gap confirmation) Being dispatched for the `decision-gaps` group already means `flagDecisionGaps=true`: from the tasks artifact collect all `· edr: <domain>/<slug>` refs whose target file does NOT exist → these are decision gaps. For each: confirm task is `[x]` AND `criteria:` passes in shipped code → mark `implemented: yes/no`. Return `decision_gaps` in your Sub-Report. The orchestrator renders it as `## Decision Gaps` in the consolidated report — position, columns and `##` level fixed by `~/.claude/references/phase-returns/sdd-verify/sdd-verify.md`, which the mine gate matches literally.
+<!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism, the ratification gate,
+     the materialization contract: ~/.claude/references/decision-capture/in-flow-capture.md — this step
+     only runs the two checks and reports them. No flag: `decision-gaps` is dispatched on EVERY run. -->
+6c. (Decision-gaps) Read `apply-progress`'s `### Decisions Materialized` table. Empty or absent →
+   `records_in_change: false`, `decision_gaps: []`, done — no section, no mention. Otherwise
+   `records_in_change: true`; for each row:
+   - `result` is `failed: <reason>` → this row's finding is CRITICAL, `Structure` names the reason
+     verbatim, `Backing` is `—`. Do not attempt the two checks below — there is no file to check.
+   - `result` is `materialized` → run exactly two checks, both mechanical, never semantic:
+     1. **Structure**: `node ~/.claude/scripts/validate-artifact.js --type edr --file
+        .matecito-ai/edr/<domain>/<slug>.md`. Exit 0 → `OK`. Any finding → CRITICAL, naming the file and
+        the violated section verbatim.
+     2. **Backing** ("code that corresponds") — a **join, never a search**: look up this row's `task` in
+        `apply-progress`'s `### Files Changed`. That task's changed-file set contains at least one path
+        **outside** `.matecito-ai/edr/` → `OK`. Every path it touched is under `.matecito-ai/edr/` (only
+        the record and the INDEX) → CRITICAL — the decision has no implementation behind it in this
+        change. Never read the record's prose and never hunt for matching code elsewhere: it is exactly
+        this set difference over paths.
+   Coherence BETWEEN records (do two EDRs contradict each other) is out of scope for this step —
+   `development-decisions-validate`'s job, unrelated to what this change materialized. Return
+   `decision_gaps` (the `record | task | structure | backing` rows) and `records_in_change` in your
+   Sub-Report. The orchestrator renders `## Decision Gaps` in the consolidated report only when
+   `records_in_change` is `true` — position, columns and `##` level fixed by
+   `~/.claude/references/phase-returns/sdd-verify/sdd-verify.md`. A CRITICAL here is `FAIL`, exactly
+   like any other coherence section — there is no post-verify mine gate left to defer it to.
 7. Run test, build/type-check, and coverage commands when available.
 8. Build the behavioral compliance matrix from actual test results.
 <!-- matecito-ai: this step used to persist AND return the full report — both are now the orchestrator's,
@@ -216,4 +249,7 @@ Verdict rules for design coherence: a CRITICAL `DESIGN-DEVIATION` forbids `PASS`
      despliega a `~/.claude/references/`. La ruta relativa vieja ya no resuelve. -->
 - `~/.claude/references/ui-scenarios-schema.md` — the UI-scenario contract, shared by **three** phases: Part 1 the behavioral half (`sdd-spec`), Part 2 the executable counterparts (`sdd-apply`), **Part 3 execution and coverage — yours**. Read Part 3 before running the UI step, and Part 2 to know the shape of what you are executing.
 - [strict-tdd-verify.md](strict-tdd-verify.md) — load only when Strict TDD is active.
+- `~/.claude/references/decision-capture/in-flow-capture.md` — the in-flow decision-capture mechanism
+  end to end (proposal, ratification, materialization); this skill's `decision-gaps` group only runs
+  the two checks it defines. Read it before touching Execution Step 6c.
 - `~/.claude/skills/_shared/sdd-phase-common.md` — Sections A and B bind you (skill loading, retrieval); Section D does not — see "Group Scope".

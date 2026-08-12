@@ -27,7 +27,7 @@ every gate (see "Who resolves what" below) — no sub-verifier re-evaluates its 
 | `edr-coherence` | `.matecito-ai/edr/` non-empty | 6b | `coherence_edrs` |
 | `spec-coherence` | `.matecito-ai/development-specs/` non-empty | 6d, 6e | `coherence_specs` |
 | `ui` | `ui-test: needed` ∧ `uiTest.available` ✅ | 3b-bis–3f | `ui_verdict`, `error_gate` |
-| `decision-gaps` | `flagDecisionGaps` resolved `true` | 6c | `decision_gaps` |
+| `decision-gaps` | always — no flag, does not depend on `.matecito-ai/edr/` existing (see `~/.claude/references/decision-capture/in-flow-capture.md`) | 6c | `decision_gaps`, `records_in_change` |
 
 The step numbers are the ones `~/.claude/skills/sdd-verify/SKILL.md` already declares — this partition
 does not renumber or re-specify any of them. A sub-verifier runs **only** the steps its row lists;
@@ -35,24 +35,40 @@ every other step is not its business, and it does not run it, check it, or comme
 
 ## Who resolves what
 
-**The orchestrator owns:** `status`, `change`, `mode`, `blocker.*`, the four gate booleans
-(`edr_store_active`, `spec_store_active`, `ui_gate_passed`, `flag_decision_gaps`), `verdict`, and the
+**The orchestrator owns:** `status`, `change`, `mode`, `blocker.*`, three gate booleans
+(`edr_store_active`, `spec_store_active`, `ui_gate_passed`), `verdict`, and the
 concatenation of `issues.critical` / `issues.warning` / `issues.suggestion` across every dispatched
 group. **Each sub-verifier owns exactly** the data keys its row above lists — nothing else. Every
 schema key has exactly one owner, so no check is lost and none runs twice.
 
-`execution` and `correctness` and `design-coherence` are **always** dispatched: their gate is `always`,
-so N is never below three. The other four (rows 4-7) turn on and off with the gate their row names —
-**that is what "N is stable in definition, variable in execution" means.** A group whose gate is off
-MUST NOT be dispatched, and its absence MUST be exactly as silent as the skip its gate already
-produced before this partition existed: no placeholder, no mention, no row.
+`execution` and `correctness` and `design-coherence` and `decision-gaps` are **always** dispatched:
+their gate is `always`, so N is never below four. The other three (`edr-coherence`,
+`spec-coherence`, `ui`) turn on and off with the gate their row names — **that is what "N is stable in
+definition, variable in execution" means.** A group whose gate is off MUST NOT be dispatched, and its
+absence MUST be exactly as silent as the skip its gate already produced before this partition existed:
+no placeholder, no mention, no row.
 
-**Invariant.** A group whose gate can turn off (rows 4-7) owns *only* conditional sections of the
-consolidated report. Gate off → the orchestrator never dispatches it → the boolean is `false` → the
-section is absent, with no mention anywhere. Gate on but the group does not complete → the boolean
-stays `true` → the section IS present, filled with the placeholder from "Merge" below, and a CRITICAL
-names the incomplete group. These two outcomes must stay legible apart without opening any other
-artifact — see the spec's "gate apagado y grupo incompleto no se confunden" scenario.
+<!-- matecito-ai: in-flow decision capture (development-specifics). decision-gaps breaks the pattern
+     below on purpose: it is dispatched always, but the SECTION it owns stays conditional — on a
+     boolean the group itself computes and reports (`records_in_change`), never one the orchestrator
+     pre-resolves before dispatch, because whether this change materialized a record is exactly the
+     thing only this group's own read of apply-progress can answer. -->
+**Invariant.** A group whose gate can turn off (`edr-coherence`, `spec-coherence`, `ui`) owns *only*
+conditional sections of the consolidated report. Gate off → the orchestrator never dispatches it → the
+boolean is `false` → the section is absent, with no mention anywhere. Gate on but the group does not
+complete → the boolean stays `true` → the section IS present, filled with the placeholder from "Merge"
+below, and a CRITICAL names the incomplete group. These two outcomes must stay legible apart without
+opening any other artifact — see the spec's "gate apagado y grupo incompleto no se confunden" scenario.
+
+**`decision-gaps` is the one exception to that shape.** It is dispatched on every run (its own gate is
+`always`, not conditional), but the `## Decision Gaps` section it owns is still conditional —
+`records_in_change`, which `decision-gaps` itself computes (from `apply-progress`'s `### Decisions
+Materialized` table) and returns in its own Sub-Report, not a boolean the orchestrator resolves before
+dispatching. A run that materialized nothing still gets the group dispatched and the check performed;
+it simply returns `records_in_change: false` and an empty `decision_gaps`, and the section stays absent
+— "the check ran and found nothing to report" and "the check never ran" are NOT the same claim, and
+this group's always-on gate is what keeps them distinguishable, even though the section itself behaves
+like any other conditional one.
 
 ## Sub-verifier return (`detailed_report`)
 

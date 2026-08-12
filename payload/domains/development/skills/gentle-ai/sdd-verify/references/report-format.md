@@ -14,8 +14,9 @@ the file the orchestrator validates your return against, so it is the one you fo
 report. This file is not a second template and does not restate it.
 
 That template is also where the two **conditional** sections have their place: `## UI Verdict` (only
-when the UI gate passed) and `## Decision Gaps` (only when `flagDecisionGaps` is on). Neither takes a
-`None` sentinel — when its condition does not hold, the section simply does not exist.
+when the UI gate passed) and `## Decision Gaps` (only when this change materialized at least one
+decision record — no flag; see `~/.claude/references/decision-capture/in-flow-capture.md`). Neither
+takes a `None` sentinel — when its condition does not hold, the section simply does not exist.
 
 ## Compliance Statuses
 
@@ -136,6 +137,33 @@ capability-spec is not — it is a pending-ratification draft, never a contract,
 `SPEC-VIOLATION` until a human promotes it to `Accepted`. That guardrail is what makes it safe to keep
 as-built-mined specs in the store. Its cost is that a reader cannot tell "checked and clean" from
 "skipped as a draft" unless the report says which — hence the `Status` column and the ➖ row.
+
+<!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism, the ratification
+     gate, and the materialization contract: in-flow-capture.md — this section owns only the cell
+     vocabulary of `## Decision Gaps`. -->
+## Decision-Gaps Coherence
+
+The vocabulary of the `## Decision Gaps` table. Runs on every `development` change — no flag; the
+section itself is emitted only when `apply-progress`'s `### Decisions Materialized` carries at least
+one row:
+
+- `Record` — the EDR's path relative to `.matecito-ai/edr/`, e.g. `contracts/some-slug.md`, taken from
+  the materialized record's `record` identity, whether or not the file successfully exists.
+- `Task` — the implementing task's id, from the same `### Decisions Materialized` row.
+- `Structure` — ✅ `OK` when `validate-artifact.js --type edr --file .matecito-ai/edr/<domain>/<slug>.md`
+  exits 0; CRITICAL, naming the finding, on any violation. When the materializing row's own `result`
+  was `failed: <reason>` (apply could not write the record at all), skip straight to CRITICAL naming
+  that reason — there is no file to run the structural check against.
+- `Backing` — "code that corresponds" is a **mechanical join, never a search**: look up the implementing
+  task's row(s) in `apply-progress`'s `### Files Changed`. ✅ `OK` when that task's changed-file set
+  contains at least one path outside `.matecito-ai/edr/`; CRITICAL when every path it touched is under
+  `.matecito-ai/edr/` (only the record and the INDEX — no governing code in this change). `—` when
+  `Structure` already failed on a `result: failed` row (there is no record to check backing for).
+
+Coherence **between** records — whether two EDRs contradict each other — is explicitly out of scope for
+this group; that check belongs to `development-decisions-validate`, run standalone, unrelated to what
+this change materialized. Any CRITICAL in `Structure` or `Backing` is `FAIL`, exactly like the other
+coherence sections — see the return template's verdict rule.
 
 ## Command Evidence
 

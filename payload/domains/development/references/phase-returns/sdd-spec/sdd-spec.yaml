@@ -42,6 +42,23 @@ sections:
     render: items
     field: derived_capabilities
     items: { text: summary, rationale: rationale }
+  # In-flow decision capture (development-specifics; see ../../decision-capture/in-flow-capture.md).
+  # This phase's ratification gate for a lane with NO `design` add-on active — read `decisions_gate_here`
+  # from the intake brief's `### Triage` line, never re-derived any other way. Same mailbox concept as
+  # `sdd-design`'s `### New Decisions`, byte-identical title, one lane earlier.
+  - title: "### New Decisions"
+    emitted: conditional
+    when: decisions_gate_here
+    tier: 1
+    sentinel: true
+    render: items
+    field: new_decisions
+    items:
+      text: summary
+      rationale: rationale
+      tokens:
+        - { name: blocking-test, field: blocking_test, values: [none, infra, contract, data-model], passing: [none] }
+        - { name: record, field: record }
   - title: "### Next Step"
     emitted: always
     render: line

@@ -199,6 +199,7 @@ If there are genuinely none, state "None."}
 
 - {the choice}: {what you chose} — {alternatives weighed, and why this one}
   · blocking-test: none
+  · record: {domain}/{slug}
 
 ## EDR Conflicts (BLOCKER if any)
 
@@ -370,6 +371,8 @@ Three things that file makes explicit and that this phase gets wrong most often:
   ```
 
   `none` means "I put the alternatives side by side and they differ in NONE of the three axes; that is why this item is here and not in `blocked`" — the only value consistent with the item's location, and therefore the normal one. Naming an axis instead contradicts the item's own destination: an axis that differs makes the decision `blocked`. The orchestrator reads the token mechanically and never reopens your reasoning: `none` → ordinary Tier 1; an axis named → it stops, because the item is in the wrong mailbox; absent or hedged → Tier 1 under the strict reading, the same default an undeclared deviation gets in `sdd-apply`. Do not hedge it, do not omit it, and do not write `none` for a decision you did not actually put side by side — one line per decision, and the token IS the audit trail the paragraph above asks for. Shape and the reader's table: `~/.claude/references/phase-returns/sdd-design/sdd-design.md`, section "The blocking-test token".
+<!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism: in-flow-capture.md. -->
+- **Every item under `## New Decisions` / `### New Decisions` ALSO carries `· record: <domain>/<slug>`** — free-form (no closed value set), still required (an omission fails `TOKEN-MISSING`). It is the EDR identity the proposal would occupy if ratified; `sdd-apply` reads it verbatim from the dispatch prompt to materialize the record in the same step it implements the governing code. Full mechanism: `~/.claude/references/decision-capture/in-flow-capture.md`.
 <!-- matecito-ai: Open Questions dejó de ser buzón de decisiones (se solapaba con New Decisions y el
      ejecutor duplicaba: razonamiento en una, pregunta en la otra => fatiga de confirmación). -->
 - `## Open Questions` is NOT a decision mailbox. A question that pins a decision belongs to `## New Decisions` / `### New Decisions`, or makes you return `blocked` per the test above — never here. What stays here is what fixes nothing: implementation doubts and things to validate during apply. And a question you write there and answer yourself in the same delivery is not an open question — it is a decision you took without asking. Whatever remains genuinely open at the end MUST still appear under `### Open Questions` **in your return** (not only in the artifact), so the orchestrator can carry it forward — it is no longer Tier 1

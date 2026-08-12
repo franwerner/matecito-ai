@@ -244,6 +244,34 @@ ui-scenarios:
 decided and confirmed, and that is where `sdd-verify` reads it. The spec carries the scenarios; the
 brief carries the flag. One fact, one home.
 
+### Step 4c: Recognize decisions — only when no `design` add-on is active
+
+<!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism, the ratification
+     gate table, and why the title matches sdd-design's byte-for-byte: in-flow-capture.md. -->
+
+**Read `decisions_gate_here` first.** `mem_search("sdd/{change-name}/intake")` → `mem_get_observation`
+(you already read this artifact in Step 4b for the `ui-test` flag — reuse it), and look at
+`### Triage`: `Lane: {...} — add-ons: [...]`. `decisions_gate_here` is `true` **iff** `design` is NOT
+one of the listed add-ons. `false` → skip this whole step silently: `sdd-design` will run later and its
+own `### New Decisions` is the single ratification gate for this change; a second one here would ask
+the user to ratify the same decision twice.
+
+When `true`: while writing the delta spec, you MAY notice a genuine architectural decision — the
+approach, a contract, a dependency, a boundary between components, where a responsibility lives — that
+no confirmed upstream artifact already fixes. You are NOT designing (you still do not choose HOW the
+code is structured), but writing WHAT sometimes surfaces exactly this kind of choice, and in this lane
+there is no later phase to catch it. Apply the **same blocking test** `sdd-design`'s `## Rules` defines
+(new infrastructure / public contract / data model):
+
+- **The alternatives differ in at least one axis** → return `blocked`, same shape as any other blocker
+  in this phase's `### Blocker` section — name which axis and how, exactly as `sdd-design` would.
+- **They differ in none** → propose it under `### New Decisions` in your return (see
+  `~/.claude/references/phase-returns/sdd-spec/sdd-spec.md`), with the same item shape `sdd-design`
+  uses: `summary`, `· blocking-test: none`, `· record: <domain>/<slug>`, `· rationale:`.
+
+If you notice nothing decision-shaped while writing the spec — the ordinary case for most changes —
+emit the section anyway, with `None.`; do not invent a decision to fill it.
+
 ### Step 5: Persist Artifact
 
 **This step is MANDATORY — do NOT skip it.**
@@ -271,6 +299,10 @@ Two things that file makes explicit and that this phase gets wrong most often:
   is not contract until the main thread confirms it.
 - The ambiguous-derivation stop from Step 2 returns `blocked`, and the possible readings go in the
   `### Blocker` section that file designates — never in `risks`, never as a mapping you picked.
+- `### New Decisions` (Step 4c) is a **second, conditional** Tier-1 mailbox — emitted only when
+  `decisions_gate_here` is true, omitted entirely otherwise. Do not confuse it with `### Derived
+  capabilities (unconfirmed)`: a capability mapping and an architecture-decision proposal are
+  different things, each in its own section.
 <!-- matecito-ai: el bloque `ui-scenarios` va en el ARTEFACTO, no en el retorno; del retorno sólo
      cuelga el conteo, y en una sección que ya existe — no se abre un buzón nuevo por esto. -->
 - The `ui-scenarios` you wrote in Step 4b are reported in the return **only as a count**, on the
@@ -288,6 +320,7 @@ Two things that file makes explicit and that this phase gets wrong most often:
 - Keep scenarios TESTABLE — someone should be able to write an automated test from each one
 - DO NOT include implementation details in specs — specs describe WHAT, not HOW
 <!-- matecito-ai: recordatorio apuntado — la doctrina completa vive en el fragmento del dominio (cargado en Step 1), no se duplica acá. Acá aplica cuando un escenario fija campos o tipos de un contrato. -->
+- **In a lane with no `design` add-on, recognize architecture decisions you notice while writing the delta spec** (Step 4c) — apply `sdd-design`'s blocking test; a decision that fails it returns `blocked`, one that passes it goes to `### New Decisions` with the same `· blocking-test:` / `· record: <domain>/<slug>` tokens `sdd-design` uses. In a lane WITH `design`, skip this entirely — `sdd-design`'s own mailbox is the single ratification gate. Full mechanism: `~/.claude/references/decision-capture/in-flow-capture.md`
 - **Before a scenario or requirement pins ANY contract or definition** — domain entity, DB model/migration/schema, DTO, public/exported type, interface or enum, event payload, or config schema — apply **"Contract & definition shapes — never inferred"** from the domain fragment (`~/.claude/matecito-ai/domains/development.md`, read in Step 1). Never invent which fields it has nor their types to make a scenario concrete. Pinned-and-coherent upstream → use it; unspecified, or pinned by something that conflicts or does not cover this case → return `blocked` proposing the FULL contract as one reviewable unit
 <!-- matecito-ai: reglas del bloque `ui-scenarios` — el detalle operativo está en el Step 4b; acá van
      las que un ejecutor apurado rompe si sólo lee las Rules. -->

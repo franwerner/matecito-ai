@@ -61,11 +61,12 @@ sections:
     items:
       text: summary
       rationale: rationale
-      token: "blocking-test"
-      token_field: blocking_test
-      values: [none, infra, contract, data-model]
-      # Filed HERE means the alternatives differ in no axis. Any other value belongs in `### Blocker`.
-      passing: [none]
+      # In-flow decision capture (development-specifics; see ../../decision-capture/in-flow-capture.md).
+      # `record` is free-form (`<domain>/<slug>`, no `values`) — any present, non-null value passes;
+      # still required (`TOKEN-MISSING` when absent). `blocking-test` is unchanged.
+      tokens:
+        - { name: blocking-test, field: blocking_test, values: [none, infra, contract, data-model], passing: [none] }
+        - { name: record, field: record }
 
   - title: "### Open Questions"
     emitted: always

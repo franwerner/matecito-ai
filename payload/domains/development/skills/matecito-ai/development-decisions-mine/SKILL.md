@@ -1,6 +1,6 @@
 ---
 name: development-decisions-mine
-description: Minería de decisiones de ingeniería desde el código fuente de un repo existente. Produce candidatos a EDR con Status Inferred a partir de evidencia estructural, de configuración, de patrones o de ausencia. Dos modos — Mode A (scan brownfield invocado por la skill) y Mode B (in-flow, opt-in via flagDecisionGaps). Usá esta skill cuando el usuario pida "minear decisiones", "encontrar EDRs que faltan", "¿qué decisiones hay implícitas en el código?", o cuando el orchestrator dispare el boundary dispatch post-verify con gaps implementados.
+description: Minería de decisiones de ingeniería desde el código fuente de un repo existente. Produce candidatos a EDR con Status Inferred a partir de evidencia estructural, de configuración, de patrones o de ausencia. Dos modos declarados por el motor — Mode A (scan brownfield invocado por la skill, el único con caller hoy en `development`) y Mode B (in-flow gap detection, sin caller en `development` desde que el dominio captura decisiones dentro del flujo — ver in-flow-capture.md). Usá esta skill cuando el usuario pida "minear decisiones", "encontrar EDRs que faltan", "¿qué decisiones hay implícitas en el código?".
 ---
 
 # Development Decisions Mine
@@ -27,12 +27,16 @@ La skill está partida en **motor** y **executor**:
 
 Estas dos invariantes son la columna vertebral de la skill. Cualquier desviación las rompe.
 
-**Invariante 1 — EDRs nunca obligatorios; el ejecutor recibe un scope, no decide nada.** El ejecutor NO lee config, NO resuelve el flag, NO se ramifica por modo: recibe un **scope** de su caller y lo procesa. La intención (si correr) vive en el caller:
+<!-- matecito-ai: `development` declaró su propio mecanismo de captura en-flujo (propose · ratificar una
+     vez · materializar en apply — ver in-flow-capture.md), así que el boundary dispatch del kernel
+     post-verify nunca dispara para este dominio. El único caller vivo hoy es la invocación directa
+     (Mode A). El ejecutor sigue siendo mode-agnostic por diseño (scope → candidates[]) — eso no cambia
+     — pero el segundo caller de la lista de abajo no tiene quién lo accione en `development`. -->
+**Invariante 1 — EDRs nunca obligatorios; el ejecutor recibe un scope, no decide nada.** El ejecutor NO lee config, NO resuelve ningún flag, NO se ramifica por modo: recibe un **scope** de su caller y lo procesa. La intención (si correr) vive en el caller — hoy, en `development`, el único caller es:
 
-- invocación directa de la skill → scope = repo completo.
-- el orquestador (con `flagDecisionGaps` resuelto en true + gaps implementados) → scope = la gap list.
+- invocación directa de la skill → scope = repo completo (Mode A).
 
-Con flag off el orquestador no invoca → silencio total. La dependencia dura del ejecutor es el **catálogo de concerns** (siempre presente), de donde sale la taxonomía de dominios — NO los EDR generados. La ausencia de `.matecito-ai/edr/` NO bloquea: "nada decidido todavía" → cada candidato es un hueco y mine puede bootstrapear (crear la carpeta + los primeros EDR) tras el confirm. La presencia de un EDR se chequea **por-candidato** (dedup), nunca como gate global.
+Mode B (scope = una gap list) sigue definido más abajo como capacidad del motor, pero no tiene caller en `development`: el dominio captura sus decisiones dentro del flujo mismo (propuesta → ratificación → materialización en `sdd-apply`), así que no hay boundary dispatch post-verify que lo invoque — ver `~/.claude/references/decision-capture/in-flow-capture.md`. La dependencia dura del ejecutor es el **catálogo de concerns** (siempre presente), de donde sale la taxonomía de dominios — NO los EDR generados. La ausencia de `.matecito-ai/edr/` NO bloquea: "nada decidido todavía" → cada candidato es un hueco y mine puede bootstrapear (crear la carpeta + los primeros EDR) tras el confirm. La presencia de un EDR se chequea **por-candidato** (dedup), nunca como gate global.
 
 **Invariante 2 — Nunca auto-materializar.** El executor NO tiene capacidad de escritura de EDRs en la fase discover. La materialización es un paso separado, alcanzable solo después de un confirm explícito del usuario en el gate del thread principal.
 
@@ -129,7 +133,7 @@ La confianza hace exactamente dos cosas: (a) **routear** cada candidato (draft I
 
 ## Mode A — Brownfield scan (invocado por la skill)
 
-Mode A corre cuando el usuario pide explícitamente minear decisiones del repo. Es independiente del flag `flagDecisionGaps`. NO requiere que `.matecito-ai/edr/` exista: si no existe, cada candidato es un hueco nuevo y mine puede bootstrapear la carpeta + los primeros EDR tras el confirm.
+Mode A corre cuando el usuario pide explícitamente minear decisiones del repo — el único caller vivo de este ejecutor en `development` (ver Invariante 1). NO requiere que `.matecito-ai/edr/` exista: si no existe, cada candidato es un hueco nuevo y mine puede bootstrapear la carpeta + los primeros EDR tras el confirm.
 
 ### Flujo
 
@@ -149,31 +153,35 @@ Mode A corre cuando el usuario pide explícitamente minear decisiones del repo. 
 
 ---
 
-## Mode B — In-flow gap detection (opt-in, flagDecisionGaps)
+## Mode B — In-flow gap detection (sin caller en `development`)
 
-Mode B es **un contexto de invocación**, no una lógica distinta del ejecutor: el orquestador, cuando `flagDecisionGaps` resuelve a `true` y hay gaps implementados, invoca al ejecutor con scope = la gap list. **El ejecutor NO lee config ni resuelve el flag** — eso lo hace el orquestador (ver CLAUDE.md, regla "SDD agent launch" + "Decision-Gap Capture"), igual que con `strictTdd`/modelo. Con flag off el orquestador no invoca: silencio total. La presencia de `.matecito-ai/edr/` NO condiciona nada — sin EDRs los huecos se bootstrapean; la existencia de un EDR se chequea por-candidato (dedup).
+<!-- matecito-ai: sección conservada como definición del motor (scope → candidates[] sigue siendo la
+     forma), pero NADA en el flujo de `development` la acciona desde este cambio: el dominio captura
+     sus decisiones en-flujo (propuesta en el retorno de la fase que la encuentra, ratificación una
+     sola vez en el gate del lane, materialización en el mismo paso de `sdd-apply` que implementa el
+     código) en vez de detectar el hueco recién después de verify. Full mechanism:
+     `~/.claude/references/decision-capture/in-flow-capture.md`. Los hooks que siguen documentaban ese
+     mecanismo viejo; se dejan tachados por trazabilidad histórica, no como contrato vigente. -->
 
-### Hooks en el flow SDD (contratos mínimos)
+Mode B seguía siendo **un contexto de invocación**, no una lógica distinta del ejecutor: recibía
+scope = una gap list. Eso no cambió en el ejecutor. Lo que cambió es que **nada en `development`
+arma esa gap list ni despacha este modo** — no hay `sdd-tasks`/`sdd-verify` hook que la construya, y
+no hay boundary dispatch post-verify que la consuma. Los tres puntos de enganche que antes existían
+quedan documentados abajo por trazabilidad, no como contrato vigente:
 
-**sdd-tasks (hook de detección):**
-- Un gap = una task que lleva `· edr: <dominio>/<slug>` cuyo EDR destino NO existe bajo `.matecito-ai/edr/`.
-- Las referencias `· edr:` colgadas son la lista de gaps — se cargan verbatim en el artifact `tasks` (ningún campo nuevo).
-- Solo cuando flag-on; si no → omitir silenciosamente. NO depende de que existan EDRs: con cero EDRs, toda `· edr:` que toque una decisión apunta a algo inexistente, así que todo es hueco (bootstrap de los primeros).
+- ~~`sdd-tasks` emitía un hook de detección solo con el flag on~~ — reemplazado por: `sdd-tasks` emite
+  `· edr: <dominio>/<slug>` en TODA tarea que toca una decisión, siempre, sin flag (ver
+  `~/.claude/skills/sdd-tasks/SKILL.md`).
+- ~~`sdd-verify` confirmaba gaps y emitía `## Decision Gaps` solo con el flag on~~ — reemplazado por:
+  `sdd-verify`'s grupo `decision-gaps` corre siempre (sin flag) y valida estructura + código-que-
+  corresponde de lo que `sdd-apply` ya materializó, no huecos detectados post-hoc.
+- ~~el orquestador despachaba este ejecutor en Mode B cuando `flagDecisionGaps` resolvía true~~ —
+  reemplazado por: nada — la materialización ya ocurrió dentro de `sdd-apply`, no hay huecos que minar
+  después de verify.
 
-**sdd-verify (hook de confirmación):**
-- Para cada gap detectado en tasks (referencia `· edr:` colgada), confirmar que: (a) la task correspondiente está completa, (b) su `criteria:` pasó en el código embarcado.
-- Emitir una sección `## Decision Gaps` en el verify-report: `| dominio/slug | task | implemented? |`.
-- Solo cuando flag-on.
-
-**Boundary dispatch (verify→archive — dispatch condicional del orchestrator):**
-- Trigger: `flagDecisionGaps resuelto-true` AND el verify-report lista ≥1 gap implementado.
-- El orchestrator despacha el executor de mine Mode B: le pasa `change-name`, la lista de gaps implementados (`dominio/slug` + hint de `Alcance`), y el root del repo.
-- El executor minea el código **real embarcado** (evidencia fuerte post-ship).
-- Retorna `candidates[]`; el thread principal presenta el gate; confirmed → materializar EDRs Inferred.
-- Si no hay gaps implementados → no se despacha (silencio).
-
-**sdd-archive:**
-- NO tiene hook. Los EDR (cualquier status, incl. Inferred) viven SOLO en sus `.md` bajo `.matecito-ai/edr/` — nunca se registran en Engram ni en el archive-report.
+Si en el futuro algún otro contexto de `development` necesitara volver a invocar Mode B, el ejecutor
+sigue siendo capaz (`scope → candidates[]`, sin cambios) — simplemente hoy no hay ningún caller que lo
+haga.
 
 ---
 
@@ -318,7 +326,7 @@ Cuando mine corre sobre un repo que ya tiene EDRs `Inferred`:
 ## Anti-patterns
 
 - No escribir EDRs antes del confirm → invariante 2.
-- No correr Mode B cuando el flag es false → invariante 1. La ausencia de `.matecito-ai/edr/` NO es razón para no correr: mine bootstrapea los primeros.
+- No inventar un caller para Mode B en `development` — hoy no tiene ninguno (ver Mode B arriba); esta skill no decide despachar nada por su cuenta. La ausencia de `.matecito-ai/edr/` NO es razón para no correr Mode A: mine bootstrapea los primeros.
 - No inventar el porqué de una decisión → WHY siempre vacío en Inferred.
 - No usar `path:line` como locator → siempre globs estructurales o entradas de manifest.
 - No volcar identificadores internos volátiles (clases, métodos, columnas, errores internos) en `observado` como si fueran el porqué → `observado` es el QUÉ estructural conceptual + su prevalencia; el razonamiento queda vacío hasta que un humano lo ratifique. Los anclajes concretos van a `## Alcance` como globs, no al cuerpo del EDR.

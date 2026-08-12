@@ -25,9 +25,10 @@ You are dispatched for exactly **one group**: `execution`, `correctness`, `desig
 `edr-coherence`, `spec-coherence`, `ui`, or `decision-gaps` — the orchestrator names it in your launch
 prompt. Read `~/.claude/references/phase-returns/sdd-verify/subverifier-groups.md` **first**: it fixes
 which steps your group owns, which data keys you return, and the exact Sub-Report shape below. Being
-dispatched for a group IS the instruction that its gate is already active — you do NOT re-check it
-(not the EDR-store presence, not the capability-spec-store presence, not `ui-test`, not
-`flagDecisionGaps`), and you do not re-derive whether you should have been dispatched at all.
+dispatched for a group IS the instruction that its gate is already active — you do NOT re-check it (not
+the EDR-store presence, not the capability-spec-store presence, not `ui-test`), and you do not re-derive
+whether you should have been dispatched at all. `decision-gaps` is dispatched unconditionally, on every
+run — no flag; see `~/.claude/references/decision-capture/in-flow-capture.md`.
 
 Read the skill file at `~/.claude/skills/sdd-verify/SKILL.md` and follow it exactly, but run **only**
 the Execution Steps `subverifier-groups.md` maps to your group. Every step mapped to a different group

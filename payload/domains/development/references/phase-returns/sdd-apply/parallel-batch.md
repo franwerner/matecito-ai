@@ -223,8 +223,11 @@ inspection.
    `not-implemented / base-not-established`, done.
 2. Run the base handshake (Level 1). Fails → report `not-implemented / base-not-established`, done.
 3. Implement the assigned task per Steps 2-4 of `~/.claude/skills/sdd-apply/SKILL.md` — same reading,
-   same fork test, same UI-counterpart obligation. **Do not** run Steps 5/6 (mark tasks, persist
-   `apply-progress`) — those belong to the consolidation run only (single-writer rule, see the EDR).
+   same fork test, same UI-counterpart obligation. If this task carries a ratified decision proposal
+   (forwarded in the launch prompt), materialize it in this same step per "Materializing decision
+   records" below — the record's `.md` body ships **inside this run's one commit**, but neither INDEX
+   file is touched here. **Do not** run Steps 5/6 (mark tasks, persist `apply-progress`) — those belong
+   to the consolidation run only (single-writer rule, see the EDR).
 4. Commit **exactly once**, before returning control. The message follows the format, types, scope,
    subject rules and hard attribution rules of `~/.claude/skills/git/SKILL.md` **cited by reference,
    not invoked** — this run does not call that skill and does not run its interactive atomicity
@@ -236,6 +239,34 @@ inspection.
 An isolated run that needs work outside its own task **reports it**; it does not dispatch anything — the
 Executor boundary holds inside isolation exactly as it does outside it.
 
+## Materializing decision records (single-writer split, per `structure/root-index-cardinality-per-domain-type.md`)
+
+Full mechanism (proposal shape, ratification gate, the two `render-artifact.js` invocations, `sdd-verify`'s
+checks): `~/.claude/references/decision-capture/in-flow-capture.md`. This section fixes only the split
+between the two roles, per the design decision `structure/root-index-cardinality-per-domain-type.md`
+governs — **not** `contracts/single-writer-per-batch.md`, whose scope is `apply-progress` and task state:
+
+- **Isolated run** — writes only the record's `.md` body to `.matecito-ai/edr/<domain>/<slug>.md`,
+  inside its one commit, beside the code the decision governs (`contracts/one-commit-per-isolated-run.md`).
+  It does **not** touch `.matecito-ai/edr/<domain>/INDEX.md` or the root `.matecito-ai/edr/INDEX.md` —
+  it computes the `--index-entries` rows (second `render-artifact.js` invocation, no write either) and
+  carries them, unapplied, in its Task Run Report's `### Decisions Materialized` section.
+- **Consolidation run** — after the cherry-pick loop and the cleanup pass (below), applies every
+  carried-forward `--index-entries` row from every cleanly-integrated report **exactly once**, deduping
+  the root INDEX row by `domain` (two isolated tasks materializing in the same domain contribute one
+  root row, not two — the domain INDEX itself gets one row per record, never deduped, since two
+  different `slug`s are two different rows). Scaffolds an absent `INDEX.md` (domain or root) from
+  `references/edr/templates/index-domain.md` / `index-root.md` on first write. A report whose
+  `Result: not-implemented`, whose Level-2 base check failed, or whose cherry-pick conflicted
+  contributes **no** INDEX row — its record body never reached the working branch, so indexing it would
+  create a dangling entry.
+- **Serial mode** — does both in the same step: writes the body and applies the INDEX rows, since there
+  is no isolation split to observe.
+
+Nothing is ever lost or duplicated across a parallel batch: every cleanly-integrated task's record body
+already landed via its cherry-picked commit; the one remaining write (the INDEX rows) happens exactly
+once, by the run this split already names as the sole writer of everything else this phase persists.
+
 ### Task Run Report
 
 ```markdown
@@ -245,8 +276,12 @@ Executor boundary holds inside isolation exactly as it does outside it.
 **Branch**: <name> · **Commit**: <sha> · **Worktree**: <abs path>
 
 ### Files Changed
-| File | Action | What Was Done |
-|------|--------|---------------|
+| File | Task | Action | What Was Done |
+|------|------|--------|---------------|
+{Task is this report's own `<task-id>` on every row — trivial within a single-task report, but the
+consolidation run copies rows straight into `apply-progress`'s cumulative `### Files Changed` without
+re-deriving attribution, and that copy is what `sdd-verify`'s `decision-gaps` group joins on. Fill it
+in here rather than leaving it for the consolidation run to guess.}
 
 ### Unmandated Forks
 {Same shape and tokens as `sdd-apply.md`'s section of the same name. If none: "None."}
@@ -259,6 +294,17 @@ Executor boundary holds inside isolation exactly as it does outside it.
 
 ### TDD Cycle Evidence
 {Only in Strict TDD Mode. Absent otherwise.}
+
+### Decisions Materialized
+{Only when this task materialized a ratified decision proposal — see
+`~/.claude/references/decision-capture/in-flow-capture.md`. Absent otherwise. One row per proposal this
+task's step materialized:}
+| Record | Result |
+|--------|--------|
+| <domain>/<slug> | materialized \| failed: <reason> |
+{Carries the record's rendered body already written to disk (inside this run's one commit) PLUS the
+`--index-entries` JSON rows for it, held here rather than applied — the isolated run never touches
+either INDEX file (see "Materializing decision records" below).}
 ```
 
 Every element traces to a spec requirement — none is decorative: `Result`/`Why not` (a run that did not
@@ -351,11 +397,17 @@ regardless of whether its worktree gets cleaned up — so record what actually h
 `left` / `remove failed` / `branch kept`) in the Integration Log's `Worktree kept` column and continue to
 the next task.
 
+**Immediately after cleanup, apply the carried-forward decision-record INDEX rows — once.** For every
+cleanly-integrated report that carried a `### Decisions Materialized` section, apply its
+`--index-entries` rows to the domain and root `.matecito-ai/edr/INDEX.md` files exactly as described in
+"Materializing decision records" above (dedup the root row by `domain`; scaffold an absent INDEX from
+the templates). This is a single pass, not one write per report.
+
 After cleanup: run Steps 5 and 6 of `~/.claude/skills/sdd-apply/SKILL.md` **once**, over the union of
 every report — mark every completed, integrated task `[x]`; merge `Files Changed`, `Unmandated Forks`,
-`Mandated Departures`, the UI counterparts and the TDD evidence from every report into the
-`apply-progress` artifact exactly as the Merge Protocol already describes for a normal batch, plus the
-`### Integration Log` (artifact-only, cumulative):
+`Mandated Departures`, the UI counterparts, the TDD evidence, and `### Decisions Materialized` from every
+report into the `apply-progress` artifact exactly as the Merge Protocol already describes for a normal
+batch, plus the `### Integration Log` (artifact-only, cumulative):
 
 ```markdown
 ### Integration Log

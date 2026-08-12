@@ -172,12 +172,13 @@ fixes which section belongs to which phase.
 | --- | --- | --- | --- |
 | `sdd-propose` | `### Scope and approach (unconfirmed)` | 1 | always |
 | `sdd-spec` | `### Derived capabilities (unconfirmed)` | 1 | always |
+| `sdd-spec` | `### New Decisions` — a proposal's ratification gate for a lane with no `design` add-on active (see `~/.claude/references/decision-capture/in-flow-capture.md`) | 1 | conditional — only when the lane running has no `design` add-on |
 | `sdd-design` | `### New Decisions` — or `### New Decisions (not yet in EDRs)` when the decision store is active; **both titles are valid and the orchestrator accepts either** | 1 | always |
 | `sdd-design` | `### Open Questions` | 2 | always |
 | `sdd-tasks` | `### Tasks not traceable to spec/design` | 1 | always |
 | `sdd-apply` | `### Unmandated Forks` | 1 | always |
 | `sdd-apply` | `### Mandated Departures` | 2 | always |
-| `sdd-verify` | `## Decision Gaps` | — | only when `flagDecisionGaps` is on |
+| `sdd-verify` | `## Decision Gaps` | — | only when the change materialized at least one decision record (`### Decisions Materialized` in `apply-progress` carries ≥1 row) — no flag, see `in-flow-capture.md` |
 | `sdd-verify` | `## UI Verdict` | — | only when the UI check applies |
 
 **Tier 1** stops the flow and asks the user; **Tier 2** is surfaced but does not block. `sdd-apply`'s
@@ -187,15 +188,20 @@ always `chosen`); `### Mandated Departures` carries what it DID apply, either be
 already fixed the point (`mandate: covered`) or because no alternative was valid and the constraint
 is named (`mandate: forced`). A missing or hedged `mandate:` is read as `chosen`, so an absorbed
 deviation nobody can back with a named constraint routes to the Tier-1 section by default, never the
-cheap way past the gate. `sdd-verify`'s `## Decision Gaps` is not a tier section: it feeds the
-kernel's post-verify mine gate, and it exists only under its flag. Gate behavior lives in the domain
-fragment (`~/.claude/matecito-ai/domains/development.md`, `## Guards`) — it reads this table and
-keeps no parallel copy of it.
+cheap way past the gate. `sdd-spec`'s `### New Decisions` row is the SAME mailbox concept as
+`sdd-design`'s — a decision-proposal ratification gate — surfacing conditionally, one lane earlier;
+it is not a third kind of thing. `sdd-verify`'s `## Decision Gaps` is not a tier section: for
+`development` it feeds nothing kernel-side (the domain declares its own in-flow decision-capture
+mechanism, materialized during `sdd-apply` — see `~/.claude/references/decision-capture/in-flow-capture.md`);
+a domain with no such mechanism (e.g. `design`) may still feed a post-verify mine gate under its own
+flag. Gate behavior lives in the domain fragment (`~/.claude/matecito-ai/domains/development.md`, `##
+Guards`) — it reads this table and keeps no parallel copy of it.
 
-**Seven of these mailboxes split each item into `summary`/`rationale`**: `sdd-propose`'s `Scope and
-approach`, `sdd-spec`'s `Derived capabilities`, both `sdd-design` rows (`New Decisions` and `Open
-Questions`), `sdd-tasks`'s `Tasks not traceable`, and both `sdd-apply` rows (`Unmandated Forks` and
-`Mandated Departures`) — their `.yaml` contract declares `items.rationale`. Emission stays total:
+**Eight of these mailboxes split each item into `summary`/`rationale`**: `sdd-propose`'s `Scope and
+approach`, `sdd-spec`'s `Derived capabilities` and its conditional `New Decisions`, both `sdd-design`
+rows (`New Decisions` and `Open Questions`), `sdd-tasks`'s `Tasks not traceable`, and both `sdd-apply`
+rows (`Unmandated Forks` and `Mandated Departures`) — their `.yaml` contract declares
+`items.rationale`. Emission stays total:
 both parts always land in `detailed_report`. Printing only the `summary` at the gate is that
 section's own **declared** presentation, fixed by its contract — never an assistant judging what
 counts as brief. The `rationale` is reproduced verbatim, from the block already in context, the

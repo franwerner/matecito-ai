@@ -29,7 +29,8 @@ batch; this file does not repeat its content.
 | Section | Emitted | Read by |
 | --- | --- | --- |
 | `### Completed Tasks` | always | the orchestrator, as context |
-| `### Files Changed` | always | the orchestrator, as context — and `sdd-verify` reads it from the artifact (Strict TDD coverage) |
+| `### Files Changed` | always | the orchestrator, as context — and `sdd-verify` reads it from the artifact (Strict TDD coverage, and the "backing" check of `decision-gaps`, which joins by the row's `Task` column) |
+| `### Decisions Materialized` | only when this run materialized ≥1 ratified proposal | the orchestrator, as context; `sdd-verify`'s `decision-gaps` group reads it from the artifact — see `~/.claude/references/decision-capture/in-flow-capture.md` |
 | `### TDD Cycle Evidence` | only in **Strict TDD Mode** | the orchestrator, as context; `sdd-verify` reads it from the artifact |
 | `### Test Summary` | only in **Strict TDD Mode** | the orchestrator, as context |
 | `### Unmandated Forks` | always | Unresolved Decisions Guard — **Tier 1** |
@@ -41,6 +42,14 @@ batch; this file does not repeat its content.
 | `### Status` | always | the orchestrator, to route |
 
 Titles are fixed and this phase declares no variants of them.
+
+**`### Files Changed` carries a `Task` column — every row is attributed to the task that produced
+it.** With a single task this reads as trivially uniform; with two or more it is what makes the
+table usable at all. `sdd-verify`'s `decision-gaps` group joins on it (see
+`~/.claude/references/decision-capture/in-flow-capture.md`, "Backing"): it filters this table down
+to the implementing task's own rows before checking whether any of them lands outside
+`.matecito-ai/edr/`. A table with no `Task` column cannot support that filter once more than one
+task is in play — do not drop the column, even when this batch has only one task.
 
 The two conditional TDD sections are gated on the `**Mode**` line of the block, which is why that
 line is part of the header: `Strict TDD` means both sections must be there, `Standard` means both
@@ -86,10 +95,19 @@ There is no exit path from this phase that skips them.
 - [x] {task id and description}
 
 ### Files Changed
-| File | Action | What Was Done |
-|------|--------|---------------|
-| `path/to/file.ext` | Created | {brief description} |
-| `path/to/other.ext` | Modified | {brief description} |
+| File | Task | Action | What Was Done |
+|------|------|--------|---------------|
+| `path/to/file.ext` | {task id} | Created | {brief description} |
+| `path/to/other.ext` | {task id} | Modified | {brief description} |
+
+{CONDITIONAL — only when this run materialized at least one ratified decision proposal; omit the
+whole section otherwise, do not even print "None." Full mechanism:
+`~/.claude/references/decision-capture/in-flow-capture.md`.}
+
+### Decisions Materialized
+| Record | Task | Result |
+|--------|------|--------|
+| `<domain>/<slug>` | {task id} | materialized \| failed: {reason} |
 
 {The next two sections are Strict TDD Mode ONLY — in Standard Mode omit both, entirely.
 What each column means, and what counts as evidence, is in `~/.claude/skills/sdd-apply/strict-tdd.md`.}
@@ -314,8 +332,13 @@ merges its own into what previous batches left:
 Never drop a task a previous batch completed — that is what makes the next batch skip it.}
 
 ### Files Changed
-{Every file touched, from every batch, with what was done to it. `sdd-verify` reads THIS copy
-to scope its Strict TDD coverage check — it is not only orchestrator context.}
+{Every file touched, from every batch, with what was done to it — File, Task, Action, What Was
+Done, same shape as the return's version of this section. `sdd-verify` reads THIS copy to scope its
+Strict TDD coverage check, and its `decision-gaps` group joins on the `Task` column to find the
+implementing task's own rows for the "backing" check (see
+`~/.claude/references/decision-capture/in-flow-capture.md`) — it is not only orchestrator context.
+A batch that merges rows from more than one task (a consolidation run integrating N Task Run
+Reports) MUST keep each row's `Task` column intact through the merge — never collapse it away.}
 
 ### Unmandated Forks
 {Every fork from every batch that reached this point unresolved, each in the exact shape this
@@ -369,6 +392,22 @@ One row per task: RED (test written first) → GREEN (implementation passes) →
 Cumulative across batches, like the sections above. `sdd-verify` enforces its hard gate against
 THIS copy and marks CRITICAL when it is missing while Strict TDD was on — see
 `~/.claude/skills/sdd-verify/strict-tdd-verify.md`.}
+
+<!-- matecito-ai: in-flow decision capture (development-specifics). Artifact-only in the sense that
+     this is the copy `sdd-verify` reads — it is ALSO emitted in the return, conditionally, unlike
+     UI Scenario Counterparts which lives only here. Full mechanism: in-flow-capture.md. -->
+### Decisions Materialized
+{CONDITIONAL — only when at least one batch of this change materialized a ratified decision proposal;
+absent otherwise, and that absence is legitimate (a change that opened no decision materializes
+nothing). Cumulative across every batch, same `record | task | result` shape as the return:
+
+| Record | Task | Result |
+|--------|------|--------|
+| `<domain>/<slug>` | {task id} | materialized \| failed: {reason} |
+
+`sdd-verify`'s `decision-gaps` group reads THIS copy — not the return — to build its check list. A
+`failed` row is never dropped: it is exactly the "propuesta ratificada sin registro materializado"
+case that group flags CRITICAL.}
 ```
 
 **`### Unmandated Forks` and `### Mandated Departures` go in BOTH places**, with the same content: in

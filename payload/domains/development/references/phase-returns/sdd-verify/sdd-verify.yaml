@@ -130,15 +130,18 @@ sections:
       field: error_gate
       format: "consoleErrorCount {console} / serverErrorCount {server} → {verdict}"
 
+  # In-flow decision capture (development-specifics; see ../../decision-capture/in-flow-capture.md).
+  # No flag — gated on whether apply-progress's `### Decisions Materialized` carries ≥1 row.
   - title: "## Decision Gaps"
     emitted: conditional
-    when: flag_decision_gaps
+    when: records_in_change
     render: table
     field: decision_gaps
     columns:
-      - { key: slug, label: domain/slug }
-      - { key: task, label: task }
-      - { key: implemented, label: "implemented?" }
+      - { key: record, label: Record }
+      - { key: task, label: Task }
+      - { key: structure, label: Structure }
+      - { key: backing, label: Backing }
 
   - title: "### Issues Found"
     emitted: always

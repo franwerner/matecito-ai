@@ -58,6 +58,37 @@ function cleanupInternals() {
   cached = null;
 }
 
+let cachedValidateReturn = null;
+let cachedValidateReturnLoadDir = null;
+const VALIDATE_RETURN_SRC = path.join(SCRIPTS_DIR, 'validate-return.js');
+
+// Same trick as `loadInternals` above, for `validate-return.js` — it also ends in an unconditional
+// `main()` call, so it cannot be `require()`-d directly either. Returns `{ validate, checkItems,
+// tokensOf, parseReturn, isSentinel }`, memoized per process.
+function loadValidateReturnInternals() {
+  if (cachedValidateReturn) return cachedValidateReturn;
+
+  let src = fs.readFileSync(VALIDATE_RETURN_SRC, 'utf8');
+  src = src.replace("require('./lib/yaml')", `require(${JSON.stringify(path.join(LIB_DIR, 'yaml.js'))})`);
+  src = src.replace(/\nmain\(\);\n$/, '\n');
+  src += '\nmodule.exports = { validate, checkItems, tokensOf, parseReturn, isSentinel };\n';
+
+  cachedValidateReturnLoadDir = fs.mkdtempSync(path.join(os.tmpdir(), 'matecito-dev-tests-load-'));
+  const tmpFile = path.join(cachedValidateReturnLoadDir, 'validate-return.testable.js');
+  fs.writeFileSync(tmpFile, src);
+
+  cachedValidateReturn = require(tmpFile);
+  return cachedValidateReturn;
+}
+
+// Removes the throwaway `require()`-able copy `loadValidateReturnInternals` wrote to the OS temp dir.
+// Call once, after all tests in the process have run (a global `after` hook, not a per-test one).
+function cleanupValidateReturnInternals() {
+  if (cachedValidateReturnLoadDir) removeFixtureRepo(cachedValidateReturnLoadDir);
+  cachedValidateReturnLoadDir = null;
+  cachedValidateReturn = null;
+}
+
 // A throwaway two-store fixture tree, isolated per test — never the repo's real `.matecito-ai/`.
 // Layout:
 //   <root>/.matecito-ai/development-specs/rule/test-rule.md   (in-store, links out via `../edr/...`)
@@ -142,4 +173,12 @@ function makeExternalSymlink(repo) {
   return { externalDir, linkPath };
 }
 
-module.exports = { loadInternals, cleanupInternals, makeFixtureRepo, removeFixtureRepo, makeExternalSymlink };
+module.exports = {
+  loadInternals,
+  cleanupInternals,
+  loadValidateReturnInternals,
+  cleanupValidateReturnInternals,
+  makeFixtureRepo,
+  removeFixtureRepo,
+  makeExternalSymlink,
+};
