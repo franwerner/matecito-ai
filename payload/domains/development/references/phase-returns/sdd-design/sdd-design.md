@@ -32,7 +32,8 @@ item carries two parts, `summary` and `rationale`, in the `new_decisions` / `ope
 block, never printed by default. Both are non-empty, single-line strings; a missing one, or one with
 an embedded newline, fails the render naming the item and the part, and nothing reaches stdout. In
 `### New Decisions`, the `· rationale:` line sits directly below the item's two tokens (`·
-blocking-test:` then `· record:`) — same item, same section, no separate channel.
+blocking-test:` then `· record:`) — same item, same section, no separate channel. `summary`'s
+register is fixed once in Section D.3 of `sdd-phase-common.md` — not restated here.
 
 <!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism:
      ~/.claude/references/decision-capture/in-flow-capture.md — this note only fixes the token itself. -->

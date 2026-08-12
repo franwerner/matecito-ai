@@ -42,7 +42,8 @@ capability; if you genuinely cannot name them, you do not have a proposal, you h
 `scope_unconfirmed` JSON: `summary` is what the gate prints, `rationale` is the full reasoning behind
 it — always emitted into this block, never printed by default. Both are non-empty, single-line
 strings; a missing one, or one with an embedded newline, fails the render naming the item and the
-part, and nothing reaches stdout.
+part, and nothing reaches stdout. `summary`'s register is fixed once in Section D.3 of
+`sdd-phase-common.md` — not restated here.
 
 Only two statuses have a shape here: `done` and `blocked`. This phase's skill does not designate
 `needs-input`, and a proposal is written whole or not at all, so `partial` does not arise.

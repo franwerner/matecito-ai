@@ -63,7 +63,8 @@ always emitted into this block, never printed by default. Both are non-empty, si
 missing one, or one with an embedded newline, fails the render naming the item and the part, and
 nothing reaches stdout. Each item also carries two tokens, each on its own `· ` line, in this fixed
 order: `mandate: covered|forced|chosen`, then `verify-checks: yes|no`, then `· rationale:` last —
-same item, same section.
+same item, same section. `summary`'s register is fixed once in Section D.3 of `sdd-phase-common.md`
+— not restated here.
 
 ## Which status
 

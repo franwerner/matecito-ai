@@ -40,7 +40,8 @@ one mean opposite things to the guard.
 `derived_capabilities` JSON: `summary` is what the gate prints, `rationale` is the full reasoning —
 always emitted into this block, never printed by default. Both are non-empty, single-line strings; a
 missing one, or one with an embedded newline, fails the render naming the item and the part, and
-nothing reaches stdout.
+nothing reaches stdout. `summary`'s register is fixed once in Section D.3 of `sdd-phase-common.md` —
+not restated here.
 
 <!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism:
      ~/.claude/references/decision-capture/in-flow-capture.md — this section only fixes the RETURN shape. -->

@@ -11,6 +11,11 @@ Decisiones sobre los contratos entre piezas del ecosistema: qué forma tiene lo 
 | [one-commit-per-isolated-run.md](one-commit-per-isolated-run.md) | Accepted | Vas a tocar cómo una corrida aislada de implementación persiste su trabajo. |
 | [worktree-base-handshake.md](worktree-base-handshake.md) | Accepted | Vas a tocar cómo se verifica la base de un espacio de trabajo aislado antes de implementar o integrar. |
 | [single-writer-per-batch.md](single-writer-per-batch.md) | Accepted | Vas a tocar quién escribe el artefacto de progreso o el estado de las tareas de un cambio. |
+| [tone-prohibitions-kept-as-is.md](tone-prohibitions-kept-as-is.md) | Accepted | Te tienta aflojar o eliminar la prohibición de emojis o de frases motivacionales en cualquier zona de tono. |
+| [acknowledgement-opener-test.md](acknowledgement-opener-test.md) | Accepted | Vas a escribir o revisar una línea de apertura de una respuesta y no estás seguro si aporta información. |
+| [closing-line-only-for-a-pending-decision.md](closing-line-only-for-a-pending-decision.md) | Accepted | Te tienta cerrar una respuesta ofreciendo ayuda, o vas a decidir si una pregunta de cierre está permitida. |
+| [plain-register-over-technical-neutral.md](plain-register-over-technical-neutral.md) | Accepted | Vas a describir el registro de una zona de tono y te tienta usar una etiqueta técnica interna en vez de una instrucción positiva. |
+| [emit-in-english-present-translated.md](emit-in-english-present-translated.md) | Accepted | Vas a decidir si un aviso interno de una línea se traduce igual que el material gate-facing. |
 
 ## No aplican en este dominio
 

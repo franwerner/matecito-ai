@@ -207,6 +207,16 @@ section's own **declared** presentation, fixed by its contract — never an assi
 counts as brief. The `rationale` is reproduced verbatim, from the block already in context, the
 moment it is asked for.
 
+**Register.** Write an item's `summary` in plain language: state what was decided and what follows
+from it, so a reader who does not know this flow's vocabulary understands the outcome. The
+ecosystem's internal vocabulary — phase names, token names, section titles, the tier/mailbox nouns —
+belongs in `rationale`, not in `summary`. This binds the item's prose only; a section's own title
+(which may legitimately carry that vocabulary, e.g. `### Derived capabilities (unconfirmed)`) is
+untouched. Where a check keys off literal words in the envelope's `Summary` — `validate-return.js`
+check 4 matches a section's `summary_claims` pattern together with a non-zero digit — keep those
+exact words and state the count as a digit whenever the summary claims that section has content: the
+check is a literal match, and dropping the words would turn it off silently, not on purpose.
+
 Everything marked **always** is emitted even when there is nothing to report, with a `None…`
 sentinel — that is what lets the orchestrator tell "nothing to raise" from "the phase dropped the
 section". A section that some other rule of your own skill declares **conditional**
@@ -226,7 +236,7 @@ write `None`: relying on the tolerance is how a sentinel ends up in a form nobod
 <!-- matecito-ai: nobody cross-checked the `Summary`, so a return could announce "2 decisions documented"
      over a body carrying the empty sentinel and dispatch silently. The Return Contract Check now puts
      it against the body (check 4). -->
-- `executive_summary`: 1-3 sentence summary of what was done. **It is checked against your own `detailed_report`**: a section you closed with the empty sentinel cannot be summarized as having content, and a section carrying rows cannot be summarized as empty. The orchestrator compares the two claims mechanically and stops on a mismatch — so write the summary from the block you actually emitted, not from the work you intended to emit
+- `executive_summary`: 1-3 sentence summary of what was done, in the same plain register as a mailbox item's `summary` — see Section D.3's "Register" above, not restated here. **It is checked against your own `detailed_report`**: a section you closed with the empty sentinel cannot be summarized as having content, and a section carrying rows cannot be summarized as empty. The orchestrator compares the two claims mechanically and stops on a mismatch — so write the summary from the block you actually emitted, not from the work you intended to emit
 - `artifacts`: artifact keys/paths written — `none` only when the phase wrote nothing at all: `needs-input`, or a stop that happened **before any work landed**. Stopping partway does NOT excuse you from persisting: if work of yours completed, it is persisted first and listed here, whatever the status (see `sdd-apply`'s mid-batch rule)
 - `next_recommended`: the next SDD phase, or `none` — always legal, and the only correct value on `blocked` / `needs-input`
 - `risks`: risks and assumptions to validate. **Never** a decision the user owns, an ambiguity you resolved by assuming, or content that belongs to a mailbox in D.3
