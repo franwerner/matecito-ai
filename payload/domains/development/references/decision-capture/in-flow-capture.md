@@ -72,6 +72,18 @@ confirmation for it — the ratified text reaches it verbatim through the orches
 note). An adjustment the user makes AT the gate wins for free: what is in the dispatch prompt IS what
 was ratified. Automatic mode does not skip this gate — same as every other Tier-1 mailbox.
 
+**Every item that reached the gate travels with its resolution — ratified or rejected — never left for
+`sdd-apply` to infer from the design's `## New Decisions` prose alone**, and a content conflict between
+a rejected proposal and the design's own approach blocks rather than lets either version win silently.
+The full per-item forwarding contract — what each resolution carries, the executor's response to a
+missing one, and the conflict path — lives in the domain fragment's Unresolved Decisions Guard
+(`~/.claude/matecito-ai/domains/development.md` → "Forwarding a proposal's resolution to `sdd-apply`"),
+cited here rather than restated. That guard checking a rejection is not left to trust either: `sdd-apply`
+declares a `design-conflict: none | conflicts` verdict per checked rejection in its own conditional
+return section, which the orchestrator classifies — shape and classification both live in
+`~/.claude/references/phase-returns/sdd-apply/sdd-apply.md` (`### Rejected Proposals Checked`) and the
+same domain-fragment guard, cited here rather than restated too.
+
 ### `sdd-spec`'s `### New Decisions` — conditional, same title as `sdd-design`'s
 
 Emitted **only** when the lane running has no `design` add-on active — read from the intake brief's

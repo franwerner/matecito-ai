@@ -223,11 +223,18 @@ inspection.
    `not-implemented / base-not-established`, done.
 2. Run the base handshake (Level 1). Fails → report `not-implemented / base-not-established`, done.
 3. Implement the assigned task per Steps 2-4 of `~/.claude/skills/sdd-apply/SKILL.md` — same reading,
-   same fork test, same UI-counterpart obligation. If this task carries a ratified decision proposal
-   (forwarded in the launch prompt), materialize it in this same step per "Materializing decision
-   records" below — the record's `.md` body ships **inside this run's one commit**, but neither INDEX
-   file is touched here. **Do not** run Steps 5/6 (mark tasks, persist `apply-progress`) — those belong
-   to the consolidation run only (single-writer rule, see the EDR).
+   same fork test, same UI-counterpart obligation, same content-conflict guard (`domains/development.md`
+   → "Forwarding a proposal's resolution to `sdd-apply`"). If this task carries a ratified decision
+   proposal (forwarded in the launch prompt), materialize it in this same step per "Materializing
+   decision records" below — the record's `.md` body ships **inside this run's one commit**, but
+   neither INDEX file is touched here. If this task is governed by a **rejected** proposal, the
+   content-conflict guard's `design-conflict` verdict decides the run's `Result`: `none` proceeds
+   normally, and `conflicts` means this task cannot be implemented without picking a version nobody
+   ratified — the run implements nothing for it and reports `Result: not-implemented`, same as a failed
+   base handshake, with `Why not` pointing at the conflicting record. A `conflicts` verdict is still
+   declared in the `### Rejected Proposals Checked` section of the Task Run Report (below) even though
+   nothing was committed for it. **Do not** run Steps 5/6 (mark tasks, persist `apply-progress`) — those
+   belong to the consolidation run only (single-writer rule, see the EDR).
 4. Commit **exactly once**, before returning control. The message follows the format, types, scope,
    subject rules and hard attribution rules of `~/.claude/skills/git/SKILL.md` **cited by reference,
    not invoked** — this run does not call that skill and does not run its interactive atomicity
@@ -289,6 +296,13 @@ in here rather than leaving it for the consolidation run to guess.}
 ### Mandated Departures
 {Same shape and tokens as `sdd-apply.md`'s section of the same name. If none: "None."}
 
+### Rejected Proposals Checked
+{Only when the launch prompt forwarded ≥1 rejected proposal governing this task. Absent otherwise —
+not even "None." Same shape and tokens as `sdd-apply.md`'s section of the same name: one item per
+`record:`, `design-conflict: none | conflicts`. A `conflicts` item is what makes `Result:
+not-implemented` above — this section is what lets the consolidation run (and the orchestrator, after
+it) see the verdict without re-deriving it.}
+
 ### UI Scenario Counterparts
 {Only when the spec artifact carries a `ui-scenarios:` block. Absent otherwise.}
 
@@ -308,10 +322,13 @@ either INDEX file (see "Materializing decision records" below).}
 ```
 
 Every element traces to a spec requirement — none is decorative: `Result`/`Why not` (a run that did not
-persist is not registered as done), `Base`/`Commit` (the base handshake and the audit trail), `Branch`/
-`Worktree` (what survives isolation and where to inspect a conflict), `Files Changed` (what the
-consolidation run's artifact accumulates), the two mailboxes (deviations must survive concurrency
-intact), the two conditional sections (same conditions as the non-parallel path).
+persist is not registered as done — including a `conflicts` verdict, which forces `not-implemented`
+even though the task was otherwise reachable), `Base`/`Commit` (the base handshake and the audit
+trail), `Branch`/`Worktree` (what survives isolation and where to inspect a conflict), `Files Changed`
+(what the consolidation run's artifact accumulates), the two forks/departures mailboxes (deviations
+must survive concurrency intact), `### Rejected Proposals Checked` (the verdict must survive
+concurrency intact too, and is what lets `conflicts` be traced back to the task it stopped), the
+conditional sections (same conditions as the non-parallel path).
 
 For `Result: not-implemented`, `Branch`/`Commit` are `—` and `Worktree` is whatever the harness left (see
 "Isolation and the worktree directory" below).
@@ -354,7 +371,10 @@ Receives the batch's N Task Run Reports verbatim, in the same message. For each,
 1. **Level-2 base check** (above). Fails → treat as a conflict for this task; do not cherry-pick;
    `base-mismatch` in the Integration Log; continue to the next report.
 2. `Result: not-implemented` → nothing to integrate; the task stays incomplete with its `Why not`
-   carried into `### Remaining Tasks` / `### Issues Found`; continue.
+   carried into `### Remaining Tasks` / `### Issues Found`; continue. When the reason is a
+   `design-conflict: conflicts` verdict, its `### Rejected Proposals Checked` item is carried into this
+   round's consolidated return **verbatim, never re-judged** — the consolidation run does not re-run
+   the content-conflict guard, it only copies the isolated run's declaration forward.
 3. `Result: committed` → `git cherry-pick <sha>`.
    - **Clean.** The task lands on the working branch. Record it as integrated and move on — its
      worktree and branch are **not** touched here; removal is deferred to the single cleanup pass
@@ -407,7 +427,12 @@ After cleanup: run Steps 5 and 6 of `~/.claude/skills/sdd-apply/SKILL.md` **once
 every report — mark every completed, integrated task `[x]`; merge `Files Changed`, `Unmandated Forks`,
 `Mandated Departures`, the UI counterparts, the TDD evidence, and `### Decisions Materialized` from every
 report into the `apply-progress` artifact exactly as the Merge Protocol already describes for a normal
-batch, plus the `### Integration Log` (artifact-only, cumulative):
+batch, plus the `### Integration Log` (artifact-only, cumulative). **`### Rejected Proposals Checked` is
+different from the rest of this list: it is carried into this round's `## Implementation Progress`
+*return* (one item per report that carried one, verbatim, never re-judged), never into the persisted
+`apply-progress` artifact** — the same asymmetry `sdd-apply.md` fixes for the serial path; a task
+governed by a `conflicts` verdict never reaches `[x]`, so there is nothing for the artifact's cumulative
+task list to carry either:
 
 ```markdown
 ### Integration Log
@@ -421,8 +446,13 @@ legible without re-deriving it from the branch. A task whose result was `not-imp
 
 Produce exactly **one** `## Implementation Progress` return, same sections as always
 (`~/.claude/references/phase-returns/sdd-apply/sdd-apply.md`): a non-integrated task is absent from
-`### Completed Tasks`, stays in `### Remaining Tasks`, its conflict or mismatch is an `### Issues Found`
-entry, and the batch is `partial` whenever one remains — never `done` with an unintegrated task.
+`### Completed Tasks`, stays in `### Remaining Tasks`, its cherry-pick conflict or base mismatch is an
+`### Issues Found` entry, and the batch is `partial` whenever one remains — never `done` with an
+unintegrated task. **A `design-conflict: conflicts` verdict is a distinct case from a cherry-pick
+conflict** — nothing was ever committed for that task, so there is nothing to cherry-pick or mismatch;
+its item still surfaces, in `### Rejected Proposals Checked`, and its task stays in `### Remaining
+Tasks` exactly like any other never-implemented one. The batch never reports `done` while any report
+carried a `conflicts` item whose task is not otherwise complete through a later batch.
 
 ## Scope
 

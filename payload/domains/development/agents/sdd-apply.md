@@ -56,7 +56,21 @@ Execute all steps from the skill directly in this context window:
 4. Detect TDD mode from config or existing test patterns
 5. Implement assigned tasks: in TDD mode follow RED → GREEN → REFACTOR; in standard mode write code then verify
 <!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism: in-flow-capture.md. -->
-5b. If a task you just implemented carries a ratified decision proposal (forwarded verbatim in your
+<!-- matecito-ai: content-conflict guard, in the step where the decision is materialized — not a
+     preamble, not only in the Instructions header. Same guard-corto-that-points pattern as
+     Parallel-Mark Validation and Uncommitted-Work Gate. Full contract:
+     `~/.claude/matecito-ai/domains/development.md` → "Forwarding a proposal's resolution to
+     `sdd-apply`" — read for the rest, do not re-derive it. -->
+5b. **Content-conflict guard — before implementing the task a proposal governs.** If that proposal was
+   forwarded as **rejected** and its proposed implementation differs from what the design's approach
+   describes for the same point, return `status: blocked` showing both versions and the concrete
+   options — choose neither, never an `### Unmandated Forks` item. Versions coincide → no conflict,
+   proceed with what the design describes. Either way, emit one `### Rejected Proposals Checked` item
+   (`design-conflict: none | conflicts`) for that proposal before its governed task counts as
+   implemented. Full contract: `~/.claude/matecito-ai/domains/development.md` → "Forwarding a
+   proposal's resolution to `sdd-apply`".
+
+   If a task you just implemented carries a ratified decision proposal (forwarded verbatim in your
    launch prompt, never re-read from Engram or an artifact), materialize it in this SAME step: build
    each `Reglas verificables` item as `{ mechanism: auto|manual, rule }` — never a bare string, and
    `mechanism` reflects whether the task actually established a test/lint/schema/CI check for it —

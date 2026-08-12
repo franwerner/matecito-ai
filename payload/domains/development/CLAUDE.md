@@ -294,18 +294,79 @@ for it, and do not fill one in on the phase's behalf.
 
 <!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism, the ratification
      gate per lane, the materialization contract: in-flow-capture.md. This is the orchestrator-side
-     half — WHO forwards the ratified text and WHEN — that neither sdd-spec/sdd-design (who propose)
-     nor sdd-apply (who materializes) can instruct on their own, since it is the launch-prompt
-     construction step between them. -->
-**Forwarding a ratified `record:` item to `sdd-apply`.** Every item ratified (confirmed or adjusted) at
-this gate under `New Decisions` — `sdd-spec`'s conditional mailbox or `sdd-design`'s — carries a
-`record: <domain>/<slug>` token. Forward that item's ratified text (the adjusted summary/rationale if
-the user corrected it at this gate, not the originally-proposed one) verbatim, in the launch prompt of
-the `sdd-apply` dispatch that implements the task governing it — never re-written into an Engram key,
-never left for `sdd-apply` to re-derive. A rejected item is dropped here and forwarded nowhere: no
-record gets materialized for it, and the code implementing its task proceeds regardless. This is the
-one and only channel `sdd-apply` reads a ratified proposal from — see
+     half — WHO forwards the resolution and WHEN — that neither sdd-spec/sdd-design (who propose) nor
+     sdd-apply (who materializes) can instruct on their own, since it is the launch-prompt construction
+     step between them. Written for its two readers: the orchestrator, who builds the prompt (first two
+     paragraphs), and the `sdd-apply` executor, who reads this fragment as part of its mandatory load
+     protocol (`_shared/sdd-phase-common.md`, Section A) and acts on the last two paragraphs. -->
+**Forwarding a proposal's resolution to `sdd-apply`.** Every item that reached this gate under `New
+Decisions` — `sdd-spec`'s conditional mailbox or `sdd-design`'s — carries a `record: <domain>/<slug>`
+token, and stays in the design's own `## New Decisions` prose whatever the gate decided: the item's
+mere presence there is NOT evidence of ratification or rejection, and `sdd-apply` MUST NOT read it as
+either. Forward each item's resolution explicitly, in the launch prompt of the `sdd-apply` dispatch
+that implements the task governing it — never re-written into an Engram key, never left for `sdd-apply`
+to re-derive:
+
+- **Ratified** (confirmed or adjusted at this gate) — its ratified text (the adjusted summary/rationale
+  if the user corrected it at this gate, not the originally-proposed one) verbatim, plus its `record:`
+  token, marked ratified. Unchanged from before this rule.
+- **Rejected** — its `record:` token and `summary` alone, marked rejected. The full text already
+  travels in the design's `## New Decisions`; the token and summary are enough for `sdd-apply` to know
+  which item and what it was about.
+
+The resolution never travels as a token on the mailbox item itself, and none should be added: `New
+Decisions` has no `resolution:` field, because `sdd-spec`/`sdd-design` write the item at propose time,
+before the gate has run — the phase authoring the item cannot fill a field for an outcome that does not
+exist yet. The gate happens after the item is written, and the orchestrator, at the moment it forwards,
+is the only participant who ever learns that outcome. That is why this instruction lives here, in the
+guard the orchestrator reads to build the dispatch prompt, and not as a field on an item a different,
+earlier phase already authored.
+
+No proposal reached the gate this change → nothing to forward, and the prompt makes no mention of this
+mechanism. Every proposal that did reach the gate travels with a named resolution — if `sdd-apply`
+reaches a task governed by an item the prompt does not mention, it MUST NOT treat it as ratified or
+rejected on its own guess; it returns `status: blocked` naming the item and the missing resolution.
+
+Naming a rejection is only how `sdd-apply` learns the resolution — never an instruction to record it.
+A rejected item MUST NOT produce an EDR, an INDEX row, or a `### Decisions Materialized` row, and
+`sdd-verify`'s `decision-gaps` group MUST NOT check it; `sdd-apply` implements the governed task per
+what the design's approach describes. When that approach matches what the rejected proposal proposed,
+there is nothing further to do. When they describe **different** implementations for the same point,
+the design is internally inconsistent, and `sdd-apply` applies the domain's existing rule for exactly
+that case — **"Contract & definition shapes — never inferred"**, above, the "artifact that pins the
+shape is internally inconsistent" clause and its close ("return `blocked` with the conflict stated and
+the concrete options") — showing both versions (the design's approach, the rejected proposal) rather
+than choosing one or stretching either by analogy. This is not an `### Unmandated Forks` item: that
+mailbox is for a point NO artifact fixes, and here the design fixes it twice, incompatibly.
+
+This is the one and only channel `sdd-apply` reads a proposal's resolution from — see
 `~/.claude/references/decision-capture/in-flow-capture.md`.
+
+<!-- matecito-ai: return-side half of the forwarding paragraph above. The send-side half says WHAT gets
+     forwarded and WHEN; this half says how the orchestrator reads what came back — the mandatory
+     `design-conflict` verdict `sdd-apply` now declares for each rejection it checked
+     (`~/.claude/references/phase-returns/sdd-apply/sdd-apply.md`, `### Rejected Proposals Checked`).
+     Same pattern as "Reading the `blocking-test` token" below: classify on the token alone, never by
+     re-deriving the verdict yourself. -->
+**Reading the `design-conflict` token.** Every item under `sdd-apply`'s conditional
+`### Rejected Proposals Checked` — present whenever the dispatch prompt forwarded ≥1 rejected proposal
+whose task this run reached — carries a `· record: <domain>/<slug>` line and a `· design-conflict:
+none | conflicts` line. Classify on the token **alone**, mirroring "Reading the `blocking-test` token"
+below:
+
+| Token | Asserts | Orchestrator |
+|---|---|---|
+| `none` | the design's approach and the rejected proposal describe the same implementation for that point | nothing — proceed, no gate, no mention |
+| `conflicts` | the design fixes the point twice, incompatibly | the return MUST be `blocked`; present both versions (the design's approach, the rejected proposal) and the options. A `conflicts` item on a non-`blocked` return is a contract violation — stop and surface it, do not route it through the ordinary Unresolved Decisions Guard flow |
+| no item for a `record:` this run forwarded as rejected, whose governed task the run reached (not left untouched in `### Remaining Tasks`) | no pronouncement | stop; name the record left without one; the return is not treated as correct |
+
+**The expected set is yours, not the return's.** You are the one who forwarded each rejection in the
+dispatch prompt, so you hold the expected set of `record:` identities that owe a verdict — nothing in
+the return declares it, and nothing needs to: compare it, literally, against the `· record:` lines the
+run actually returned. A forwarded rejection with no matching item is the third row above, not silence
+to read as `none`. This check stays entirely on your side — `validate-return.js` and `render-return.js`
+are unchanged by this mechanism; they only prove that whatever item IS present carries both tokens
+legally, never that every rejection you forwarded got one.
 
 <!-- matecito-ai: `New Decisions` y `Open Questions` se solapaban — las dos recibían decisiones
      pendientes, el ejecutor terminaba duplicando contenido y el usuario confirmaba lo mismo dos

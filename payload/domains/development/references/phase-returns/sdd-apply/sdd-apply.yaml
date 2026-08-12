@@ -35,6 +35,24 @@ sections:
       - { key: record, label: Record }
       - { key: task, label: Task }
       - { key: result, label: Result }
+  # In-flow decision capture, rejection half (see ../../decision-capture/in-flow-capture.md and
+  # ../../../CLAUDE.md's "Forwarding a proposal's resolution to `sdd-apply`"). `has_forwarded_rejections`
+  # is a fact about the PROMPT, never derived from the list: `true` + an empty list is the omission case
+  # (every forwarded rejection was checked and none conflicted), `false` is "nothing forwarded" — the
+  # renderer refuses to guess it, so this run answers the question on every batch that reaches a task a
+  # rejection governs. Both `design-conflict` values are `passing`: a non-passing value would make the
+  # render fail exactly when the run is trying to report an honest conflict.
+  - title: "### Rejected Proposals Checked"
+    emitted: conditional
+    when: has_forwarded_rejections
+    render: items
+    field: rejected_proposals
+    items:
+      text: summary
+      rationale: rationale
+      tokens:
+        - { name: record, field: record }
+        - { name: design-conflict, field: design_conflict, values: [none, conflicts], passing: [none, conflicts] }
   # Gated on Strict TDD, which the `Mode` header states. Absent outside it, and that is legitimate.
   - title: "### TDD Cycle Evidence"
     emitted: conditional

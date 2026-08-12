@@ -227,6 +227,22 @@ FOR EACH TASK:
      gate per lane, the INDEX-writer split, and `sdd-verify`'s two checks:
      `~/.claude/references/decision-capture/in-flow-capture.md` — this step only fixes what YOU do. -->
 
+<!-- matecito-ai: content-conflict guard, in the step where the decision is materialized — not a
+     preamble, not only in `## Rules`. Same guard-corto-that-points pattern as Parallel-Mark Validation
+     and Uncommitted-Work Gate. Full contract, including why the resolution has no `resolution:` token
+     and lives here instead: `~/.claude/matecito-ai/domains/development.md` → "Forwarding a proposal's
+     resolution to `sdd-apply`" — read for the rest, do not re-derive it. -->
+**Content-conflict guard — run before implementing the task a proposal governs.** If a proposal
+forwarded in your launch prompt as **rejected** proposed an implementation different from what the
+design's approach describes for the same point, return `status: blocked` showing **both versions**
+(the design's approach and the rejected proposal) plus the concrete options — choose neither, don't
+stretch either by analogy, and this is never an `### Unmandated Forks` item (that mailbox is for a
+point NO artifact fixes; here the design fixes it twice, incompatibly). When the two versions
+coincide, there is no conflict: proceed with what the design describes. Whichever way this guard
+resolves, emit one `### Rejected Proposals Checked` item (`design-conflict: none | conflicts`) for
+that proposal before its governed task counts as implemented — the verdict is part of running this
+guard, not an afterthought reported once the task is already done.
+
 For each ratified proposal forwarded in your launch prompt that this task implements:
 
 1. Build the EDR's `--data` JSON per `node ~/.claude/scripts/render-artifact.js --type edr --schema`:

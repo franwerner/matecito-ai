@@ -16,6 +16,7 @@ Decisiones sobre cómo se organiza el payload del repo (dónde vive cada concept
 | [consolidation-run-is-the-integrator.md](consolidation-run-is-the-integrator.md) | Accepted | Vas a decidir quién ejecuta la integración de un batch paralelo. |
 | [phase-fanout-two-cases.md](phase-fanout-two-cases.md) | Accepted | Vas a tocar la prosa de fan-out del pipeline o a agregar un tercer caso de despacho concurrente. |
 | [prose-register-single-home.md](prose-register-single-home.md) | Accepted | Vas a agregar o editar una instrucción de registro de prosa gate-facing y te tienta copiarla en más de un contrato de retorno. |
+| [verdict-classified-by-the-orchestrator.md](verdict-classified-by-the-orchestrator.md) | Accepted | Vas a tocar quién clasifica un token declarado por una fase, o a agregar un tercer token del mecanismo de captura in-flow. |
 
 ## No aplican en este dominio
 

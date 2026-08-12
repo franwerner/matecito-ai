@@ -31,6 +31,7 @@ batch; this file does not repeat its content.
 | `### Completed Tasks` | always | the orchestrator, as context |
 | `### Files Changed` | always | the orchestrator, as context — and `sdd-verify` reads it from the artifact (Strict TDD coverage, and the "backing" check of `decision-gaps`, which joins by the row's `Task` column) |
 | `### Decisions Materialized` | only when this run materialized ≥1 ratified proposal | the orchestrator, as context; `sdd-verify`'s `decision-gaps` group reads it from the artifact — see `~/.claude/references/decision-capture/in-flow-capture.md` |
+| `### Rejected Proposals Checked` | only when the dispatch prompt forwarded ≥1 rejected proposal | Unresolved Decisions Guard — classifies each `design-conflict` verdict; a `conflicts` verdict requires `status: blocked` — see `~/.claude/matecito-ai/domains/development.md` → "Forwarding a proposal's resolution to `sdd-apply`" |
 | `### TDD Cycle Evidence` | only in **Strict TDD Mode** | the orchestrator, as context; `sdd-verify` reads it from the artifact |
 | `### Test Summary` | only in **Strict TDD Mode** | the orchestrator, as context |
 | `### Unmandated Forks` | always | Unresolved Decisions Guard — **Tier 1** |
@@ -56,15 +57,32 @@ line is part of the header: `Strict TDD` means both sections must be there, `Sta
 are legitimately absent. That is the only condition — a batch cut short still ships the evidence
 table (see `~/.claude/skills/sdd-apply/strict-tdd.md`).
 
-**Split into summary/rationale.** Both `### Unmandated Forks` and `### Mandated Departures` declare
-it. Each item carries two parts, `summary` and `rationale`, in the `unmandated_forks` /
-`mandated_departures` JSON: `summary` is what the gate prints, `rationale` is the full reasoning —
-always emitted into this block, never printed by default. Both are non-empty, single-line strings; a
-missing one, or one with an embedded newline, fails the render naming the item and the part, and
-nothing reaches stdout. Each item also carries two tokens, each on its own `· ` line, in this fixed
-order: `mandate: covered|forced|chosen`, then `verify-checks: yes|no`, then `· rationale:` last —
-same item, same section. `summary`'s register is fixed once in Section D.3 of `sdd-phase-common.md`
-— not restated here.
+**`### Rejected Proposals Checked` — one item per forwarded rejection whose governed task this run
+reached.** The gate field `has_forwarded_rejections` is a fact about the dispatch prompt, not the
+list: a prompt that forwarded a rejection but reached no item to report renders the gate `true` with
+an empty list, which the renderer shows as `None.` — that IS the declaration, not an omission. Each
+item names the point the rejected proposal governs, its `record:` token, and a `design-conflict:`
+verdict — `none` when the design's approach and the rejected proposal describe the same
+implementation, `conflicts` when they describe different ones for the same point. A `conflicts` item
+is never reported alongside `status: done` or `status: partial` with the governed task marked
+complete: it means the task could not be implemented without picking a version nobody ratified, so
+the return MUST be `blocked`, with `### Blocker` pointing at the conflicting item rather than
+restating it (see "One blocker, one place" below). Both `none` and `conflicts` are `passing` values
+for the `design-conflict` token — unlike `mandate`/`verify-checks` below, there is no non-passing
+value here, because a value the renderer refuses to render would make an honest conflict
+unreportable.
+
+**Split into summary/rationale.** `### Unmandated Forks`, `### Mandated Departures`, and
+`### Rejected Proposals Checked` all declare it. Each item carries two parts, `summary` and
+`rationale`, in the `unmandated_forks` / `mandated_departures` / `rejected_proposals` JSON: `summary`
+is what the gate prints, `rationale` is the full reasoning — always emitted into this block, never
+printed by default. Both are non-empty, single-line strings; a missing one, or one with an embedded
+newline, fails the render naming the item and the part, and nothing reaches stdout. Each item also
+carries its declared tokens, each on its own `· ` line, in fixed order, with `· rationale:` always
+last — for `### Unmandated Forks` / `### Mandated Departures` that order is `mandate:
+covered|forced|chosen`, then `verify-checks: yes|no`; for `### Rejected Proposals Checked` it is
+`record: <domain>/<slug>`, then `design-conflict: none|conflicts`. `summary`'s register is fixed once
+in Section D.3 of `sdd-phase-common.md` — not restated here.
 
 ## Which status
 
@@ -273,6 +291,17 @@ happened".
 ### Mandated Departures
 {As above.}
 
+{CONDITIONAL — only when the dispatch prompt forwarded ≥1 rejected proposal; omit the whole section
+otherwise, do not even print "None." Full mechanism:
+`~/.claude/matecito-ai/domains/development.md` → "Forwarding a proposal's resolution to
+`sdd-apply`". This is the shape a `conflicts` verdict takes — the reason this batch is `blocked`:}
+
+### Rejected Proposals Checked
+- {the point the rejected proposal governs, and the verdict, in one line}
+  · record: <domain>/<slug>
+  · design-conflict: conflicts
+  · rationale: {the design's approach vs. what the rejected proposal proposed, one line}
+
 ### Blocker
 {Same shape as in `partial`. Always present here.}
 
@@ -416,3 +445,10 @@ the return, because the Unresolved Decisions Guard reads them there — Tier 1 a
 respectively; in the artifact, because `sdd-verify` reads both there to find every declared deviation
 and apply the `verify-checks` classification. Same reason the TDD evidence lives in both. Dropping
 either copy breaks a different consumer, and neither failure is loud.
+
+**`### Rejected Proposals Checked` is return-only — it does NOT go in the artifact.** Its one
+consumer is the orchestrator's Unresolved Decisions Guard, at the moment this batch's return is
+gated: a `conflicts` verdict blocks the governing task, so that task never reaches `[x]` and is never
+part of the cumulative task list the artifact carries. There is nothing durable this section would
+add to `apply-progress` that the artifact's own `### Tasks` state does not already say by the
+governed task staying `[ ]`.
