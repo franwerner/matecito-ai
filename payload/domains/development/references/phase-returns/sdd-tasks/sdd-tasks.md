@@ -31,7 +31,12 @@ carries two parts, `summary` and `rationale`, in the `untraceable_tasks` JSON: `
 gate prints, `rationale` is the full reasoning — always emitted into this block, never printed by
 default. Both are non-empty, single-line strings; a missing one, or one with an embedded newline,
 fails the render naming the item and the part, and nothing reaches stdout. `summary`'s register is
-fixed once in Section D.3 of `sdd-phase-common.md` — not restated here.
+fixed once in Section D.3 of `sdd-phase-common.md` — not restated here. `summary` also carries a
+**250-character cap**, enforced by `render-return.js`.
+
+Every item also carries the `· anchor:` token, declared first so it prints directly under the
+summary — the legitimate forms and the not-yet-written-target rule are fixed once in Section D.3 of
+`sdd-phase-common.md`, not restated here.
 
 ## `status: done` — the breakdown was produced
 
@@ -59,6 +64,7 @@ implemented and gets verified without anyone having agreed to it. Do NOT drop th
 NOT fold them in as if they came from the spec; list them and let the user decide. One item per task:
 
 - {the task, as one line}
+  · anchor: {the concrete source this task is about — a `<repo-path>[:line]` or `<engram-key>`}
   · rationale: {one line: what motivated it — a gap you found, an implied prerequisite, a project convention}
 
 If every task traces: "None — every task links to spec or design."}

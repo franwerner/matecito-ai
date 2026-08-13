@@ -30,9 +30,10 @@ decision store is active — both forms are valid and the orchestrator accepts e
 item carries two parts, `summary` and `rationale`, in the `new_decisions` / `open_questions` JSON:
 `summary` is what the gate prints, `rationale` is the full reasoning — always emitted into this
 block, never printed by default. Both are non-empty, single-line strings; a missing one, or one with
-an embedded newline, fails the render naming the item and the part, and nothing reaches stdout. In
-`### New Decisions`, the `· rationale:` line sits directly below the item's two tokens (`·
-blocking-test:` then `· record:`) — same item, same section, no separate channel. `summary`'s
+an embedded newline, fails the render naming the item and the part, and nothing reaches stdout.
+`summary` also carries a **250-character cap**, enforced by `render-return.js`. In `### New
+Decisions`, the `· rationale:` line sits directly below the item's three tokens (`· anchor:`, then
+`· blocking-test:`, then `· record:`) — same item, same section, no separate channel. `summary`'s
 register is fixed once in Section D.3 of `sdd-phase-common.md` — not restated here.
 
 <!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism:
@@ -44,6 +45,11 @@ still **required** — an item missing the line fails `TOKEN-MISSING` at the Ret
 same strict reading as any other omitted token. This is what `sdd-apply` reads, verbatim from the
 ratified proposal forwarded in its dispatch prompt, to materialize the record in the same step that
 implements the code it governs.
+
+**The `· anchor:` token.** Every item under both `### New Decisions` and `### Open Questions` carries
+it, declared first so it prints directly under the summary. Free-form, same as `· record:` — the
+legitimate forms and the not-yet-written-target rule are fixed once in Section D.3 of
+`sdd-phase-common.md`, not restated here.
 
 ## `status: done` — the design was produced
 
@@ -69,6 +75,7 @@ Every item carries the `· blocking-test:` token below it — see "The blocking-
 If there are genuinely none: "None."}
 
 - {the choice}: {what you chose} — {alternatives weighed, and why this one}
+  · anchor: {the concrete source this decision is about — a `<repo-path>[:line]` or `<engram-key>`}
   · blocking-test: none
   · record: {domain}/{slug}
   · rationale: {one line: the full reasoning — why this choice, restated for the record even though the gate only prints the line above}
@@ -79,6 +86,7 @@ Anything that fixes a decision belongs above, or makes you return `blocked`.
 If there are none: "None."}
 
 - {the open question, as one line}
+  · anchor: {the concrete source this question is about — a `<repo-path>[:line]` or `<engram-key>`}
   · rationale: {one line: why it is open — what makes it not yours to settle here}
 
 ### Next Step

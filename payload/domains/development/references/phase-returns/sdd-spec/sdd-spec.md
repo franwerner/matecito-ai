@@ -41,7 +41,11 @@ one mean opposite things to the guard.
 always emitted into this block, never printed by default. Both are non-empty, single-line strings; a
 missing one, or one with an embedded newline, fails the render naming the item and the part, and
 nothing reaches stdout. `summary`'s register is fixed once in Section D.3 of `sdd-phase-common.md` —
-not restated here.
+not restated here. `summary` also carries a **250-character cap**, enforced by `render-return.js`.
+
+Every item also carries the `· anchor:` token, declared first so it prints directly under the
+summary — the legitimate forms and the not-yet-written-target rule are fixed once in Section D.3 of
+`sdd-phase-common.md`, not restated here.
 
 <!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism:
      ~/.claude/references/decision-capture/in-flow-capture.md — this section only fixes the RETURN shape. -->
@@ -54,10 +58,12 @@ this section entirely — `sdd-design`'s own `### New Decisions` is the single g
 second one here would ask the user to ratify the same decision twice. Same title as `sdd-design`'s
 plain variant, byte-identical, because it is the same mailbox concept surfacing one lane earlier — the
 Unresolved Decisions Guard applies the identical rule to it. Each item carries `summary` +
-`· rationale:` (same split as above) plus two tokens: `· blocking-test:` (identical meaning and values
-to `sdd-design`'s — see `sdd-design.md`, "The blocking-test token") and `· record: <domain>/<slug>` —
-the EDR identity the proposal would occupy if ratified, free-form (no closed value set), still
-required (an item missing the token fails `TOKEN-MISSING`, the strict reading of an omission).
+`· rationale:` (same split as above) plus three tokens, in this order: `· anchor:` (the concrete
+source this decision is about — a `<repo-path>[:line]` or `<engram-key>`, per Section D.3 of
+`sdd-phase-common.md`), `· blocking-test:` (identical meaning and values to `sdd-design`'s — see
+`sdd-design.md`, "The blocking-test token") and `· record: <domain>/<slug>` — the EDR identity the
+proposal would occupy if ratified, free-form (no closed value set), still required (an item missing
+any of these tokens fails `TOKEN-MISSING`, the strict reading of an omission).
 
 Only two statuses have a shape here: `done` and `blocked`. This phase's skill does not designate
 `needs-input`, and a spec is written whole or not at all, so `partial` does not arise.
@@ -82,10 +88,10 @@ Only two statuses have a shape here: `done` and `blocked`. This phase's skill do
 
 ### Derived capabilities (unconfirmed)
 {The capability mappings you derived because the upstream artifact carried no Capabilities section
-— an intake brief in a `reduced` lane, or a proposal in the older format. One item per mapping, each
-with two parts:
+— an intake brief in a `reduced` lane, or a proposal in the older format. One item per mapping:
 
 - {the capability you derived, as `New` or `Modified`, and its name}
+  · anchor: {the intake brief's Engram key, or the durable capability-spec path for a Modified capability}
   · rationale: {one line: what you derived it from — the brief's Affected Areas, its structured Request}
 
 These are NOT contract until the main thread confirms them.
@@ -98,6 +104,7 @@ this phase found that pass the blocking test (see `sdd-design.md`, "The blocking
 test, same values). One item per decision:
 
 - {the choice}: {what you chose} — {alternatives weighed, and why this one}
+  · anchor: {the concrete source this decision is about — a `<repo-path>[:line]` or `<engram-key>`}
   · blocking-test: none
   · record: {domain}/{slug}
   · rationale: {one line: the full reasoning}

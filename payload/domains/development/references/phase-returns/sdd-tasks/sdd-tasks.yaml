@@ -33,7 +33,12 @@ sections:
     sentinel: true
     render: items
     field: untraceable_tasks
-    items: { text: summary, rationale: rationale }
+    items:
+      text: summary
+      rationale: rationale
+      summary_max: 250
+      tokens:
+        - { name: anchor, field: anchor }
   - title: "### Review Workload Forecast"
     emitted: always
     render: labeled-bullets

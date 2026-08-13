@@ -502,6 +502,11 @@ Three things the template expects you to already know from this skill:
   as a mismatch. You are the only one who can tell; the orchestrator cannot.
 - `### Issues Found` is for problems you did NOT stop on. The blocker never goes there — it goes in
   `### Blocker`, and only there (see "Stopping Mid-Batch").
+- Every item under `### Rejected Proposals Checked`, `### Unmandated Forks` and `### Mandated
+  Departures` also carries its own `anchor` — the concrete source it traces to (the code you wrote or
+  read, the design line it departs from). Free-form, per the anchor criterion in
+  `~/.claude/skills/_shared/sdd-phase-common.md`, Section D.3: `<repo-path>[:line]` or `<engram-key>`,
+  start line only (say the range in words). You supply it — nothing derives it for you.
 - The `**Mode**` line is what makes the TDD sections conditional: in Strict TDD Mode the evidence
   table and test summary are part of the return, in Standard Mode they do not exist. Their content
   rules are in `strict-tdd.md`.

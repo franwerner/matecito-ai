@@ -134,4 +134,7 @@ Phase-specific refinements on top of Section D:
 <!-- matecito-ai: "blocked tasks" acá era el tercer destino del mismo blocker (los otros dos: `### Issues
      Found` y `### Status`), y ninguno de los tres lo consumía nadie. Un blocker, un lugar. -->
 - `risks`: unexpected complexity, or an assumption that needs validating. A blocker goes in `### Blocker` — never here, never in `### Issues Found` (that section is for problems you did NOT stop on). Deviations belong in the D.3 mailboxes; and a gap that affects what you are about to write is not a risk, it is a `blocked` or `partial` stop with the fork returned as a question (see the skill's Rules)
+- Every item under `### Rejected Proposals Checked`, `### Unmandated Forks` and `### Mandated
+  Departures` carries its own `anchor`, required per D.3 — free-form (`<repo-path>[:line]` or
+  `<engram-key>`), start line only, and never derived by any tool
 - `skill_resolution`: per D.4 — `phase-skill` when you loaded this phase's own SKILL.md <!-- matecito-ai: sin inyección -->

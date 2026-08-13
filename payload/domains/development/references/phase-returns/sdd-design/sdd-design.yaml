@@ -61,10 +61,13 @@ sections:
     items:
       text: summary
       rationale: rationale
+      summary_max: 250
       # In-flow decision capture (development-specifics; see ../../decision-capture/in-flow-capture.md).
       # `record` is free-form (`<domain>/<slug>`, no `values`) — any present, non-null value passes;
-      # still required (`TOKEN-MISSING` when absent). `blocking-test` is unchanged.
+      # still required (`TOKEN-MISSING` when absent). `blocking-test` is unchanged. `anchor` is free-form
+      # too, declared first so it prints adjacent to the summary.
       tokens:
+        - { name: anchor, field: anchor }
         - { name: blocking-test, field: blocking_test, values: [none, infra, contract, data-model], passing: [none] }
         - { name: record, field: record }
 
@@ -77,6 +80,9 @@ sections:
     items:
       text: summary
       rationale: rationale
+      summary_max: 250
+      tokens:
+        - { name: anchor, field: anchor }
 
   - title: "### Next Step"
     emitted: always

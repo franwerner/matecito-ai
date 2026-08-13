@@ -322,6 +322,12 @@ Three things that file makes explicit and that this phase gets wrong most often:
   responsibility lives belongs in `### New Decisions` or in `blocked`.
 - On `blocked`, the question and the options go in `### Blocker` — never in `risks`, which Section D.4
   forbids for decisions the user owns.
+- Every item under `### New Decisions` and `### Open Questions` carries its own `anchor` — the
+  concrete source it traces to. Free-form, per the anchor criterion in
+  `~/.claude/skills/_shared/sdd-phase-common.md`, Section D.3: `<repo-path>[:line]` or `<engram-key>`,
+  start line only (say the range in words); a `### New Decisions` item anchors to what surfaced the
+  need, never to the EDR file that would only exist once the decision is ratified. The renderer (Step
+  5) requires it — an item missing it fails at render, not at review.
 
 ## Rules
 

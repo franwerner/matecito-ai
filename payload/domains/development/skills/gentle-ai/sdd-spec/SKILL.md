@@ -307,6 +307,12 @@ Two things that file makes explicit and that this phase gets wrong most often:
      cuelga el conteo, y en una sección que ya existe — no se abre un buzón nuevo por esto. -->
 - The `ui-scenarios` you wrote in Step 4b are reported in the return **only as a count**, on the
   `### Coverage` line that file declares for them. The block itself lives in the persisted artifact.
+- Every item under `### Derived capabilities (unconfirmed)` and under `### New Decisions` carries its
+  own `anchor` — the concrete source it traces to. Free-form, per the anchor criterion in
+  `~/.claude/skills/_shared/sdd-phase-common.md`, Section D.3: `<repo-path>[:line]` or `<engram-key>`,
+  start line only (say the range in words); a `### New Decisions` item anchors to what surfaced the
+  need, never to a record file that would only exist once the decision is ratified. You supply it —
+  nothing derives it for you.
 
 ## Rules
 

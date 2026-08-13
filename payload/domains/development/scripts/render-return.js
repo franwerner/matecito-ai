@@ -103,6 +103,12 @@ function renderItems(section, data) {
     const text = typeof item === 'string' ? item : item[textField];
     if (!text) fail(`\`${section.field}[${i}]\` has no \`${textField}\``);
     if (String(text).includes('\n')) fail(`\`${section.field}[${i}].${textField}\` spans multiple lines — each part must be a single line`);
+    // `items.summary_max` caps `text` in characters, not lines — a terminal width is invisible to a
+    // script, a character count is not. Enforced here, while the phase is still alive to shorten it;
+    // `validate-return.js` stays unchanged (see the design's "Where the cap runs").
+    if (spec.summary_max && String(text).length > spec.summary_max) {
+      fail(`\`${section.field}[${i}].${textField}\` is ${String(text).length} chars, over the ${spec.summary_max}-char cap — shorten it before it reaches the gate`);
+    }
     out.push(`- ${text}`);
 
     // One or more tokens, in declared order — a single `token` desugars to one via `tokensOf`.
@@ -323,6 +329,7 @@ function schema(contract) {
       out.push(`  ${s.field}: [{ ${fields.join(', ')} }]`);
       out.push(`  (empty list renders the "None." sentinel — never omit the field)`);
       if (spec.rationale) out.push(`  (${spec.text || 'text'} and ${spec.rationale} are both required, single-line, non-empty — ${spec.text || 'text'} prints at the gate, ${spec.rationale} never does by default)`);
+      if (spec.summary_max) out.push(`  (${spec.text || 'text'} is capped at ${spec.summary_max} characters — an over-cap value fails the render, exit 1, no stdout)`);
     } else if (s.render === 'line') {
       out.push(`  ${s.field}: string`);
     }

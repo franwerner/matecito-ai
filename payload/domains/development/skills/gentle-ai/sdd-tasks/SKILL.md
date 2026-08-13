@@ -257,6 +257,11 @@ Three things the template expects you to already know from this skill:
   above). Their labels are matched literally downstream — reproduce them verbatim.
 - A decision you cannot settle yourself does not go into either of those. It makes you return
   `blocked`, with the question in the template's `### Blocker` section — never in `risks` (D.4).
+- Every item under `### Tasks not traceable to spec/design` also carries its own `anchor` — the
+  concrete source it traces to (the gap you found, the implied prerequisite, the convention). Free-form,
+  per the anchor criterion in `~/.claude/skills/_shared/sdd-phase-common.md`, Section D.3:
+  `<repo-path>[:line]` or `<engram-key>`, start line only (say the range in words). You supply it —
+  nothing derives it for you.
 
 ## Rules
 

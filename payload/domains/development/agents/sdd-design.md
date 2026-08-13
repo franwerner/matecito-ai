@@ -123,4 +123,7 @@ Phase-specific refinements on top of Section D:
      era autoevaluación y siempre se aprobaba a sí mismo. Lo derogó la blocking test de la skill; esta
      línea lo mantenía vivo en el archivo de lanzamiento, que es el que el ejecutor lee primero. -->
 - `risks`: architectural risks or assumptions requiring validation. NOT for unresolved decisions — those go to the D.3 mailbox (Tier 1), or to `status: blocked` when the **blocking test** in the skill's `## Rules` catches them (the alternatives differ in new infrastructure, public contract, or data model). Never route a decision the user owns through this field
+- Every item under `### New Decisions` and `### Open Questions` carries its own `anchor`, required per
+  D.3 — free-form (`<repo-path>[:line]` or `<engram-key>`), start line only; the renderer (step 6)
+  rejects a data file that omits it
 - `skill_resolution`: per D.4 — `phase-skill` when you loaded this phase's own SKILL.md <!-- matecito-ai: sin inyección -->

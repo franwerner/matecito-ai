@@ -56,4 +56,6 @@ Phase-specific refinements on top of Section D:
 - `risks`: risks and assumptions to validate, or blocking dependencies. Per D.4 this is never the
   destination of an open tradeoff the user owns nor of an ambiguity you resolved by assuming —
   an unresolved tradeoff returns `blocked` with the options you weighed
+- Every item under `### Scope and approach (unconfirmed)` carries its own `anchor`, required per D.3 —
+  free-form (`<repo-path>[:line]` or `<engram-key>`), start line only, and never derived by any tool
 - `skill_resolution`: per D.4 — `phase-skill` when you loaded this phase's own SKILL.md <!-- matecito-ai: sin inyección -->

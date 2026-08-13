@@ -50,7 +50,9 @@ sections:
     items:
       text: summary
       rationale: rationale
+      summary_max: 250
       tokens:
+        - { name: anchor, field: anchor }
         - { name: record, field: record }
         - { name: design-conflict, field: design_conflict, values: [none, conflicts], passing: [none, conflicts] }
   # Gated on Strict TDD, which the `Mode` header states. Absent outside it, and that is legitimate.
@@ -81,7 +83,9 @@ sections:
     items:
       text: summary
       rationale: rationale
+      summary_max: 250
       tokens:
+        - { name: anchor, field: anchor }
         - { name: mandate, field: mandate, values: [covered, forced, chosen], passing: [chosen] }
         - { name: verify-checks, field: verify_checks, values: [yes, no], passing: [yes, no] }
   # A deviation that WAS applied — either a confirmed artifact fixed it (`covered`) or no alternative
@@ -97,7 +101,9 @@ sections:
     items:
       text: summary
       rationale: rationale
+      summary_max: 250
       tokens:
+        - { name: anchor, field: anchor }
         - { name: mandate, field: mandate, values: [covered, forced, chosen], passing: [covered, forced] }
         - { name: verify-checks, field: verify_checks, values: [yes, no], passing: [yes, no] }
   - title: "### Blocker"

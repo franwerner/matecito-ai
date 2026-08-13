@@ -43,7 +43,13 @@ capability; if you genuinely cannot name them, you do not have a proposal, you h
 it — always emitted into this block, never printed by default. Both are non-empty, single-line
 strings; a missing one, or one with an embedded newline, fails the render naming the item and the
 part, and nothing reaches stdout. `summary`'s register is fixed once in Section D.3 of
-`sdd-phase-common.md` — not restated here.
+`sdd-phase-common.md` — not restated here. `summary` also carries a **250-character cap**, enforced by
+`render-return.js`; an over-cap summary fails the render before anything reaches stdout.
+
+Every item also carries the `· anchor:` token, declared first so it prints directly under the
+summary. What counts as a legitimate anchor — `<repo-path>[:line]` or `<engram-key>`, and what a
+not-yet-written target anchors to — is fixed once in Section D.3 of `sdd-phase-common.md`; not
+restated here.
 
 Only two statuses have a shape here: `done` and `blocked`. This phase's skill does not designate
 `needs-input`, and a proposal is written whole or not at all, so `partial` does not arise.
@@ -64,12 +70,15 @@ Only two statuses have a shape here: `done` and `blocked`. This phase's skill do
 
 ### Scope and approach (unconfirmed)
 - **Approach**: {the approach this proposal fixes, and what you weighed against it and discarded. If the alternatives differ in new infrastructure, in the public contract or in the data model, this is not yours to fix — return `blocked` instead.}
+  · anchor: {the concrete source this item is about — a `<repo-path>[:line]` or `<engram-key>`; not-yet-written work anchors to what surfaced it (e.g. the intake brief's Engram key)}
   · rationale: {one line: the full reasoning behind this approach and why it beat the alternatives}
 
 - **Capability mapping**: {which capabilities this change touches, as `New` or `Modified`, exactly as the artifact's `## Capabilities` section states them. `sdd-spec` consumes this as its contract: a New becomes a full spec, a Modified becomes a delta against the durable capability-spec of that name. A wrong name here silently writes the delta against the wrong capability.}
+  · anchor: {e.g. the durable capability-spec path for a Modified capability, or the intake brief's Engram key for a New one}
   · rationale: {one line: what in the artifact's Affected Areas or Request grounds this mapping}
 
 - **In scope / deferred**: {what this proposal deliberately leaves out, if the boundary is not obvious.}
+  · anchor: {what surfaced this boundary — the intake brief's Engram key, or a repo path if code already draws the line}
   · rationale: {one line: why this boundary and not another}
 
 ### Next Step

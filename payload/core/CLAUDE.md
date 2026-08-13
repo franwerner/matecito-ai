@@ -399,7 +399,7 @@ This trigger has **two distinct confirmation moments**, do not conflate them: (1
 
 **Executor (fresh context, never writes) — dispatched only if the offer-to-scan is accepted:** dispatch the domain's spec-mining executor with `scope = repo`. It scans the as-built code (structural index ▸ grep, plus tests as a confidence oracle) and returns `candidates[]`. It is mode-agnostic — being handed a repo scope IS the instruction; it does NOT read the flag and does NOT materialize anything. See the executor/SKILL for the scan detail.
 
-**Gate (main thread) — the second confirmation (materialization):** the orchestrator presents `candidates[]` ordered by confidence, grouped by spec type, with a summary first and bulk actions (accept-all / per-type / per-item). **NOTHING is materialized without explicit confirmation — not even in Automatic mode** (same pattern as the INTAKE GATE and the decision mine gate).
+**Gate (main thread) — the second confirmation (materialization):** the orchestrator walks `candidates[]` through the shared presentation in `~/.claude/references/gate-presentation.md`, ordered by confidence and indexed by spec type — one index, item by item, "confirm the rest" as the only bulk shortcut, each candidate anchored to the source it was mined from. **NOTHING is materialized without explicit confirmation — not even in Automatic mode** (same pattern as the INTAKE GATE and the decision mine gate).
 
 **Materialize (main thread, once):** confirmed candidates are written as capability-specs with `Status: Inferred` under `.matecito-ai/development-specs/<type>/<capability>.md`, and the store INDEX is updated **once at the end**. Specs live ONLY as `.md` files — **never recorded in Engram**. An `Inferred` spec is a non-ratified draft: `sdd-verify` ignores it (not a contract) until a human promotes it to `Accepted`.
 
@@ -452,8 +452,11 @@ only confirmation, so a flag that passes unremarked is a decision nobody ratifie
 will revisit.
 
 Which flags exist is **not** a kernel concern: read the active domain's fragment, which declares them
-and what each one drives. Surface each one by name with its value and its one-line reason, and treat a
-correction the same as a lane adjustment — update the brief and re-show.
+and what each one drives. The lane and each decision flag are walked through the shared presentation in
+`~/.claude/references/gate-presentation.md` — one index, item by item, "confirm the rest" as the only
+bulk shortcut — with the anchor slot filled from fields the brief already carries (its Engram key, the
+`### Classification` block, the flag's own label); this gate states no presentation or bulk-action
+wording of its own, and a correction to a flag is walked the same way an adjustment is.
 
 **The decision-record-driven statuses below exist only when decision records are active** (per the activation gate in `matecito-ai:behavior`). When the store is absent or empty, intake never returns `blocked`/`needs-decision` for decision-record reasons; the orchestrator must NOT mention them — undecided architectural questions are resolved as ordinary design decisions in the explore/design phases.
 
@@ -555,7 +558,7 @@ After verify returns, for a domain that does NOT declare its own mechanism, eval
 
 **Scale (many gaps):** if the gap list is large, split it into batches and dispatch **several executors in parallel**, each with a slice of the scope; then **merge their `candidates[]` and dedup by `domain/slug`** before the gate.
 
-**Gate (main thread):** present candidates ordered by confidence, grouped by domain, with a summary first ("N high / M to review / K questions") and bulk actions (accept-all-high / per-domain / per-item); for many, present in rounds by domain. Nothing is written without explicit confirm (Automatic mode does NOT skip this gate). Confirmed candidates are materialized as `[Inferred]` decision records per the domain's store — write the files and update the store INDEX **once at the end**; the records live ONLY as files, never recorded in Engram. Then proceed to archive.
+**Gate (main thread):** walk `candidates[]` through the shared presentation in `~/.claude/references/gate-presentation.md`, ordered by confidence and indexed by domain — one index, item by item, "confirm the rest" as the only bulk shortcut, each candidate anchored to the source it was mined from. Nothing is written without explicit confirm (Automatic mode does NOT skip this gate). Confirmed candidates are materialized as `[Inferred]` decision records per the domain's store — write the files and update the store INDEX **once at the end**; the records live ONLY as files, never recorded in Engram. Then proceed to archive.
 
 **When NOT triggered** (no implemented gaps): skip silently — proceed directly to archive with no mention of this gate. This gate NEVER blocks archive when the condition is not met. (Store absence does NOT skip the gate: with no records, every decision-touching task is a gap, and mine bootstraps the first records through the confirm gate.)
 

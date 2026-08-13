@@ -77,12 +77,14 @@ unreportable.
 `rationale`, in the `unmandated_forks` / `mandated_departures` / `rejected_proposals` JSON: `summary`
 is what the gate prints, `rationale` is the full reasoning — always emitted into this block, never
 printed by default. Both are non-empty, single-line strings; a missing one, or one with an embedded
-newline, fails the render naming the item and the part, and nothing reaches stdout. Each item also
-carries its declared tokens, each on its own `· ` line, in fixed order, with `· rationale:` always
-last — for `### Unmandated Forks` / `### Mandated Departures` that order is `mandate:
-covered|forced|chosen`, then `verify-checks: yes|no`; for `### Rejected Proposals Checked` it is
-`record: <domain>/<slug>`, then `design-conflict: none|conflicts`. `summary`'s register is fixed once
-in Section D.3 of `sdd-phase-common.md` — not restated here.
+newline, fails the render naming the item and the part, and nothing reaches stdout. `summary` also
+carries a **250-character cap**, enforced by `render-return.js`. Each item also carries its declared
+tokens, each on its own `· ` line, in fixed order, with `· rationale:` always last — every one of the
+three sections leads with `· anchor:` (free-form, per Section D.3 of `sdd-phase-common.md`), then:
+for `### Unmandated Forks` / `### Mandated Departures`, `mandate: covered|forced|chosen`, then
+`verify-checks: yes|no`; for `### Rejected Proposals Checked`, `record: <domain>/<slug>`, then
+`design-conflict: none|conflicts`. `summary`'s register is fixed once in Section D.3 of
+`sdd-phase-common.md` — not restated here.
 
 ## Which status
 
@@ -156,6 +158,7 @@ and the fork travels back as a question before the next dispatch:
 
 - {the fork, phrased so the user can answer it without reading the rest — naming the task it blocks
   — plus your recommended resolution, if you have one}
+  · anchor: {the concrete source this fork is about — a `<repo-path>[:line]` or `<engram-key>`}
   · mandate: chosen
   · verify-checks: yes|no
   · rationale: {the resolutions that were valid, and why you recommend the one you do}
@@ -172,6 +175,7 @@ alternative was valid and you can name the concrete constraint that closed the o
 
 - {what you applied — for `forced`, name the constraint: an upstream artifact, an Accepted decision
   record, or what leaving the point untouched broke}
+  · anchor: {the concrete source this deviation is about — a `<repo-path>[:line]` or `<engram-key>`}
   · mandate: covered|forced
   · verify-checks: yes|no
   · rationale: {one line: the full reasoning behind the deviation — always emitted here, never printed at the gate by default}
@@ -298,6 +302,7 @@ otherwise, do not even print "None." Full mechanism:
 
 ### Rejected Proposals Checked
 - {the point the rejected proposal governs, and the verdict, in one line}
+  · anchor: {the concrete source this item is about — a `<repo-path>[:line]` or `<engram-key>`}
   · record: <domain>/<slug>
   · design-conflict: conflicts
   · rationale: {the design's approach vs. what the rejected proposal proposed, one line}
@@ -372,14 +377,15 @@ Reports) MUST keep each row's `Task` column intact through the merge — never c
 
 ### Unmandated Forks
 {Every fork from every batch that reached this point unresolved, each in the exact shape this
-template declares above, including its `mandate: chosen` and `verify-checks: yes|no` tokens and its
-`· rationale:` line. `sdd-verify` reads THIS copy — not the return — alongside `### Mandated
-Departures` below, to find every declared deviation.}
+template declares above, including its `· anchor:`, `mandate: chosen` and `verify-checks: yes|no`
+tokens and its `· rationale:` line. `sdd-verify` reads THIS copy — not the return — alongside
+`### Mandated Departures` below, to find every declared deviation.}
 
 ### Mandated Departures
 {Every deviation from every batch that you applied without consulting, each in the exact shape this
-template declares above, including its `mandate: covered|forced` and `verify-checks: yes|no` tokens
-and its `· rationale:` line. `sdd-verify` reads THIS copy — not the return — to classify each
+template declares above, including its `· anchor:`, `mandate: covered|forced` and
+`verify-checks: yes|no` tokens and its `· rationale:` line. `sdd-verify` reads THIS copy — not the
+return — to classify each
 deviation. A deviation that reaches the orchestrator and not the artifact is a deviation `sdd-verify`
 will never see; a rationale that never left the return is a rationale nobody persisted.}
 

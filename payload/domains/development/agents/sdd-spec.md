@@ -90,4 +90,7 @@ Phase-specific refinements on top of Section D:
 <!-- matecito-ai: este campo autorizaba literalmente lo que el flujo prohíbe — resolver una
      ambigüedad asumiendo y degradarla a una línea de riesgo (Tier 2, no bloquea). -->
 - `risks`: risks discovered while writing the spec. NOT a place to park ambiguities you resolved by assuming — an ambiguous derivation returns `blocked` with the possible readings, and a derived-but-unambiguous capability mapping travels in the D.3 mailbox for the main thread to confirm
+- Every item under `### Derived capabilities (unconfirmed)` and `### New Decisions` carries its own
+  `anchor`, required per D.3 — free-form (`<repo-path>[:line]` or `<engram-key>`), start line only, and
+  never derived by any tool
 - `skill_resolution`: per D.4 — `phase-skill` when you loaded this phase's own SKILL.md <!-- matecito-ai: sin inyección -->

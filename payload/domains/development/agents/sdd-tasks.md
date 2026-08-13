@@ -67,4 +67,6 @@ Phase-specific refinements on top of Section D:
 - `risks`: task dependencies that introduce bottlenecks or unclear ownership. Per D.4 this is never
   the destination of a decision the user owns nor of an ambiguity you resolved by assuming — a task
   that traces to neither spec nor design belongs in the D.3 mailbox, not here
+- Every item under `### Tasks not traceable to spec/design` carries its own `anchor`, required per D.3
+  — free-form (`<repo-path>[:line]` or `<engram-key>`), start line only, and never derived by any tool
 - `skill_resolution`: per D.4 — `phase-skill` when you loaded this phase's own SKILL.md <!-- matecito-ai: sin inyección -->
