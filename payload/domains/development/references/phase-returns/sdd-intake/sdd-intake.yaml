@@ -36,11 +36,12 @@ variants:
         emitted: always
         render: line
         field: request_structured
-      # The two downstream flags live here and nowhere else. `sdd-design` reads `Diagram`,
-      # `sdd-spec`/`sdd-verify` read `UI test`, and each treats an absent flag as not-needed, silently.
-      # `Components` has no phase reader (metadata for a person, ratified once at the INTAKE GATE) and
-      # is gated by `components_axis_active`: presence-based on `repo.components`, never inherited from
-      # global config. Resolved false, the bullet is legitimately absent; omitted, the render fails.
+      # The three downstream flags live here and nowhere else. `sdd-design` reads `Diagram`,
+      # `sdd-spec`/`sdd-verify` read `UI test`, the orchestrator reads `Isolation`, and each treats an
+      # absent flag as not-needed/inactive, silently. `Components` has no phase reader (metadata for a
+      # person, ratified once at the INTAKE GATE) and is gated by `components_axis_active`:
+      # presence-based on `repo.components`, never inherited from global config. Resolved false, the
+      # bullet is legitimately absent; omitted, the render fails.
       - title: "### Classification"
         emitted: always
         render: labeled-bullets
@@ -50,6 +51,7 @@ variants:
           - { label: Size, field: classification.size }
           - { label: Diagram, field: classification.diagram }
           - { label: UI test, field: classification.ui_test }
+          - { label: Isolation, field: classification.isolation }
           - { label: Components, field: classification.components, emitted: conditional, when: components_axis_active }
       - title: "### Discovery answers"
         emitted: always

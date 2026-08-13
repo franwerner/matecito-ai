@@ -108,14 +108,16 @@ eligible batch of four. Before dispatching an eligible round, the orchestrator r
 degrades a round to serial by itself — the gate's three outcomes decide that. For each eligible group's
 round, the orchestrator dispatches, in one
 message, one `sdd-apply` **isolated run** per task of that group — each repositioning its worktree onto
-the working branch's **local** `HEAD` before writing anything (never the harness's starting point, which
-can be `origin/<branch>` and lag behind unpushed local commits), each in its own worktree, each closing
-with exactly one commit on its own branch, none of them writing `apply-progress` or marking a task. Once the
-round returns, the orchestrator dispatches a further `sdd-apply` **consolidation run** — no isolation, a
-second mode of the same agent, never the orchestrator and never a new agent — which cherry-picks every
-commit onto the working branch one at a time, in ascending task-id order, and is the round's only
-writer. Groups never mix in the same round; rounds run one after another, in ascending order of each
-group's lowest task id. A group with no marks, or fewer than two members, runs the unchanged
+the round's **immediate container's** local `HEAD` before writing anything (the change workspace's HEAD
+when change-level isolation is active, the working branch's local HEAD when it is not — never the
+harness's starting point, which can be `origin/<branch>` and lag behind unpushed local commits), each in
+its own worktree, each closing with exactly one commit on its own branch, none of them writing
+`apply-progress` or marking a task. Once the round returns, the orchestrator dispatches a further
+`sdd-apply` **consolidation run** — no isolation, a second mode of the same agent, never the orchestrator
+and never a new agent — which cherry-picks every commit onto that same container one at a time (the
+change workspace when isolation is active, the working branch when not), in ascending task-id order, and
+is the round's only writer. Groups never mix in the same round; rounds run one after another, in
+ascending order of each group's lowest task id. A group with no marks, or fewer than two members, runs the unchanged
 single-dispatch path. Before forming any round, the orchestrator validates the tasks artifact's marks by
 script — see "Parallel-mark validation" under Guards, below. Full mechanism — eligibility, the
 uncommitted-work gate, repositioning onto the local base, the base handshake, the commit convention, the
@@ -169,9 +171,51 @@ through the gate is a check nobody notices was skipped.
 | `diagram` | `- Diagram: {needed\|not-needed}` | `sdd-intake` per the diagram inference test in `## Architecture diagrams (drawio)` above | `sdd-design` | Whether a **drawio** architecture diagram is warranted. `sdd-design` only NOTES the recommendation in its `executive_summary`; the main thread renders it live via `mcp__drawio__*`. Nothing is ever written to the repo. |
 | `ui-test` | `- UI test: {needed\|not-needed}` | `sdd-intake`, by keyword inference over the request (`browser`, `page`, `form`, `screen`, `visual`, `click`, `render`), overridable explicitly in the request | `sdd-spec`, `sdd-verify` | Whether UI verification via **proofshot** is warranted. `sdd-spec` authors the `ui-scenarios` block only when this is `needed`; `sdd-verify` runs the ProofShot session only when this is `needed` AND `uiTest.available = ✅`. |
 | `components` | `- Components: {name[, name...] \| unassigned}` | `sdd-intake`, by mapping the request's scope against `repo.components[].paths` | ninguno | Nothing — it is metadata for the person confirming the gate, not a phase input. **Presence-based, unlike the two above**: with no `repo.components` declared for the project the field does not exist and is never mentioned; declared, it is multivalued and always emitted (`unassigned` when no `paths` match — never omitted to mean "no match"). |
+| `isolation` | `- Isolation: {active\|inactive}` | `sdd-intake`, recommended together with the lane per `structure/change-isolation-activation-flag.md` | the orchestrator (kernel's "Change Workspace (opt-in)") | Whether the orchestrator opens a dedicated change workspace for this change. For `direct`/ad-hoc work — which never reaches the INTAKE GATE — the choice is confirmed at the lane fork itself instead; a fork never surfaced means inactive. |
 
 None of these is executed by intake: it decides, others (or, for `components`, no one) act. Adjusting
 one at the gate updates the brief like any other correction.
+
+<!-- matecito-ai: git mechanics for the kernel's domain-neutral "Change Workspace (opt-in)" policy —
+     `structure/change-workspace-prose-homes.md` fixes this split: the kernel keeps the policy in neutral
+     wording, this fragment holds the concrete git commands. -->
+## Change Workspace — git mechanics
+
+Binds the kernel's `### Change Workspace (opt-in)` policy to this domain's concrete mechanism: a git
+worktree, on its own branch, added from the main repo.
+
+**Identity.** Branch `matecito-ai/<change-name>`; directory
+`<repo>/.matecito-ai/workspaces/<change-name>` (`structure/change-workspace-identity.md`). Opened with
+`git worktree add <dir> -b matecito-ai/<change-name> <original-branch>`. At open time, before any phase
+writes into it, confirm `.matecito-ai/workspaces/` is listed in the repo's `.gitignore` — add the line if
+it is not, so the Uncommitted-Work Gate never reads the workspace directory itself as dirty work in the
+main repo.
+
+**Forwarding.** While the workspace is open, every phase dispatch prompt carries a `workspace: <absolute
+path>` line — readers included (`contracts/workspace-forwarded-in-dispatch.md`). A phase resolves repo
+paths under that path and runs git with `git -C <workspace> ...` rather than assuming the session's own
+working directory; a phase that runs a project command (a test runner, a linter, a build) runs it with
+that same path as the command's working directory, for the identical reason.
+
+**Nesting.** A parallel implementation batch dispatched while the workspace is open nests on it exactly
+as "Phase fan-out" above describes: the round's `base` is `git -C <workspace> rev-parse HEAD`, and the
+consolidation run's cherry-picks land on the workspace's branch, never on the original branch. Full
+mechanics: `~/.claude/references/phase-returns/sdd-apply/parallel-batch.md`.
+
+**Integration (orchestrator, once, at cycle close).** From the main repo: `git merge --no-ff
+matecito-ai/<change-name>`. On failure, the orchestrator does not abort right away — it first runs `git
+rebase <original-branch>` **inside the change workspace**. A clean rebase means retrying the merge (now a
+fast-forward). If the rebase also conflicts, the orchestrator runs `git rebase --abort` then `git merge
+--abort`, and reports to the user what happened — which file, in which commit, which side each version
+comes from — with a recommendation suited to the case (resolve by hand in the workspace · leave it open ·
+another way out). Nothing is forced at any point; the workspace stays intact on every failure path
+(`structure/change-level-integration-act.md`).
+
+**Cleanup (after a clean integration only).** `git worktree unlock <dir>` → `git worktree remove <dir>` →
+`git branch -D matecito-ai/<change-name>` — never `remove -f -f`; a failure at any step is recorded, not
+forced, same as the batch-level cleanup pass in `parallel-batch.md`
+(`structure/change-workspace-cleanup.md`). After a failed integration, the workspace and its branch are
+both kept, untouched, for inspection.
 
 ## Guards
 
@@ -255,14 +299,17 @@ three malformed shapes, eligibility per group — `~/.claude/references/phase-re
 ### Uncommitted-Work Gate (MANDATORY)
 For each eligible `sdd-apply` round that will use worktree isolation, immediately after
 `validate-parallel-marks.js` and **before** the orchestrator reads `HEAD` as that round's `base`,
-inspect the main repo's uncommitted changes. Clean tree, or dirty with no relevant intersection →
-silent, nothing to do. Dirty and relevant → present exactly three outcomes (commit first · continue
-anyway · work on the branch without a worktree) and dispatch nothing until the user picks one, not even
-in Automatic mode; picking "continue anyway" leaves a trace the consolidation run records. A serial
-dispatch and the consolidation run never trigger this gate; it does not re-ask within the same phase run
-when the dirty set hasn't changed. Full mechanism — legal inputs, the component mapping (and its
-fallback when the project declares no `repo.components`), the orphan case, the notice shape —
-`~/.claude/references/phase-returns/sdd-apply/parallel-batch.md` → "Uncommitted-Work Gate".
+inspect the round's **immediate container's** uncommitted changes — the change workspace's tree when
+change-level isolation is active, the main repo's when it is not
+(`contracts/uncommitted-gate-follows-the-container.md`). Clean tree, or dirty with no relevant
+intersection → silent, nothing to do. Dirty and relevant → present exactly three outcomes (commit first
+· continue anyway · work on that same container's branch without a worktree) and dispatch nothing until
+the user picks one, not even in Automatic mode; picking "continue anyway" leaves a trace the
+consolidation run records. A serial dispatch and the consolidation run never trigger this gate; it does
+not re-ask within the same phase run when the dirty set hasn't changed. Full mechanism — legal inputs,
+the component mapping (and its fallback when the project declares no `repo.components`), the orphan
+case, the notice shape — `~/.claude/references/phase-returns/sdd-apply/parallel-batch.md` →
+"Uncommitted-Work Gate".
 
 <!-- matecito-ai: los buzones de cada fase (Open Questions, New Decisions, Deviations, Derived capabilities, risks) existían sin que nadie los consumiera: eran el lugar barato donde depositar lo no resuelto y seguir. Este guard los convierte en disparador. -->
 ### Unresolved Decisions Guard (MANDATORY)

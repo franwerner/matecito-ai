@@ -26,8 +26,8 @@ El comportamiento del sistema, capturado por **capacidad** y organizado por **ti
 
 ## Estado y mantenimiento
 
-- Última actualización: 2026-08-06 (archive `sdd/intake-components-flag`) — Creada `rule/intake-brief-components-line` (línea `Components` en el Intake Brief: clasificación por-cambio de superficies tocadas)
-- Anterior: 2026-08-06 (archive `sdd-archive-verification-scope-token`) — Creada `rule/scenario-verification-scope-token` (token `verification:` por escenario para asociar cada escenario a su dueño de verificación)
+- Última actualización: 2026-08-13 (archive `sdd/worktree-isolation`) — Creada `process/isolate-change-workspace` (aislamiento anidado de workspace: cambio en nivel propio, tarea dentro del cambio)
+- Anterior: 2026-08-06 (archive `sdd/intake-components-flag`) — Creada `rule/intake-brief-components-line` (línea `Components` en el Intake Brief: clasificación por-cambio de superficies tocadas)
 - **Definir una capacidad nueva:** usá la skill `development-spec-bootstrap` (o escribí el spec desde `~/.claude/references/spec/templates/capability.md`); creá la carpeta del tipo si no existía y sumá la fila al `INDEX.md` de ese tipo (y a este índice raíz si el tipo es nuevo en el proyecto).
 - **Actualizar comportamiento (cambio menor):** editá el spec. El historial lo lleva git.
 - **Cambio de comportamiento vía flujo SDD:** no edites el spec a mano — el delta del cambio se mergea acá al archivar (`sdd-archive`).

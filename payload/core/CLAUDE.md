@@ -140,6 +140,10 @@ The active domains are listed in the **"Active domains — load on demand"** ind
 1. **Before creating or modifying the first file of a domain's material** — code, tests, config, design assets. This trigger fires in EVERY lane, `direct` included, and is not conditional on having run intake, classified anything, or entered the flow at all. If you are about to edit, you load first.
 2. **When intake classifies the request**, for work that does go through the flow.
 
+With change-level isolation active (see the Lane fork above), this same first-file trigger is also when
+the change workspace opens for direct/ad-hoc work — before this first file, not after: see the
+orchestrator's "Change Workspace (opt-in)" section below for what opens and how.
+
 **READ that domain's fragment (`~/.claude/matecito-ai/domains/<id>.md`) before applying its rules, dispatching its intake, or writing anything.** The `direct` lane does NOT exempt you: it is the shortest path to the code, which makes it the one where an unloaded fragment does the most damage. A summary does not count, and neither does the domain's name in the index above — the rules are in the file.
 
 ### Ecosystem (matecito-ai)
@@ -173,6 +177,20 @@ Presets are shorthands over this same mechanism. Read them top-down and stop at 
 - **full** → base + all add-ons. Reserved for `large` changes, or work touching architecture across multiple domains. Requires a named trigger; do not recommend by default.
 
 The lane recommendation is produced by the intake phase; the orchestrator's INTAKE GATE surfaces it for confirm/adjust/cancel.
+
+<!-- matecito-ai: change-level isolation rides with the lane fork itself, not a separate question — see
+     `structure/change-isolation-activation-flag.md`. In-flow, the flag is also confirmed at the INTAKE
+     GATE per "Decision flags travel with the lane" in the orchestrator zone; this paragraph is what
+     covers direct/ad-hoc, which never reaches that gate. -->
+**Change-level workspace isolation rides with the lane fork, never as a separate question.** When you
+offer the lane choice, offer this one alongside it: whether this change's work happens in its own
+isolated workspace instead of the current working tree — off by default, one recommendation, the user
+picks. In the flow, that choice is confirmed together with the lane at the INTAKE GATE (see "Decision
+flags travel with the lane" in the orchestrator zone below) and no later phase re-asks it. For
+direct/ad-hoc work there is no later gate to confirm it at, so the fork itself is the only confirmation
+— a lane resolved without this fork ever being surfaced (a trivial change going straight to `direct`)
+means isolation stays inactive, and nothing downstream assumes otherwise. See the orchestrator's
+"Change Workspace (opt-in)" section below for what isolation actually does once it is active.
 
 ### Feature discovery (general behavior, outside the flow)
 Max 3 questions per message, grouped, one round. Only what can't be inferred. If the request already has enough detail, start directly. Large feature → brief plan before coding.
@@ -446,6 +464,47 @@ After the intake gate, subsequent phases follow the Execution Mode chosen above.
 ### Artifact Store Mode
 
 On first flow command in a session, detect: engram available → `engram`, else `none`. Cache it; pass as `artifact_store.mode` to every sub-agent launch.
+
+<!-- matecito-ai: change-level workspace isolation, orchestrator side. Domain-neutral policy only — the
+     active domain fragment binds "workspace" to a concrete mechanism (development: a git worktree) and
+     holds the literal commands (`structure/change-workspace-prose-homes.md`). -->
+### Change Workspace (opt-in)
+
+When change-level isolation is active for this change (see the Lane fork above), the orchestrator opens
+a dedicated **change workspace** — a separate copy of the project, on its own line of history, where
+every phase's work for this change lands instead of the original working tree. With isolation inactive,
+none of this applies: every path behaves exactly as it did before this section existed.
+
+**When it opens — exactly once per change.** In the flow, right after the scope is confirmed at the
+INTAKE GATE, before the first phase that writes files is dispatched. Outside the flow — direct or
+ad-hoc work, where there is no scope to confirm — right before the first file of the work is created or
+modified (the same trigger the kernel already fires for domain-fragment loading; see "Domain resolution
+& on-demand loading" above). A change whose workspace is already open never gets a second one; a later
+phase, or a resumed session, reuses the one that exists.
+
+**While it is open.** A session's own working directory is fixed at start and never relocates — every
+phase keeps running from wherever it was launched and reaches the workspace by its absolute path
+instead. That is why the workspace has to be **handed** to each phase, not discovered: every phase
+dispatch prompt — including one that only reads — carries the workspace's location, so each step
+resolves paths and runs its checks against the tree the work is actually in, never the original one. A
+parallel implementation batch dispatched while the workspace is open nests inside it instead of on the
+original branch: the round's base becomes the workspace's own current state, and its consolidation run
+integrates into the workspace, never the original branch. The active domain fragment defines the
+concrete mechanism and the exact line a dispatch prompt carries.
+
+**Who integrates, and when.** Only the orchestrator integrates the change workspace back into the
+original branch — exactly once, after the change's pipeline has finished (after archive, in-flow; or
+when the requested work is reported done, for direct/ad-hoc). No phase performs this or anticipates it.
+When the integration cannot complete cleanly, the orchestrator does not force it through: it attempts
+the domain's own recovery step once, and if that also fails, it reports to the user exactly what
+conflicts — which file, in which commit, which side each version comes from — and asks them to choose a
+way forward, with a recommendation, rather than picking one for them. The workspace and the original
+branch are both left intact on every failure path, at every step of this — nothing is ever forced past a
+conflict.
+
+**Cleanup.** After a clean integration, the workspace is discarded the same way a per-task workspace
+already is once its work lands. After a failed one, everything is kept exactly as it was, for
+inspection.
 
 ### Lane add-on insertion map
 

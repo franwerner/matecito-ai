@@ -20,6 +20,8 @@ Decisiones sobre los contratos entre piezas del ecosistema: qué forma tiene lo 
 | [verdict-in-its-own-conditional-section.md](verdict-in-its-own-conditional-section.md) | Accepted | Vas a decidir dónde vive un veredicto que no encaja en ningún mailbox existente de sdd-apply. |
 | [verdict-survives-the-fan-out.md](verdict-survives-the-fan-out.md) | Accepted | Vas a tocar cómo un veredicto declarado por una corrida aislada llega al retorno consolidado de un batch paralelo. |
 | [expected-set-outside-the-validator.md](expected-set-outside-the-validator.md) | Accepted | Te tienta agregar un flag de completitud a un validador de forma de retorno. |
+| [uncommitted-gate-follows-the-container.md](uncommitted-gate-follows-the-container.md) | Accepted | Vas a tocar qué árbol inspecciona un chequeo cuando el aislamiento anidado puede desplazar cuál es el contenedor relevante. |
+| [workspace-forwarded-in-dispatch.md](workspace-forwarded-in-dispatch.md) | Accepted | Vas a tocar cómo una fase se entera de dónde está el espacio de trabajo en el que tiene que operar. |
 
 ## No aplican en este dominio
 

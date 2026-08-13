@@ -96,9 +96,9 @@ From the request + answers, classify:
      them and two downstream phases read them from the brief: drop them from the classification and they
      drop from the brief, and their readers find absence — which both gates read as "does not apply",
      silently. -->
-Plus the two **downstream flags** this phase is the only one to decide. They are part of the
+Plus the three **downstream flags** this phase is the only one to decide. They are part of the
 classification, they travel in the brief (`### Classification`), and the user confirms or adjusts
-both at the INTAKE GATE. Neither is executed here — this phase decides, others act:
+all three at the INTAKE GATE. None is executed here — this phase decides, others act:
 
 - **`diagram`:** `needed` | `not-needed`, with a one-line reason. Apply the **diagram inference test**
   in `~/.claude/matecito-ai/domains/development.md` (`## Architecture diagrams (drawio)`) — that is
@@ -110,9 +110,18 @@ both at the INTAKE GATE. Neither is executed here — this phase decides, others
   keyword inference; no hit and no override → `not-needed`. Read by `sdd-spec` (it authors the
   `ui-scenarios` block only when this says `needed`) and by `sdd-verify` (its UI gate). You never run
   proofshot.
+- **`isolation`:** `active` | `inactive`, with a one-line reason, recommended together with the lane
+  per `structure/change-isolation-activation-flag.md`. That ratified decision fixes only where this
+  flag lives and when it is confirmed — no rule for choosing between the two values is derivable from
+  any ratified artifact. Until one is captured, always recommend `inactive` and say so in the reason
+  ("no escalation rule captured yet"): recommending `active` by default would make isolation active by
+  inertia at the gate, which `structure/change-level-worktree-isolation.md`'s explicit "never a
+  default" requirement forbids. Do not invent a heuristic to fill this gap. Read by the orchestrator
+  (kernel's `### Change Workspace (opt-in)`), never by a later phase agent — you never open a
+  workspace yourself.
 
-Absence is not neutral: both downstream gates read a missing flag as "does not apply" and close
-**silently**, so a flag you drop is a check nobody notices was skipped.
+Absence is not neutral: all three downstream readers read a missing flag as "does not apply" /
+inactive and close **silently**, so a flag you drop is a check nobody notices was skipped.
 
 <!-- matecito-ai: a THIRD classification value, but not a third "downstream flag" — it has no phase
      reader. Presence-based on `repo.components`, same gate family as EDRs and capability-specs. -->
@@ -206,11 +215,11 @@ Persist the same content (Step 6).
 
 - **Request (structured)** — 1-2 sentences: what the user wants, restated clearly now that the
   discovery form is answered.
-- **Classification** — Step 3's output: type, domains touched, size, plus the two downstream flags
-  `diagram` and `ui-test`, each with its one-line reason. The flags are not optional extras: they
-  exist nowhere else, and the phases that read them close silently when they are absent. Plus
-  **`Components`**, multivalued and reader-less (Step 3) — emit it only when `repo.components` is
-  declared for this project; when you render the return block (Step 7's tool), supply the boolean
+- **Classification** — Step 3's output: type, domains touched, size, plus the three downstream flags
+  `diagram`, `ui-test` and `isolation`, each with its one-line reason. The flags are not optional
+  extras: they exist nowhere else, and the readers that act on them close silently when they are
+  absent. Plus **`Components`**, multivalued and reader-less (Step 3) — emit it only when
+  `repo.components` is declared for this project; when you render the return block (Step 7's tool), supply the boolean
   that gates this bullet (`components_axis_active`) explicitly: `true` with the line rendered, `false`
   when the set is not declared, never omitted — an omitted gate boolean fails the render, it does not
   read as "off".
@@ -245,7 +254,7 @@ This brief is the entry artifact for the flow. The next phase reads it as its st
 - If the request needs an undecided architectural choice → `needs-decision`, route to bootstrap first.
 - Be honest in triage: trivial changes should skip the full flow.
 <!-- matecito-ai: explicit rule — the flags used to drop out of the brief with nothing complaining. -->
-- ALWAYS emit both downstream flags (`diagram`, `ui-test`) under `### Classification` on Pass 2, whatever their value (Step 3). This phase is their only producer; `sdd-design` and `sdd-spec`/`sdd-verify` are their only readers, and each treats an absent flag as `not-needed` **silently**. Decide them — never generate a diagram, never run proofshot.
+- ALWAYS emit all three downstream flags (`diagram`, `ui-test`, `isolation`) under `### Classification` on Pass 2, whatever their value (Step 3). This phase is their only producer; `sdd-design`, `sdd-spec`/`sdd-verify`, and the orchestrator are their only readers, and each treats an absent flag as `not-needed`/inactive **silently**. Decide them — never generate a diagram, never run proofshot, never open a workspace. `isolation` has no recommendation heuristic yet: always recommend `inactive` and say so in the reason, per Step 3.
 <!-- matecito-ai: presence-based, reader-less on purpose — never treat it like diagram/ui-test's "absent = not-needed" silence, because a set-declared repo with a missing line is the anomaly, not the default. -->
 - `Components` is presence-based, not absence-tolerant: with `repo.components` declared, emit the line on EVERY Pass-2 brief — a missing line is an anomaly, not "the axis doesn't apply". With no set declared, never emit it and never mention components. It has NO phase reader — do not invent one, do not use it to scope any later phase's work. When rendering the return (Step 7), the gate boolean (`components_axis_active`) is REQUIRED and explicit — never omit it hoping it defaults to "off".
 <!-- matecito-ai: la forma del retorno tiene UNA fuente. Si volvés a escribirla acá, creaste la copia que este cambio vino a eliminar. -->

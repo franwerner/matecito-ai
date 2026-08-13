@@ -179,10 +179,11 @@ If Strict TDD Mode is active (either from orchestrator injection or self-discove
 Before writing anything:
 1. Reposition your worktree onto `base`. First read your own branch name from inside the worktree:
    `git rev-parse --abbrev-ref HEAD` (the harness already checked you out onto an ephemeral branch of
-   your own, typically `worktree-agent-<hex>`) — **never** the working branch's name (e.g. `main`), even
-   if you know it: worktrees share the ref store, and `git checkout -B <working-branch> <base>` run
-   inside a worktree resets that ref **globally**, moving every worktree checked out on that name and
-   orphaning any commit only reachable through its old tip. Then: `git checkout -B <your-branch> <base>`
+   your own, typically `worktree-agent-<hex>`) — **never** the round's immediate container's branch name
+   (e.g. `main`, or the change workspace's own `matecito-ai/<change-name>`), even if you know it:
+   worktrees share the ref store, and `git checkout -B <container-branch> <base>` run inside a worktree
+   resets that ref **globally**, moving every worktree checked out on that name and orphaning any commit
+   only reachable through its old tip. Then: `git checkout -B <your-branch> <base>`
    — this works because the worktree shares the repository's object store. If it fails for any reason
    (base unreachable, a git error), implement **nothing**: do not continue on the harness's starting
    point and do not retry on an unverified base. Skip straight to Step 7 and return `Result:
@@ -525,7 +526,7 @@ Three things the template expects you to already know from this skill:
      because the rule right above ("ALWAYS persist") would otherwise read as universal, and it is not
      universal for Isolated Run Mode. -->
 - **Isolated Run Mode is the one exception to "ALWAYS persist"**: it persists NOTHING — no `apply-progress`, no task marking — by design (single-writer rule). Its one job is one commit and one Task Run Report; the consolidation run is the only writer. Do not run Steps 5/6 there, and do not read Step 2b there — see "Mode Branch" and `parallel-batch.md`
-- **Repositioning onto `base`, then the base handshake, both run before any write, in Isolated Run Mode.** The harness's worktree starting point is not the working base (it can be `origin/<branch>`, behind local `HEAD`) — reposition via `git checkout -B <your-branch> <base>`, where `<your-branch>` is read from inside the worktree (`git rev-parse --abbrev-ref HEAD`) and is **never the working branch's name**: worktrees share the ref store, so resetting the working branch from inside a worktree moves it everywhere and orphans commits. A failed repositioning, or an unverified base after it (`HEAD != base`, or a dirty `git status --porcelain`), both mean implementing nothing — report `not-implemented / base-not-established` instead of guessing at what the worktree actually contains. See Step 3b and `parallel-batch.md` → "Repositioning onto `base`" and "The base handshake"
+- **Repositioning onto `base`, then the base handshake, both run before any write, in Isolated Run Mode.** The harness's worktree starting point is not the round's immediate container's base (it can be `origin/<branch>`, behind that container's local `HEAD`) — reposition via `git checkout -B <your-branch> <base>`, where `<your-branch>` is read from inside the worktree (`git rev-parse --abbrev-ref HEAD`) and is **never the round's immediate container's branch name** (e.g. `main`, or the change workspace's own `matecito-ai/<change-name>`): worktrees share the ref store, so resetting that branch from inside a worktree moves it everywhere and orphans commits. A failed repositioning, or an unverified base after it (`HEAD != base`, or a dirty `git status --porcelain`), both mean implementing nothing — report `not-implemented / base-not-established` instead of guessing at what the worktree actually contains. See Step 3b and `parallel-batch.md` → "Repositioning onto `base`" and "The base handshake"
 - If workload forecast requires a decision and none was provided, STOP before writing code (nothing was written yet, so there is no completed work to persist)
 - When applying a chained/stacked PR slice, keep the batch autonomous: one deliverable scope, verification included, and clear rollback boundary
 - When applying `size:exception`, state it explicitly in apply-progress and the return summary

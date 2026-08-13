@@ -1,19 +1,25 @@
 # EDR — Handshake de base en dos niveles contra un espacio de trabajo contaminado
 
 - **Status:** Accepted
-- **Date:** 2026-08-10
+- **Date:** 2026-08-13
 
 ## Contexto
 
 El aislamiento por espacio de trabajo que ofrece el harness no garantiza que el directorio entregado
-parta realmente del estado actual de la rama de trabajo — un directorio reciclado o contaminado es una
-base que nadie verificó. Confiar ciegamente en la garantía de aislamiento del harness deja abierta la
+parta realmente del estado actual desde el que debía partir — un directorio reciclado o contaminado es
+una base que nadie verificó. Confiar ciegamente en la garantía de aislamiento del harness deja abierta la
 posibilidad de implementar sobre una base desconocida sin que nada lo note hasta que el conflicto (o
 algo peor, un merge silencioso incorrecto) aparece más tarde.
 
+Desde que el aislamiento se anida, cuál es ese estado deja de ser un valor único: con el nivel de cambio
+activo, una corrida aislada parte del espacio de trabajo del cambio, y no de la rama de trabajo. La
+brecha que estos chequeos cierran es la misma; lo que cambia es contra qué se comparan.
+
 ## Decisión
 
-Dos chequeos, uno por lado, cierran esa brecha:
+La base contra la que se verifica es la del **contenedor inmediato** de la corrida: el espacio de trabajo
+del cambio cuando el aislamiento anidado está activo, y la rama de trabajo cuando no. Sobre esa base, dos
+chequeos, uno por lado, cierran la brecha:
 
 - **Nivel 1 (corrida aislada, antes de escribir nada):** `git rev-parse HEAD` debe coincidir con la
   base que el orquestador capturó y pasó en el prompt de despacho, y `git status --porcelain` debe
@@ -40,3 +46,4 @@ Dos chequeos, uno por lado, cierran esa brecha:
 
 - `relacionado-con` → [one-commit-per-isolated-run.md](one-commit-per-isolated-run.md) — el commit que este handshake protege en sus dos extremos.
 - `relacionado-con` → [../structure/dispatch-batch-bound-integration.md](../structure/dispatch-batch-bound-integration.md) — el nivel 2 corre durante la integración que esa decisión ordena diferir.
+- `relacionado-con` → [../structure/change-level-worktree-isolation.md](../structure/change-level-worktree-isolation.md) — el aislamiento anidado que desplaza cuál es la base a verificar.

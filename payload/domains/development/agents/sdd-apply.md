@@ -26,8 +26,9 @@ Execute all steps from the skill directly in this context window:
 - **`mode: isolated`** — read spec/design/tasks for your one assigned task (steps 1-3 below, skip
   3b/read-previous-progress), read the applicable EDRs (3a), **reposition your worktree onto `base`**
   before anything else — first read your own branch name from inside the worktree (`git rev-parse
-  --abbrev-ref HEAD`; never the working branch's name, since worktrees share a ref store and resetting
-  it from inside a worktree moves it everywhere and orphans commits), then run
+  --abbrev-ref HEAD`; never the round's immediate container's branch name — e.g. `main`, or the change
+  workspace's own `matecito-ai/<change-name>` — since worktrees share a ref store and resetting it from
+  inside a worktree moves it everywhere and orphans commits), then run
   `git checkout -B <your-branch> <base>` (a failed repositioning implements nothing),
   then run the **base handshake** before writing anything (`git rev-parse HEAD == base` AND
   `git status --porcelain` empty — either failing, implement nothing and report `not-implemented /
