@@ -58,6 +58,45 @@ function cleanupInternals() {
   cached = null;
 }
 
+let cachedRenderReturn = null;
+let cachedRenderReturnLoadDir = null;
+const RENDER_RETURN_SRC = path.join(SCRIPTS_DIR, 'render-return.js');
+
+// Same trick as `loadInternals` above, for `render-return.js` — it also ends in an unconditional
+// `main()` call, so it cannot be `require()`-d directly either. Additionally, `render-return.js`'s
+// `fail()` calls `process.exit(1)` from WITHIN `renderItems()` itself (not only from `main()`), so
+// calling it directly with bad data would kill the `node --test` process instead of failing one
+// assertion. `fail()`'s body is replaced here with a `throw` so a rejected render surfaces as a
+// catchable exception (`assert.throws`) — everything else in the module is untouched. Returns
+// `{ renderItems }`, memoized per process.
+function loadRenderReturnInternals() {
+  if (cachedRenderReturn) return cachedRenderReturn;
+
+  let src = fs.readFileSync(RENDER_RETURN_SRC, 'utf8');
+  src = src.replace("require('./lib/yaml')", `require(${JSON.stringify(path.join(LIB_DIR, 'yaml.js'))})`);
+  src = src.replace(
+    'function fail(msg) {\n  process.stderr.write(`${msg}\\n`);\n  process.exit(1);\n}',
+    'function fail(msg) {\n  throw new Error(msg);\n}'
+  );
+  src = src.replace(/\nmain\(\);\n$/, '\n');
+  src += '\nmodule.exports = { renderItems, renderTable, renderLabeledLists, tokensOf, derive, fail };\n';
+
+  cachedRenderReturnLoadDir = fs.mkdtempSync(path.join(os.tmpdir(), 'matecito-dev-tests-load-'));
+  const tmpFile = path.join(cachedRenderReturnLoadDir, 'render-return.testable.js');
+  fs.writeFileSync(tmpFile, src);
+
+  cachedRenderReturn = require(tmpFile);
+  return cachedRenderReturn;
+}
+
+// Removes the throwaway `require()`-able copy `loadRenderReturnInternals` wrote to the OS temp dir.
+// Call once, after all tests in the process have run (a global `after` hook, not a per-test one).
+function cleanupRenderReturnInternals() {
+  if (cachedRenderReturnLoadDir) removeFixtureRepo(cachedRenderReturnLoadDir);
+  cachedRenderReturnLoadDir = null;
+  cachedRenderReturn = null;
+}
+
 let cachedValidateReturn = null;
 let cachedValidateReturnLoadDir = null;
 const VALIDATE_RETURN_SRC = path.join(SCRIPTS_DIR, 'validate-return.js');
@@ -176,6 +215,8 @@ function makeExternalSymlink(repo) {
 module.exports = {
   loadInternals,
   cleanupInternals,
+  loadRenderReturnInternals,
+  cleanupRenderReturnInternals,
   loadValidateReturnInternals,
   cleanupValidateReturnInternals,
   makeFixtureRepo,
