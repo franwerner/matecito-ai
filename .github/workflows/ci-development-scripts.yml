@@ -6,6 +6,7 @@ on:
       - 'payload/domains/development/scripts/**'
       - 'payload/domains/development/dev-tests/**'
       - 'payload/domains/development/references/artifact-checks/**'
+      - 'payload/domains/development/references/phase-returns/**'
       - '.github/workflows/ci-development-scripts.yml'
 
 permissions:

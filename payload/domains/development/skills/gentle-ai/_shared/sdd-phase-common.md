@@ -197,11 +197,11 @@ a domain with no such mechanism (e.g. `design`) may still feed a post-verify min
 flag. Gate behavior lives in the domain fragment (`~/.claude/matecito-ai/domains/development.md`, `##
 Guards`) — it reads this table and keeps no parallel copy of it.
 
-**Eight of these mailboxes split each item into `summary`/`rationale`**: `sdd-propose`'s `Scope and
+**Nine of these mailboxes split each item into `summary`/`rationale`**: `sdd-propose`'s `Scope and
 approach`, `sdd-spec`'s `Derived capabilities` and its conditional `New Decisions`, both `sdd-design`
-rows (`New Decisions` and `Open Questions`), `sdd-tasks`'s `Tasks not traceable`, and both `sdd-apply`
-rows (`Unmandated Forks` and `Mandated Departures`) — their `.yaml` contract declares
-`items.rationale`. Emission stays total:
+rows (`New Decisions` and `Open Questions`), `sdd-tasks`'s `Tasks not traceable`, and all three
+`sdd-apply` rows (`Unmandated Forks`, `Mandated Departures` and the conditional `Rejected Proposals
+Checked`) — their `.yaml` contract declares `items.rationale`. Emission stays total:
 both parts always land in `detailed_report`. Printing only the `summary` at the gate is that
 section's own **declared** presentation, fixed by its contract — never an assistant judging what
 counts as brief. The `rationale` is reproduced verbatim, from the block already in context, the
@@ -216,6 +216,16 @@ untouched. Where a check keys off literal words in the envelope's `Summary` — 
 check 4 matches a section's `summary_claims` pattern together with a non-zero digit — keep those
 exact words and state the count as a digit whenever the summary claims that section has content: the
 check is a literal match, and dropping the words would turn it off silently, not on purpose.
+
+**Anchor.** A legitimate anchor takes one of two forms: `<repo-path>[:line]` or `<engram-key>` — the
+concrete source an item is about. When the source spans more than one line, the anchor names only the
+line where it starts; the extent is stated in the item's own prose, in words, never as a `path:80-100`
+range — a terminal makes `path:line` clickable, never a range, so a range in the anchor itself would
+be dead text. An item that proposes something not yet written — there is no file yet to point at —
+anchors to whatever surfaced the need instead: the spec requirement, the design section, or the
+artifact key that raised it. This is the single definition every declaring section's `anchor` token
+follows; a `.yaml`/`.md` pair does not restate it, the same pattern this file already uses for the
+register rule above.
 
 Everything marked **always** is emitted even when there is nothing to report, with a `None…`
 sentinel — that is what lets the orchestrator tell "nothing to raise" from "the phase dropped the

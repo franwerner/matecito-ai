@@ -6,7 +6,15 @@ El **mecanismo** de deploy (aplanamiento, reglas de colisión, hooks siempre act
 
 ## Componentes
 
-Hoy el tier compartido **no entrega ningún componente**: `skills/`, `agents/` y `references/` están reservados como placeholders. Cuando aparezca una skill, un agente o una referencia genuinamente cross-domain —que valga para todos los dominios activos, sin importar cuáles tengas instalados— se cataloga acá.
+`skills/` y `agents/` están reservados como placeholders: todavía no entregan ningún componente. Cuando
+aparezca una skill o un agente genuinamente cross-domain —que valga para todos los dominios activos, sin
+importar cuáles tengas instalados— se cataloga acá.
+
+`references/` entrega:
+
+- [`gate-presentation.md`](references/gate-presentation.md) — el recorrido único (índice, item por
+  item, "confirmar el resto", retomar) y la plantilla de huecos fijos que usa cualquier gate que
+  ratifique items. Se despliega a `~/.claude/references/gate-presentation.md`.
 
 ## Ver también
 
