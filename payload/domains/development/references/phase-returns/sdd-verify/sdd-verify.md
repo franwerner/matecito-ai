@@ -209,7 +209,15 @@ apply never implemented still gets its row. Orphan counterparts (a `name` matchi
 scenario) are listed under WARNING in `### Issues Found`, not here.
 
 When the whole `### UI Scenario Counterparts` section is absent while the spec declares scenarios:
-every row is `❌ Missing` / `❌ UNTESTED`, and one CRITICAL states the UI check could not run at all.}
+every row is `❌ Missing` / `❌ UNTESTED`, and one CRITICAL states the UI check could not run at all.
+
+Each row also carries a keyed detail block below the table — the same `summary`/`anchor`/`rationale`
+shape every other mailbox item carries (`~/.claude/scripts/render-return.js --schema`), keyed by
+`scenario`:}
+
+- {scenario `name`} — {summary, ≤250}
+  · anchor: {the executable counterpart in apply-progress, or the spec's `ui-scenarios` entry}
+  · rationale: {the full reasoning behind this row's STATE — never printed by default}
 
 **Error gate**: consoleErrorCount {N} / serverErrorCount {N} → ✅ PASS / ❌ FAIL
 **Artifacts**: `proofshot-artifacts/{outputDir}/`
@@ -234,12 +242,26 @@ straight to a `Structure` CRITICAL naming the failure reason, with `Backing` as 
 to check backing against). `Backing` is a mechanical join, never a search: OK when the implementing
 task's `### Files Changed` rows include at least one path outside `.matecito-ai/edr/`, CRITICAL when
 every path that task touched is under `.matecito-ai/edr/`. Coherence BETWEEN records is out of scope
-here — that is `development-decisions-validate`'s job.}
+here — that is `development-decisions-validate`'s job.
+
+Each row also carries a keyed detail block below the table, same shape as `## UI Verdict`, keyed by
+`record`:}
+
+- {domain}/{slug} — {summary, ≤250}
+  · anchor: {`.matecito-ai/edr/<domain>/<slug>.md`}
+  · rationale: {the full reasoning behind this row's Structure/Backing finding}
 
 ### Issues Found
 **CRITICAL**: {list or None}
 **WARNING**: {list or None}
 **SUGGESTION**: {list or None}
+
+{Every finding is now `{ summary, anchor, rationale }`, not a bare string — the same shape carried by
+every other mailbox item. Under each list entry:}
+
+- {finding summary, ≤250}
+  · anchor: {the file or artifact the finding names}
+  · rationale: {the full reasoning behind the finding — never printed by default}
 
 ### Verdict
 {PASS / PASS WITH WARNINGS / FAIL}

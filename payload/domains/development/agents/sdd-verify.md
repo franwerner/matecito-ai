@@ -74,6 +74,11 @@ reported back. Return exactly the envelope `subverifier-groups.md` defines:
   not leave the key silently absent, and do not mark yourself `complete` over a gap.
 - Field names in the JSON are exactly what `node ~/.claude/scripts/render-return.js --phase sdd-verify
   --schema` publishes for the keys your row owns — do not invent a name or reshape a table's columns.
+- If you are the `ui` group, each `ui_verdict` row carries `summary`, `anchor` and `rationale` besides
+  its typed columns (mirrors SKILL.md Step 3f). If you are the `decision-gaps` group, each
+  `decision_gaps` row carries the same three fields besides its typed columns (mirrors SKILL.md Step
+  6c). Both are the shaped-item fields `subverifier-groups.md` declares once — read it there, do not
+  re-derive the shape.
 
 ## References
 

@@ -129,6 +129,13 @@ sections:
       label: Error gate
       field: error_gate
       format: "consoleErrorCount {console} / serverErrorCount {server} → {verdict}"
+    items:
+      key: scenario
+      text: summary
+      rationale: rationale
+      summary_max: 250
+      tokens:
+        - { name: anchor, field: anchor }
 
   # In-flow decision capture (development-specifics; see ../../decision-capture/in-flow-capture.md).
   # No flag — gated on whether apply-progress's `### Decisions Materialized` carries ≥1 row.
@@ -142,6 +149,13 @@ sections:
       - { key: task, label: Task }
       - { key: structure, label: Structure }
       - { key: backing, label: Backing }
+    items:
+      key: record
+      text: summary
+      rationale: rationale
+      summary_max: 250
+      tokens:
+        - { name: anchor, field: anchor }
 
   - title: "### Issues Found"
     emitted: always
@@ -150,6 +164,12 @@ sections:
       - { label: CRITICAL, field: issues.critical }
       - { label: WARNING, field: issues.warning }
       - { label: SUGGESTION, field: issues.suggestion }
+    items:
+      text: summary
+      rationale: rationale
+      summary_max: 250
+      tokens:
+        - { name: anchor, field: anchor }
 
   - title: "### Verdict"
     emitted: always

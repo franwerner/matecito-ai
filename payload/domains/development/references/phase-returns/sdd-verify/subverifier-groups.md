@@ -88,6 +88,44 @@ back is this envelope:
 ```
 ~~~
 
+<!-- matecito-ai: `sdd-verify.yaml`'s items-shaping (gate-coverage-gaps, task 4.2) reached
+     `issues.critical`/`.warning`/`.suggestion`, `decision_gaps` and `ui_verdict` — every one of them a
+     data key a sub-verifier returns. Declared ONCE here, on the envelope every sub-verifier already
+     reads first (`agents/sdd-verify.md:26` sends them here before :56 tells them to return exactly
+     this shape) — not seven times, one per group. -->
+**Every `issues.*` entry, and every `decision_gaps` / `ui_verdict` row, now carries the shaped item —
+`{ summary, anchor, rationale }`, never a bare string.** A sub-verifier builds each finding it reports as
+that object: `summary` is the ≤250-char line a gate prints, `anchor` is the file or artifact the finding
+names, `rationale` is the full reasoning (never printed by default, reproduced verbatim on request). The
+`decision-gaps` and `ui` groups shape their table rows the identical way — the row's typed columns
+(`record`/`task`/`structure`/`backing`; `scenario`/`counterpart`/`covers`/`state`/`failure_reason`)
+**plus** `summary`/`anchor`/`rationale` on the same object; `render-return.js` reads both off the one row.
+
+```json
+{ "issues": {
+    "critical": [
+      { "summary": "auth middleware skips the refresh-token check", "anchor": "src/auth/middleware.ts:42", "rationale": "the design's EDR Alignment names token-ttl-bound-refresh as Accepted; this path never re-validates it, so an expired refresh token still passes" }
+    ],
+    "warning": [],
+    "suggestion": []
+  },
+  "decision_gaps": [
+    { "record": "contracts/foo", "task": "3.2", "structure": "OK", "backing": "OK",
+      "summary": "foo EDR materialized cleanly", "anchor": ".matecito-ai/edr/contracts/foo.md", "rationale": "validate-artifact.js exit 0; the implementing task's Files Changed include code outside .matecito-ai/edr/" }
+  ],
+  "ui_verdict": [
+    { "scenario": "user logs in", "counterpart": "✅ Found", "covers": "✅ full", "state": "✅ PASS", "failure_reason": "—",
+      "summary": "login flow verified end to end", "anchor": "apply-progress#login", "rationale": "the counterpart drives the real form and asserts the redirect" }
+  ]
+}
+```
+
+This binds every group that can populate any of these three keys — `execution`/`correctness`/
+`design-coherence` (`issues.*`), `edr-coherence`/`spec-coherence`/`ui` (`issues.*`, `ui`'s `ui_verdict`
+besides), and `decision-gaps` (`issues.*`, `decision_gaps`) — through this one declaration, not a
+per-group restatement. A sub-verifier that still returns a bare string for any of these three keys is
+returning the wrong shape, full stop; consolidation does not coerce it.
+
 Rules for this envelope:
 
 - **No key outside its row.** The consolidation step (below) ignores unknown keys — a stray one is

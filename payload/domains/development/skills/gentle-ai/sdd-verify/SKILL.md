@@ -155,7 +155,7 @@ Run only the steps `subverifier-groups.md` maps to your assigned group; every ot
 3c. Static validation (counterparts found): for every counterpart, reject any step target matching `@e\d+`. A matched target is CRITICAL — fail that scenario immediately.
 3d. ProofShot session (gate and static validation passed): generate a collision-safe `outputDir` (`proofshot-artifacts/{change}-{timestamp}-{random}/`); `proofshot start --run "{uiTest.devServer.command}" --port {port} --output {outputDir}` (same `### UI Test` table); for EACH scenario drive its steps then take a LIVE agent-browser `snapshot` and evaluate `visible`/`text_contains` STATE assertions against it; after ALL scenarios `proofshot stop`; read `SUMMARY.md` aggregates `consoleErrorCount`/`serverErrorCount` for the session-level ERROR GATE; delete `{outputDir}/session.webm` by default (retain only with explicit `retain-video` flag).
 3e. SPLIT verdict: `ui-verdict = (all STATE assertions PASS) AND (error gate PASS)`; any FAIL → CRITICAL → blocks archive.
-3f. Return `ui_verdict` and `error_gate` in your Sub-Report — the `ui` group's data keys, per your row in `subverifier-groups.md`. They carry the per-scenario STATE results, the session-level ERROR GATE (`consoleErrorCount`, `serverErrorCount`, PASS/FAIL) and the artifact path `proofshot-artifacts/{outputDir}/`. The orchestrator renders them as `## UI Verdict` in the consolidated report, at the position and `##` level `~/.claude/references/phase-returns/sdd-verify/sdd-verify.md` fixes — you do not render that markdown section yourself.
+3f. Return `ui_verdict` and `error_gate` in your Sub-Report — the `ui` group's data keys, per your row in `subverifier-groups.md`. They carry the per-scenario STATE results, the session-level ERROR GATE (`consoleErrorCount`, `serverErrorCount`, PASS/FAIL) and the artifact path `proofshot-artifacts/{outputDir}/`. Each `ui_verdict` row also carries `summary`, `anchor` and `rationale` — the shaped-item fields `subverifier-groups.md` declares — never a bare row: `summary` is the ≤250-char line a gate would print, `anchor` names the counterpart or the spec's `ui-scenarios` entry the row is about, `rationale` is the full reasoning behind that row's STATE. The orchestrator renders them as `## UI Verdict` in the consolidated report, at the position and `##` level `~/.claude/references/phase-returns/sdd-verify/sdd-verify.md` fixes — you do not render that markdown section yourself.
 4. Count completed and incomplete tasks.
 5. Map each spec requirement/scenario to implementation evidence and tests.
 <!-- matecito-ai: verification-scope-token. Definition owned by `~/.claude/references/spec/README.md`; this step only applies it while building the matrix. -->
@@ -209,7 +209,11 @@ Run only the steps `subverifier-groups.md` maps to your assigned group; every ot
    Coherence BETWEEN records (do two EDRs contradict each other) is out of scope for this step —
    `development-decisions-validate`'s job, unrelated to what this change materialized. Return
    `decision_gaps` (the `record | task | structure | backing` rows) and `records_in_change` in your
-   Sub-Report. The orchestrator renders `## Decision Gaps` in the consolidated report only when
+   Sub-Report. Each `decision_gaps` row also carries `summary`, `anchor` and `rationale` — the
+   shaped-item fields `subverifier-groups.md` declares — never a bare row: `summary` is the ≤250-char
+   line a gate would print, `anchor` is the EDR file the row is about, `rationale` is the full reasoning
+   behind that row's Structure/Backing finding. The orchestrator renders `## Decision Gaps` in the
+   consolidated report only when
    `records_in_change` is `true` — position, columns and `##` level fixed by
    `~/.claude/references/phase-returns/sdd-verify/sdd-verify.md`. A CRITICAL here is `FAIL`, exactly
    like any other coherence section — there is no post-verify mine gate left to defer it to.

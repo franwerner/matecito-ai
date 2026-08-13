@@ -265,15 +265,22 @@ function selfCheck(contract, md) {
   const RATIONALE_MARKER = /·\s*rationale\s*:/i;
   let fence = null;
   let currentHeading = null;
+  // `sdd-verify.md` deliberately opens its return template with a `~~~` fence so it can nest literal
+  // `` ``` `` blocks (build/test output) inside without closing early — the only template that does.
+  // A fence line only opens or closes the CURRENTLY open fence when its delimiter matches; a different
+  // delimiter while one is already open is nested content and is skipped, not treated as a toggle.
   for (const raw of md.split('\n')) {
     const l = raw.trim();
-    if (/^`{3,}/.test(l)) {
+    const fenceMatch = l.match(/^(`{3,}|~{3,})/);
+    if (fenceMatch) {
+      const marker = fenceMatch[1][0];
+      if (fence && marker !== fence.marker) continue;
       if (fence) {
         if (fence.isReturn) for (const h of fence.headings) inFence.add(h);
         fence = null;
         currentHeading = null;
       } else {
-        fence = { isReturn: false, headings: [] };
+        fence = { isReturn: false, headings: [], marker };
       }
       continue;
     }
