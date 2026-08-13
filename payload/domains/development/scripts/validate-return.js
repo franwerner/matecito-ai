@@ -320,12 +320,15 @@ function selfCheck(contract, md) {
     }
   }
 
-  // Bidirectional rationale-marker rule, narrow to `render: items` sections and to this one marker.
-  // A generic "every declared item marker must appear" rule would also fail `sdd-apply.md`, whose
-  // `verify-checks` token is documented as inline prose rather than its own marker line — a defect
-  // this change neither caused nor was asked to fix.
+  // Bidirectional rationale-marker rule, narrow to sections that can carry `items.rationale` — an
+  // `items`-render section always (rationale or not, to also catch the "shows but doesn't declare"
+  // case), plus a table or labeled-lists section only once it actually declares `items.rationale`
+  // (most of them declare no `items` at all, and have nothing here to check). A generic "every
+  // declared item marker must appear" rule would also fail `sdd-apply.md`, whose `verify-checks`
+  // token is documented as inline prose rather than its own marker line — a defect this change
+  // neither caused nor was asked to fix.
   for (const s of allSections) {
-    if (s.render !== 'items') continue;
+    if (s.render !== 'items' && !(s.items && s.items.rationale)) continue;
     const declares = !!(s.items && s.items.rationale);
     const titles = [s.title].concat(s.accepts || []);
     const shows = titles.some((t) => rationaleUnderHeading.has(t));

@@ -79,3 +79,22 @@ test('a mix of a free-form token and a values-bearing token on the same item —
   assert.equal(problems.length, 1);
   assert.equal(problems[0].code, 'TOKEN-MISSING');
 });
+
+// gate-coverage-gaps (task 3.3): `checkItems()` is render-agnostic (it gates on `s.items`, never on
+// `s.render`), so a table's rendered detail block — the `| ... |` rows it cannot parse as items,
+// followed by the `- {key} — {text}` bullets `render-return.js` now emits underneath it — walks
+// through exactly the same loop as a plain items-list. A row missing its declared `anchor` token
+// still raises `TOKEN-MISSING`, unchanged.
+test('a table\'s detail block missing its declared `anchor` token raises TOKEN-MISSING, same as any items list', () => {
+  const section = { items: { tokens: [{ name: 'anchor', field: 'anchor' }] } };
+  const body = [
+    '| Record | Task |',
+    '|---|---|',
+    '| contracts/foo | 3.2 |',
+    '',
+    '- contracts/foo — a gap',
+  ].join('\n');
+  const problems = checkItems(section, '### Decision Gaps', body);
+  assert.equal(problems.length, 1);
+  assert.equal(problems[0].code, 'TOKEN-MISSING');
+});

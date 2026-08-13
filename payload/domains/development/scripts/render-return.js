@@ -89,6 +89,56 @@ function renderFields(section, data) {
   return out.join('\n').trimEnd();
 }
 
+// One item's adornment: the text (capped, single-line) plus its `· token:`/`· rationale:` lines —
+// everything an item carries AFTER its own first bullet line. Every render form keeps its own first
+// line (`- {text}` for a plain items list, `- {key} — {text}` for a table's detail block), because a
+// table row cannot carry continuation lines the way a bullet can; this is the part they share.
+// `fieldName` lets a caller with no single `section.field` (labeled-lists, one list per entry) name
+// the right path in an error instead of blaming `undefined`.
+function shapeItem(section, item, i, fieldName) {
+  const field = fieldName || section.field;
+  const spec = section.items || {};
+  const textField = spec.text || 'text';
+  const text = typeof item === 'string' ? item : item[textField];
+  if (!text) fail(`\`${field}[${i}]\` has no \`${textField}\``);
+  if (String(text).includes('\n')) fail(`\`${field}[${i}].${textField}\` spans multiple lines — each part must be a single line`);
+  // `items.summary_max` caps `text` in characters, not lines — a terminal width is invisible to a
+  // script, a character count is not. Enforced here, while the phase is still alive to shorten it;
+  // `validate-return.js` stays unchanged (see the design's "Where the cap runs").
+  if (spec.summary_max && String(text).length > spec.summary_max) {
+    fail(`\`${field}[${i}].${textField}\` is ${String(text).length} chars, over the ${spec.summary_max}-char cap — shorten it before it reaches the gate`);
+  }
+
+  const lines = [];
+  // One or more tokens, in declared order — a single `token` desugars to one via `tokensOf`.
+  for (const t of tokensOf(spec)) {
+    const value = typeof item === 'object' ? item[t.field] : undefined;
+    if (value === undefined) fail(`\`${field}[${i}]\` has no \`${t.field}\` — a declared token is required, never inferred`);
+    if (t.values && !t.values.includes(value)) {
+      fail(`\`${field}[${i}].${t.field}\` is "${value}", not one of ${JSON.stringify(t.values)}`);
+    }
+    // matecito-ai: el mensaje nombraba la contradicción y no la salida. El ejecutor que declara
+    // honestamente un valor no-`passing` tiene a dónde ir —su propia skill se lo dice— pero acá
+    // llegaba un error que sólo le decía que estaba mal, en el momento en que más barato es
+    // recordarle dónde va el ítem.
+    if (t.passing && !t.passing.includes(value)) {
+      fail(`\`${field}[${i}].${t.field}\` is "${value}", which contradicts ${section.title} — an item with this token does not belong in that section: return \`blocked\` and file it under \`### Blocker\` instead`);
+    }
+    lines.push(`  · ${t.name}: ${value}`);
+  }
+
+  // `items.rationale` IS the opt-in for the summary/rationale split (see the phase-return `.md`).
+  // Both parts are required and single-line — a section with this key never emits a half item.
+  if (spec.rationale) {
+    const rationale = typeof item === 'object' ? item[spec.rationale] : undefined;
+    if (!rationale) fail(`\`${field}[${i}]\` has no \`${spec.rationale}\` — a declaring section requires both parts`);
+    if (String(rationale).includes('\n')) fail(`\`${field}[${i}].${spec.rationale}\` spans multiple lines — each part must be a single line`);
+    lines.push(`  · rationale: ${rationale}`);
+  }
+
+  return { text, lines };
+}
+
 function renderItems(section, data) {
   const list = get(data, section.field);
   if (list === undefined) fail(`missing required field \`${section.field}\` (renders ${section.title}; use [] when there is nothing)`);
@@ -96,73 +146,55 @@ function renderItems(section, data) {
   // The sentinel is emitted because the list is empty, never because the agent remembered to.
   if (list.length === 0) return 'None.';
 
-  const spec = section.items || {};
   const out = [];
   for (const [i, item] of list.entries()) {
-    const textField = spec.text || 'text';
-    const text = typeof item === 'string' ? item : item[textField];
-    if (!text) fail(`\`${section.field}[${i}]\` has no \`${textField}\``);
-    if (String(text).includes('\n')) fail(`\`${section.field}[${i}].${textField}\` spans multiple lines — each part must be a single line`);
-    // `items.summary_max` caps `text` in characters, not lines — a terminal width is invisible to a
-    // script, a character count is not. Enforced here, while the phase is still alive to shorten it;
-    // `validate-return.js` stays unchanged (see the design's "Where the cap runs").
-    if (spec.summary_max && String(text).length > spec.summary_max) {
-      fail(`\`${section.field}[${i}].${textField}\` is ${String(text).length} chars, over the ${spec.summary_max}-char cap — shorten it before it reaches the gate`);
-    }
-    out.push(`- ${text}`);
-
-    // One or more tokens, in declared order — a single `token` desugars to one via `tokensOf`.
-    for (const t of tokensOf(spec)) {
-      const value = typeof item === 'object' ? item[t.field] : undefined;
-      if (value === undefined) fail(`\`${section.field}[${i}]\` has no \`${t.field}\` — a declared token is required, never inferred`);
-      if (t.values && !t.values.includes(value)) {
-        fail(`\`${section.field}[${i}].${t.field}\` is "${value}", not one of ${JSON.stringify(t.values)}`);
-      }
-      // matecito-ai: el mensaje nombraba la contradicción y no la salida. El ejecutor que declara
-      // honestamente un valor no-`passing` tiene a dónde ir —su propia skill se lo dice— pero acá
-      // llegaba un error que sólo le decía que estaba mal, en el momento en que más barato es
-      // recordarle dónde va el ítem.
-      if (t.passing && !t.passing.includes(value)) {
-        fail(`\`${section.field}[${i}].${t.field}\` is "${value}", which contradicts ${section.title} — an item with this token does not belong in that section: return \`blocked\` and file it under \`### Blocker\` instead`);
-      }
-      out.push(`  · ${t.name}: ${value}`);
-    }
-
-    // `items.rationale` IS the opt-in for the summary/rationale split (see the phase-return `.md`).
-    // Both parts are required and single-line — a section with this key never emits a half item.
-    if (spec.rationale) {
-      const rationale = typeof item === 'object' ? item[spec.rationale] : undefined;
-      if (!rationale) fail(`\`${section.field}[${i}]\` has no \`${spec.rationale}\` — a declaring section requires both parts`);
-      if (String(rationale).includes('\n')) fail(`\`${section.field}[${i}].${spec.rationale}\` spans multiple lines — each part must be a single line`);
-      out.push(`  · rationale: ${rationale}`);
-    }
+    const { text, lines } = shapeItem(section, item, i);
+    out.push(`- ${text}`, ...lines);
   }
   return out.join('\n');
 }
 
 // A table the agent supplies as rows of objects cannot come out misaligned, and a column it forgets is
 // named at render time instead of surviving as a ragged pipe nobody notices.
+//
+// A row that also declares `section.items` gets a keyed detail block below the table (and its
+// footer): a table row is one markdown line and cannot carry the continuation lines an adornment
+// needs, so the same `shapeItem()` output that a plain items-list would print inline instead prints as
+// its own `- {key} — {text}` entry, keyed by the column `items.key` names.
 function renderTable(section, data) {
   const rows = get(data, section.field);
   if (rows === undefined) fail(`missing required field \`${section.field}\` (renders ${section.title}; use [] when there is nothing)`);
   if (!Array.isArray(rows)) fail(`\`${section.field}\` must be a list of rows`);
   if (rows.length === 0 && section.sentinel) return 'None.';
 
+  if (section.items && !section.items.key) {
+    fail(`\`${section.title}\` declares \`items\` on a table but no \`items.key\` — the detail block needs the column that labels each row`);
+  }
+
   const cols = section.columns || [];
   const out = [
     `| ${cols.map((c) => c.label).join(' | ')} |`,
     `|${cols.map(() => '---').join('|')}|`,
   ];
+  const details = [];
   for (const [i, row] of rows.entries()) {
     const missing = cols.filter((c) => row[c.key] === undefined).map((c) => c.key);
     if (missing.length) fail(`\`${section.field}[${i}]\` is missing ${missing.map((k) => `\`${k}\``).join(', ')} — a row needs { ${cols.map((c) => c.key).join(', ')} }`);
     out.push(`| ${cols.map((c) => String(row[c.key]).replace(/\|/g, '\\|')).join(' | ')} |`);
+
+    if (section.items) {
+      const keyValue = row[section.items.key];
+      if (keyValue === undefined) fail(`\`${section.field}[${i}]\` is missing \`${section.items.key}\` — \`items.key\` names the column that labels its detail block`);
+      const { text, lines } = shapeItem(section, row, i);
+      details.push(`- ${keyValue} — ${text}`, ...lines);
+    }
   }
   if (section.footer) {
     const value = section.footer.derived ? derive(section.footer.derived, data) : get(data, section.footer.field);
     if (value === undefined) fail(`missing required field \`${section.footer.field}\` (renders the footer of ${section.title})`);
     out.push('', `**${section.footer.label}**: ${section.footer.format ? fmt(section.footer.format, value, section.footer.field) : value}`);
   }
+  if (details.length) out.push('', ...details);
   return out.join('\n');
 }
 
@@ -183,7 +215,9 @@ function renderBlocks(section, data) {
   return out.join('\n').trimEnd();
 }
 
-// Several named lists in one section, each with its own sentinel.
+// Several named lists in one section, each with its own sentinel. `section.items` (declared once,
+// the same shape `renderItems()` and `renderTable()` read) applies uniformly to every entry of every
+// list here — a plain string entry only when the section declares no `items` at all.
 function renderLabeledLists(section, data) {
   const out = [];
   for (const l of section.lists || []) {
@@ -195,7 +229,14 @@ function renderLabeledLists(section, data) {
       continue;
     }
     out.push(`**${l.label}**:`);
-    for (const it of items) out.push(`- ${typeof it === 'string' ? it : it.text}`);
+    for (const [i, it] of items.entries()) {
+      if (section.items) {
+        const { text, lines } = shapeItem(section, it, i, l.field);
+        out.push(`- ${text}`, ...lines);
+      } else {
+        out.push(`- ${typeof it === 'string' ? it : it.text}`);
+      }
+    }
   }
   return out.join('\n');
 }
@@ -275,6 +316,15 @@ function keysOf(format) {
   return [...format.matchAll(/\{(\w+)\}/g)].map((m) => m[1]);
 }
 
+// The field list an `items`-shaped entry carries, shared by every render form that can declare
+// `items` (`items` itself, plus `table` and `labeled-lists` now that they wire into `shapeItem()`).
+function itemsFields(spec) {
+  const fields = [`${spec.text || 'text'}: string`];
+  for (const t of tokensOf(spec)) fields.push(`${t.field}: ${JSON.stringify(t.passing || t.values)}`);
+  if (spec.rationale) fields.push(`${spec.rationale}: string`);
+  return fields;
+}
+
 // The agent asks the tool for the shape instead of memorizing it, so the two cannot drift.
 function schema(contract) {
   const out = [`Data shape for \`${contract.phase}\` — write this as JSON and pass it with --data.`, ''];
@@ -301,6 +351,7 @@ function schema(contract) {
       const cols = (s.columns || []).map((c) => c.key).join(', ');
       out.push(`  ${s.field}: [{ ${cols} }]   (one row per entry)`);
       if (s.sentinel) out.push('  (empty list renders the "None." sentinel — never omit the field)');
+      if (s.items) out.push(`  (each row also carries { ${itemsFields(s.items).join(', ')} }, rendered as a detail list below the table keyed by its \`${s.items.key}\` column)`);
       if (s.footer && !s.footer.derived) {
         out.push(`  ${s.footer.field}: ${s.footer.format ? `{ ${keysOf(s.footer.format).join(', ')} }` : 'string'}   ("${s.footer.label}")`);
       } else if (s.footer) {
@@ -309,7 +360,10 @@ function schema(contract) {
     } else if (s.render === 'blocks') {
       for (const b of s.blocks || []) out.push(`  ${b.field}: string | { summary, output }   ("${b.label}"; output is fenced verbatim)`);
     } else if (s.render === 'labeled-lists') {
-      for (const l of s.lists || []) out.push(`  ${l.field}: [string]   ("${l.label}"; empty list renders "None")`);
+      for (const l of s.lists || []) {
+        if (s.items) out.push(`  ${l.field}: [{ ${itemsFields(s.items).join(', ')} }]   ("${l.label}"; empty list renders "None")`);
+        else out.push(`  ${l.field}: [string]   ("${l.label}"; empty list renders "None")`);
+      }
     } else if (s.render === 'labeled-bullets') {
       for (const b of s.bullets || []) {
         const bWhen = b.emitted === 'conditional' ? ` [emitted only when \`${b.when}\` is true]` : '';
@@ -323,10 +377,7 @@ function schema(contract) {
       for (const f of s.fields || []) out.push(`  ${f.field}: string   ("${f.label}")`);
     } else if (s.render === 'items') {
       const spec = s.items || {};
-      const fields = [`${spec.text || 'text'}: string`];
-      for (const t of tokensOf(spec)) fields.push(`${t.field}: ${JSON.stringify(t.passing || t.values)}`);
-      if (spec.rationale) fields.push(`${spec.rationale}: string`);
-      out.push(`  ${s.field}: [{ ${fields.join(', ')} }]`);
+      out.push(`  ${s.field}: [{ ${itemsFields(spec).join(', ')} }]`);
       out.push(`  (empty list renders the "None." sentinel — never omit the field)`);
       if (spec.rationale) out.push(`  (${spec.text || 'text'} and ${spec.rationale} are both required, single-line, non-empty — ${spec.text || 'text'} prints at the gate, ${spec.rationale} never does by default)`);
       if (spec.summary_max) out.push(`  (${spec.text || 'text'} is capped at ${spec.summary_max} characters — an over-cap value fails the render, exit 1, no stdout)`);
