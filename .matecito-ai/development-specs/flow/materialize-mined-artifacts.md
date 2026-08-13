@@ -38,6 +38,7 @@ Después del gate de confirmación de una ejecución de minería, materializar c
 - **Renderer falla en datos inválidos** → No escribir el archivo; fallar la materialización; salida 1
 - **No hay candidatos confirmados** → No escribir nada; salida 0 (no es error)
 - **INDEX raíz no existe** → Usar el scaffold del contrato para crearlo; sumar las entradas
+- **Gate de confirmación presenta candidatos** → El gate camina los candidatos a través del template compartido de items (índice único, uno a uno, "confirmar el resto" disponible a mitad)
 
 ## Casos borde
 
@@ -103,8 +104,27 @@ Después del gate de confirmación de una ejecución de minería, materializar c
 - **WHEN** se invoca al renderer
 - **THEN** el renderer falla a stderr nombrando el campo; no se escribe el archivo; la materialización se detiene; salida 1
 
+### Scenario: El gate de confirmación presenta candidatos por el template compartido
+
+- **GIVEN** una ejecución de minería que produjo candidatos
+- **WHEN** su gate de confirmación abre
+- **THEN** los candidatos se presentan a través del template compartido: un índice único, luego uno a uno, con "confirmar el resto" disponible antes del primero y a mitad del walk
+
+### Scenario: Confirmar el resto a mitad del walk de candidatos
+
+- **GIVEN** un walk de candidatos donde algunos ya fueron decididos
+- **WHEN** el usuario pide confirmar el resto
+- **THEN** los candidatos undecided se registran como confirmados, los decididos mantienen sus resultados, y exactamente el conjunto confirmado se materializa
+
+### Scenario: Un candidato rechazado en el walk no se materializa
+
+- **GIVEN** un candidato que el usuario rechaza mientras camina la lista
+- **WHEN** se ejecuta la materialización
+- **THEN** no se escriben archivo ni entrada de INDEX para él, y el resto del conjunto confirmado se materializa normalmente
+
 ## Referencias
 
 - **EDR** → [`../../edr/structure/root-index-cardinality-per-domain-type.md`](../../edr/structure/root-index-cardinality-per-domain-type.md) — Decisión de que el INDEX raíz tiene una fila per domain/type, deduplicada por el caller
 - **EDR** → [`../../edr/structure/contract-pair-in-templates.md`](../../edr/structure/contract-pair-in-templates.md) — Decisión de contrato ubicado en templates/
+- **Contrato compartido** → [`../../shared/references/gate-presentation.md`](../../shared/references/gate-presentation.md) — Template compartido de presentación (índice, uno a uno, "confirmar el resto")
 - **Contexto de negocio** → Spec de Intake `mine-materialization-renderer` — El paso 2 de descubrimiento motiva esta materialización en vez de prosa manual
