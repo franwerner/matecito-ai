@@ -526,6 +526,12 @@ intake -> [explore] -> [propose] -> spec -> [design] -> [tasks] -> apply -> veri
 
 Each phase returns: `status`, `executive_summary`, `artifacts`, `next_recommended`, `risks`, `skill_resolution`.
 
+A `blocked` status and any `risks` content are both walked through the shared presentation in
+`~/.claude/references/gate-presentation.md` — one index when there are two or more items, the fixed
+item template either way — rather than presented ad hoc here. `blocked` anchors to what that phase's
+own blocker names (e.g. `sdd-apply`'s `### Blocker`); `risks` anchors to the file or artifact the risk's
+own prose names. Neither field states an index or bulk-action wording of its own.
+
 <!-- matecito-ai: Decision-Gap Capture (mine gate) — conditional boundary dispatch after verify -->
 ### Decision-Gap Capture (mine gate)
 

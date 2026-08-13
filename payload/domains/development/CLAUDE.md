@@ -230,6 +230,11 @@ Same precedence as model resolution — per-project `domainConfig.development.st
 
 When intake returns `needs-input`: put its questions to the user yourself (you own the channel), then **re-dispatch `sdd-intake`** with the raw request plus the answers verbatim so it produces the brief on Pass 2. **An empty question list still requires you to go to the user** — intake returns its one-line reading of the request and the user confirms or corrects it; never treat "no questions" as licence to skip straight to the brief. Never answer them on the user's behalf, never trim the list down to the ones you find interesting, and never skip ahead to another phase — no brief exists yet, so there is nothing downstream to run. If the user leaves one open, hand it back as open instead of resolving it for them.
 
+The questions are walked through the shared presentation in `~/.claude/references/gate-presentation.md`
+— one index when there are two or more, the fixed item template either way — under the Discovery
+Gate's own declared exception: no anchor, since the request has not yet produced anything to point at.
+This gate states no index or bulk-action wording of its own.
+
 This gate sits BEFORE the INTAKE GATE and does not replace it: discovery answers first, then the brief, then confirm / adjust / cancel over that brief. **Automatic mode does NOT skip this gate** — Automatic only skips the between-phase "¿Continuamos?" checkpoint, never a question the user has to answer.
 
 <!-- matecito-ai: nada comprobaba que un retorno trajera lo que debía traer. Si una fase se comía una
@@ -305,7 +310,10 @@ change-level isolation is active, the main repo's when it is not
 intersection → silent, nothing to do. Dirty and relevant → present exactly three outcomes (commit first
 · continue anyway · work on that same container's branch without a worktree) and dispatch nothing until
 the user picks one, not even in Automatic mode; picking "continue anyway" leaves a trace the
-consolidation run records. A serial dispatch and the consolidation run never trigger this gate; it does
+consolidation run records. Those three outcomes are presented through the shared walkthrough in
+`~/.claude/references/gate-presentation.md`, anchored to the dirty paths `git status --porcelain`
+already printed — this gate states no index or bulk-action wording of its own. A serial dispatch and
+the consolidation run never trigger this gate; it does
 not re-ask within the same phase run when the dirty set hasn't changed. Full mechanism — legal inputs,
 the component mapping (and its fallback when the project declares no `repo.components`), the orphan
 case, the notice shape — `~/.claude/references/phase-returns/sdd-apply/parallel-batch.md` →
@@ -389,6 +397,18 @@ mailbox is for a point NO artifact fixes, and here the design fixes it twice, in
 This is the one and only channel `sdd-apply` reads a proposal's resolution from — see
 `~/.claude/references/decision-capture/in-flow-capture.md`.
 
+**Ratification ledger (re-emergence support).** At gate close — in the same step that builds the
+`sdd-apply` dispatch prompt — the orchestrator writes one row per ratified item to
+`sdd/{change-name}/ratified-decisions`: `record` (the item's `<domain>/<slug>` token), `ratified_summary`
+(the adjusted text when the user corrected it at this gate, the offered text otherwise), `anchor` (per
+`~/.claude/references/gate-presentation.md`'s anchor rule), and `gate` (which gate ratified it). Only a
+LATER gate of the same change reads this key — to recognize a decision that re-emerges (matched on
+`record`, exact string — see `~/.claude/references/gate-presentation.md` → "Re-emergence") and offer its
+short form instead of walking it again. **`sdd-apply` MUST NOT read `sdd/{change-name}/ratified-decisions`**:
+its one and only channel for a proposal's resolution stays the dispatch prompt, per the paragraph
+above — a second, independently-read channel is exactly the drift `in-flow-capture.md`'s single-channel
+rule exists to prevent. Not pruned: the per-change key is its own cleanup, same as `apply-progress`.
+
 <!-- matecito-ai: return-side half of the forwarding paragraph above. The send-side half says WHAT gets
      forwarded and WHEN; this half says how the orchestrator reads what came back — the mandatory
      `design-conflict` verdict `sdd-apply` now declares for each rejection it checked
@@ -443,6 +463,17 @@ When an **unconditional** section is missing, do NOT assume there was nothing an
 
 ### Review Workload Guard (MANDATORY)
 After `sdd-tasks` and before `sdd-apply`, inspect `Review Workload Forecast`. If chained PRs recommended / 400-line budget risk High / decision needed → apply cached `delivery_strategy` (`ask-on-risk` default: STOP and ask chained PRs vs `size:exception`). Automatic mode does not override this guard.
+
+The decision this guard raises is presented through the shared walkthrough in
+`~/.claude/references/gate-presentation.md`, anchored to `sdd/{change-name}/tasks` — no index or
+bulk-action wording of its own.
+
+### Validator Findings (presentation)
+`development-decisions-validate` and `development-spec-validate` are consultative — they only report,
+never write. Their findings are walked through the shared presentation in
+`~/.claude/references/gate-presentation.md`: one index when there are two or more findings, then each
+one shown through the fixed item template, anchored to the EDR or capability-spec file the finding is
+about. Neither skill states an index or bulk-action wording of its own.
 
 <!-- matecito-ai: development declares its OWN decision-capture mechanism, per the kernel's override
      clause (`~/.claude/matecito-ai.md` → "Decision-Gap Capture (mine gate)"). This is why: propose ·
