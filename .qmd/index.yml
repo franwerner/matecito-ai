@@ -1,5 +1,18 @@
-collections: {}
+global_context: "matecito-ai — records durables del proyecto: el comportamiento del sistema (capability-specs) y las decisiones de ingeniería (EDRs) que lo gobiernan."
+
+collections:
+  records:
+    path: /home/ifran/proyectos/matecito-ai/.matecito-ai
+    pattern: "**/*.md"
+    ignore:
+      - "**/INDEX.md"
+    includeByDefault: true
+    context:
+      "/": "Los records durables del proyecto, en dos stores."
+      "/development-specs": "Capability-specs: QUÉ hace el sistema ante cada situación, por tipo (flow, rule, lifecycle, process), con escenarios verificables. Es el contrato de comportamiento."
+      "/edr": "EDRs: POR QUÉ de cada elección técnica, por dominio (contracts, structure, tech). Contexto, decisión, alternativas y consecuencias."
+
 models:
-  embed: hf:ggml-org/embeddinggemma-300M-GGUF/embeddinggemma-300M-Q8_0.gguf
+  embed: hf:Qwen/Qwen3-Embedding-0.6B-GGUF/Qwen3-Embedding-0.6B-Q8_0.gguf
   generate: hf:tobil/qmd-query-expansion-1.7B-gguf/qmd-query-expansion-1.7B-q4_k_m.gguf
   rerank: hf:ggml-org/Qwen3-Reranker-0.6B-Q8_0-GGUF/qwen3-reranker-0.6b-q8_0.gguf

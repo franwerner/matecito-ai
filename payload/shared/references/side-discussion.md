@@ -98,6 +98,16 @@ environment offers no way to run a detached command that outlives the turn, the 
 the mechanism still works, retrieval falls back to the two consulting moments in "Pickup", and the
 orchestrator says once that it will not notice on its own.
 
+**The watch does not outlive the session that started it, and nothing reports that it died.** A
+detached command belongs to the session that launched it: when that session ends — closed, crashed,
+restarted — the watch goes with it, while the discussion carries on in its own terminal, unaffected.
+The failure is silent by construction, because the thing that would have reported it is the thing that
+died. So a discussion that survives its opener has quietly lost its wake-up. **On resuming a session
+with a discussion still open, the orchestrator restarts the watch rather than assuming one is running**
+— restarting a watch whose conclusion already landed costs one immediate wake-up and nothing else,
+while assuming one that is gone costs the conclusion sitting unread indefinitely. When it cannot tell
+whether a discussion is still open, it says so and asks, rather than picking either reading.
+
 The seed prompt carried into the new session is the only part of the launch fixed here, and it carries
 **one** thing — where the handoff is:
 
