@@ -9,8 +9,8 @@
 
 This file is read by two different actors, at two different moments:
 
-- **The orchestrator**, when the user opens a side discussion, to compose the handoff and the launch
-  command.
+- **The orchestrator**, when the user opens a side discussion, to compose the handoff and open the
+  session.
 - **The side session itself**, as the first thing it reads after it starts, to learn its own protocol
   before it reads the handoff or reasons about anything.
 
@@ -48,16 +48,55 @@ The `Type` line is not a sixth section — it governs what the *main thread* doe
 open (see "Pickup" below), not what the side session has to read. It sits in the handoff, not only in
 the orchestrator's own head, so a resumed or compacted side session can recover it without asking again.
 
-No payload prose can portably spawn a terminal on every platform this ecosystem runs on. Instead, the
-orchestrator **composes the launch command and hands it to the user**, who runs it themselves, from the
-repo root, in a new terminal:
+## Opening the session — automatic, tested by five properties, no tool named
+
+**The orchestrator opens the session itself — automatically, with no action required from the user.**
+Handing the user a command to run does not satisfy this: the mechanism opens the session, it does not
+delegate opening it.
+
+The launch must satisfy five properties. None of them names a tool, in this file or anywhere else in the
+payload — not as an example, not as a default, not as "the one that works today":
+
+1. **A new terminal** — a session separate from this one, not this thread continuing.
+2. **Interactive** — the user can read what it says and type into it.
+3. **Opened without the user doing anything** — the orchestrator opens it.
+4. **Its start is known** — the orchestrator learns whether the session started, rather than assuming it
+   did.
+5. **It opens on the tree the launching session is working on, and creates none** — the change workspace
+   when change-level isolation is active for the current change, the ordinary working tree otherwise. A
+   launch that produces its own worktree or checkout does not satisfy this.
+
+**How** those five are achieved is resolved at the moment of use, against whatever the environment
+offers — it is fixed in no file. This mirrors the rule this ecosystem already applies to its exploration
+index (`payload/domains/development/CLAUDE.md:49`): reference the capability, never hardcode the tool
+that provides it, resolve it at use time.
+
+**Why inheriting the directory is safe, instead of assumed.** Two sessions standing in one working tree
+would be a real problem if both wrote — that is exactly the collision the change-workspace mechanism
+exists to prevent. It is not a problem here because the side session only discusses: it reads and
+reasons, and its single output is an Engram key. Inheriting is therefore not a shortcut around
+isolation — it is what the read-only boundary buys. It also gives the discussion something a separate
+checkout would have taken away: the side session sees the main thread's uncommitted work, because it is
+standing in the same tree.
+
+Whatever opens the session is used **only** to open it. If it also offers ways to read or drive the
+session's terminal, the orchestrator does not use them: pickup stays consult-only through Engram (see
+"Pickup" below).
+
+The seed prompt carried into the new session is the only part of the launch fixed here:
 
 ```
-claude "Read ~/.claude/references/side-discussion.md, then read the Engram observation with topic_key side-discussion/{slug}/handoff, and follow it."
+Read ~/.claude/references/side-discussion.md, then read the Engram observation with topic_key side-discussion/{slug}/handoff, and follow it.
 ```
 
-No permission mode and no tool restriction are part of this command — see "The write boundary" below for
+No permission mode and no tool restriction are part of the launch — see "The write boundary" below for
 why that is deliberate, not an oversight.
+
+**When nothing in the environment resolves into a launch meeting all five**, the mechanism is
+unavailable: the orchestrator says so in one line, offers to take the question into this thread instead —
+naming the cost, that doing so spends the context the side discussion existed to save — and hands over
+**no command**. It states once, in that same line, that a launcher would restore the mechanism, without
+naming one, and does not proceed as if the discussion had happened.
 
 ## The side session's protocol
 
@@ -73,17 +112,21 @@ why that is deliberate, not an oversight.
 
 ## The write boundary
 
-The launch command carries no permission mode and no tool restriction. The "only discusses" limit lives
+The launch carries no permission mode and no tool restriction. The "only discusses" limit lives
 **only as prose**, in the handoff's `## Return` and in this file's own instructions — nothing in this
 ecosystem enforces it mechanically here.
 
 This is deliberate, and it is not the same bet this ecosystem makes everywhere else it uses prose rules:
-a side discussion is **interactive**, and **the user is sitting in it**. Nobody launches this session and
-walks away by design — if it starts writing or reaches for a shell command, the person watching the
-terminal sees it happen. That visibility is what makes a prose-only boundary defensible here.
+a side discussion is **interactive**, and the user can read and type into it. If it starts writing or
+reaches for a shell command, whoever is watching the terminal sees it happen. That visibility is what
+makes a prose-only boundary defensible here.
 
-**The cost, stated plainly:** if the user leaves the session unattended, nothing stops it from writing or
-committing. The boundary is only as strong as the attention behind it.
+**The cost, stated plainly, and now larger than a manually-launched session's.** If the user leaves the
+session unattended, nothing stops it from writing or committing. Because the side terminal inherits the
+launching session's working directory instead of a checkout of its own, a stray write lands **in the tree
+the main thread is working in**, not in a discardable copy. And because the launch is automatic, the user
+never has to touch the terminal for the session to start — "attended" is an expectation the mechanism
+does not itself demonstrate. The boundary is only as strong as the attention behind it.
 
 ## The conclusion
 
@@ -145,12 +188,13 @@ one about silence, which this file does not restate.
 
 ## Abandonment
 
-If a side discussion is opened and never finished — the user never runs the command, or runs it and never
-completes it — nothing cleans it up and nothing times it out. The handoff and (if written) the conclusion
+If a side discussion is opened and never finished — the session opens and the user never brings it to a
+conclusion — nothing cleans it up and nothing times it out. The handoff and (if written) the conclusion
 simply stay in the artifact store under their keys, available if the same discussion is ever picked back
 up. There is no liveness check to build here: the whole mechanism is consult-only.
 
 ## Store mode
 
-This mechanism requires the artifact store. When it is unavailable, there is no channel for a handoff or
-a conclusion, and no side discussion can open.
+This mechanism requires both the artifact store and a launch that satisfies the five properties above.
+With `artifact_store.mode = none` there is no return channel for a handoff or a conclusion, and the
+mechanism is unavailable for that reason — same branch, same message shape as an unresolved launch.

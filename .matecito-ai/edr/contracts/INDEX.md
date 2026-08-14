@@ -39,6 +39,7 @@ Decisiones sobre los contratos entre piezas del ecosistema: qué forma tiene lo 
 | [side-discussion-conclusion-is-not-a-record.md](side-discussion-conclusion-is-not-a-record.md) | Accepted | Te tienta que una sesión lateral escriba un EDR directamente, o copiar una conclusión a un EDR sin gate. |
 | [side-discussion-launch-boundary.md](side-discussion-launch-boundary.md) | Accepted | Vas a tocar el comando de lanzamiento de la sesión lateral o el límite de qué puede hacer. |
 | [side-discussion-pickup-on-consult.md](side-discussion-pickup-on-consult.md) | Accepted | Vas a tocar cómo el principal decide si esperar o seguir trabajando durante una discusión lateral, o cómo recoge su conclusión. |
+| [side-discussion-launcher-test.md](side-discussion-launcher-test.md) | Accepted | Vas a tocar cómo se lanza la sesión lateral, qué cuenta como un lanzamiento válido, o el mensaje cuando no hay ninguno disponible. |
 
 ## No aplican en este dominio
 

@@ -515,9 +515,19 @@ A side discussion is a separate, interactive Claude Code session, in its own ter
 works through one topic without piling onto this thread's context — then only the conclusion comes back.
 **Only the user opens one.** The orchestrator never proposes a side discussion, never detects that a
 question would be a good candidate for one, and carries no test for when one is warranted. Its whole role
-once the user opens one is to *serve* it: compose the handoff, hand the user the command to run, and pick
-up the conclusion later. This can happen with or without an active change, and in any lane — it is not a
-flow phase and no phase agent ever opens one.
+once the user asks is to *serve* the discussion: compose the handoff, **open the session itself,
+automatically** — no command is ever handed to the user to run — and pick up the conclusion later. This
+can happen with or without an active change, and in any lane — it is not a flow phase and no phase agent
+ever opens one.
+
+**The side terminal inherits the launching session's working directory and opens no isolation of its
+own.** Main thread on the repo → the side terminal opens there. Main thread working inside a change
+workspace → the side terminal opens on that same workspace. It never creates its own worktree or
+checkout. Where no launch can satisfy this (and the rest of what the mechanism needs), it is
+**unavailable**: the orchestrator says so in one line, offers to take the question into this thread
+instead, naming the cost, and hands over no command — see
+`~/.claude/references/side-discussion.md` for the full launch requirement and why inheriting the
+directory is safe.
 
 When the user opens a side discussion, they say whether it is **blocking** or **consultive** — the
 orchestrator asks if they do not say, and never picks one on its own:
@@ -539,7 +549,7 @@ yet, this thread says so and offers ways forward (wait, re-open the discussion, 
 this thread) instead of guessing. There is no timeout: silence in a side discussion is not consent, same
 as everywhere else in this ecosystem.
 
-The mechanism — the handoff's exact shape, the launch command, the conclusion's shape, and how pickup
+The mechanism — the handoff's exact shape, the launch requirement, the conclusion's shape, and how pickup
 works in detail — is documented once, in `~/.claude/references/side-discussion.md`, read by the
 orchestrator when it composes a handoff and by the side session itself as the first thing it reads.
 

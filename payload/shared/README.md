@@ -16,9 +16,10 @@ importar cuáles tengas instalados— se cataloga acá.
   item, "confirmar el resto", retomar) y la plantilla de huecos fijos que usa cualquier gate que
   ratifique items. Se despliega a `~/.claude/references/gate-presentation.md`.
 - [`side-discussion.md`](references/side-discussion.md) — el mecanismo de la discusión lateral: la
-  forma del traspaso y de la conclusión, el comando de lanzamiento, y cómo se recoge la conclusión
-  según el tipo declarado. Lo leen el orquestador y la sesión lateral misma, que no pertenece a ningún
-  dominio. Se despliega a `~/.claude/references/side-discussion.md`.
+  forma del traspaso y de la conclusión, el requisito de lanzamiento (cinco propiedades, sin nombrar
+  herramienta), y cómo se recoge la conclusión según el tipo declarado. Lo leen el orquestador y la
+  sesión lateral misma, que no pertenece a ningún dominio. Se despliega a
+  `~/.claude/references/side-discussion.md`.
 
 ## Ver también
 
