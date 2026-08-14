@@ -121,13 +121,14 @@ conclusion into one without going through that path's own ratification step.
 ## Pickup
 
 A discussion is **blocking** or **consultive**, and the user says which when they open it — the
-orchestrator asks if they do not say, and never picks one on its own. Both types are declared in the
-handoff's `Type` line.
+orchestrator asks if they do not say, and never picks one on its own. Whichever they pick is declared in
+the handoff's `Type` line.
 
-- **Blocking** — the main thread stops and does not advance on anything that depends on the discussion.
-  Unrelated work may continue.
-- **Consultive** — the main thread keeps working and picks the conclusion up when the user says the
-  discussion is ready, or when the main thread itself reaches a point where it needs the answer.
+**What each type means for the main thread is stated once, in the kernel's `### Side Discussion
+(opt-in)` section — read it there.** This file does not restate it: a definition written in two places
+drifts the first time one of them is edited, and the two homes exist precisely so that each says a
+different thing. What belongs here is the part the kernel does not carry — how the conclusion is
+retrieved, which is the same for both types.
 
 Both types are picked up the same way: **by consulting** `side-discussion/{slug}/conclusion`, at exactly
 two moments — the user reports the discussion done, or the main thread reaches a point where it needs the
@@ -138,9 +139,9 @@ cross-session signal this mechanism can rely on.
 guessing at one: wait for the user to finish it, re-open the discussion with the same handoff, or bring
 the open question into the main thread directly.
 
-**There is no timeout.** Nothing here causes the main thread to proceed on its own reading of the open
-question after any amount of elapsed time. Silence is not consent, in a side discussion exactly as
-everywhere else in this ecosystem.
+**There is no timeout**, and none is to be added: nothing here causes the main thread to proceed on its
+own reading of the open question after any amount of elapsed time. The reason is the kernel's standing
+one about silence, which this file does not restate.
 
 ## Abandonment
 
