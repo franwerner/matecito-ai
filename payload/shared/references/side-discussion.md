@@ -96,10 +96,21 @@ conclusion becomes the wake-up, and the user never has to announce it. Poll ever
 check is one cheap read against the store, and the cost of a slower interval is the user sitting in
 front of a finished discussion waiting for this thread to notice.
 
-**What the watch matches on is the key, never the title.** The topic_key is fixed by the handoff and
-known before the discussion starts; the title is the side session's to choose and it will not be
-guessed right — it varies in wording and in language. A watch keyed to a title waits forever next to a
-conclusion that was written, and its silence is indistinguishable from a discussion still in progress. If the
+**What the watch tests is whether that exact key exists — not whether a search finds something that
+looks like it.** The topic_key is fixed by the handoff before the discussion starts; everything else
+about the conclusion is the side session's to choose, including its title, which varies in wording and
+in language and will not be guessed right. Two ways to get this wrong, both observed:
+
+- **Matching the store's search output.** A text search is fuzzy — it returns the handoff too, since
+  both carry the slug — and what it prints is the title, not the key. There is nothing in that output
+  to test the key against.
+- **Matching the title.** A watch keyed to a title sits forever beside a conclusion written twenty
+  minutes earlier, and its silence looks exactly like a discussion still in progress.
+
+So the check must query the store for that key directly, as an exact match — whatever form that takes
+in the store at hand. Where no exact-key query is possible, the watch is treated as unavailable rather
+than approximated: a watch that can be wrong about whether the discussion finished is worse than none,
+because both of its failures are silent. If the
 environment offers no way to run a detached command that outlives the turn, the watch is simply absent:
 the mechanism still works, retrieval falls back to the two consulting moments in "Pickup", and the
 orchestrator says once that it will not notice on its own.
