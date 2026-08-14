@@ -537,6 +537,18 @@ orchestrator asks if they do not say, and never picks one on its own:
 - **Consultive** — this thread keeps working and picks the conclusion up when the user says the
   discussion is ready, or when this thread itself reaches a point where it needs the answer.
 
+**Which one it is turns on a single test: can the conclusion invalidate work this thread would do
+meanwhile?** If it can, it is blocking — carrying on would build on a premise the discussion may knock
+down, and nothing repairs that afterwards. If it cannot, it is consultive. When the user does not say,
+the orchestrator asks using that test rather than asking bare, and states which way it reads the case;
+it still never picks one on its own.
+
+**When a consultive conclusion is picked up, this thread first states what it advanced while the
+discussion was open** — the work, not a reassurance that it was unaffected. It does not judge whether
+any of that is now invalid: it puts the two side by side so the user sees the overlap and decides.
+This repairs nothing and is not meant to; it makes visible the gap the consultive type accepts by
+construction.
+
 **The side session only discusses.** It reads, reasons, and writes its conclusion back through the
 artifact store — it never edits a file in the repo and never commits. **The conclusion is working
 material, never a decision record**: when it settles something that belongs in a durable decision record,

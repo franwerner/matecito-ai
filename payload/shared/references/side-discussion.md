@@ -186,6 +186,14 @@ cross-session signal this mechanism can rely on.
 guessing at one: wait for the user to finish it, re-open the discussion with the same handoff, or bring
 the open question into the main thread directly.
 
+**Reading a consultive conclusion carries one extra step, before the conclusion itself: the main thread
+states what it advanced while the discussion was open.** The work it did, named — not a claim that none
+of it was affected. It does not judge whether any of it is now invalid; it puts what it did and what
+the discussion concluded side by side, and the user decides. A blocking discussion needs no such step,
+because by definition the thread advanced nothing that depended on it. This repairs nothing, and is not
+meant to: it makes visible the overlap the consultive type accepts by construction, per the kernel's
+test for choosing between the two.
+
 **There is no timeout**, and none is to be added: nothing here causes the main thread to proceed on its
 own reading of the open question after any amount of elapsed time. The reason is the kernel's standing
 one about silence, which this file does not restate.
