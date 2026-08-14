@@ -60,8 +60,12 @@ payload — not as an example, not as a default, not as "the one that works toda
 1. **A new terminal** — a session separate from this one, not this thread continuing.
 2. **Interactive** — the user can read what it says and type into it.
 3. **Opened without the user doing anything** — the orchestrator opens it.
-4. **Its start is known** — the orchestrator learns whether the session started, rather than assuming it
-   did.
+4. **Its start is known — and starting means working on the handoff, not existing** — the orchestrator
+   learns that the session actually received the seed prompt and began acting on it, rather than
+   assuming it did. An opened terminal is not a started session, and neither is one holding the seed
+   prompt in its input: text nobody submitted is a session that never began. Whatever opens it must
+   therefore wait until the session is ready to receive input before delivering the prompt, and deliver
+   it as a submitted message rather than typed text left standing.
 5. **It opens on the tree the launching session is working on, and creates none** — the change workspace
    when change-level isolation is active for the current change, the ordinary working tree otherwise. A
    launch that produces its own worktree or checkout does not satisfy this.
