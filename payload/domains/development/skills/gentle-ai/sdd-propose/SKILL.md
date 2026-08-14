@@ -182,5 +182,5 @@ Two things that file makes explicit and that this phase gets wrong most often:
 - New Capabilities → each becomes a new capability spec for sdd-spec
 - Modified Capabilities → each will become a delta spec inside `sdd-spec`'s `spec` artifact
 - If nothing changes at the spec level (pure refactor, config change), explicitly write "None" under both sub-sections — don't leave them as template placeholders
-- **Size budget**: Proposal artifact MUST be under 450 words. Use bullet points and tables over prose. Headers organize, not explain.
+- **Shape**: Bullet points and tables over prose. Headers organize, not explain. Written tight from the first draft and never measured — see `_shared/sdd-phase-common.md`, "Writing register".
 - Return envelope per **Section D** from `~/.claude/skills/_shared/sdd-phase-common.md`.

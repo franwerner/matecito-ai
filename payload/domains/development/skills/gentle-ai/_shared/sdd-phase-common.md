@@ -223,6 +223,30 @@ check 4 matches a section's `summary_claims` pattern together with a non-zero di
 exact words and state the count as a digit whenever the summary claims that section has content: the
 check is a literal match, and dropping the words would turn it off silently, not on purpose.
 
+<!-- matecito-ai: los presupuestos de palabras vivían como `MUST be under N words` en tres SKILLs, y no
+     los consumía nadie: ninguna fase los cumplió (450→680 y 800; 800→1050 y 1280) y todas lo
+     reportaron. Lo que sí producían era un ciclo de auto-auditoría — una corrida de `sdd-tasks` gastó
+     37 ediciones y 21 `wc` sobre su propio borrador, el 63% de sus llamadas, y otra 31 y 16. Cada una
+     de esas llamadas re-manda el contexto acumulado, y caen al final del run, cuando más pesa. El
+     artefacto medía ~1.500 tokens contra los ~250.000 de la corrida: el tamaño nunca fue el gasto,
+     medirlo sí. Un número que nadie exige, que nadie cumple y que cuesta el 60% de una fase se
+     reemplaza por cómo escribir, no por otro número. -->
+**Writing register — tight by construction, never by counting.** Write the artifact tight from the
+first draft: short sentences, the claim before its reason, a table or a list wherever prose would
+restate a structure. State a thing once; a sentence that re-says the previous one in other words is
+the thing to cut, and cutting it costs nothing because it carried nothing.
+
+**Terse binds your prose, never the content a rule mandates.** Where another rule requires something
+emitted — a section with its declared parts, an item's `rationale`, the alternatives you weighed and
+why you discarded them — it is emitted whole, and no register instruction shortens it. An artifact that
+is long because it carries seven decisions is the right length; an artifact that is long because it
+explains itself twice is not. Tighten the second and never the first.
+
+**Do NOT measure your own output.** No word budget binds these artifacts and none is worth counting:
+do not run `wc`, do not write a draft to a scratch file to size it, and do not iterate a trim-and-recount
+cycle. Every one of those steps re-sends everything you have done so far, so the counting costs far more
+than whatever length it saves. Write it once, well, and return it.
+
 **Anchor.** A legitimate anchor takes one of two forms: `<repo-path>[:line]` or `<engram-key>` — the
 concrete source an item is about. When the source spans more than one line, the anchor names only the
 line where it starts; the extent is stated in the item's own prose, in words, never as a `path:80-100`

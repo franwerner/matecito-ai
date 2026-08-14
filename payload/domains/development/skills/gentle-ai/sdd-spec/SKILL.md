@@ -353,7 +353,7 @@ Two things that file makes explicit and that this phase gets wrong most often:
      Eso es exactamente la falla que las dos excepciones de abajo existen para frenar, sólo que
      llegando por la puerta del número en vez de por la del ejecutor apurado. La presión hacia tablas
      y escenarios cortos se queda; el número no. -->
-- **Size budget**: Keep the artifact tight — prefer requirement tables over narrative descriptions, and hold each scenario to 3-5 lines. **There is no word cap**: the length follows the change's real surface, and folding content to hit a number is the failure this budget exists to prevent, not its purpose. **Never drop or trim the `## UI Scenarios` block or `## Scope`** to make the artifact shorter — the file list is `sdd-apply`'s only source of what to touch, since it does not read the intake brief.
+- **Shape**: Keep the artifact tight — prefer requirement tables over narrative descriptions, and hold each scenario to 3-5 lines. **There is no word cap and nothing to measure**: the length follows the change's real surface, folding content to hit a number is the failure this rule exists to prevent, and counting your own output costs more than any length it would save — see `_shared/sdd-phase-common.md`, "Writing register". **Never drop or trim the `## UI Scenarios` block or `## Scope`** to make the artifact shorter — the file list is `sdd-apply`'s only source of what to touch, since it does not read the intake brief.
 - Return envelope per **Section D** from `~/.claude/skills/_shared/sdd-phase-common.md`.
 
 ## RFC 2119 Keywords Quick Reference

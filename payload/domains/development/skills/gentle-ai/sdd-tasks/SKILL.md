@@ -155,7 +155,7 @@ only if their ids are equal.
 ### The per-task line budget with the mark
 
 A marked task's cap is **three lines**: the `- [ ]` line, the `criteria:` sub-line, and the
-`· parallel-group:` sub-line. An unmarked task keeps the existing two-line cap — see "Size budget"
+`· parallel-group:` sub-line. An unmarked task keeps the existing two-line cap — see "Shape"
 below.
 
 ### Review Workload Forecast Rules
@@ -275,6 +275,6 @@ Three things the template expects you to already know from this skill:
 - Every task MUST link to a spec requirement or to something the design establishes. A task that links to neither is not forbidden (a real gap or an implied prerequisite may warrant it) but it MUST be declared under `### Tasks not traceable to spec/design` in your return — never folded in silently
 - If the project uses TDD, integrate test-first tasks: RED task (write failing test) → GREEN task (make it pass) → REFACTOR task (clean up)
 <!-- matecito-ai: budget subido de 530 → 800 palabras para absorber la sub-línea `criteria:` (criteria + edr) por tarea; el cap por tarea sube de 2 a 3 líneas cuando lleva `· parallel-group:`. -->
-- **Size budget**: Tasks artifact MUST be under 800 words. Each task: the `- [ ]` line + one indented `criteria:` sub-line (2 lines total) — 3 lines total for a task that also carries `· parallel-group:`. Use checklist format, not paragraphs.
+- **Shape**: Each task: the `- [ ]` line + one indented `criteria:` sub-line (2 lines total) — 3 lines total for a task that also carries `· parallel-group:`. Checklist format, not paragraphs. Written tight from the first draft and never measured — see `_shared/sdd-phase-common.md`, "Writing register".
 - **Review workload guard**: ALWAYS include the Review Workload Forecast. If likely above 400 changed lines, recommend chained PRs and honor the received delivery strategy for whether a decision/exception is needed before apply.
 - Return envelope per **Section D** from `~/.claude/skills/_shared/sdd-phase-common.md`.
