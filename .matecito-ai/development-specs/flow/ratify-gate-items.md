@@ -22,13 +22,13 @@ Un gate entrega todo a la vez, y cada item llega sin nombrar sobre qué trata, a
 
 ## Flujo principal
 
-1. Orquestador recibe el retorno de fase con items ratificables
-2. Si hay items, construir un índice único mencionando cuántos hay y agrupados por sección
+1. Orquestador recibe el retorno de fase o materializa un momento de decisión propio (Discovery Gate, Uncommitted-Work Gate, Review Workload Guard, validadores, o risks)
+2. Contar los items ratificables (Tier 1) a presentar; si el conteo es **0**, no mostrar nada; si es **exactamente 1**, presentar el template solamente sin índice; si es **2 o más**, construir un índice único mencionando cuántos hay y agrupados por sección
 3. Presentar el primer item con su summary y anchor solamente
 4. Esperar resultado: confirmado, ajustado o rechazado
 5. Si ajustado, registrar el texto corregido como el ratificado
 6. Presentar el siguiente item sin mostrar al usuario el razonamiento completo a menos que lo pida
-7. En cualquier momento, el usuario puede pedir "confirmar el resto" para aceptar todos los pendientes
+7. En cualquier momento (o antes del primer item), el usuario puede pedir "confirmar el resto" para aceptar todos los pendientes
 8. Una vez que todos los items tienen resultado, el gate cierra
 
 ## Ramas / flujos alternativos
@@ -49,11 +49,15 @@ Un gate entrega todo a la vez, y cada item llega sin nombrar sobre qué trata, a
 ## Reglas de negocio
 
 - El índice es único por retorno, nunca acumulativo across el flow
-- Item by item es el default; "confirmar el resto" es el único atajo global
-- El template fijo (summary + anchor + acciones) no tiene slot para narrativa libre
-- Lo que el usuario ve en el gate es solo lo que el contrato declara para esa sección (summary, anchor, tokens)
+- La forma del gate es decidida por conteo (0/1/≥2) Y por si un item es compuesto. Un item cuyo contenido es un conjunto de fields tipados (un contrato) se presenta dentro del mismo template compartido que cualquier otro, como UN item, con sus fields mostrados debajo de su summary y encima de las acciones. Cuenta como un item en el índice y toma exactamente un resultado
+- Item by item es el default cuando hay múltiples; "confirmar el resto" es el único atajo global, EXCEPTO: cuando hay dos o más contratos (items compuestos), el gate DEBE ofrecer ritmo (uno-a-uno o todos-a-la-vez) antes de mostrar el primero; esta oferta es la única excepción nombrada a "no hay otro bulk action"
+- El template fijo (summary + anchor + acciones + opcionalmente fields) no tiene slot para narrativa libre
+- Lo que el usuario ve en el gate es solo lo que el contrato declara para esa sección (summary, anchor, tokens, fields si el item es compuesto)
 - La rationale completa viaja siempre en el bloque persistido; nunca se imprime por defecto
 - El ancla DEBE ser suministrado por la fase; nunca se deriva
+- El Discovery Gate es la única excepción al requisito de anchor (porque sus items son preguntas sobre un pedido, no sobre artefactos)
+- Risks se presentan informativaentes: llevan anchor y forma de items, pero no bloquean el gate ni contabilizan en el índice de items ratificables
+- Seis momentos del orquestador (Discovery Gate, Uncommitted-Work Gate, Review Workload Guard, `blocked` returns, findings de validador, risks) presentan través de este mismo template y walkthrough, sin redacción propia
 
 ## Entidades y estados
 
@@ -150,8 +154,106 @@ Un gate entrega todo a la vez, y cada item llega sin nombrar sobre qué trata, a
 - **WHEN** cada uno abre
 - **THEN** todos presentan items través del mismo template compartido con índice único y walkthrough uno-a-uno
 
+### Scenario: El orquestador mismo presenta momentos de decisión
+
+- **GIVEN** un momento donde el orquestador elige presentar algo (Discovery Gate, Uncommitted-Work Gate, Review Workload Guard, validador que falla, risks)
+- **WHEN** ese momento abre
+- **THEN** presenta através del mismo template compartido (index + walkthrough si ≥2 items, template solo si 1, silencio si 0)
+- **AND** el índice y walkthrough tienen la misma forma que un gate de fase
+
+### Scenario: Cero items ratificables, silencio total
+
+- **GIVEN** un gate cuyo material está vacío o es solo informativo
+- **WHEN** se intenta presentar
+- **THEN** nada se muestra y el mechanism se omite
+- **AND** el siguiente paso continúa sin mención del gate
+
+### Scenario: Un solo item, template sin índice
+
+- **GIVEN** un gate con exactamente un item (un blocker a fase, un resultado de validación, o un risk)
+- **WHEN** se abre
+- **THEN** se muestra el item través del template (summary, anchor, acciones)
+- **AND** no aparece ningún índice
+
+### Scenario: El mismo momento en dos cambios produce distinto conteo
+
+- **GIVEN** el Discovery Gate en dos changes distintos, uno con 3 preguntas y otro con 0
+- **WHEN** cada uno abre
+- **THEN** el primero muestra índice + walkthrough; el segundo muestra una sola línea confirmando la lectura del pedido
+- **AND** nada en el código clasificó "Discovery" como multi-item: la forma cambió solo por el conteo
+
+### Scenario: Discovery Gate no declara anchor
+
+- **GIVEN** el Discovery Gate presentando preguntas sobre un pedido sin artefactos aún
+- **WHEN** se redactan sus items
+- **THEN** ninguno lleva anchor (porque no hay ubicación recuperable que apuntar)
+- **AND** el archivo de presentación declara esta excepción explícitamente, no por defecto
+
+### Scenario: Findings de validador, mucho o poco
+
+- **GIVEN** un validador que falla emitiendo hallazgos
+- **WHEN** se presentan
+- **THEN** si hay múltiples, abren con índice + walkthrough; si hay uno, solo el template; si cero, nada
+- **AND** nada cambió en el validador o el script: el conteo decidió la forma
+
+### Scenario: Risks no bloquean pero sí anclan
+
+- **GIVEN** un retorno de fase con dos items ratificables y tres risks
+- **WHEN** su gate abre
+- **THEN** el índice cuenta dos (solo ratificables), el walkthrough presenta dos, y los risks se muestran junto al resumen sin abrir un nuevo walkthrough
+- **AND** cada risk nombra su fuente (un archivo, un artefacto, la fuente que lo motivó)
+
+### Scenario: Un retorno es solo risks
+
+- **GIVEN** un retorno cuyo único contenido reportable son sus risks
+- **WHEN** se presenta
+- **THEN** no abre índice ni walkthrough
+- **AND** los risks se muestran con sus anchors
+
+### Scenario: Un contrato con muchos fields
+
+- **GIVEN** un gate presentando un contrato que lleva nueve fields
+- **WHEN** se camina
+- **THEN** es un item tomando un resultado, y ningún field toma resultado de su propio
+
+### Scenario: Items compuesto e ordinarios en el mismo retorno
+
+- **GIVEN** un retorno llevando dos contratos y tres items ordinarios
+- **WHEN** su gate abre
+- **THEN** un índice cuenta cinco y el walkthrough es plano, cada contrato mostrado con sus propios fields
+
+### Scenario: La cuarta forma vive con las otras tres
+
+- **GIVEN** la declaración única de cómo un gate presenta items
+- **WHEN** la forma compuesta se busca
+- **THEN** se declara ahí, junto a las formas decididas por conteo, y ninguna otra declaración de ella existe
+
+### Scenario: Tres contratos llegan a un gate
+
+- **GIVEN** un retorno llevando tres formas de contrato
+- **WHEN** el gate abre
+- **THEN** declara cuántas hay y ofrece uno-a-uno o todos-a-la-vez antes de mostrar el primero
+
+### Scenario: La excepción está escrita donde la regla que exceptúa está
+
+- **GIVEN** la declaración que ningún otro bulk action existe
+- **WHEN** se lee tras este cambio
+- **THEN** la oferta de ritmo de contrato se nombra ahí como su excepción
+
+### Scenario: Confirmar el resto sigue disponible durante el walk de contratos
+
+- **GIVEN** un walkthrough de formas de contrato con dos ya decididas
+- **WHEN** el usuario pide confirmar el resto
+- **THEN** las indecididas se registran como confirmadas y las decididas mantienen sus resultados
+
+### Scenario: Dos declaraciones, dos unidades
+
+- **GIVEN** la declaración que items se caminan uno a la vez y la declaración que un contrato nunca se propone field-por-field
+- **WHEN** se leen juntas
+- **THEN** cada una nombra la unidad que gobierna y ninguna se lee como excepción a la otra
+
 ## Referencias
 
-- **Contrato compartido** → [`../../shared/references/gate-presentation.md`](../../shared/references/gate-presentation.md) — El walkthrough (índice → uno a uno → confirmar-el-resto a mitad) y el template fijo de slots (summary, anchor, acciones, sin narrativa)
-- **Guard de orquestador** → [`../../payload/domains/development/CLAUDE.md`](../../payload/domains/development/CLAUDE.md) — El Unresolved Decisions Guard cita el archivo compartido en lugar de enunciar el batching mechanic
-- **Anchoring criterion** → [`../../payload/domains/development/skills/gentle-ai/_shared/sdd-phase-common.md`](../../payload/domains/development/skills/gentle-ai/_shared/sdd-phase-common.md) Section D.3 — Formas legales de anchor (`<repo-path>[:line]` | `<engram-key>`), start-line-only, regla target-not-yet-written
+- **Contrato compartido** → [`../../shared/references/gate-presentation.md`](../../shared/references/gate-presentation.md) — El walkthrough (índice → uno a uno → confirmar-el-resto), el template fijo de slots (summary, anchor, acciones, sin narrativa), los nueve momentos (tres gates de fase + seis momentos de orquestador), la regla de conteo (0/1/≥2), y la excepción de anchor del Discovery Gate
+- **Guard de orquestador** → [`../../payload/domains/development/CLAUDE.md`](../../payload/domains/development/CLAUDE.md) — Los seis momentos de orquestador (Discovery Gate, Uncommitted-Work Gate, Review Workload Guard, `blocked` returns, findings de validadores, risks) citan el archivo compartido
+- **Anchoring criterion** → [`../../payload/domains/development/skills/gentle-ai/_shared/sdd-phase-common.md`](../../payload/domains/development/skills/gentle-ai/_shared/sdd-phase-common.md) Section D.3 — Formas legales de anchor (`<repo-path>[:line]` | `<engram-key>`), start-line-only, regla target-not-yet-written; Discovery Gate es la excepción explícita
