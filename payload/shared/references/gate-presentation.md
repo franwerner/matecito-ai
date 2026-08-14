@@ -118,9 +118,12 @@ it, not a gate's own framing:
 
 ```
 Decision {n} of {total} — {anchor or section label}
+
 {Anchor slot — the concrete source, per the anchor criterion in
  `~/.claude/skills/_shared/sdd-phase-common.md`, Section D.3}
+
 {Summary slot — the item's `summary`, as authored, one line}
+
 Ratify it? (yes / no / see detail)
 ```
 
@@ -128,8 +131,11 @@ Illustrative, filled in:
 
 ```
 Decision 1 of 2 — structure/event-vocabulary-home
+
 File: apps/api/.matecito-ai/edr/structure/event-vocabulary-home.md
+
 What's being decided: the event vocabulary lives in the feature, not in shared/
+
 Ratify it? (yes / no / see detail)
 ```
 
@@ -137,6 +143,31 @@ Three slots, always the same three: the item's **summary**, its **anchor**, and 
 available on it (confirm / adjust / reject / see detail, plus "confirm the rest" at the moments named
 above). No gate states a presentation of its own, and no gate states its own wording for the actions —
 the words above are the shared wording, not a per-gate choice.
+
+<!-- matecito-ai: los huecos se declaraban como líneas consecutivas y quedaban ilegibles en pantalla —
+     título, ancla, resumen y acciones apelmazados en un bloque. Quien presentaba a veces separaba por
+     criterio propio y a veces no, que es exactamente la variación que una plantilla fija existe para
+     eliminar. La separación pasa a ser parte del contrato, no del gusto de quien renderiza. -->
+**The blank lines are part of the template.** Each slot stands on its own, separated by an empty line,
+exactly as shown above. A run of slots printed as consecutive lines is a violation of this template,
+not a stylistic variant: the shape is what makes an item readable at a glance, and leaving the spacing
+to whoever presents reintroduces the per-gate variation this template exists to remove.
+
+<!-- matecito-ai: el widget nativo de preguntas se ofreció primero como reemplazo total de la plantilla
+     y el usuario lo rechazó; volvió después con el corte correcto, que no es "ratificación vs
+     discovery" sino la forma de la RESPUESTA. Una respuesta que es elegir entre alternativas cerradas
+     encaja en un widget cuyo schema no deja lugar para narrativa — la misma garantía estructural que
+     la plantilla persigue, impuesta por la herramienta en vez de por obediencia. Una respuesta que el
+     usuario redacta no tiene opciones que ofrecer, y ahí el widget estorbaría. -->
+**Discrete options go through the host's question widget; open answers stay prose.** When what the
+item needs back is a choice among closed alternatives — ratify or not, one lane out of four, one of
+three ways forward — present it through the harness's own question control rather than as prose ending
+in a parenthesised list, with the item's summary as the question and each alternative as an option
+carrying one line of what it costs. The anchor still travels, in the question's own text. This holds
+for **every** item whose answer is a choice, not only ratifications: a discovery question with two
+possible readings is a discrete choice and goes the same way. When the answer is something the user
+writes — an open discovery question, a correction, an adjustment to an offered item — there are no
+alternatives to enumerate, and the prose template above is the form.
 
 ### Tier-2 items stay out of the walkthrough
 
