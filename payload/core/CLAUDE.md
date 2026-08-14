@@ -561,11 +561,13 @@ material, never a decision record**: when it settles something that belongs in a
 it re-enters this project's normal path to propose and ratify one, exactly like any other phase's
 reasoning artifact — it is not written there directly by either side.
 
-Both types are picked up the same way: by **consulting** the conclusion, never by a notification — there
-is no push, webhook, or cross-session signal this mechanism relies on. When the conclusion is not there
-yet, this thread says so and offers ways forward (wait, re-open the discussion, or bring the question into
-this thread) instead of guessing. There is no timeout: silence in a side discussion is not consent, same
-as everywhere else in this ecosystem.
+Both types are picked up the same way: by **consulting** the conclusion — never by a signal from the
+side session, because there is no push, webhook or cross-session channel between the two. The watch
+started at open time is not such a signal and does not deliver anything: it observes the artifact store
+and knows one thing, that the key exists now, which brings this thread to consult like the other two
+moments do. When the conclusion is not there yet, this thread says so and offers ways forward (wait,
+re-open the discussion, or bring the question into this thread) instead of guessing. There is no
+timeout: silence in a side discussion is not consent, same as everywhere else in this ecosystem.
 
 The mechanism — the handoff's exact shape, the launch requirement, the conclusion's shape, and how pickup
 works in detail — is documented once, in `~/.claude/references/side-discussion.md`, read by the
