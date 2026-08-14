@@ -23,6 +23,23 @@ sections:
       summary_max: 250
       tokens:
         - { name: anchor, field: anchor }
+  # matecito-ai: contract-shape-gate. An unpinned contract/definition — the shape "Contract &
+  # definition shapes — never inferred" (domain CLAUDE.md) forbids guessing — proposed as one
+  # compound item, never as free prose inside `### Blocker`. Both conditions must hold: the phase's
+  # own `has_contract_proposals` declaration AND `status: blocked`.
+  - title: "### Contract Shapes Proposed"
+    emitted: conditional
+    when: has_contract_proposals
+    statuses: [blocked]
+    render: items
+    field: contract_proposals
+    items:
+      text: summary
+      rationale: rationale
+      summary_max: 250
+      fields: { key: field, parts: [name, type, description], separator: " — ", field_max: 160 }
+      tokens:
+        - { name: anchor, field: anchor }
   - title: "### Blocker"
     emitted: on-status
     statuses: [blocked]

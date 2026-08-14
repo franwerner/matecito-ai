@@ -36,6 +36,7 @@ batch; this file does not repeat its content.
 | `### Test Summary` | only in **Strict TDD Mode** | the orchestrator, as context |
 | `### Unmandated Forks` | always | Unresolved Decisions Guard — **Tier 1** |
 | `### Mandated Departures` | always | Unresolved Decisions Guard — **Tier 2** |
+| `### Contract Shapes Proposed` | conditional — only when `has_contract_proposals` is true and status is `blocked` | Unresolved Decisions Guard — **Tier 1** |
 | `### Blocker` | only when a blocker stopped you | the orchestrator: it puts the question to the user |
 | `### Issues Found` | always | the orchestrator, as context — **never** the blocker |
 | `### Remaining Tasks` | always | the orchestrator, to route: continuation batch vs verify |
@@ -85,6 +86,34 @@ for `### Unmandated Forks` / `### Mandated Departures`, `mandate: covered|forced
 `verify-checks: yes|no`; for `### Rejected Proposals Checked`, `record: <domain>/<slug>`, then
 `design-conflict: none|conflicts`. `summary`'s register is fixed once in Section D.3 of
 `sdd-phase-common.md` — not restated here.
+
+**`### Contract Shapes Proposed`** is the dedicated home for an unpinned contract or definition — the
+shape "Contract & definition shapes — never inferred" (`~/.claude/matecito-ai/domains/development.md`)
+forbids guessing. It never appears as free prose inside `### Blocker`, and it is not an
+`### Unmandated Forks` item: a fork admits more than one valid resolution, an unspecified contract
+admits none until the user fixes it. Emitted only when this run declares `has_contract_proposals: true`
+**and** `status: blocked` — both conditions must hold, and the gate is supplied by the run, never
+derived from the list being non-empty: an empty list under a `true` gate is legitimate (every proposal,
+once checked, needed no further ratification) and reads differently from `false` ("nothing to
+propose"). Absence is never a violation on its own; only the section appearing on a status outside
+`[blocked]` is.
+
+Each item is ONE compound entry, never split across items and never one item per field: a one-line
+`summary` (the contract, what needs it, why it is unpinned), one `· anchor:`, then one
+`· field: {name} — {type} — {description}` continuation line per field the contract needs — every
+field proposed, none dropped, none summarized — then `· rationale:`. `summary` keeps the ordinary
+250-character cap; each field's own `description` carries its own 160-character cap — the **field
+count is never capped**. One anchor per contract, never per field: it is also the identity the forward
+uses when the ratified shape comes back. The item carries no field for where the shape will be stored
+or persisted — this is the one proposing phase where that omission matters most, because "where it
+lives" for `sdd-apply` IS the code, and this section is not where that code is written.
+
+Once ratified (or adjusted) at the gate, the field list travels back only in this batch's re-dispatch
+prompt, identified by the item's own `anchor` and `summary` — **never re-read from `apply-progress` or
+any other stored artifact**. When the prompt carries a ratified shape, implement it as the code it
+governs: no separate return section records it once written, because the code IS the record, per the
+domain rule. A batch that reaches the governed point with nothing in its prompt MUST stop and name the
+missing contract, exactly as "Consulting an Unmandated Fork" governs any other point no artifact fixes.
 
 ## Which status
 
@@ -306,6 +335,17 @@ otherwise, do not even print "None." Full mechanism:
   · record: <domain>/<slug>
   · design-conflict: conflicts
   · rationale: {the design's approach vs. what the rejected proposal proposed, one line}
+
+{CONDITIONAL — only when `has_contract_proposals` is true; omit the whole section otherwise, do not
+even print "None." This is the shape a stop over an unspecified contract takes — the reason this batch
+is `blocked`:}
+
+### Contract Shapes Proposed
+- {the contract, what needs it, why it is unpinned — one line, ≤250}
+  · anchor: {the concrete source this contract is about — a `<repo-path>[:line]` or `<engram-key>`}
+  · field: {name} — {type} — {the field's description; every field proposed, none dropped}
+  · field: {name} — {type} — {a second field, same shape; as many lines as the contract needs}
+  · rationale: {one line: what a wrong guess here propagates to}
 
 ### Blocker
 {Same shape as in `partial`. Always present here.}

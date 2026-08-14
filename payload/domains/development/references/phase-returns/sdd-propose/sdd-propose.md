@@ -20,6 +20,7 @@ casing or heading level is a section it will not find.
 | --- | --- | --- |
 | `### Summary` | always | the orchestrator, as context |
 | `### Scope and approach (unconfirmed)` | always | Unresolved Decisions Guard — **Tier 1** |
+| `### Contract Shapes Proposed` | conditional — only when `has_contract_proposals` is true and status is `blocked` | Unresolved Decisions Guard — **Tier 1** |
 | `### Blocker` | only on `status: blocked` | the orchestrator: it puts the question to the user |
 | `### Next Step` | always | the orchestrator, to route |
 
@@ -50,6 +51,29 @@ Every item also carries the `· anchor:` token, declared first so it prints dire
 summary. What counts as a legitimate anchor — `<repo-path>[:line]` or `<engram-key>`, and what a
 not-yet-written target anchors to — is fixed once in Section D.3 of `sdd-phase-common.md`; not
 restated here.
+
+**`### Contract Shapes Proposed`** is the dedicated home for an unpinned contract or definition — a
+domain entity, a DB model, a DTO, a public type — the shape "Contract & definition shapes — never
+inferred" (`~/.claude/matecito-ai/domains/development.md`) forbids guessing. It never appears as free
+prose inside `### Blocker`. Emitted only when this phase declares `has_contract_proposals: true` **and**
+`status: blocked` — both conditions must hold, and the gate is supplied by the phase, never derived
+from the list being non-empty: an empty list under a `true` gate is legitimate (every proposal, once
+checked, needed no further ratification) and reads differently from `false` ("nothing to propose").
+Absence is never a violation on its own; only the section appearing on a status outside `[blocked]` is.
+
+Each item is ONE compound entry, never split across items and never one item per field: a one-line
+`summary` (the contract, what needs it, why it is unpinned), one `· anchor:`, then one
+`· field: {name} — {type} — {description}` continuation line per field the contract needs — every
+field proposed, none dropped, none summarized — then `· rationale:`. `summary` keeps the ordinary
+250-character cap; each field's own `description` carries its own 160-character cap — the **field
+count is never capped**. One anchor per contract, never per field: it is also the identity the forward
+uses when the ratified shape comes back.
+
+The item carries no field for where the shape will be stored or persisted — that omission is
+deliberate, not missing: this section proposes the shape, it does not decide its home. Once ratified
+(or adjusted) at the gate, the field list travels back only in this phase's re-dispatch prompt,
+identified by the item's own `anchor` and `summary`, and is written into this phase's own artifact —
+this phase MUST NOT read it from any stored artifact.
 
 Only two statuses have a shape here: `done` and `blocked`. This phase's skill does not designate
 `needs-input`, and a proposal is written whole or not at all, so `partial` does not arise.
@@ -92,7 +116,8 @@ level, never left as a placeholder). A proposal that ships placeholder capabilit
 
 ## `status: blocked` — something that fixes scope or approach is not yours to settle
 
-Same block, with three differences. Everything else is emitted as usual — a blocked proposal still
+Same block, with three differences, plus the conditional `### Contract Shapes Proposed` when the
+blocker is an unpinned contract. Everything else is emitted as usual — a blocked proposal still
 carries what you did settle.
 
 ```markdown
@@ -106,6 +131,17 @@ carries what you did settle.
 - **Scope**: {what is in/out so far, or "undefined — depends on the blocker below"}
 - **Approach**: undefined — depends on the blocker below. {What IS settled, if anything.}
 - **Risk Level**: {or "not assessable until the blocker is resolved"}
+
+{CONDITIONAL — only when `has_contract_proposals` is true; omit the whole section otherwise, do not
+even print "None." This is the shape a stop over an unspecified contract takes — the reason this
+proposal is `blocked`:}
+
+### Contract Shapes Proposed
+- {the contract, what needs it, why it is unpinned — one line, ≤250}
+  · anchor: {the concrete source this contract is about — a `<repo-path>[:line]` or `<engram-key>`}
+  · field: {name} — {type} — {the field's description; every field proposed, none dropped}
+  · field: {name} — {type} — {a second field, same shape; as many lines as the contract needs}
+  · rationale: {one line: what a wrong guess here propagates to}
 
 ### Blocker
 {The question, in one line, phrased so the user can answer it without reading the rest.}

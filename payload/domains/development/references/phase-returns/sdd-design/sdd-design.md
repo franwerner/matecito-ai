@@ -18,6 +18,7 @@ casing or heading level is a section it will not find.
 | Section | Emitted | Read by |
 | --- | --- | --- |
 | `### Summary` | always | the orchestrator, as context |
+| `### Contract Shapes Proposed` | conditional — only when `has_contract_proposals` is true and status is `blocked` | Unresolved Decisions Guard — **Tier 1** |
 | `### Blocker` | only on `status: blocked` | the orchestrator: it puts the question to the user |
 | `### New Decisions` | always | Unresolved Decisions Guard — **Tier 1** |
 | `### Open Questions` | always | Unresolved Decisions Guard — Tier 2, informative |
@@ -35,6 +36,31 @@ an embedded newline, fails the render naming the item and the part, and nothing 
 Decisions`, the `· rationale:` line sits directly below the item's three tokens (`· anchor:`, then
 `· blocking-test:`, then `· record:`) — same item, same section, no separate channel. `summary`'s
 register is fixed once in Section D.3 of `sdd-phase-common.md` — not restated here.
+
+**`### Contract Shapes Proposed`** is the dedicated home for an unpinned contract or definition — the
+shape "Contract & definition shapes — never inferred" (`~/.claude/matecito-ai/domains/development.md`)
+forbids guessing. It never appears as free prose inside `### Blocker`, and it is not `### New
+Decisions`: a contract's shape is not an architecture choice with alternatives weighed, it is a fact
+the user owns. Emitted only when this phase declares `has_contract_proposals: true` **and**
+`status: blocked` — both conditions must hold, and the gate is supplied by the phase, never derived
+from the list being non-empty: an empty list under a `true` gate is legitimate (every proposal, once
+checked, needed no further ratification) and reads differently from `false` ("nothing to propose").
+Absence is never a violation on its own; only the section appearing on a status outside `[blocked]` is.
+
+Each item is ONE compound entry, never split across items and never one item per field: a one-line
+`summary` (the contract, what needs it, why it is unpinned), one `· anchor:`, then one
+`· field: {name} — {type} — {description}` continuation line per field the contract needs — every
+field proposed, none dropped, none summarized — then `· rationale:`. `summary` keeps the ordinary
+250-character cap; each field's own `description` carries its own 160-character cap — the **field
+count is never capped**. One anchor per contract, never per field: it is also the identity the forward
+uses when the ratified shape comes back. The item carries no field for where the shape will be stored
+or persisted — this section proposes the shape, it does not decide its home.
+
+Once ratified (or adjusted) at the gate, the field list travels back only in this phase's re-dispatch
+prompt, identified by the item's own `anchor` and `summary` — **never re-read from any stored
+artifact**. When the prompt carries a ratified shape, it is written into this phase's own design
+artifact, which downstream phases already read. A re-dispatch that reaches the governed point with
+nothing in its prompt MUST stop and name the missing contract.
 
 <!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism:
      ~/.claude/references/decision-capture/in-flow-capture.md — this note only fixes the token itself. -->
@@ -95,8 +121,9 @@ Ready for tasks (sdd-tasks).
 
 ## `status: blocked` — a decision the user owns is in the way
 
-Same block, with three differences. Everything else is emitted as usual — a blocked design still
-carries the work you did complete.
+Same block, with three differences, plus the conditional `### Contract Shapes Proposed` when the
+blocker is an unpinned contract. Everything else is emitted as usual — a blocked design still carries
+the work you did complete.
 
 ```markdown
 ## Design Created
@@ -109,6 +136,17 @@ carries the work you did complete.
 - **Key Decisions**: {N} proposed + {M} blocking, unresolved
 - **Files Affected**: {N} / {M} / {K}, or "not determinable — see Blocker"
 - **Testing Strategy**: {or "not fixed; depends on the resolution"}
+
+{CONDITIONAL — only when `has_contract_proposals` is true; omit the whole section otherwise, do not
+even print "None." This is the shape a stop over an unspecified contract takes — the reason this
+design is `blocked`:}
+
+### Contract Shapes Proposed
+- {the contract, what needs it, why it is unpinned — one line, ≤250}
+  · anchor: {the concrete source this contract is about — a `<repo-path>[:line]` or `<engram-key>`}
+  · field: {name} — {type} — {the field's description; every field proposed, none dropped}
+  · field: {name} — {type} — {a second field, same shape; as many lines as the contract needs}
+  · rationale: {one line: what a wrong guess here propagates to}
 
 ### Blocker
 {The question, in one line, phrased so the user can answer it without reading the rest.}
