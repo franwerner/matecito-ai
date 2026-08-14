@@ -126,4 +126,6 @@ Phase-specific refinements on top of Section D:
 - Every item under `### New Decisions` and `### Open Questions` carries its own `anchor`, required per
   D.3 — free-form (`<repo-path>[:line]` or `<engram-key>`), start line only; the renderer (step 6)
   rejects a data file that omits it
+- `### Contract Shapes Proposed` is emitted conditionally — `has_contract_proposals: true` on a
+  `status: blocked` return, when the stop is over an unspecified contract — per the SKILL.md wiring
 - `skill_resolution`: per D.4 — `phase-skill` when you loaded this phase's own SKILL.md <!-- matecito-ai: sin inyección -->

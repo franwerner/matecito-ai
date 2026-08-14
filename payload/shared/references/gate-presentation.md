@@ -27,6 +27,20 @@ then apply exactly one of these three forms:
 - **2 or more items** → one index, then the walkthrough, item by item, exactly as the rest of this
   section describes.
 
+### The fourth form — a compound item
+
+The three forms above are decided by **count**; a fourth form is decided by an item's own **content**,
+and it applies independently of which of the three forms above is in effect — it does not replace the
+count rule, it describes what one item can contain. An item whose content is a set of typed fields
+rather than a single line — a contract proposal, per `~/.claude/matecito-ai/domains/development.md`,
+`### Contract Shapes Proposed` — is still exactly **one item**: it takes one slot in the index, one turn
+in the walkthrough, and one outcome. Its field lines print through the same fixed item template as any
+other item (see "The fixed item template" below), beneath its summary and above the actions — never as
+free narrative, and never split into one item per field. A return carrying one compound item resolves to
+"Exactly 1 item" above; a return carrying several compound items, or a mix of compound and ordinary
+ones, resolves to "2 or more items" and is indexed and walked exactly like any other batch — the count
+rule counts items, and a compound item is one.
+
 ### One index, never accumulated
 
 When there are 2 or more items, a gate opens with exactly **one index**, covering everything ratifiable
@@ -46,6 +60,15 @@ unattended mode skips the between-phase checkpoint, never this walkthrough.
 When an item is adjusted rather than confirmed as offered, the **adjusted** content is what counts as
 ratified downstream — never the originally offered text.
 
+**Two statements, two units.** "Item by item is the default" (above) governs the walkthrough's own
+unit — **items**: each item, whatever its content, gets its own turn and its own outcome, one at a time.
+Development's contract rule — "never field-by-field"
+(`~/.claude/matecito-ai/domains/development.md`, "Contract & definition shapes — never inferred") —
+governs a different unit: **a contract's fields**, which are never split into separate proposals or
+separate items. A contract is one item (see "The fourth form" above); its fields are what that one item
+is never split into. Read together, neither statement is an exception to the other: each names the unit
+it governs, and both hold unchanged.
+
 ### "Confirm the rest" — available before the first item, and at any item
 
 The one bulk shortcut this walkthrough offers confirms every item **not yet decided**. It is available
@@ -54,9 +77,16 @@ while walking** (from the second item onward, same offer). Invoking it closes th
 immediately: items already decided keep the outcome they were given: nothing already confirmed,
 adjusted or rejected is revisited; everything still undecided is recorded as confirmed.
 
-No other bulk action exists. A gate does not invent "accept all high-confidence", "per-type",
-"per-domain" or any other grouping of its own — "confirm the rest" is the only shortcut, and it is
-offered in the same two moments everywhere this walkthrough runs.
+No other bulk action exists — with **one named exception**: when a return carries **two or more**
+contract shapes (`### Contract Shapes Proposed`), the gate states how many there are and offers
+**one-by-one or all-at-once**, before the first one is shown, so the user sets the pace. One-by-one is
+the default; choosing all-at-once presents every contract together and still resolves as **one outcome
+per contract** — it is not a single decision standing in for all of them. This offer is additional to
+"confirm the rest," not a replacement for it: "confirm the rest" stays available at the same two
+moments (before the first contract, and at any contract while walking). With exactly one contract shape
+there is no pace to set, and no offer is made. Outside this one case, a gate does not invent "accept all
+high-confidence", "per-type", "per-domain" or any other grouping of its own — "confirm the rest" remains
+the only shortcut, offered in the same two moments everywhere this walkthrough runs.
 
 ### Asking for detail does not answer the item
 

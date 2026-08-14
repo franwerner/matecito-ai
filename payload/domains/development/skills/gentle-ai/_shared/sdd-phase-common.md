@@ -197,13 +197,15 @@ a domain with no such mechanism (e.g. `design`) may still feed a post-verify min
 flag. Gate behavior lives in the domain fragment (`~/.claude/matecito-ai/domains/development.md`, `##
 Guards`) — it reads this table and keeps no parallel copy of it.
 
-**Twelve of these mailboxes split each item into `summary`/`rationale`**: `sdd-propose`'s `Scope and
+**Sixteen of these mailboxes split each item into `summary`/`rationale`**: `sdd-propose`'s `Scope and
 approach`, `sdd-spec`'s `Derived capabilities` and its conditional `New Decisions`, both `sdd-design`
 rows (`New Decisions` and `Open Questions`), `sdd-tasks`'s `Tasks not traceable`, all three
 `sdd-apply` rows (`Unmandated Forks`, `Mandated Departures` and the conditional `Rejected Proposals
-Checked`), and all three `sdd-verify` sections (`## Decision Gaps`, `## UI Verdict` and `### Issues
-Found`) — twelve sections in total, over **six** contract pairs (`.yaml` + `.md`; `sdd-verify` is one
-pair covering its three sections, not three). The split is declared **per section**, never by which
+Checked`), all three `sdd-verify` sections (`## Decision Gaps`, `## UI Verdict` and `### Issues
+Found`), and the conditional `### Contract Shapes Proposed` in each of `sdd-propose`, `sdd-spec`,
+`sdd-design` and `sdd-apply` — sixteen sections in total, over **six** contract pairs (`.yaml` + `.md`;
+`sdd-verify` is one pair covering its three sections, not three; `### Contract Shapes Proposed` adds no
+new pair, it lands inside the four pairs already counted). The split is declared **per section**, never by which
 renderer draws it (`table`, `labeled-lists` or the `items` render form) — a table-rendered section
 declares `items.rationale` exactly like a labeled-lists one, per its own `.yaml`. Emission stays total:
 both parts always land in `detailed_report`. Printing only the `summary` at the gate is that

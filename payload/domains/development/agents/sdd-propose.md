@@ -58,4 +58,6 @@ Phase-specific refinements on top of Section D:
   an unresolved tradeoff returns `blocked` with the options you weighed
 - Every item under `### Scope and approach (unconfirmed)` carries its own `anchor`, required per D.3 —
   free-form (`<repo-path>[:line]` or `<engram-key>`), start line only, and never derived by any tool
+- `### Contract Shapes Proposed` is emitted conditionally — `has_contract_proposals: true` on a
+  `status: blocked` return, when the stop is over an unspecified contract — per the SKILL.md wiring
 - `skill_resolution`: per D.4 — `phase-skill` when you loaded this phase's own SKILL.md <!-- matecito-ai: sin inyección -->

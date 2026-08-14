@@ -156,6 +156,13 @@ Two things that file makes explicit and that this phase gets wrong most often:
 - Anything that would fix scope or approach on the user's behalf returns `blocked`, with the
   question and the options in the `### Blocker` section that file designates — never in `risks`, and
   never resolved by picking the option you prefer so the happy-path block can be emitted.
+- When that `blocked` stop is over an unspecified **contract or definition** — per the domain
+  fragment's "Contract & definition shapes — never inferred" — it does NOT stay as free `### Blocker`
+  prose: emit `### Contract Shapes Proposed` (`has_contract_proposals: true`), one compound item per
+  contract, per that same return template. The ratified (or user-adjusted) shape comes back to you
+  only in a later re-dispatch's own instructions, never re-read from a stored artifact — see
+  `~/.claude/matecito-ai/domains/development.md`, "Forwarding a ratified contract shape to the
+  proposing phase."
 - Every item under `### Scope and approach (unconfirmed)` also carries its own `anchor` — the concrete
   source it traces to. Free-form, per the anchor criterion in `~/.claude/skills/_shared/sdd-phase-common.md`,
   Section D.3: `<repo-path>[:line]` or `<engram-key>`, start line only (say the range in words), and a

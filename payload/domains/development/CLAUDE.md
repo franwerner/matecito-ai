@@ -39,9 +39,9 @@ When you are about to create or modify a **contract or definition** — a domain
   - **the artifact that pins the shape is internally inconsistent, or does not cover this case** — an EDR was written at a point in time and may not have foreseen this. Say so: do not stretch it by analogy, and do not follow it to the letter knowing it breaks something.
 
   Silently executing a mandate you can see is inconsistent is NOT respecting the decision — it is hiding the problem. The goal is a back-and-forth until you land on a middle ground, not the artifact winning by default nor the request winning by default. As a headless executor you cannot hold that discussion yourself: return `blocked` with the conflict stated and the concrete options; the main thread carries the conversation.
-- **Unspecified → ask, per whole contract.** Propose the FULL contract (all fields + their types) as one reviewable unit — never field-by-field. With several unspecified contracts, default to one at a time (they often depend on each other); tell the user how many there are and offer "one-by-one or all-at-once" so they set the pace.
+- **Unspecified → ask, per whole contract.** Propose the FULL contract (all fields + their types) as one reviewable unit — never field-by-field. With several unspecified contracts, default to one at a time (they often depend on each other); tell the user how many there are and offer "one-by-one or all-at-once" so they set the pace. The proposal itself is mechanical, not free prose — it goes in `### Contract Shapes Proposed`, and how a ratified shape gets back to the phase that proposed it is fixed below, "Forwarding a ratified contract shape to the proposing phase."
 - **Where the answer lives.** The concrete shape (field names + types) belongs in the **code** (or the `design` artifact that materializes it) — NEVER copied into an EDR as a typed struct (that is a code calco; EDR reasoning stays conceptual). Only a **cross-cutting modeling policy** hidden in the answer ("identifiers are UUIDs", "money as integer minor units", "status as enums, not magic strings") may be captured as an EDR, expressed conceptually — and once captured it pins that part, so you stop re-asking it (per artifact-pinned). Offer to capture such a policy; never force it.
-- **Scope.** Targets shapes that persist, cross a boundary, or are public. A transient internal struct used within a single function is execution detail, not a contract — no need to ask.
+- **Scope.** Targets shapes that persist, cross a boundary, or are public. *Crossing a boundary* means reaching the database, the network, or a surface outside this tool — a shape read only by the flow's own steps coordinating with each other crosses nothing by this test, and is an ordinary architecture decision, not a contract proposal. A transient internal struct used within a single function is execution detail, not a contract — no need to ask.
 
 This is a specialization of the kernel's "Open question = blocked, not permission" for the high-stakes case of contracts, where inference is most tempting and most consequential (it propagates to DB, API, and tests).
 
@@ -434,6 +434,27 @@ run actually returned. A forwarded rejection with no matching item is the third 
 to read as `none`. This check stays entirely on your side — `validate-return.js` and `render-return.js`
 are unchanged by this mechanism; they only prove that whatever item IS present carries both tokens
 legally, never that every rejection you forwarded got one.
+
+<!-- matecito-ai: same shape as "Forwarding a proposal's resolution to `sdd-apply`" above, for a
+     different kind of item — a contract's shape rather than a decision. Kept as its own paragraph
+     instead of folded into that one because the readers differ: that rule names `sdd-apply` as the one
+     and only recipient (proposals are `sdd-spec`/`sdd-design`'s mailbox, materialized downstream by
+     `sdd-apply` alone); this one reaches all four phases that can stop over an unspecified contract,
+     because any of the four can propose one. -->
+**Forwarding a ratified contract shape to the proposing phase.** `### Contract Shapes Proposed`
+(`~/.claude/references/gate-presentation.md`, "The fourth form") is ratified at its own gate, which runs
+after the phase that proposed it has already returned. The orchestrator forwards the ratified — or
+user-adjusted — field list back to that same phase in the **instructions of its re-dispatch**, identified
+by the item's own `anchor` and `summary` exactly as authored, per the same discipline as the paragraph
+above: never re-written into an Engram key, never left for the phase to re-derive. This reaches all four
+proposing phases identically — `sdd-propose`, `sdd-spec`, `sdd-design`, `sdd-apply` — and only the
+destination afterwards differs: `sdd-spec` and `sdd-design` write the ratified shape into their own
+artifact, which downstream phases already read; `sdd-apply` writes it into the **code**, which is where
+this domain's rule already says a contract's shape lives (see "Where the answer lives", above) — no new
+store is invented for either case. A phase re-dispatched to the point a contract shape governs, whose
+instructions carry no shape for it, MUST NOT guess one and MUST NOT read `apply-progress` or any other
+artifact looking for it — it returns `blocked` naming the missing contract, exactly as `sdd-apply` does
+when a proposal's resolution is missing from its dispatch prompt (the closing paragraph, above).
 
 <!-- matecito-ai: `New Decisions` y `Open Questions` se solapaban — las dos recibían decisiones
      pendientes, el ejecutor terminaba duplicando contenido y el usuario confirmaba lo mismo dos
