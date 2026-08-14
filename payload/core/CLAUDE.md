@@ -520,7 +520,9 @@ files it has turned into delegated work, which needs no separate session at all.
 **Only the user opens one.** The orchestrator never proposes a side discussion, never detects that a
 question would be a good candidate for one, and carries no test for when one is warranted. Its whole role
 once the user asks is to *serve* the discussion: compose the handoff, **open the session itself,
-automatically** — no command is ever handed to the user to run — and pick up the conclusion later. This
+automatically** — no command is ever handed to the user to run — start, in that same act, a watch that
+wakes it when the conclusion lands (how, and what to do where the environment cannot run one, is in the
+reference), and pick up the conclusion later. This
 can happen with or without an active change, and in any lane — it is not a flow phase and no phase agent
 ever opens one.
 
