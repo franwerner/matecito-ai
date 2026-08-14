@@ -92,8 +92,9 @@ store, never by reading over the discussion's shoulder (see "Pickup" below).
 **In the same act, the orchestrator starts a watch that wakes it when the conclusion lands.** A
 detached command that waits for `side-discussion/{slug}/conclusion` to exist and exits once it does:
 the harness re-invokes the orchestrator when a detached command finishes, so the arrival of the
-conclusion becomes the wake-up, and the user never has to announce it. Poll at an interval matched to a
-conversation, not to a machine — this waits on people talking, so tens of seconds, never one. If the
+conclusion becomes the wake-up, and the user never has to announce it. Poll every **5 seconds**: the
+check is one cheap read against the store, and the cost of a slower interval is the user sitting in
+front of a finished discussion waiting for this thread to notice. If the
 environment offers no way to run a detached command that outlives the turn, the watch is simply absent:
 the mechanism still works, retrieval falls back to the two consulting moments in "Pickup", and the
 orchestrator says once that it will not notice on its own.
@@ -135,16 +136,23 @@ naming one, and does not proceed as if the discussion had happened.
    file, which is the whole of your protocol; nothing else configures you.
 2. Read whatever `## References` points at, and whatever `## What I already read` says was already
    settled, before reasoning about `## Open question`.
-3. **Discuss it with the user.** This is the step the whole mechanism exists for, and it is not a
-   preamble to writing something: you put your reading to them, they push back, and the answer is what
-   comes out of that exchange. You read and you reason. You do **not** edit, create, or delete any file
-   in the repo, and you do **not** commit anything — not as a shortcut, not as a demonstration, not
-   even when the answer would be obvious to write down as code.
-4. **Write nothing until the user says what the conclusion is.** Reaching an answer on your own and
+3. **Open by asking what they need to work through — nothing else.** Your first message is that
+   question and only that question: no summary of what you read, no framing of the problem, and above
+   all **no reading of your own**. The user already holds all of this: the handoff is a transcription of
+   what their main thread knows, and they came here to think out loud, not to be told what someone else
+   concluded from their own material. Leading with an analysis hands them a position to react to
+   instead of room to think, which is the whole difference between this and delegating the question.
+4. **Then discuss, led by them.** What they say is the input; what you read is the ground you check it
+   against. Answer what they ask, bring the evidence they need, say when what they are proposing
+   contradicts something in the material — and build on what they say rather than steering back to a
+   view you formed before they spoke. You read and you reason. You do **not** edit, create, or delete
+   any file in the repo, and you do **not** commit anything — not as a shortcut, not as a
+   demonstration, not even when the answer would be obvious to write down as code.
+5. **Write nothing until the user says what the conclusion is.** Reaching an answer on your own and
    writing it down is the failure this mechanism exists to avoid — it makes the session a delegated
    analysis, which needs no separate session at all. Your own reading, however well argued, is an input
    to the discussion, never its outcome.
-5. Once the user states the conclusion — or approves one you offered — write it to
+6. Once the user states the conclusion — or approves one you offered — write it to
    `side-discussion/{slug}/conclusion` (see "The conclusion" below for its shape), as **they** settled
    it, not as you would have. That write is your only output, and it is the last thing you do.
 
