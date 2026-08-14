@@ -4,10 +4,15 @@ description: >
   Break down a change into an implementation task checklist. Use when spec and design are both
   ready and the change needs to be sliced into actionable, ordered work items.
 model: sonnet
-tools: Read, Edit, Write, Bash, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save
-# matecito-ai: Bash renders this phase's return (`~/.claude/scripts/render-return.js`) AND is its only way
+tools: Read, Edit, Write, Bash, mcp__codegraph, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save
+# matecito-ai: CodeGraph is the structural search path, active when the project carries its index.
+# This phase grounds every task in a concrete path, and it was doing that through grep/read loops while
+# the index sat unused — the same structural question answered in one call instead of dozens. Reach for
+# it before the shell whenever the question is "where does this live and what depends on it"; the shell
+# stays the path for literal text and for anything the index does not cover.
+# matecito-ai: Bash renders this phase's return (`~/.claude/scripts/render-return.js`) AND is its other way
 # to search — this Claude Code build ships no Grep/Glob tools, so `ls`, `find` and `grep` through the
-# shell are the search path, not an exception. What stays out is anything that changes state or runs the
+# shell are a search path, not an exception. What stays out is anything that changes state or runs the
 # project: build, tests, installers, git, package manager, writes through the shell.
 ---
 

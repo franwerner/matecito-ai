@@ -4,10 +4,15 @@ description: >
   Write specifications with requirements and scenarios. Use when a proposal is approved and the
   change needs formal requirements (delta specs) captured before implementation.
 model: opus
-tools: Read, Edit, Write, Bash, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save
-# matecito-ai: Bash renders this phase's return (`~/.claude/scripts/render-return.js`) AND is its only way
+tools: Read, Edit, Write, Bash, mcp__codegraph, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save
+# matecito-ai: CodeGraph is the structural search path, active when the project carries its index. A
+# scenario has to name behavior the code actually has, and reaching that through grep/read loops while
+# the index sat unused answered in dozens of calls what it answers in one. Reach for it before the shell
+# whenever the question is "where does this live and what depends on it"; the shell stays the path for
+# literal text and for anything the index does not cover.
+# matecito-ai: Bash renders this phase's return (`~/.claude/scripts/render-return.js`) AND is its other way
 # to search — this Claude Code build ships no Grep/Glob tools, so `ls`, `find` and `grep` through the
-# shell are the search path, not an exception. What stays out is anything that changes state or runs the
+# shell are a search path, not an exception. What stays out is anything that changes state or runs the
 # project: build, tests, installers, git, package manager, writes through the shell.
 ---
 
