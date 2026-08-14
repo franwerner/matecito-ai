@@ -22,6 +22,18 @@ Decisiones sobre los contratos entre piezas del ecosistema: qué forma tiene lo 
 | [expected-set-outside-the-validator.md](expected-set-outside-the-validator.md) | Accepted | Te tienta agregar un flag de completitud a un validador de forma de retorno. |
 | [uncommitted-gate-follows-the-container.md](uncommitted-gate-follows-the-container.md) | Accepted | Vas a tocar qué árbol inspecciona un chequeo cuando el aislamiento anidado puede desplazar cuál es el contenedor relevante. |
 | [workspace-forwarded-in-dispatch.md](workspace-forwarded-in-dispatch.md) | Accepted | Vas a tocar cómo una fase se entera de dónde está el espacio de trabajo en el que tiene que operar. |
+| [gate-summary-cap-in-characters.md](gate-summary-cap-in-characters.md) | Accepted | Vas a tocar el límite de longitud de un resumen de ítem en un gate, o en qué momento del ciclo de vida del retorno se aplica ese chequeo. |
+| [anchor-token-free-form.md](anchor-token-free-form.md) | Accepted | Vas a validar (o te tienta validar) la forma del token de ancla de un ítem de gate. |
+| [ratification-ledger-row.md](ratification-ledger-row.md) | Accepted | Vas a tocar los campos que lleva una fila del registro de ratificación de un cambio. |
+| [re-emergence-match-on-record.md](re-emergence-match-on-record.md) | Accepted | Vas a tocar cómo se detecta que un ítem de gate ya fue ratificado antes en el mismo cambio. |
+| [re-emergence-short-form.md](re-emergence-short-form.md) | Accepted | Vas a tocar cómo se presenta un ítem de gate que ya reapareció y fue ratificado antes. |
+| [subverifier-item-shape-single-declaration.md](subverifier-item-shape-single-declaration.md) | Accepted | Vas a tocar la forma de un hallazgo de sub-verificador, o el prompt de despacho de uno de los siete. |
+| [contract-proposal-has-no-persistence-slot.md](contract-proposal-has-no-persistence-slot.md) | Accepted | Te tienta agregar a una propuesta de contrato un campo que diga dónde va a persistir. |
+| [per-field-description-cap.md](per-field-description-cap.md) | Accepted | Vas a tocar el límite de longitud de la descripción de un campo dentro de un contrato propuesto. |
+| [contract-item-anchors-once.md](contract-item-anchors-once.md) | Accepted | Te tienta agregar un ancla por campo a un contrato propuesto con varios campos. |
+| [nested-field-continuation-line.md](nested-field-continuation-line.md) | Accepted | Vas a tocar cómo se imprime un campo dentro de un ítem de contrato propuesto. |
+| [narrowed-boundary-scope-test.md](narrowed-boundary-scope-test.md) | Accepted | Vas a tocar el test que decide si una edición cruza hacia territorio de contrato no inferible. |
+| [ratified-contract-travels-in-the-dispatch-prompt.md](ratified-contract-travels-in-the-dispatch-prompt.md) | Accepted | Vas a tocar cómo una fase recibe la forma ratificada de un contrato que ella misma propuso. |
 
 ## No aplican en este dominio
 

@@ -25,6 +25,9 @@ Decisiones sobre cómo se organiza el payload del repo (dónde vive cada concept
 | [change-level-integration-act.md](change-level-integration-act.md) | Accepted | Vas a tocar cómo se cierra el ciclo de un cambio con aislamiento activo, o cómo se maneja un conflicto al integrarlo. |
 | [change-workspace-cleanup.md](change-workspace-cleanup.md) | Accepted | Vas a tocar la limpieza del espacio de trabajo de un cambio, en cualquiera de sus dos resultados (integración limpia o fallida). |
 | [change-workspace-prose-homes.md](change-workspace-prose-homes.md) | Accepted | Vas a agregar o mover prosa de un mecanismo que toca el kernel, un dominio y una referencia de fase a la vez, y no sabés dónde va cada parte. |
+| [item-shaping-helper-seam.md](item-shaping-helper-seam.md) | Accepted | Vas a agregar una sección de retorno con ítems que renderiza como tabla, o a tocar cómo se imprime el adorno de un ítem. |
+| [validate-side-needs-no-mirror.md](validate-side-needs-no-mirror.md) | Accepted | Te tienta agregar al validador de retornos un helper equivalente al del lado de renderizado. |
+| [conditional-section-with-status-filter.md](conditional-section-with-status-filter.md) | Accepted | Vas a agregar una sección condicional de retorno que además tenga que filtrar por el status de la fase. |
 
 ## No aplican en este dominio
 
