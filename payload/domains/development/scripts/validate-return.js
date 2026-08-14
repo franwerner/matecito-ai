@@ -139,11 +139,21 @@ function validate(rawContract, text, status) {
         add('error', 'SECTION-UNEXPECTED', `\`${s.title}\` is only for status ${JSON.stringify(s.statuses)}, but the return is \`${status}\``);
       }
     }
+    // A `conditional` section carrying `statuses` mirrors the `on-status` check above, but its
+    // ABSENCE is never flagged: the `when` gate can legitimately be false on a status the `statuses`
+    // list otherwise allows, so only the section's unexpected PRESENCE is a violation.
+    if (s.emitted === 'conditional' && s.statuses) {
+      if (status === null) {
+        add('notice', 'STATUS-UNKNOWN', `cannot check \`${s.title}\`: no \`**Status**:\` line found and no --status given`);
+      } else if (!s.statuses.includes(status) && seen) {
+        add('error', 'SECTION-UNEXPECTED', `\`${s.title}\` is only for status ${JSON.stringify(s.statuses)}, but the return is \`${status}\``);
+      }
+    }
   }
 
   for (const s of declared) {
     const seen = present.get(s.title);
-    if (!seen || !s.items || !(s.items.token || s.items.tokens || s.items.rationale)) continue;
+    if (!seen || !s.items || !(s.items.token || s.items.tokens || s.items.rationale || s.items.fields)) continue;
     problems.push(...checkItems(s, seen, bodyText(parsed.bodies, seen)));
   }
 
@@ -172,18 +182,37 @@ function checkItems(section, seenTitle, body) {
 
   const tokens = tokensOf(section.items).map((t) => ({ ...t, re: new RegExp(`^[\\s·*-]*${t.name}\\s*:\\s*(.+)$`, 'i') }));
   const wantsRationale = !!section.items.rationale;
+  const fieldsSpec = section.items.fields;
   const lines = body.split('\n');
   const rationaleLine = /^[\s·*-]*rationale\s*:\s*(.+)$/i;
+  const fieldLine = /^[\s·*-]*field\s*:\s*(.+)$/i;
 
   let items = 0;
   for (let i = 0; i < lines.length; i++) {
     if (!/^\s*[-*]\s+\S/.test(lines[i])) continue;
     items += 1;
+    const item = lines[i].trim().slice(0, 60);
     const values = tokens.map(() => null);
     let rationaleValue = null;
+    let fieldCount = 0;
     for (let j = i + 1; j < lines.length; j++) {
       if (/^\s*[-*]\s+\S/.test(lines[j])) break;
       const trimmed = lines[j].trim();
+      // A `· field:` continuation line is read as a repeated typed field, split on the first N-1
+      // occurrences of the declared separator (`nested-field-continuation-line`) — never counted as a
+      // new item, and never mistaken for a token or the rationale line.
+      if (fieldsSpec) {
+        const fm = trimmed.match(fieldLine);
+        if (fm) {
+          fieldCount += 1;
+          const parts = splitFieldParts(fm[1], fieldsSpec.separator || ' — ', fieldsSpec.parts.length);
+          const empty = fieldsSpec.parts.filter((p, pi) => !parts[pi] || parts[pi].trim() === '');
+          if (empty.length) {
+            out.push({ severity: 'error', code: 'FIELD-MALFORMED', message: `"${item}" carries a \`· field:\` line missing its \`${empty.join('`, `')}\` — expected \`${fieldsSpec.parts.join(fieldsSpec.separator || ' — ')}\`` });
+          }
+          continue;
+        }
+      }
       for (const [k, t] of tokens.entries()) {
         if (values[k] !== null) continue;
         const m = trimmed.match(t.re);
@@ -194,7 +223,9 @@ function checkItems(section, seenTitle, body) {
         if (m) rationaleValue = m[1].trim();
       }
     }
-    const item = lines[i].trim().slice(0, 60);
+    if (fieldsSpec && fieldCount === 0) {
+      out.push({ severity: 'error', code: 'FIELDS-MISSING', message: `"${item}" declares fields but carries no \`· field:\` line — a fields-declaring item must list at least one` });
+    }
     for (const [k, t] of tokens.entries()) {
       const value = values[k];
       if (value === null) {
@@ -223,6 +254,23 @@ function checkItems(section, seenTitle, body) {
     out.push({ severity: 'error', code: 'SECTION-UNPARSEABLE', message: `\`${seenTitle}\` has content but no items to check — expected \`- \` bullets, each with its ${expected}` });
   }
   return out;
+}
+
+// Splits a `· field:` line's value into `count` parts on the first `count - 1` occurrences of
+// `separator` — never a plain `String.split()`, which would also break on a separator occurring
+// inside the last part (typically the description). A missing occurrence yields an empty part,
+// which the caller reports as `FIELD-MALFORMED`.
+function splitFieldParts(value, separator, count) {
+  const parts = [];
+  let rest = value;
+  for (let k = 0; k < count - 1; k++) {
+    const idx = rest.indexOf(separator);
+    if (idx === -1) { parts.push(rest); rest = ''; continue; }
+    parts.push(rest.slice(0, idx));
+    rest = rest.slice(idx + separator.length);
+  }
+  parts.push(rest);
+  return parts;
 }
 
 // Mirrors `render-return.js`'s desugar: a single `token` field becomes a one-element `tokens` list,

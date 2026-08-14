@@ -117,6 +117,97 @@ test('an item carrying both a token and a rationale renders both adornment lines
   assert.equal(out, '- gap one\n  · anchor: .matecito-ai/edr/foo.md\n  · rationale: because it matters');
 });
 
+// `items.fields` — the compound-item shape (contract-shape-gate, Phase 1): a repeated typed field,
+// rendered as one `· field: {name} — {type} — {description}` continuation line per entry, after the
+// tokens and before the rationale line. The field COUNT is never capped; only each entry's
+// `description` part carries its own `field_max`.
+
+test('a compound item renders its field lines after tokens and before rationale, in order', () => {
+  const section = {
+    field: 'contract_proposals',
+    title: '### Contract Shapes Proposed',
+    items: {
+      tokens: [{ name: 'anchor', field: 'anchor' }],
+      rationale: 'rationale',
+      fields: { key: 'field', parts: ['name', 'type', 'description'], separator: ' — ', field_max: 160 },
+    },
+  };
+  const out = renderItems(section, {
+    contract_proposals: [{
+      text: 'a contract needs shaping',
+      anchor: 'scripts/render-return.js:98',
+      field: [
+        { name: 'id', type: 'uuid', description: 'the primary key' },
+        { name: 'email', type: 'string', description: 'the user email' },
+      ],
+      rationale: 'a wrong guess propagates to the DB schema',
+    }],
+  });
+  assert.equal(
+    out,
+    '- a contract needs shaping\n' +
+      '  · anchor: scripts/render-return.js:98\n' +
+      '  · field: id — uuid — the primary key\n' +
+      '  · field: email — string — the user email\n' +
+      '  · rationale: a wrong guess propagates to the DB schema'
+  );
+});
+
+test('a field entry missing a part fails the render, naming the item, the field key and the part', () => {
+  const section = {
+    field: 'contract_proposals',
+    title: '### Contract Shapes Proposed',
+    items: { fields: { key: 'field', parts: ['name', 'type', 'description'], separator: ' — ' } },
+  };
+  assert.throws(
+    () => renderItems(section, {
+      contract_proposals: [{ text: 'a contract', field: [{ name: 'id', description: 'the key' }] }],
+    }),
+    /`contract_proposals\[0\]\.field\[0\]\.type` is empty/
+  );
+});
+
+test('a field description over its field_max cap fails the render, naming the item and the cap', () => {
+  const section = {
+    field: 'contract_proposals',
+    title: '### Contract Shapes Proposed',
+    items: { fields: { key: 'field', parts: ['name', 'type', 'description'], separator: ' — ', field_max: 10 } },
+  };
+  assert.throws(
+    () => renderItems(section, {
+      contract_proposals: [{
+        text: 'a contract',
+        field: [{ name: 'id', type: 'uuid', description: 'this description is far too long for the cap' }],
+      }],
+    }),
+    /over the 10-char cap/
+  );
+});
+
+test('an item declaring fields but listing none fails the render, naming the item', () => {
+  const section = {
+    field: 'contract_proposals',
+    title: '### Contract Shapes Proposed',
+    items: { fields: { key: 'field', parts: ['name', 'type', 'description'], separator: ' — ' } },
+  };
+  assert.throws(
+    () => renderItems(section, { contract_proposals: [{ text: 'a contract', field: [] }] }),
+    /`contract_proposals\[0\]\.field` declares fields but carries none/
+  );
+});
+
+test('a section declaring no `items.fields` renders byte-identical to before this change', () => {
+  const section = {
+    field: 'items',
+    title: '### Decision Gaps',
+    items: { tokens: [{ name: 'anchor', field: 'anchor' }], rationale: 'rationale' },
+  };
+  const out = renderItems(section, {
+    items: [{ text: 'gap one', anchor: '.matecito-ai/edr/foo.md', rationale: 'because it matters' }],
+  });
+  assert.equal(out, '- gap one\n  · anchor: .matecito-ai/edr/foo.md\n  · rationale: because it matters');
+});
+
 // `renderTable()` — a section without `items` stays exactly as before; one with `items.key` gets a
 // keyed detail block underneath the table (and its footer, when there is one).
 

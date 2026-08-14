@@ -127,6 +127,39 @@ function shapeItem(section, item, i, fieldName) {
     lines.push(`  · ${t.name}: ${value}`);
   }
 
+  // `items.fields` is the opt-in for a compound item: a repeated typed field, one continuation line
+  // per entry, after the tokens and before the rationale line — never an indented sub-bullet, so
+  // `validate-return.js`'s item-boundary regex (`/^\s*[-*]\s+\S/`, matched at ANY indentation) never
+  // mistakes a field for a new item. The field COUNT is never capped — every proposed field is
+  // emitted — only each field's own description carries a `field_max`.
+  if (spec.fields) {
+    const fieldsSpec = spec.fields;
+    const entries = typeof item === 'object' ? item[fieldsSpec.key] : undefined;
+    if (!Array.isArray(entries) || entries.length === 0) {
+      fail(`\`${field}[${i}].${fieldsSpec.key}\` declares fields but carries none — a fields-declaring item must list at least one`);
+    }
+    const separator = fieldsSpec.separator || ' — ';
+    for (const [fi, entry] of entries.entries()) {
+      const parts = fieldsSpec.parts.map((p) => {
+        const v = entry && typeof entry === 'object' ? entry[p] : undefined;
+        if (v === undefined || v === null || v === '') {
+          fail(`\`${field}[${i}].${fieldsSpec.key}[${fi}].${p}\` is empty — every field part is required, never inferred`);
+        }
+        if (String(v).includes('\n')) {
+          fail(`\`${field}[${i}].${fieldsSpec.key}[${fi}].${p}\` spans multiple lines — each part must be a single line`);
+        }
+        return String(v);
+      });
+      // Only the `description` part carries its own cap — `summary_max` above still measures the
+      // item's own line, unchanged; the field COUNT is never limited.
+      const descIndex = fieldsSpec.parts.indexOf('description');
+      if (fieldsSpec.field_max && descIndex !== -1 && parts[descIndex].length > fieldsSpec.field_max) {
+        fail(`\`${field}[${i}].${fieldsSpec.key}[${fi}].description\` is ${parts[descIndex].length} chars, over the ${fieldsSpec.field_max}-char cap — shorten it before it reaches the gate`);
+      }
+      lines.push(`  · field: ${parts.join(separator)}`);
+    }
+  }
+
   // `items.rationale` IS the opt-in for the summary/rationale split (see the phase-return `.md`).
   // Both parts are required and single-line — a section with this key never emits a half item.
   if (spec.rationale) {
@@ -296,6 +329,9 @@ function render(rawContract, data) {
       const gate = data[section.when];
       if (gate === undefined) fail(`missing required field \`${section.when}\` — it decides whether ${section.title} is emitted, and guessing it is how a section goes missing`);
       if (!gate) continue;
+      // A `statuses` filter combines with the `when` gate rather than replacing it: both conditions
+      // must hold for the section to emit.
+      if (section.statuses && !section.statuses.includes(status)) continue;
     }
 
     let title = section.title;
@@ -321,6 +357,7 @@ function keysOf(format) {
 function itemsFields(spec) {
   const fields = [`${spec.text || 'text'}: string`];
   for (const t of tokensOf(spec)) fields.push(`${t.field}: ${JSON.stringify(t.passing || t.values)}`);
+  if (spec.fields) fields.push(`${spec.fields.key}: [{ ${spec.fields.parts.join(', ')} }]`);
   if (spec.rationale) fields.push(`${spec.rationale}: string`);
   return fields;
 }
@@ -344,7 +381,10 @@ function schema(contract) {
   for (const s of contract.sections || []) {
     let when = '';
     if (s.emitted === 'on-status') when = ` [only on status ${JSON.stringify(s.statuses)}]`;
-    if (s.emitted === 'conditional') when = ` [emitted only when \`${s.when}\` is true]`;
+    if (s.emitted === 'conditional') {
+      when = ` [emitted only when \`${s.when}\` is true]`;
+      if (s.statuses) when += ` and status is one of ${JSON.stringify(s.statuses)}`;
+    }
     out.push('', `${s.title}${when}`);
     if (s.emitted === 'conditional') out.push(`  ${s.when}: boolean   (required — decides whether the section exists)`);
     if (s.render === 'table') {
@@ -381,6 +421,10 @@ function schema(contract) {
       out.push(`  (empty list renders the "None." sentinel — never omit the field)`);
       if (spec.rationale) out.push(`  (${spec.text || 'text'} and ${spec.rationale} are both required, single-line, non-empty — ${spec.text || 'text'} prints at the gate, ${spec.rationale} never does by default)`);
       if (spec.summary_max) out.push(`  (${spec.text || 'text'} is capped at ${spec.summary_max} characters — an over-cap value fails the render, exit 1, no stdout)`);
+      if (spec.fields) {
+        out.push(`  (\`${spec.fields.key}\` lists every proposed field, in order — the COUNT is never capped; each entry needs { ${spec.fields.parts.join(', ')} }, all required, single-line)`);
+        if (spec.fields.field_max) out.push(`  (the \`description\` part is capped at ${spec.fields.field_max} characters — an over-cap value fails the render, exit 1, no stdout)`);
+      }
     } else if (s.render === 'line') {
       out.push(`  ${s.field}: string`);
     }
