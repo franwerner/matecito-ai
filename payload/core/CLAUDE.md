@@ -513,6 +513,10 @@ inspection.
 
 A side discussion is a separate, interactive Claude Code session, in its own terminal, where the user
 works through one topic without piling onto this thread's context — then only the conclusion comes back.
+**It is a conversation the user has, not an analysis someone else performs for them**: the side session
+reads and reasons and puts its reading to the user, but what gets recorded as the conclusion is what
+the user settles, and it records nothing before they do. A session that reaches an answer alone and
+files it has turned into delegated work, which needs no separate session at all.
 **Only the user opens one.** The orchestrator never proposes a side discussion, never detects that a
 question would be a good candidate for one, and carries no test for when one is warranted. Its whole role
 once the user asks is to *serve* the discussion: compose the handoff, **open the session itself,

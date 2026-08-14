@@ -25,6 +25,8 @@ The handoff carries one header line above five fixed sections, all filled in on 
 section with nothing to say is stated empty, never dropped:
 
 ```markdown
+Read `~/.claude/references/side-discussion.md` first — it is your protocol. Then follow this handoff.
+
 - **Type:** blocking | consultive
 
 ## Topic
@@ -84,14 +86,29 @@ checkout would have taken away: the side session sees the main thread's uncommit
 standing in the same tree.
 
 Whatever opens the session is used **only** to open it. If it also offers ways to read or drive the
-session's terminal, the orchestrator does not use them: pickup stays consult-only through Engram (see
-"Pickup" below).
+session's terminal, the orchestrator does not use them: the conclusion is retrieved from the artifact
+store, never by reading over the discussion's shoulder (see "Pickup" below).
 
-The seed prompt carried into the new session is the only part of the launch fixed here:
+**In the same act, the orchestrator starts a watch that wakes it when the conclusion lands.** A
+detached command that waits for `side-discussion/{slug}/conclusion` to exist and exits once it does:
+the harness re-invokes the orchestrator when a detached command finishes, so the arrival of the
+conclusion becomes the wake-up, and the user never has to announce it. Poll at an interval matched to a
+conversation, not to a machine — this waits on people talking, so tens of seconds, never one. If the
+environment offers no way to run a detached command that outlives the turn, the watch is simply absent:
+the mechanism still works, retrieval falls back to the two consulting moments in "Pickup", and the
+orchestrator says once that it will not notice on its own.
+
+The seed prompt carried into the new session is the only part of the launch fixed here, and it carries
+**one** thing — where the handoff is:
 
 ```
-Read ~/.claude/references/side-discussion.md, then read the Engram observation with topic_key side-discussion/{slug}/handoff, and follow it.
+Read the Engram observation with topic_key side-discussion/{slug}/handoff and follow it.
 ```
+
+Nothing else goes in it: not which files to read, not the protocol's location, not a summary of the
+topic. Everything the session needs is in the handoff, which opens by pointing at this file. A prompt
+that names a second thing has started carrying context outside the artifact, and the next thing it
+carries is the discussion itself.
 
 No permission mode and no tool restriction are part of the launch — see "The write boundary" below for
 why that is deliberate, not an oversight.
@@ -104,15 +121,22 @@ naming one, and does not proceed as if the discussion had happened.
 
 ## The side session's protocol
 
-1. Read this file first — it is the whole of your protocol; nothing else configures you.
-2. Read the handoff at `side-discussion/{slug}/handoff` (the topic_key the seed prompt names).
-3. Read whatever `## References` points at, and whatever `## What I already read` says was already
+1. Read the handoff at the topic_key the seed prompt names — it opens by telling you to read this
+   file, which is the whole of your protocol; nothing else configures you.
+2. Read whatever `## References` points at, and whatever `## What I already read` says was already
    settled, before reasoning about `## Open question`.
-4. Discuss. You read and you reason. You do **not** edit, create, or delete any file in the repo, and
-   you do **not** commit anything — not as a shortcut, not as a demonstration, not even when the answer
-   would be obvious to write down as code.
-5. Write your conclusion to `side-discussion/{slug}/conclusion` (see "The conclusion" below for its
-   shape). That write is your only output.
+3. **Discuss it with the user.** This is the step the whole mechanism exists for, and it is not a
+   preamble to writing something: you put your reading to them, they push back, and the answer is what
+   comes out of that exchange. You read and you reason. You do **not** edit, create, or delete any file
+   in the repo, and you do **not** commit anything — not as a shortcut, not as a demonstration, not
+   even when the answer would be obvious to write down as code.
+4. **Write nothing until the user says what the conclusion is.** Reaching an answer on your own and
+   writing it down is the failure this mechanism exists to avoid — it makes the session a delegated
+   analysis, which needs no separate session at all. Your own reading, however well argued, is an input
+   to the discussion, never its outcome.
+5. Once the user states the conclusion — or approves one you offered — write it to
+   `side-discussion/{slug}/conclusion` (see "The conclusion" below for its shape), as **they** settled
+   it, not as you would have. That write is your only output, and it is the last thing you do.
 
 ## The write boundary
 
@@ -177,10 +201,17 @@ drifts the first time one of them is edited, and the two homes exist precisely s
 different thing. What belongs here is the part the kernel does not carry — how the conclusion is
 retrieved, which is the same for both types.
 
-Both types are picked up the same way: **by consulting** `side-discussion/{slug}/conclusion`, at exactly
-two moments — the user reports the discussion done, or the main thread reaches a point where it needs the
-conclusion. Never by a notification, a poll loop, or a liveness probe: there is no push, webhook, or
-cross-session signal this mechanism can rely on.
+Both types are picked up the same way: **by consulting** `side-discussion/{slug}/conclusion`. Three
+moments bring the main thread to consult it — the watch started at open time fires because the
+conclusion landed, the user reports the discussion done, or the main thread reaches a point where it
+needs the conclusion. The first makes the other two unnecessary in the ordinary case; they remain
+because a watch can be absent (see "Opening the session") and because the user may want the conclusion
+read before the discussion formally closes.
+
+What none of the three is: a signal from the side session itself. There is no push, webhook, or
+cross-session channel between the two sessions, and the watch is not one — it observes the artifact
+store, not the discussion, and it cannot tell a conclusion that was written from a discussion that was
+abandoned. It knows one thing: the key exists now. Everything else is still read from the artifact.
 
 **When the conclusion is not there yet**, the main thread says so and offers ways forward instead of
 guessing at one: wait for the user to finish it, re-open the discussion with the same handoff, or bring
