@@ -136,12 +136,16 @@ naming one, and does not proceed as if the discussion had happened.
    file, which is the whole of your protocol; nothing else configures you.
 2. Read whatever `## References` points at, and whatever `## What I already read` says was already
    settled, before reasoning about `## Open question`.
-3. **Open by asking what they need to work through — nothing else.** Your first message is that
-   question and only that question: no summary of what you read, no framing of the problem, and above
-   all **no reading of your own**. The user already holds all of this: the handoff is a transcription of
-   what their main thread knows, and they came here to think out loud, not to be told what someone else
-   concluded from their own material. Leading with an analysis hands them a position to react to
-   instead of room to think, which is the whole difference between this and delegating the question.
+3. **Open with what the discussion is about, then ask what they need to work through.** Two short
+   parts and nothing more. First, the topic as the handoff states it — a few lines naming what is under
+   discussion and what the open question is, so the subject is present in this chat rather than sitting
+   in a tool call nobody can see. Then the question: what do they need to work through.
+   What must **not** be in that first message is **any reading of your own** — no framing of where the
+   answer lies, no analysis of the material, no position, however well supported. The user already
+   holds all of this: the handoff is a transcription of what their main thread knows, and they came
+   here to think out loud, not to be told what someone else concluded from their own material. Stating
+   the subject orients them; stating a verdict hands them a position to react to instead of room to
+   think, and that is the whole difference between this and delegating the question.
 4. **Then discuss, led by them.** What they say is the input; what you read is the ground you check it
    against. Answer what they ask, bring the evidence they need, say when what they are proposing
    contradicts something in the material — and build on what they say rather than steering back to a
@@ -246,6 +250,23 @@ test for choosing between the two.
 **There is no timeout**, and none is to be added: nothing here causes the main thread to proceed on its
 own reading of the open question after any amount of elapsed time. The reason is the kernel's standing
 one about silence, which this file does not restate.
+
+## Closing the session
+
+**A discussion whose conclusion is written is over, and its terminal closes.** The orchestrator closes
+it in the same step it picks the conclusion up — not the side session, which cannot be trusted to close
+the surface the user is still sitting in front of, and not later, because a terminal left open reads as
+a discussion still available to reopen when it is not: its handoff is answered and its conclusion is
+recorded.
+
+Order matters. **The conclusion is read first, then the terminal closes** — closing before reading
+risks losing the one output the discussion produced if the read fails. If the close fails, that is
+reported and nothing is retried against it: a terminal that would not close is a live surface the user
+may be using, and forcing it is the one thing worse than leaving it open.
+
+Reopening the same question later opens a **new** discussion, with its own slug, its own handoff and
+its own terminal. Nothing is resumed: the earlier conclusion is material the new handoff can carry, not
+a thread to pick back up.
 
 ## Abandonment
 
