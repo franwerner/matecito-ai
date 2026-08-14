@@ -37,7 +37,7 @@ variants:
         render: line
         field: request_structured
       # The three downstream flags live here and nowhere else. `sdd-design` reads `Diagram`,
-      # `sdd-spec`/`sdd-verify` read `UI test`, the orchestrator reads `Isolation`, and each treats an
+      # `sdd-spec`/`sdd-verify` read `UI test`, the orchestrator reads `Worktree isolation`, and each treats an
       # absent flag as not-needed/inactive, silently. `Components` has no phase reader (metadata for a
       # person, ratified once at the INTAKE GATE) and is gated by `components_axis_active`:
       # presence-based on `repo.components`, never inherited from global config. Resolved false, the
@@ -51,7 +51,7 @@ variants:
           - { label: Size, field: classification.size }
           - { label: Diagram, field: classification.diagram }
           - { label: UI test, field: classification.ui_test }
-          - { label: Isolation, field: classification.isolation }
+          - { label: Worktree isolation, field: classification.worktree_isolation }
           - { label: Components, field: classification.components, emitted: conditional, when: components_axis_active }
       - title: "### Discovery answers"
         emitted: always

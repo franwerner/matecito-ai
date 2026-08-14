@@ -110,7 +110,7 @@ all three at the INTAKE GATE. None is executed here — this phase decides, othe
   keyword inference; no hit and no override → `not-needed`. Read by `sdd-spec` (it authors the
   `ui-scenarios` block only when this says `needed`) and by `sdd-verify` (its UI gate). You never run
   proofshot.
-- **`isolation`:** `active` | `inactive`, with a one-line reason, recommended together with the lane
+- **`worktree-isolation`:** `active` | `inactive`, with a one-line reason, recommended together with the lane
   per `structure/change-isolation-activation-flag.md`. That ratified decision fixes only where this
   flag lives and when it is confirmed — no rule for choosing between the two values is derivable from
   any ratified artifact. Until one is captured, always recommend `inactive` and say so in the reason
@@ -216,7 +216,7 @@ Persist the same content (Step 6).
 - **Request (structured)** — 1-2 sentences: what the user wants, restated clearly now that the
   discovery form is answered.
 - **Classification** — Step 3's output: type, domains touched, size, plus the three downstream flags
-  `diagram`, `ui-test` and `isolation`, each with its one-line reason. The flags are not optional
+  `diagram`, `ui-test` and `worktree-isolation`, each with its one-line reason. The flags are not optional
   extras: they exist nowhere else, and the readers that act on them close silently when they are
   absent. Plus **`Components`**, multivalued and reader-less (Step 3) — emit it only when
   `repo.components` is declared for this project; when you render the return block (Step 7's tool), supply the boolean
@@ -254,7 +254,7 @@ This brief is the entry artifact for the flow. The next phase reads it as its st
 - If the request needs an undecided architectural choice → `needs-decision`, route to bootstrap first.
 - Be honest in triage: trivial changes should skip the full flow.
 <!-- matecito-ai: explicit rule — the flags used to drop out of the brief with nothing complaining. -->
-- ALWAYS emit all three downstream flags (`diagram`, `ui-test`, `isolation`) under `### Classification` on Pass 2, whatever their value (Step 3). This phase is their only producer; `sdd-design`, `sdd-spec`/`sdd-verify`, and the orchestrator are their only readers, and each treats an absent flag as `not-needed`/inactive **silently**. Decide them — never generate a diagram, never run proofshot, never open a workspace. `isolation` has no recommendation heuristic yet: always recommend `inactive` and say so in the reason, per Step 3.
+- ALWAYS emit all three downstream flags (`diagram`, `ui-test`, `worktree-isolation`) under `### Classification` on Pass 2, whatever their value (Step 3). This phase is their only producer; `sdd-design`, `sdd-spec`/`sdd-verify`, and the orchestrator are their only readers, and each treats an absent flag as `not-needed`/inactive **silently**. Decide them — never generate a diagram, never run proofshot, never open a workspace. `worktree-isolation` has no recommendation heuristic yet: always recommend `inactive` and say so in the reason, per Step 3.
 <!-- matecito-ai: presence-based, reader-less on purpose — never treat it like diagram/ui-test's "absent = not-needed" silence, because a set-declared repo with a missing line is the anomaly, not the default. -->
 - `Components` is presence-based, not absence-tolerant: with `repo.components` declared, emit the line on EVERY Pass-2 brief — a missing line is an anomaly, not "the axis doesn't apply". With no set declared, never emit it and never mention components. It has NO phase reader — do not invent one, do not use it to scope any later phase's work. When rendering the return (Step 7), the gate boolean (`components_axis_active`) is REQUIRED and explicit — never omit it hoping it defaults to "off".
 <!-- matecito-ai: la forma del retorno tiene UNA fuente. Si volvés a escribirla acá, creaste la copia que este cambio vino a eliminar. -->
