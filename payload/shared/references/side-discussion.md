@@ -94,7 +94,12 @@ detached command that waits for `side-discussion/{slug}/conclusion` to exist and
 the harness re-invokes the orchestrator when a detached command finishes, so the arrival of the
 conclusion becomes the wake-up, and the user never has to announce it. Poll every **5 seconds**: the
 check is one cheap read against the store, and the cost of a slower interval is the user sitting in
-front of a finished discussion waiting for this thread to notice. If the
+front of a finished discussion waiting for this thread to notice.
+
+**What the watch matches on is the key, never the title.** The topic_key is fixed by the handoff and
+known before the discussion starts; the title is the side session's to choose and it will not be
+guessed right — it varies in wording and in language. A watch keyed to a title waits forever next to a
+conclusion that was written, and its silence is indistinguishable from a discussion still in progress. If the
 environment offers no way to run a detached command that outlives the turn, the watch is simply absent:
 the mechanism still works, retrieval falls back to the two consulting moments in "Pickup", and the
 orchestrator says once that it will not notice on its own.
