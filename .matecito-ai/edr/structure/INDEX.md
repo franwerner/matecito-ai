@@ -28,6 +28,8 @@ Decisiones sobre cómo se organiza el payload del repo (dónde vive cada concept
 | [item-shaping-helper-seam.md](item-shaping-helper-seam.md) | Accepted | Vas a agregar una sección de retorno con ítems que renderiza como tabla, o a tocar cómo se imprime el adorno de un ítem. |
 | [validate-side-needs-no-mirror.md](validate-side-needs-no-mirror.md) | Accepted | Te tienta agregar al validador de retornos un helper equivalente al del lado de renderizado. |
 | [conditional-section-with-status-filter.md](conditional-section-with-status-filter.md) | Accepted | Vas a agregar una sección condicional de retorno que además tenga que filtrar por el status de la fase. |
+| [side-discussion-prose-homes.md](side-discussion-prose-homes.md) | Accepted | Vas a decidir dónde vive la prosa de un mecanismo del orquestador que tiene un lector fuera de cualquier dominio. |
+| [side-discussion-topic-key-namespace.md](side-discussion-topic-key-namespace.md) | Accepted | Vas a agregar una clave de Engram fuera del namespace `sdd/` para un intercambio entre dos actores. |
 
 ## No aplican en este dominio
 

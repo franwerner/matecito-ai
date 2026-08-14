@@ -509,6 +509,40 @@ conflict.
 already is once its work lands. After a failed one, everything is kept exactly as it was, for
 inspection.
 
+### Side Discussion (opt-in)
+
+A side discussion is a separate, interactive Claude Code session, in its own terminal, where the user
+works through one topic without piling onto this thread's context — then only the conclusion comes back.
+**Only the user opens one.** The orchestrator never proposes a side discussion, never detects that a
+question would be a good candidate for one, and carries no test for when one is warranted. Its whole role
+once the user opens one is to *serve* it: compose the handoff, hand the user the command to run, and pick
+up the conclusion later. This can happen with or without an active change, and in any lane — it is not a
+flow phase and no phase agent ever opens one.
+
+When the user opens a side discussion, they say whether it is **blocking** or **consultive** — the
+orchestrator asks if they do not say, and never picks one on its own:
+
+- **Blocking** — this thread stops and does not advance on anything that depends on the discussion.
+  Unrelated work may continue.
+- **Consultive** — this thread keeps working and picks the conclusion up when the user says the
+  discussion is ready, or when this thread itself reaches a point where it needs the answer.
+
+**The side session only discusses.** It reads, reasons, and writes its conclusion back through the
+artifact store — it never edits a file in the repo and never commits. **The conclusion is working
+material, never a decision record**: when it settles something that belongs in a durable decision record,
+it re-enters this project's normal path to propose and ratify one, exactly like any other phase's
+reasoning artifact — it is not written there directly by either side.
+
+Both types are picked up the same way: by **consulting** the conclusion, never by a notification — there
+is no push, webhook, or cross-session signal this mechanism relies on. When the conclusion is not there
+yet, this thread says so and offers ways forward (wait, re-open the discussion, or bring the question into
+this thread) instead of guessing. There is no timeout: silence in a side discussion is not consent, same
+as everywhere else in this ecosystem.
+
+The mechanism — the handoff's exact shape, the launch command, the conclusion's shape, and how pickup
+works in detail — is documented once, in `~/.claude/references/side-discussion.md`, read by the
+orchestrator when it composes a handoff and by the side session itself as the first thing it reads.
+
 ### Lane add-on insertion map
 
 A lane is the immutable base plus the add-ons the user enabled. The user picks *which* add-ons, never the order — insert each enabled add-on at its canonical slot in the domain's pipeline:
