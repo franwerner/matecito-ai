@@ -28,12 +28,9 @@ Nueve fases:
 intake → explore → propose → spec → design → tasks → apply → verify → archive
 ```
 
-No todo cambio recorre las nueve. El flujo es una **base inmutable** más **add-ons opcionales**:
+Todo cambio en el lane `full` recorre las nueve, siempre, en este orden — no hay fases opcionales. `direct` no corre ninguna: se usa solo cuando el pedido lo pide explícitamente.
 
-- **Base (siempre corre):** `intake → spec → apply → verify → archive`.
-- **Add-ons (se activan según el tamaño del cambio):** `explore`, `propose`, `design`, `tasks`.
-
-`intake` es la fase de entrada: hace 2-4 preguntas para estructurar el pedido, lo clasifica y produce un brief. El orquestador **siempre muestra ese brief y espera tu confirmación** (gate humano) antes de seguir. Un fix trivial va directo; un cambio grande activa todos los add-ons.
+`intake` es la fase de entrada: decide los cuatro decision flags (`diagram`, `ui-test`, `components`, `worktree-isolation`), corre el guard de EDRs tempranos si el store está activo, y produce el brief — en un solo pase, sin discovery (eso corre en `sdd-explore`). No hay gate que confirme el brief: el orquestador lo despacha directo a la siguiente fase.
 
 | Fase | Lee | Escribe |
 | --- | --- | --- |
@@ -47,7 +44,7 @@ No todo cambio recorre las nueve. El flujo es una **base inmutable** más **add-
 | `sdd-verify` | spec + tasks + apply-progress + **EDRs tocados** + **capability-specs tocados** | `verify-report` |
 | `sdd-archive` | todos los artefactos | `archive-report` + **merge en capability-specs** |
 
-En lanes `reduced`/`custom` algunas fases upstream no corren; cada fase lee el upstream disponible más cercano (`sdd-spec` cae al brief de intake cuando no hay proposal; `sdd-apply` toma `spec` como piso y saltea `tasks`/`design` si faltan). Los **capability-specs durables** se leen solo si existe `.matecito-ai/development-specs/` (gate por presencia, igual que los EDRs).
+Cada fase lee su upstream completo, sin fallback: todas corren siempre, así que no hay upstream ausente que cubrir. Los **capability-specs durables** se leen solo si existe `.matecito-ai/development-specs/` (gate por presencia, igual que los EDRs).
 
 ## Capability-specs — el comportamiento durable
 
@@ -72,7 +69,7 @@ Las piezas específicas de desarrollo del ecosistema:
 
 | Capa | Pieza | Rol |
 | --- | --- | --- |
-| **Flujo** | Fork SDD | Fases intake → … → archive, con base inmutable + add-ons opcionales. Modelo por agente y Strict TDD configurables. |
+| **Flujo** | Fork SDD | Fases intake → … → archive, las nueve corren siempre bajo `full`. Modelo por agente y Strict TDD configurables. |
 | **Skill** | `development-decisions-bootstrap` | Entrevista por fases que captura decisiones de ingeniería y las materializa como EDRs por dominio. |
 | **Skill** | `development-decisions-validate` | Validador consultivo: coherencia, completitud y verificabilidad de los EDRs. |
 | **Skill** | `development-decisions-mine` | Mina decisiones desde el código de un repo existente y las propone como EDRs `Inferred` (borradores) para que un humano las ratifique vía bootstrap. |

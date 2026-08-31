@@ -29,12 +29,9 @@ intake → explore → propose → brief → system → tasks → produce → ve
 
 Espejo del pipeline de development: `brief` es el `spec`; `system` es la fase `design` (fija el sistema visual —paleta, escala tipográfica, grilla, componentes— y lee/escribe DDRs); `produce` es el `apply`.
 
-No todo trabajo recorre las nueve. El flujo es una **base inmutable** más **add-ons opcionales**:
+Las nueve corren siempre, bajo `full` — no hay fases opcionales. `direct` no corre ninguna: se usa solo cuando el pedido lo pide explícitamente.
 
-- **Base (siempre corre):** `intake → brief → produce → verify → archive`.
-- **Add-ons:** `explore`, `propose`, `system`, `tasks`.
-
-`intake` es la fase de entrada y produce el brief; el orquestador **muestra direcciones y espera que elijas** (gate humano) antes de seguir. Un flyer rápido va `reduced` (solo base); un rebrand va `full`.
+`intake` es la fase de entrada y produce el brief; el orquestador **muestra direcciones y espera que elijas** (gate humano) antes de seguir. Un flyer rápido y un rebrand corren igual el pipeline completo — la diferencia está en cuánto material produce cada fase, no en cuáles corren.
 
 | Fase | Lee | Escribe |
 | --- | --- | --- |

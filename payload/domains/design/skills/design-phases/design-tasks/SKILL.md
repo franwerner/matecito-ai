@@ -13,16 +13,14 @@ checklist. It does NOT produce assets — it produces the checklist only.
 
 ## Reads / writes (design Phase Read/Write)
 
-- **Reads:** `design/{change-name}/brief` (required — the floor) + `design/{change-name}/system`
-  (when present).
+- **Reads:** `design/{change-name}/brief` + `design/{change-name}/system` (both required — every
+  phase always runs).
 - **Writes:** `design/{change-name}/tasks`.
 
 ## Steps
 
-1. Read brief artifact (required — the floor): `mem_search("design/{change-name}/brief")` →
-   `mem_get_observation`.
-2. Read system artifact if present: `mem_search("design/{change-name}/system")` → if found,
-   `mem_get_observation`; if absent (custom lane without system), decompose from the brief alone.
+1. Read brief artifact: `mem_search("design/{change-name}/brief")` → `mem_get_observation`.
+2. Read system artifact: `mem_search("design/{change-name}/system")` → `mem_get_observation`.
 3. Decompose work into ordered pieces (each small enough to produce in isolation — a screen, an
    asset, a state).
 4. Link each task to the brief requirement it satisfies.

@@ -37,6 +37,6 @@ Return a structured result with these fields:
 - `status`: `done` | `blocked` | `partial`
 - `executive_summary`: one-sentence description of the locked system
 - `artifacts`: topic_keys or file paths written (e.g. `design/{change-name}/system`, DDR files)
-- `next_recommended`: `design-tasks` (full lane, after the brief is also ready) or `design-produce` (custom lane without tasks)
+- `next_recommended`: `design-tasks` — the next phase in the pipeline, always
 - `risks`: system risks, unresolved brand decisions, or assumptions requiring validation
 - `skill_resolution`: `capability-skills` (used the domain skills) or `none`
