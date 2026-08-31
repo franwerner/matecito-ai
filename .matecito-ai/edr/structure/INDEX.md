@@ -32,6 +32,8 @@ Decisiones sobre cómo se organiza el payload del repo (dónde vive cada concept
 | [side-discussion-topic-key-namespace.md](side-discussion-topic-key-namespace.md) | Accepted | Vas a agregar una clave de Engram fuera del namespace `sdd/` para un intercambio entre dos actores. |
 | [gating-vocabulary-sweep-scope.md](gating-vocabulary-sweep-scope.md) | Accepted | Vas a barrer el vocabulario de gating retirado (Tier 1/Tier 2) fuera del Scope original ratificado de un cambio. |
 | [retired-vocabulary-in-record-stores.md](retired-vocabulary-in-record-stores.md) | Accepted | Vas a decidir si el sweep final de un cambio de vocabulario debe extender su scope a un record store pre-existente cuyo sustantivo queda desactualizado. |
+| [lane-vocabulary-sweep-in-record-stores.md](lane-vocabulary-sweep-in-record-stores.md) | Accepted | Vas a barrer vocabulario de lane retirado y necesitás decidir si el sweep alcanza una fila de navegación de un índice de store durable, o un archivo cuyo sustantivo incidental sobrevive como residuo aceptado. |
+| [sdd-propose-contract-joins-lane-sweep.md](sdd-propose-contract-joins-lane-sweep.md) | Accepted | Vas a barrer vocabulario de lane retirado y encontrás un archivo fuera del Scope original que describe un mecanismo (add-on opcional, contraste de modos) que el cambio retira. |
 
 ## No aplican en este dominio
 
