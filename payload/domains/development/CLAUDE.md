@@ -17,7 +17,7 @@
 | Decision record | `EDR`, stored in `.matecito-ai/edr/` |
 | Decision-record concept reference | `~/.claude/references/edr/README.md` |
 | Canonical catalog | `design-patterns` at `~/.claude/references/design-patterns/` (`Applied pattern: X` → `patterns/<x>.md`) |
-| Decision-capture mechanism | in-flow — propose (per phase) → ratify once (lane gate) → materialize (`sdd-apply`); no flag, no post-verify mine gate — `~/.claude/references/decision-capture/in-flow-capture.md` |
+| Decision-capture mechanism | in-flow — propose (`sdd-design`'s `### New Decisions`, the single ratification gate) → ratify (Unresolved Decisions Guard, only when an item fires) → materialize (`sdd-apply`); no flag, no post-verify mine gate — `~/.claude/references/decision-capture/in-flow-capture.md` |
 | Decision-mining executor | `development-decisions-mine` — standalone brownfield scan (Mode A) only; its in-flow Mode B has no `development` caller |
 | Decision-capture skill | `development-decisions-bootstrap` — standalone use only, no flow hook |
 | Exploration index | CodeGraph (`mcp__codegraph__*`), active when `.codegraph/` exists |
@@ -392,14 +392,14 @@ The token is the only evidence the test ran at all. Do not accept a decision's p
 for it, and do not fill one in on the phase's behalf.
 
 <!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism, the ratification
-     gate per lane, the materialization contract: in-flow-capture.md. This is the orchestrator-side
-     half — WHO forwards the resolution and WHEN — that neither sdd-spec/sdd-design (who propose) nor
+     gate, the materialization contract: in-flow-capture.md. This is the orchestrator-side
+     half — WHO forwards the resolution and WHEN — that neither sdd-design (who proposes) nor
      sdd-apply (who materializes) can instruct on their own, since it is the launch-prompt construction
      step between them. Written for its two readers: the orchestrator, who builds the prompt (first two
      paragraphs), and the `sdd-apply` executor, who reads this fragment as part of its mandatory load
      protocol (`_shared/sdd-phase-common.md`, Section A) and acts on the last two paragraphs. -->
-**Forwarding a proposal's resolution to `sdd-apply`.** Every item that reached this gate under `New
-Decisions` — `sdd-spec`'s conditional mailbox or `sdd-design`'s — carries a `record: <domain>/<slug>`
+**Forwarding a proposal's resolution to `sdd-apply`.** Every item that reached this gate under
+`sdd-design`'s `### New Decisions` carries a `record: <domain>/<slug>`
 token and a `record-mode: create | modify` token, and stays in the design's own `## New Decisions` prose whatever the gate decided: the item's
 mere presence there is NOT evidence of ratification or rejection, and `sdd-apply` MUST NOT read it as
 either. Forward each item's resolution explicitly, in the launch prompt of the `sdd-apply` dispatch
@@ -420,7 +420,7 @@ to re-derive:
   unchanged either way.
 
 The resolution never travels as a token on the mailbox item itself, and none should be added: `New
-Decisions` has no `resolution:` field, because `sdd-spec`/`sdd-design` write the item at propose time,
+Decisions` has no `resolution:` field, because `sdd-design` writes the item at propose time,
 before the gate has run — the phase authoring the item cannot fill a field for an outcome that does not
 exist yet. The gate happens after the item is written, and the orchestrator, at the moment it forwards,
 is the only participant who ever learns that outcome. That is why this instruction lives here, in the
@@ -490,7 +490,7 @@ legally, never that every rejection you forwarded got one.
 <!-- matecito-ai: same shape as "Forwarding a proposal's resolution to `sdd-apply`" above, for a
      different kind of item — a contract's shape rather than a decision. Kept as its own paragraph
      instead of folded into that one because the readers differ: that rule names `sdd-apply` as the one
-     and only recipient (proposals are `sdd-spec`/`sdd-design`'s mailbox, materialized downstream by
+     and only recipient (decision proposals are `sdd-design`'s mailbox, materialized downstream by
      `sdd-apply` alone); this one reaches all four phases that can stop over an unspecified contract,
      because any of the four can propose one. -->
 **Forwarding a ratified contract shape to the proposing phase.** `### Contract Shapes Proposed`

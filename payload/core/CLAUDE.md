@@ -179,7 +179,11 @@ stays inactive, and nothing downstream assumes otherwise. See the orchestrator's
 ### Feature discovery (general behavior, outside the flow)
 Max 3 questions per message, grouped, one round. Only what can't be inferred. If the request already has enough detail, start directly. Large feature → brief plan before coding.
 
-> Note: when the flow is active, structured discovery is handled by the **intake** phase (2-4 questions). This custom rule applies to general behavior *outside* the flow. The two are intentionally separate: intake (2-4) for the flow, this rule (max 3) for quick ad-hoc work.
+> Note: when the flow is active, structured discovery is handled by the domain's own discovery-owning
+> phase, not by intake — see the Discovery invariant below (e.g. `development` runs it through
+> `sdd-explore`'s two-pass Discovery Gate cycle). This custom rule applies to general behavior *outside*
+> the flow. The two are intentionally separate: the flow's own discovery cycle for the flow, this rule
+> (max 3) for quick ad-hoc work.
 
 ### Phase agent launch — model & flag forwarding (single source of truth)
 This rule is the **canonical** model/flag resolution for every phase sub-agent. It lives here (a `matecito-ai` zone that survives gentle-ai updates), not in the orchestrator zone. Domain-specific guard forwarding (e.g. test runners) lives in the domain fragment and defers to this block for model/flag resolution.
