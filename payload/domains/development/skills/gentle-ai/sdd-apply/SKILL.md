@@ -44,11 +44,7 @@ From the orchestrator:
 
 > Follow **Section B** (retrieval) and **Section C** (persistence) from `~/.claude/skills/_shared/sdd-phase-common.md`.
 
-<!-- matecito-ai: declaraba los cuatro como "all required", contra la regla de nearest-upstream y
-     contra su propio agente (spec es el piso; tasks y design faltan en lane reduced/custom, y
-     proposal sólo existe si corrió esa fase). Un `required` que no se cumple en el lane por
-     defecto enseña a ignorar los `required`. Mismo arreglo que ya se hizo en `sdd-tasks`. -->
-- **engram**: Read `sdd/{change-name}/spec` (**required** — the floor). Read `sdd/{change-name}/tasks`, `sdd/{change-name}/design` and `sdd/{change-name}/proposal` **when they exist** — in `reduced` / `custom` lanes those phases may not have run, and their absence is normal, not an error. Keep the tasks observation ID when there is one: you mark tasks complete via `mem_update(id: {tasks-observation-id}, content: "...")`. Save progress as `sdd/{change-name}/apply-progress`.
+- **engram**: Read `sdd/{change-name}/spec`, `sdd/{change-name}/tasks` and `sdd/{change-name}/design` (**required** — every phase always runs). Keep the tasks observation ID: you mark tasks complete via `mem_update(id: {tasks-observation-id}, content: "...")`. Save progress as `sdd/{change-name}/apply-progress`.
 - **none**: Return progress only. Do not update project artifacts.
 <!-- matecito-ai: single-writer rule (parallel-batch EDR) — an isolated run persists NOTHING, in either
      artifact-store mode: no `mem_save`, no `mem_update`, not even under `engram`. -->
@@ -225,7 +221,7 @@ FOR EACH TASK:
 #### Step 4b: Materialize Ratified Decision Proposals (same step as the implementing task)
 
 <!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism, the ratification
-     gate per lane, the INDEX-writer split, and `sdd-verify`'s two checks:
+     gate, the INDEX-writer split, and `sdd-verify`'s two checks:
      `~/.claude/references/decision-capture/in-flow-capture.md` — this step only fixes what YOU do. -->
 
 <!-- matecito-ai: content-conflict guard, in the step where the decision is materialized — not a

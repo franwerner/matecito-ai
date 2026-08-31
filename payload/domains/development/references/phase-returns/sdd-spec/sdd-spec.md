@@ -25,7 +25,6 @@ casing or heading level is a section it will not find.
 | `### Contract Shapes Proposed` | conditional — only when `has_contract_proposals` is true and status is `blocked` | Unresolved Decisions Guard — `gates: always` (Section D.3) |
 | `### Blocker` | only on `status: blocked` | the orchestrator: it puts the question to the user |
 | `### Derived capabilities (unconfirmed)` | always | Unresolved Decisions Guard — `gates: contested` (Section D.3) |
-| `### New Decisions` | conditional — only when the lane running has no `design` add-on active | Unresolved Decisions Guard — `gates: contested` (Section D.3) |
 | `### Next Step` | always | the orchestrator, to route |
 
 Titles are fixed. This phase declares no accepted variants of them.
@@ -79,25 +78,9 @@ artifact, which downstream phases already read. A re-dispatch that reaches the g
 nothing in its prompt MUST stop and name the missing contract — never guess it, never derive it from
 what was drafted before the stop.
 
-<!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism:
-     ~/.claude/references/decision-capture/in-flow-capture.md — this section only fixes the RETURN shape. -->
-`### New Decisions` is this phase's **conditional** gating mailbox — it declares `gates: contested`
-(Section D.3 of `sdd-phase-common.md`) — the ratification gate for an architecture decision this
-phase finds, in a lane where `sdd-design` will NOT also run (so no later mailbox would ever ratify
-it). Emit it, with content or with the `None.` sentinel, **only** when `decisions_gate_here` is `true`
-— read from the intake brief's `### Triage` line (`Lane: ... — add-ons: [...]`): `true` iff `design`
-is NOT one of the add-ons listed. When `design` IS active, omit this section entirely —
-`sdd-design`'s own `### New Decisions` is the single gate, and emitting a second one here would ask
-the user to ratify the same decision twice. Same title as `sdd-design`'s plain variant, byte-identical,
-because it is the same mailbox concept surfacing one lane earlier — the Unresolved Decisions Guard
-applies the identical rule to it. Each item carries `summary` + `· rationale:` (same split as above)
-plus four tokens, in this order: `· anchor:` (the concrete source this decision is about — a
-`<repo-path>[:line]` or `<engram-key>`, per Section D.3 of `sdd-phase-common.md`), `· blocking-test:`
-(identical meaning and values to `sdd-design`'s — see `sdd-design.md`, "The blocking-test token"),
-`· record: <domain>/<slug>` — the EDR identity the proposal would occupy if ratified, free-form (no
-closed value set) — and `· contested:` (`none | contradicts-statement | contradicts-record |
-unverified-assumption`, classified by the Unresolved Decisions Guard). All four tokens are still
-required (an item missing any of them fails `TOKEN-MISSING`, the strict reading of an omission).
+Architecture decisions are never this phase's job: `sdd-design` always runs, and its own
+`### New Decisions` mailbox is the single ratification gate for the whole change. This phase carries
+no decision mailbox of its own.
 
 Only two statuses have a shape here: `done` and `blocked`. This phase's skill does not designate
 `needs-input`, and a spec is written whole or not at all, so `partial` does not arise.
@@ -121,34 +104,19 @@ Only two statuses have a shape here: `done` and `blocked`. This phase's skill do
 - UI scenarios: {N written | none — ui-test: not-needed}
 
 ### Derived capabilities (unconfirmed)
-{The capability mappings you derived because the upstream artifact carried no Capabilities section
-— an intake brief in a `reduced` lane, or a proposal in the older format. One item per mapping:
+{The capability mappings you derived because the proposal carried no Capabilities section — the older
+format. One item per mapping:
 
 - {the capability you derived, as `New` or `Modified`, and its name}
-  · anchor: {the intake brief's Engram key, or the durable capability-spec path for a Modified capability}
+  · anchor: {the proposal's Engram key, or the durable capability-spec path for a Modified capability}
   · contested: {none | contradicts-statement | contradicts-record | unverified-assumption}
-  · rationale: {one line: what you derived it from — the brief's Affected Areas, its structured Request}
+  · rationale: {one line: what you derived it from — the proposal's Affected Areas, its structured Request}
 
 These are NOT contract until the main thread confirms them.
 If the mapping came explicit from the proposal's Capabilities section: "None — mapping was explicit."}
 
-### New Decisions
-{Emitted ONLY when `decisions_gate_here` is true (no `design` add-on in this lane) — omit the section
-entirely, do not even print "None.", when `design` is active. When emitted: the architectural choices
-this phase found that pass the blocking test (see `sdd-design.md`, "The blocking-test token" — same
-test, same values). One item per decision:
-
-- {the choice}: {what you chose} — {alternatives weighed, and why this one}
-  · anchor: {the concrete source this decision is about — a `<repo-path>[:line]` or `<engram-key>`}
-  · blocking-test: none
-  · record: {domain}/{slug}
-  · contested: {none | contradicts-statement | contradicts-record | unverified-assumption}
-  · rationale: {one line: the full reasoning}
-
-If genuinely none: "None."}
-
 ### Next Step
-Ready for design (sdd-design). If design already exists, ready for tasks (sdd-tasks).
+Ready for design (sdd-design).
 ```
 
 ## `status: blocked` — the derivation is ambiguous, or a contract shape is not yours to pin
@@ -223,14 +191,14 @@ what the orchestrator needs in order to route and to gate. The orchestrator neve
 
 <!-- matecito-ai: `ui-scenarios` es el caso más tentador de confundir las dos cosas. El bloque es
      INSUMO de sdd-verify, que lee el artefacto — pegarlo en el retorno lo dejaría donde nadie lo
-     ejecuta, y además no hay decisión pendiente que gatear: el flag `ui-test` ya lo confirmó el
-     usuario en el INTAKE GATE. Por eso el retorno lleva sólo el conteo, y dentro de `### Coverage`
+     ejecuta, y además no hay decisión pendiente que gatear: el flag `ui-test` ya lo decidió y
+     reportó `sdd-intake`. Por eso el retorno lleva sólo el conteo, y dentro de `### Coverage`
      (sección que ya se emite siempre) en vez de abrir una sección nueva que sería un buzón fantasma. -->
 The `ui-scenarios` block written in the skill's Step 4b follows that same split: it belongs to the
 **artifact**, because `sdd-verify` executes it from there. The return carries only the `UI scenarios`
 count on the `### Coverage` line — deliberately not a section of its own. It is not a gating mailbox
-and opens no gate: the `ui-test` flag it derives from was already confirmed by the user at the INTAKE
-GATE, so there is nothing left for the orchestrator to decide. When the brief says `not-needed`, the
+and opens no gate: the `ui-test` flag it derives from was already decided and reported by `sdd-intake`,
+so there is nothing left for the orchestrator to decide. When the brief says `not-needed`, the
 bullet reads `none — ui-test: not-needed`; the bullet itself is never dropped, so a missing count is
 a defect and not "no UI work".
 

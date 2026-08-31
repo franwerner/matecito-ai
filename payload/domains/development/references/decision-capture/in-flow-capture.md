@@ -7,7 +7,7 @@
      THIS file for the mechanism's rules — they cite it, they do not restate it. -->
 
 An architecture decision that surfaces while a `development` change is in flight is **proposed** by
-the phase that finds it, **ratified once** at the lane's gate, and **materialized** as an `Accepted`
+the phase that finds it, **ratified once** at `sdd-design`'s gate, and **materialized** as an `Accepted`
 EDR in the same `sdd-apply` step that implements the code the decision governs. **"Ratified" covers two
 paths, not one**: the user confirmed the proposal at the gate, OR the gate never fired for it because
 its `contested` verdict was `none` — a proposal the gate did not contest is ratified exactly as one it
@@ -16,8 +16,8 @@ fires here (see the override clause it carries).
 
 ## The proposal — one mailbox item, two tokens
 
-A proposal is a single item under a phase's `### New Decisions` return mailbox (`sdd-spec`'s or
-`sdd-design`'s — see "The ratification gate" below for which one, per lane). It travels in two
+A proposal is a single item under `sdd-design`'s `### New Decisions` return mailbox (see "The
+ratification gate" below). It travels in two
 halves, per the phase-return contract (`items.rationale` + `items.tokens`, rendered by the existing
 engine — `render-return.js`/`validate-return.js`, unmodified in shape beyond the free-form-token fix
 below):
@@ -60,19 +60,18 @@ bug. The fix: a token with no `values` is free-form (any present, non-null value
 still applies when the token is absent). A token that DOES declare `values` is byte-for-byte unchanged.
 Covered by `payload/domains/development/dev-tests/validate-return-tokens.test.js`.
 
-## The ratification gate — exactly once, per lane
+## The ratification gate — exactly once
 
-| Lane | Gate |
-| --- | --- |
-| `full`, and `custom` with the `design` add-on | `sdd-design`'s `### New Decisions` (unchanged from before this change) |
-| `reduced`, and `custom` without the `design` add-on | `sdd-spec`'s `### New Decisions` (new, conditional — see below) |
-| `direct` | none — the flow does not run, so there is no proposal and no record |
+`sdd-design` always runs, and its `### New Decisions` mailbox is the single ratification gate for
+every architecture decision the change surfaces. For `direct` work, no flow phase runs at all, so
+there is no proposal and no record — the mechanism has nothing to gate.
 
 No later phase re-asks a proposal the gate already ratified, and `sdd-apply` never opens a second
 confirmation for it — the ratified text reaches it verbatim through the orchestrator's dispatch prompt
 (the same channel already used for `delivery_strategy`, strict-TDD, and the apply-progress continuity
 note). An adjustment the user makes AT the gate wins for free: what is in the dispatch prompt IS what
-was ratified. Automatic mode does not skip this gate — same as every other gating mailbox.
+was ratified. This gate always fires — running unattended is never licence to skip it, same as every
+other gating mailbox.
 
 A proposal declaring `contested: none` follows the **other** ratified path: the gate never opens for
 it — no user turn, no walkthrough — and it is still forwarded to `sdd-apply` marked ratified, verbatim
@@ -90,16 +89,6 @@ declares a `design-conflict: none | conflicts` verdict per checked rejection in 
 return section, which the orchestrator classifies — shape and classification both live in
 `~/.claude/references/phase-returns/sdd-apply/sdd-apply.md` (`### Rejected Proposals Checked`) and the
 same domain-fragment guard, cited here rather than restated too.
-
-### `sdd-spec`'s `### New Decisions` — conditional, same title as `sdd-design`'s
-
-Emitted **only** when the lane running has no `design` add-on active — read from the intake brief's
-`### Triage` line (`Lane: ... — add-ons: [...]`, a line `sdd-spec` already reads for other purposes),
-never re-derived any other way. When `design` IS in the lane's add-ons, `sdd-spec` emits nothing here:
-`sdd-design`'s mailbox is the one and only gate, so a second one would ask the user to ratify the same
-decision twice. The title is byte-identical to `sdd-design`'s plain variant (`### New Decisions`) —
-same guard rule, same items shape, same tokens — because it is the same mailbox concept surfacing at a
-different point in the pipeline, not a new kind of thing.
 
 ## Materialization — `sdd-apply` Step 4b, same step as the implementing task
 

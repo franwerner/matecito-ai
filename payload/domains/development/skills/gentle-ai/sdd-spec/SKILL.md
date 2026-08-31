@@ -30,10 +30,10 @@ From the orchestrator:
 
 > Follow **Section B** (retrieval) and **Section C** (persistence) from `~/.claude/skills/_shared/sdd-phase-common.md`.
 
-<!-- matecito-ai: dos lecturas con propósitos distintos. La de requisitos es "el upstream más cercano"
-     (proposal, o el brief en lane reduced). La del brief es INCONDICIONAL y sólo por el flag
-     `ui-test`, que ninguna otra fase upstream transporta. No las colapses en una. -->
-- **engram**: Read the nearest available upstream for requirements — `sdd/{change-name}/proposal`, falling back to `sdd/{change-name}/intake` when no proposal exists (`reduced`/`custom` lanes). Read `sdd/{change-name}/intake` **as well, always**, for the `ui-test` flag (Step 4b) — even when the proposal was your requirements source. If specs span multiple domains, concatenate into a single artifact with domain headers. Save as `sdd/{change-name}/spec`.
+<!-- matecito-ai: dos lecturas con propósitos distintos. La de requisitos es la proposal, que siempre
+     existe (toda fase corre siempre). La del brief es una lectura APARTE, sólo por el flag `ui-test`,
+     que la proposal no transporta. No las colapses en una. -->
+- **engram**: Read `sdd/{change-name}/proposal` (required — every phase always runs) for requirements. Read `sdd/{change-name}/intake` **as well, always**, for the `ui-test` flag (Step 4b). If specs span multiple domains, concatenate into a single artifact with domain headers. Save as `sdd/{change-name}/spec`.
 - **none**: Return result only. Never create or modify project files.
 
 ## What to Do
@@ -55,8 +55,9 @@ FOR EACH entry under "Modified Capabilities":
 └── Read the existing DURABLE capability-spec (`.matecito-ai/development-specs/<type>/<capability>.md`) first — your delta modifies it. If it does not exist, treat it as a NEW capability spec.
 ```
 
-<!-- matecito-ai: en lane `reduced` (el default) NO hay proposal — spec lee el intake brief, que no tiene sección Capabilities. Esta rama es el camino por defecto, no el caso raro del formato viejo: por eso el mapeo derivado viaja marcado, no como contrato. -->
-If the upstream artifact has no Capabilities section (an intake brief in a `reduced` lane, or a proposal in the older format), derive a proposed capability mapping from whatever it does carry (Affected Areas, or the brief's structured Request) and **mark it explicitly as derived**: list it in your return summary under "Derived capabilities (unconfirmed)" so the main thread confirms it. A derived mapping is NOT a contract. If the derivation is ambiguous — two reasonable readings of which capability is touched, or you cannot name the capability without inventing behavior — return `blocked` with the possible readings instead of picking one. Always prefer the explicit Capabilities mapping when present.
+<!-- matecito-ai: caso raro del formato viejo — una proposal escrita antes de que la sección Capabilities
+     existiera. El mapeo derivado viaja marcado, no como contrato. -->
+If the proposal has no Capabilities section (the older format), derive a proposed capability mapping from whatever it does carry (Affected Areas, or the Request it structures) and **mark it explicitly as derived**: list it in your return summary under "Derived capabilities (unconfirmed)" so the main thread confirms it. A derived mapping is NOT a contract. If the derivation is ambiguous — two reasonable readings of which capability is touched, or you cannot name the capability without inventing behavior — return `blocked` with the possible readings instead of picking one. Always prefer the explicit Capabilities mapping when present.
 
 ### Step 3: Read Existing Durable Specs
 
@@ -169,17 +170,15 @@ The system {MUST/SHALL/SHOULD} {behavior}.
      era inalcanzable sin ningún error visible. El productor es spec porque el bloque es la
      contraparte ejecutable de los escenarios Given/When/Then que esta fase ya escribió. -->
 
-<!-- matecito-ai: el flag se lee SIEMPRE del intake brief, NO del upstream de requisitos. En lane
-     `full` el upstream de esta fase es la proposal, que no lleva el flag; sólo en lane `reduced` el
-     upstream ES el brief. Como intake es fase BASE, el brief existe en todos los lanes: es el único
-     lugar donde el flag está garantizado. Leerlo "del upstream" lo perdería en el lane completo. -->
+<!-- matecito-ai: el flag se lee SIEMPRE del intake brief, NO de la proposal (que no lo transporta).
+     Intake es fase base y siempre corre, así que el brief siempre existe: es el único lugar donde el
+     flag está garantizado. -->
 
-**Read the intake brief for this flag — ALWAYS, whatever your requirements upstream was.**
+**Read the intake brief for this flag — ALWAYS, on top of the proposal.**
 `mem_search("sdd/{change-name}/intake")` → `mem_get_observation`, and look under `### Classification`
-for the line `- UI test: {needed|not-needed}`. Do this even when you took your requirements from the
-proposal: the proposal does not carry the flag, and intake is a base phase, so the brief always
-exists. The flag is decided by `sdd-intake` and confirmed by the user at the INTAKE GATE — you never
-decide it and never override it.
+for the line `- UI test: {needed|not-needed}`. The proposal does not carry the flag; intake is a base
+phase and always runs, so the brief always exists. The flag is decided and reported by `sdd-intake` —
+you never decide it and never override it.
 
 ```
 IF the brief says `UI test: needed`
@@ -244,34 +243,6 @@ ui-scenarios:
 decided and confirmed, and that is where `sdd-verify` reads it. The spec carries the scenarios; the
 brief carries the flag. One fact, one home.
 
-### Step 4c: Recognize decisions — only when no `design` add-on is active
-
-<!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism, the ratification
-     gate table, and why the title matches sdd-design's byte-for-byte: in-flow-capture.md. -->
-
-**Read `decisions_gate_here` first.** `mem_search("sdd/{change-name}/intake")` → `mem_get_observation`
-(you already read this artifact in Step 4b for the `ui-test` flag — reuse it), and look at
-`### Triage`: `Lane: {...} — add-ons: [...]`. `decisions_gate_here` is `true` **iff** `design` is NOT
-one of the listed add-ons. `false` → skip this whole step silently: `sdd-design` will run later and its
-own `### New Decisions` is the single ratification gate for this change; a second one here would ask
-the user to ratify the same decision twice.
-
-When `true`: while writing the delta spec, you MAY notice a genuine architectural decision — the
-approach, a contract, a dependency, a boundary between components, where a responsibility lives — that
-no confirmed upstream artifact already fixes. You are NOT designing (you still do not choose HOW the
-code is structured), but writing WHAT sometimes surfaces exactly this kind of choice, and in this lane
-there is no later phase to catch it. Apply the **same blocking test** `sdd-design`'s `## Rules` defines
-(new infrastructure / public contract / data model):
-
-- **The alternatives differ in at least one axis** → return `blocked`, same shape as any other blocker
-  in this phase's `### Blocker` section — name which axis and how, exactly as `sdd-design` would.
-- **They differ in none** → propose it under `### New Decisions` in your return (see
-  `~/.claude/references/phase-returns/sdd-spec/sdd-spec.md`), with the same item shape `sdd-design`
-  uses: `summary`, `· blocking-test: none`, `· record: <domain>/<slug>`, `· rationale:`.
-
-If you notice nothing decision-shaped while writing the spec — the ordinary case for most changes —
-emit the section anyway, with `None.`; do not invent a decision to fill it.
-
 ### Step 5: Persist Artifact
 
 **This step is MANDATORY — do NOT skip it.**
@@ -299,24 +270,19 @@ Two things that file makes explicit and that this phase gets wrong most often:
   its own Capabilities section. A derived mapping is not contract until the main thread confirms it.
 - The ambiguous-derivation stop from Step 2 returns `blocked`, and the possible readings go in the
   `### Blocker` section that file designates — never in `risks`, never as a mapping you picked.
-- `### New Decisions` (Step 4c) is a **second, conditional** `gates: contested` mailbox — emitted only
-  when `decisions_gate_here` is true, omitted entirely otherwise. Do not confuse it with `### Derived
-  capabilities (unconfirmed)`: a capability mapping and an architecture-decision proposal are
-  different things, each in its own section.
-- Every item under both mailboxes carries a `· contested:` verdict — `none | contradicts-statement |
-  contradicts-record | unverified-assumption` (`sdd-spec.yaml` is the authority on the exact values;
-  run `--schema` on demand). An absent or hedged verdict is read as firing: do not omit it and do not
-  write `none` without actually checking against a statement or an Accepted record.
+- Every item under `### Derived capabilities (unconfirmed)` carries a `· contested:` verdict —
+  `none | contradicts-statement | contradicts-record | unverified-assumption` (`sdd-spec.yaml` is the
+  authority on the exact values; run `--schema` on demand). An absent or hedged verdict is read as
+  firing: do not omit it and do not write `none` without actually checking against a statement or an
+  Accepted record.
 <!-- matecito-ai: el bloque `ui-scenarios` va en el ARTEFACTO, no en el retorno; del retorno sólo
      cuelga el conteo, y en una sección que ya existe — no se abre un buzón nuevo por esto. -->
 - The `ui-scenarios` you wrote in Step 4b are reported in the return **only as a count**, on the
   `### Coverage` line that file declares for them. The block itself lives in the persisted artifact.
-- Every item under `### Derived capabilities (unconfirmed)` and under `### New Decisions` carries its
-  own `anchor` — the concrete source it traces to. Free-form, per the anchor criterion in
+- Every item under `### Derived capabilities (unconfirmed)` carries its own `anchor` — the concrete
+  source it traces to. Free-form, per the anchor criterion in
   `~/.claude/skills/_shared/sdd-phase-common.md`, Section D.3: `<repo-path>[:line]` or `<engram-key>`,
-  start line only (say the range in words); a `### New Decisions` item anchors to what surfaced the
-  need, never to a record file that would only exist once the decision is ratified. You supply it —
-  nothing derives it for you.
+  start line only (say the range in words). You supply it — nothing derives it for you.
 
 ## Rules
 
@@ -330,7 +296,9 @@ Two things that file makes explicit and that this phase gets wrong most often:
 - Keep scenarios TESTABLE — someone should be able to write an automated test from each one
 - DO NOT include implementation details in specs — specs describe WHAT, not HOW
 <!-- matecito-ai: recordatorio apuntado — la doctrina completa vive en el fragmento del dominio (cargado en Step 1), no se duplica acá. Acá aplica cuando un escenario fija campos o tipos de un contrato. -->
-- **In a lane with no `design` add-on, recognize architecture decisions you notice while writing the delta spec** (Step 4c) — apply `sdd-design`'s blocking test; a decision that fails it returns `blocked`, one that passes it goes to `### New Decisions` with the same `· blocking-test:` / `· record: <domain>/<slug>` tokens `sdd-design` uses. In a lane WITH `design`, skip this entirely — `sdd-design`'s own mailbox is the single ratification gate. Full mechanism: `~/.claude/references/decision-capture/in-flow-capture.md`
+- **Architecture decisions are `sdd-design`'s job, not this phase's.** `sdd-design` always runs, and its
+  `### New Decisions` mailbox is the single ratification gate. If you notice a decision-shaped choice
+  while writing the delta spec, leave it for design — do not propose it here.
 - **Before a scenario or requirement pins ANY contract or definition** — domain entity, DB model/migration/schema, DTO, public/exported type, interface or enum, event payload, or config schema — apply **"Contract & definition shapes — never inferred"** from the domain fragment (`~/.claude/matecito-ai/domains/development.md`, read in Step 1). Never invent which fields it has nor their types to make a scenario concrete. Pinned-and-coherent upstream → use it; unspecified, or pinned by something that conflicts or does not cover this case → return `blocked` proposing the FULL contract as one reviewable unit — through `### Contract Shapes Proposed` (`has_contract_proposals: true`), one compound item per contract, never as free `### Blocker` prose
 - **The ratified shape returns to you ONLY in a later re-dispatch's own instructions.** Once ratified (or user-adjusted), you write it into this phase's own spec artifact, which downstream phases already read. Never re-read it from the draft spec you already wrote or from `apply-progress` — if you are re-dispatched to the point a contract governs and your instructions carry no shape for it, return `blocked` naming the missing contract rather than guessing. See `~/.claude/matecito-ai/domains/development.md`, "Forwarding a ratified contract shape to the proposing phase."
 <!-- matecito-ai: reglas del bloque `ui-scenarios` — el detalle operativo está en el Step 4b; acá van

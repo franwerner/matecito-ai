@@ -47,13 +47,11 @@ Read the skill file at `~/.claude/skills/sdd-design/SKILL.md` and follow it exac
 Also read shared conventions at `~/.claude/skills/_shared/sdd-phase-common.md`.
 
 Execute all steps from the skill directly in this context window:
-<!-- matecito-ai: nearest-artifact — in a custom lane design can run without a proposal; fall back to spec, then the intake brief -->
-1. Read the upstream artifact — proposal if present, else fall back to the spec, else the intake brief: `mem_search("sdd/{change-name}/proposal")`; if no result, `mem_search("sdd/{change-name}/spec")`; if still none, `mem_search("sdd/{change-name}/intake")` → `mem_get_observation`.
+1. Read the proposal (required — every phase always runs): `mem_search("sdd/{change-name}/proposal")` → `mem_get_observation`.
 <!-- matecito-ai: twin of the `ui-test` defect in sdd-verify. Intake writes the `Diagram:` flag into the
-     brief, but the brief was the THIRD fallback of the chain above, and in the lanes where this phase
-     runs one of the first two always exists: the flag was never read. It becomes its own retrieval,
+     brief; step 1 reads the proposal, which does not carry it. It becomes its own retrieval,
      unconditional, exactly as in sdd-verify. -->
-1a. Read the intake brief ALWAYS, independently of step 1 — it carries the `diagram` flag (step 4c) and step 1's fallback chain never reaches it in the lanes where this phase runs: `mem_search("sdd/{change-name}/intake")` → `mem_get_observation`. Intake is a base phase, so the brief always exists.
+1a. Read the intake brief ALWAYS, on top of step 1 — it carries the `diagram` flag (step 4c), which the proposal does not: `mem_search("sdd/{change-name}/intake")` → `mem_get_observation`. Intake is a base phase, so the brief always exists.
 <!-- matecito-ai: EDR activation gate (presence-based) — single source of truth in matecito-ai:behavior -->
 1b. EDR activation gate: if `.matecito-ai/edr/` is absent or empty, EDRs are inactive — skip the EDR-specific parts of steps 1b and 4b silently, no mention. **The `## New Decisions` section is NOT part of what this gate turns off** (skill, Step 2a-bis): you emit it either way, because recognizing a decision the user owns does not depend on a store existing. If active: read root `INDEX.md` + the EDRs of the domains this change touches. Accepted EDRs are binding constraints.
 2. Choose the architecture approach (pattern, layering, boundaries)
@@ -126,8 +124,8 @@ you still write yourself — they live outside the block.
 Phase-specific refinements on top of Section D:
 - `executive_summary`: one-sentence description of the chosen approach — plus, when step 4c applies, the clause recommending a live architecture diagram
 - `artifacts`: topic_keys or file paths written (e.g. `sdd/{change-name}/design`)
-- `next_recommended`: `sdd-tasks` (full lane, after spec is also ready) or `sdd-apply` (custom lane
-  without tasks) — or `none`, always legal and the correct value on `blocked` / `needs-input`
+- `next_recommended`: `sdd-tasks` — the next phase of the pipeline — or `none`, always legal and the
+  correct value on `blocked` / `needs-input`
 <!-- matecito-ai: `risks` never gates. Ofrecerlo para "unresolved decisions" le daba al ejecutor una vía
      legal para degradar contenido gating y desactivar el gate cumpliendo el contrato. -->
 <!-- matecito-ai: acá sobrevivía el criterio viejo ("cuando no podés fundamentar una elección"), que

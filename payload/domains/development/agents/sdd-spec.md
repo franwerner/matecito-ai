@@ -25,19 +25,16 @@ Read the skill file at `~/.claude/skills/sdd-spec/SKILL.md` and follow it exactl
 Also read shared conventions at `~/.claude/skills/_shared/sdd-phase-common.md`.
 
 Execute all steps from the skill directly in this context window:
-<!-- matecito-ai: nearest-artifact — in reduced/custom lanes there is no proposal; spec reads the closest available upstream -->
-1. Read the upstream artifact — proposal if present, else fall back to the intake brief: `mem_search("sdd/{change-name}/proposal")`; if it has no result, `mem_search("sdd/{change-name}/intake")` → `mem_get_observation`. The nearest available upstream is the source of requirements.
-2. Extract requirements from that upstream artifact (proposal, or the intake brief in reduced/custom lanes)
+1. Read the proposal (required — every phase always runs): `mem_search("sdd/{change-name}/proposal")` → `mem_get_observation`. It is the source of requirements.
+2. Extract requirements from the proposal
 3. Write delta spec — what MUST be true after the change is applied
 4. Add acceptance scenarios (given/when/then or equivalent)
-<!-- matecito-ai: el flag `ui-test` se lee del INTAKE BRIEF, no del upstream de requisitos: en lane
-     `full` el upstream es la proposal, que no lo lleva, y sólo en lane `reduced` el upstream ES el
-     brief. Intake es fase base, así que el brief existe siempre — es el único lugar garantizado. -->
-4b. Read the intake brief for the UI-test flag — **always**, whatever upstream fed step 1:
+<!-- matecito-ai: el flag `ui-test` se lee del INTAKE BRIEF, no de la proposal — la proposal no lo
+     transporta. Intake es fase base, así que el brief existe siempre — es el único lugar garantizado. -->
+4b. Read the intake brief for the UI-test flag — **always**, on top of the proposal:
    `mem_search("sdd/{change-name}/intake")` → `mem_get_observation`, then read
    `- UI test: {needed|not-needed}` under its `### Classification`. Never read this flag from the
-   proposal (it does not carry it) and never decide it yourself — `sdd-intake` decides it and the
-   user confirms it at the INTAKE GATE.
+   proposal (it does not carry it) and never decide it yourself — `sdd-intake` decides and reports it.
 <!-- matecito-ai: this step used to author the executable block (route + concrete locators). It could not:
      the brief has no route and a new feature's controls do not exist yet, so the only legal move was
      `blocked`. And it should not: routes and accessible names are volatile implementation identifiers,
@@ -52,15 +49,6 @@ Execute all steps from the skill directly in this context window:
    Derive each entry from the Given/When/Then scenarios of step 4, for the capabilities with a visual
    surface. Do NOT copy the flag itself into the spec: it lives in the brief, and `sdd-verify` reads it
    from there. Flag `not-needed` or absent → skip silently.
-<!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism: in-flow-capture.md. -->
-4d. Recognize decisions — only when the brief's `### Triage` line lists NO `design` add-on
-   (`decisions_gate_here`). If a genuine architecture decision surfaced while writing the delta spec
-   (approach, contract, dependency, boundary, where a responsibility lives) and no confirmed upstream
-   artifact already fixes it: run `sdd-design`'s blocking test (new infra / public contract / data
-   model). Differs in an axis → return `blocked`. Differs in none → propose it under `### New
-   Decisions` in your return, same item shape as `sdd-design`'s (`· blocking-test:` + `· record:
-   <domain>/<slug>` + `· rationale:`). Lane HAS `design` → skip this step entirely, no mention —
-   `sdd-design`'s mailbox is the single ratification gate.
 5. Persist spec to active backend
 
 Do NOT design implementation — specs describe WHAT, not HOW.
@@ -89,20 +77,17 @@ specifies for `sdd-spec`, including the gating mailboxes D.3 assigns to this pha
 Phase-specific refinements on top of Section D:
 - `executive_summary`: one-sentence description of the spec scope
 - `artifacts`: topic_keys or file paths written (e.g. `sdd/{change-name}/spec`)
-- `next_recommended`: `sdd-tasks` (full lane, after design is also ready) or `sdd-apply`
-  (reduced/custom lane without tasks/design) — or `none`, always legal and the correct value on
-  `blocked` / `needs-input`
+- `next_recommended`: `sdd-design` — the next phase of the pipeline — or `none`, always legal and the
+  correct value on `blocked` / `needs-input`
 <!-- matecito-ai: este campo autorizaba literalmente lo que el flujo prohíbe — resolver una
      ambigüedad asumiendo y degradarla a una línea de riesgo que no bloquea ni gatea. -->
 - `risks`: risks discovered while writing the spec. NOT a place to park ambiguities you resolved by assuming — an ambiguous derivation returns `blocked` with the possible readings, and a derived-but-unambiguous capability mapping travels in the D.3 mailbox for the main thread to confirm
-- Every item under `### Derived capabilities (unconfirmed)` and `### New Decisions` carries its own
-  `anchor`, required per D.3 — free-form (`<repo-path>[:line]` or `<engram-key>`), start line only, and
-  never derived by any tool
-- Every item under `### Derived capabilities (unconfirmed)` and `### New Decisions` also carries its
-  own `contested` verdict — `none | contradicts-statement | contradicts-record |
-  unverified-assumption` (`sdd-spec.yaml` is the authority on the exact values). An absent or hedged
-  verdict is read as firing — see the Unresolved Decisions Guard in
-  `~/.claude/matecito-ai/domains/development.md`
+- Every item under `### Derived capabilities (unconfirmed)` carries its own `anchor`, required per D.3
+  — free-form (`<repo-path>[:line]` or `<engram-key>`), start line only, and never derived by any tool
+- Every item under `### Derived capabilities (unconfirmed)` also carries its own `contested` verdict —
+  `none | contradicts-statement | contradicts-record | unverified-assumption` (`sdd-spec.yaml` is the
+  authority on the exact values). An absent or hedged verdict is read as firing — see the Unresolved
+  Decisions Guard in `~/.claude/matecito-ai/domains/development.md`
 - `### Contract Shapes Proposed` is emitted conditionally — `has_contract_proposals: true` on a
   `status: blocked` return, when the stop is over an unspecified contract — per the SKILL.md wiring
 - `skill_resolution`: per D.4 — `phase-skill` when you loaded this phase's own SKILL.md <!-- matecito-ai: sin inyección -->

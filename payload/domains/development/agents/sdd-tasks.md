@@ -25,9 +25,8 @@ Read the skill file at `~/.claude/skills/sdd-tasks/SKILL.md` and follow it exact
 Also read shared conventions at `~/.claude/skills/_shared/sdd-phase-common.md`.
 
 Execute all steps from the skill directly in this context window:
-<!-- matecito-ai: nearest-artifact — spec is the floor; design is optional (absent in a custom lane without design) -->
-1. Read spec artifact (required — the floor): `mem_search("sdd/{change-name}/spec")` → `mem_get_observation`
-2. Read design artifact if present: `mem_search("sdd/{change-name}/design")` → if found, `mem_get_observation`; if absent (custom lane without design), decompose from the spec alone
+1. Read spec artifact (required — every phase always runs): `mem_search("sdd/{change-name}/spec")` → `mem_get_observation`
+2. Read design artifact (required — every phase always runs): `mem_search("sdd/{change-name}/design")` → `mem_get_observation`
 3. Decompose work into ordered tasks (small enough to ship in isolation)
 4. Link each task to the spec requirement it satisfies — or to what the design establishes. A task that traces to neither is not forbidden (a real gap, an implied prerequisite), but it MUST be declared under `### Tasks not traceable to spec/design` in your return: that is work the user did not ask for, and that section declares `gates: contested` for the orchestrator's Unresolved Decisions Guard. Never fold it in silently. Each item also carries its own `contested` verdict — `none | contradicts-statement | contradicts-record | unverified-assumption` (`sdd-tasks.yaml` is the authority on the exact values) — and an absent or hedged one is read as firing
 <!-- matecito-ai: in-flow decision capture (development-specifics; see in-flow-capture.md). NO flag: every

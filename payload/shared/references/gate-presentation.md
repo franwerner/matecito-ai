@@ -160,8 +160,8 @@ to whoever presents reintroduces the per-gate variation this template exists to 
      la plantilla persigue, impuesta por la herramienta en vez de por obediencia. Una respuesta que el
      usuario redacta no tiene opciones que ofrecer, y ahí el widget estorbaría. -->
 **Discrete options go through the host's question widget; open answers stay prose.** When what the
-item needs back is a choice among closed alternatives — ratify or not, one lane out of four, one of
-three ways forward — present it through the harness's own question control rather than as prose ending
+item needs back is a choice among closed alternatives — ratify or not, one of three chain strategies,
+one of three ways forward — present it through the harness's own question control rather than as prose ending
 in a parenthesised list, with the item's summary as the question and each alternative as an option
 carrying one line of what it costs. The anchor still travels, in the question's own text. This holds
 for **every** item whose answer is a choice, not only ratifications: a discovery question with two
@@ -221,21 +221,17 @@ Still applies? (yes / no / see detail)
 ## Where this governs
 
 This walkthrough and this template govern the same mechanism wherever it applies — the count decides
-the form (see above), never a hardcoded list of gates. Nine moments cite this file today; a tenth would
-cite it the same way, without this section growing to keep up. **Nine is not the whole inventory of
-interruption points** — it is only the count of moments that cite this walkthrough. The Change
+the form (see above), never a hardcoded list of gates. Eight moments cite this file today; a ninth
+would cite it the same way, without this section growing to keep up. **Eight is not the whole inventory
+of interruption points** — it is only the count of moments that cite this walkthrough. The Change
 Workspace's merge-conflict report and the commit-atomicity STOP (`~/.claude/skills/git/SKILL.md`) both
 stop the flow too, outside this file: no trigger this walkthrough governs reaches either one, and
 neither is modified by anything here.
 
-**The three gates that ratify a batch of items:**
+**The two gates that ratify a batch of items:**
 
 - **The pending-decisions gate** — the domain's guard that ratifies a phase's pending decisions before
   the next phase dispatches (in `development`, the Unresolved Decisions Guard's gating mailboxes).
-- **The confirmed-scope gate** — the INTAKE GATE. Its ratifiable items are the recommended lane and
-  each of the brief's decision flags; each one's anchor slot is filled from fields the brief already
-  carries (its Engram key, the `### Classification` block, the flag's own label) — the brief is not
-  required to declare a new formal section for this.
 - **Both mining confirmation gates** — the gate that precedes materializing decision-mine candidates,
   and the gate that precedes materializing spec-mine candidates. Candidates are indexed and walked like
   any other item, anchored to the source they were mined from.
@@ -244,18 +240,12 @@ neither is modified by anything here.
 
 | Moment | Anchor source |
 | --- | --- |
-| Discovery Gate | — declared exception (see below); no anchor |
+| Discovery Gate | a repo path for a question grounded in what `sdd-explore` read (with a start line when the source is a specific place); the intake brief's Engram key for a question about the request's own intent |
 | Uncommitted-Work Gate | the dirty paths `git status --porcelain` already printed |
 | Review Workload Guard | `sdd/{change-name}/tasks` |
 | A phase's `blocked` return | what that phase's blocker names (e.g. `sdd-apply`'s `### Blocker`) |
 | A validator's findings | the phase's own artifact key (the EDR or capability-spec file the finding is about) |
 | `risks` | the file or artifact the risk's own prose names |
-
-**The Discovery Gate exception, written out (not implied):** every other moment above requires a real
-anchor — a concrete `<repo-path>[:line]` or `<engram-key>` the item points at. The Discovery Gate is the
-one exception: its items are questions about a request that has not yet produced any artifact to point
-at, so it has no anchor slot to fill. It still resolves its form from the count rule above and still
-uses the fixed item template — it just omits the anchor line.
 
 A gate outside this list states its own presentation as it always has; this file does not reach for
 one it was not asked to govern.

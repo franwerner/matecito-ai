@@ -30,14 +30,10 @@ From the orchestrator:
 
 > Follow **Section B** (retrieval) and **Section C** (persistence) from `~/.claude/skills/_shared/sdd-phase-common.md`.
 
-<!-- matecito-ai: declaraba `proposal` como required, pero esta fase corre en lanes donde `propose` no
-     existe — su propio agente hace fallback a spec y después al intake brief. Tercer archivo con el
-     mismo defecto (los otros dos: `sdd-tasks`, `sdd-apply`); barrido: no quedan más. -->
-- **engram**: Read the nearest available upstream — `sdd/{change-name}/proposal` when it exists, else `sdd/{change-name}/spec`, else `sdd/{change-name}/intake`. In `reduced` / `custom` lanes `propose` may not have run, and its absence is normal, not an error. `sdd/{change-name}/spec` may also be absent when this phase runs in parallel with `sdd-spec`. Save as `sdd/{change-name}/design`.
-<!-- matecito-ai: the brief is the LAST option of the chain above, and in the lanes where this phase runs
-     there is always a proposal or a spec: read only as a fallback, the `diagram` flag never arrived.
-     It is read as well, always, as its own retrieval (same pattern as `ui-test` in `sdd-verify`). -->
-- **engram, additionally and unconditionally**: read `sdd/{change-name}/intake` on top of whatever the chain above resolved — it carries the `diagram` flag this phase acts on (Step 3-bis). It is a separate retrieval, never a fallback: `intake` is a base phase, so the brief always exists.
+- **engram**: Read `sdd/{change-name}/proposal` (required — every phase always runs). Save as `sdd/{change-name}/design`.
+<!-- matecito-ai: the proposal does not carry the `diagram` flag — it is read as its own retrieval
+     (same pattern as `ui-test` in `sdd-verify`), never derived from the proposal. -->
+- **engram, additionally and unconditionally**: read `sdd/{change-name}/intake` on top of the proposal — it carries the `diagram` flag this phase acts on (Step 3-bis). It is a separate retrieval, never a fallback: `intake` is a base phase, so the brief always exists.
 - **none**: Return result only. Never create or modify project files.
 
 ## What to Do
@@ -268,7 +264,7 @@ If none, state "None."}
 
 Read the flag at its literal location in the intake brief: the line `- Diagram: {needed|not-needed}`
 under `### Classification`. Do not look for it anywhere else and do not re-derive it — `sdd-intake`
-decided it and the user confirmed it at the INTAKE GATE.
+decided it and reported it; nothing confirms it.
 
 - `needed` → add ONE clause to your `executive_summary` recommending a live diagram of the chosen
   architecture. That is the whole action.

@@ -66,26 +66,6 @@ sections:
       tokens:
         - { name: anchor, field: anchor }
         - { name: contested, field: contested, values: [none, contradicts-statement, contradicts-record, unverified-assumption] }
-  # In-flow decision capture (development-specifics; see ../../decision-capture/in-flow-capture.md).
-  # This phase's ratification gate for a lane with NO `design` add-on active — read `decisions_gate_here`
-  # from the intake brief's `### Triage` line, never re-derived any other way. Same mailbox concept as
-  # `sdd-design`'s `### New Decisions`, byte-identical title, one lane earlier.
-  - title: "### New Decisions"
-    emitted: conditional
-    when: decisions_gate_here
-    gates: contested
-    sentinel: true
-    render: items
-    field: new_decisions
-    items:
-      text: summary
-      rationale: rationale
-      summary_max: 250
-      tokens:
-        - { name: anchor, field: anchor }
-        - { name: blocking-test, field: blocking_test, values: [none, infra, contract, data-model], passing: [none] }
-        - { name: record, field: record }
-        - { name: contested, field: contested, values: [none, contradicts-statement, contradicts-record, unverified-assumption] }
   - title: "### Next Step"
     emitted: always
     render: line

@@ -27,10 +27,9 @@ casing or heading level is a section it will not find.
 Titles are fixed. This phase declares no accepted variants of them.
 
 <!-- matecito-ai: esta fase NO tenía buzón, y es donde se fijan el approach y el mapeo de
-     capabilities que `sdd-spec` consume como contrato. En Interactive lo salvaba el checkpoint entre
-     fases; en Automatic la propuesta pasaba derecho, y un mapeo equivocado recién asomaba una fase
-     después, cuando spec derivaba el suyo. Propose es un add-on opcional: si lo encendiste, es
-     justamente porque querías confirmar el alcance antes de especificar. -->
+     capabilities que `sdd-spec` consume como contrato. Sin checkpoint entre fases, la propuesta pasa
+     derecho a spec — un mapeo equivocado recién asomaría una fase después, cuando spec derivara el
+     suyo, si esta sección no lo capturara antes. -->
 **`### Scope and approach (unconfirmed)` declares `gates: contested`** (Section D.3 of
 `sdd-phase-common.md` fixes what that value means and the Unresolved Decisions Guard classifies its
 items — not restated here), and it is emitted always. It carries the two things this phase fixes on
@@ -191,7 +190,7 @@ scope, capabilities, approach, affected areas, risks, rollback, dependencies, su
 orchestrator never reads the artifact.
 
 That asymmetry is sharper here than in any other phase: this is where scope and approach get fixed,
-and none of it is in the return beyond one line each. In Interactive mode the between-phase
-checkpoint is what puts the artifact in front of the user; in Automatic mode nothing does. That is
+and none of it is in the return beyond one line each. Nothing puts the artifact itself in front of the
+user — there is no between-phase checkpoint. This mailbox is the only thing that does. That is
 the contract as it stands — respect it, and raise anything you cannot fit into it as a blocker
 rather than smuggling it into a section of your own.
