@@ -125,6 +125,7 @@ Each task MUST be:
      the `· edr:` mark's own rule.
 - `criteria:` is MANDATORY on every task: an observable, checkable condition (input → result), not a vague claim. It is what verify consumes later; a "works fine" is useless.
 - `· edr: <domain>/<slug>` is emitted on EVERY task that implements or touches a decision — **unconditionally, no flag, regardless of whether `.matecito-ai/edr/<domain>/<slug>.md` exists yet.** Mechanical tasks (add a field, move a file) carry NO edr — a false ref is worse than none. When the task implements a proposal ratified upstream (`sdd-spec`'s or `sdd-design`'s `### New Decisions`), use that proposal's own `· record:` identity; otherwise map to the concern per the canonical catalog. A dangling ref (the file does not yet exist) is never a reason to omit the mark — `sdd-apply` materializes the file in the same step it implements this task, and `sdd-verify`'s `decision-gaps` group is what confirms the two arrived together.
+- **The marked task IS the implementing task — materialization is never its own task.** `~/.claude/references/decision-capture/in-flow-capture.md` requires a ratified record to be materialized "in the **same work-unit step** that implements the code the decision governs — never a separate pass before or after". Do NOT write a dedicated task or Phase whose only purpose is producing the `.matecito-ai/edr/<domain>/<slug>.md` file — put `· edr:` on the task that actually changes the governing code, and let `sdd-apply`'s Step 4b materialize the record inside that same step. A checklist with a standalone "create the EDR" task is the exact split `in-flow-capture.md` forbids, whether or not you also mark a `criteria:` line for it.
 - What counts as a "decision" (and what does not) is canonical in `~/.claude/references/edr/README.md` — a task carries `· edr:` only if it touches an EDR in that sense, not for every change.
 
 ### Parallel-group mark
@@ -160,6 +161,14 @@ serial states the reason its tasks are not independent. **The default is NOT inv
 serial unless its tasks genuinely pass the criterion; the obligation is to state the reason, never to
 mark more Phases to avoid writing one. Over-marking is paid in cherry-pick conflicts during
 consolidation.
+
+**A genuinely independent pair inside an otherwise-serial Phase is named, not generalized over.** If a
+Phase stays serial overall but you notice one pair of its tasks that DOES pass the independence
+criterion on its own (you are simply choosing not to mark it — e.g. it is not worth a whole extra round
+for two tasks), the verdict's stated reason names that pair explicitly (its task ids) instead of a
+sentence that reads as if the whole Phase were evaluated and found dependent. A reason like "tasks not
+independent" over a Phase that actually contains an independent pair hides the one case a reader would
+want to see.
 
 ### The per-task line budget with the mark
 
