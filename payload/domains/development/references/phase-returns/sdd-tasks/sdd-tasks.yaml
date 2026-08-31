@@ -9,10 +9,35 @@ header:
 sections:
   - title: "### Breakdown"
     emitted: always
-    render: labeled-bullets
-    bullets:
-      - { label: Total tasks, field: breakdown.total }
-      - { label: Work units, field: breakdown.work_units }
+    sentinel: true
+    render: table
+    field: breakdown.phases
+    columns:
+      - { key: phase, label: Phase }
+      - { key: tasks, label: Tasks }
+      - { key: focus, label: Focus }
+      - { key: est_lines, label: "Est. lines" }
+    footer:
+      label: Totals
+      field: breakdown.totals
+      format: "{tasks} tasks · {work_units} work units"
+  - title: "### Parallelization Verdict"
+    emitted: always
+    gates: reported
+    sentinel: true
+    render: table
+    field: parallelization_verdict
+    columns:
+      - { key: phase, label: Phase }
+      - { key: verdict, label: Verdict }
+      - { key: group, label: Group }
+    items:
+      key: phase
+      text: summary
+      rationale: rationale
+      summary_max: 250
+      tokens:
+        - { name: anchor, field: anchor }
   - title: "### Implementation Order"
     emitted: always
     sentinel: true

@@ -175,6 +175,7 @@ Guards`); this table only fixes which section belongs to which phase and which v
 | `sdd-design` | `### New Decisions` — or `### New Decisions (not yet in EDRs)` when the decision store is active; **both titles are valid and the orchestrator accepts either** | contested | always |
 | `sdd-design` | `### Open Questions` | muted | always |
 | `sdd-tasks` | `### Tasks not traceable to spec/design` | contested | always |
+| `sdd-tasks` | `### Parallelization Verdict` | reported | always |
 | `sdd-apply` | `### Unmandated Forks` | contested | always |
 | `sdd-apply` | `### Mandated Departures` | muted | always |
 | `sdd-verify` | `## Decision Gaps` | reported | only when the change materialized at least one decision record (`### Decisions Materialized` in `apply-progress` carries ≥1 row) — no flag, see `in-flow-capture.md` |
@@ -210,13 +211,16 @@ such mechanism (e.g. `design`) may still feed a post-verify mine gate under its 
 lives in the domain fragment (`~/.claude/matecito-ai/domains/development.md`, `## Guards`) — it reads
 this table and keeps no parallel copy of it.
 
-**Fifteen of these mailboxes split each item into `summary`/`rationale`**: `sdd-propose`'s `Scope and
+**Sixteen of these mailboxes split each item into `summary`/`rationale`**: `sdd-propose`'s `Scope and
 approach`, `sdd-spec`'s `Derived capabilities`, both `sdd-design`
-rows (`New Decisions` and `Open Questions`), `sdd-tasks`'s `Tasks not traceable`, all three
-`sdd-apply` rows (`Unmandated Forks`, `Mandated Departures` and the conditional `Rejected Proposals
-Checked`), all three `sdd-verify` sections (`## Decision Gaps`, `## UI Verdict` and `### Issues
-Found`), and the conditional `### Contract Shapes Proposed` in each of `sdd-propose`, `sdd-spec`,
-`sdd-design` and `sdd-apply` — fifteen sections in total, over **six** contract pairs (`.yaml` + `.md`;
+rows (`New Decisions` and `Open Questions`), both `sdd-tasks` rows (`Tasks not traceable to
+spec/design` and `Parallelization Verdict` — `sdd-tasks` goes from one declaring section to two), all
+three `sdd-apply` rows (`Unmandated Forks`, `Mandated Departures` and the conditional `Rejected
+Proposals Checked`), all three `sdd-verify` sections (`## Decision Gaps`, `## UI Verdict` and `###
+Issues Found`), and the conditional `### Contract Shapes Proposed` in each of `sdd-propose`,
+`sdd-spec`, `sdd-design` and `sdd-apply` — sixteen sections in total (apply 4, design 3, propose 2,
+spec 2, tasks 2, verify 3), each contract-shape section counted once, inside its own phase's figure,
+never again as a separate group — over **six** contract pairs (`.yaml` + `.md`;
 `sdd-verify` is one pair covering its three sections, not three; `### Contract Shapes Proposed` adds no
 new pair, it lands inside the four pairs already counted). The split is declared **per section**, never by which
 renderer draws it (`table`, `labeled-lists` or the `items` render form) — a table-rendered section

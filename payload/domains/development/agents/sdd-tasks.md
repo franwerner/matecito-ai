@@ -39,6 +39,13 @@ Execute all steps from the skill directly in this context window:
 5. For tasks that can run concurrently, add a `· parallel-group: <id>` sub-line per the SKILL's
    "Parallel-group mark" definition — same id ⇒ same batch, ONLY when genuinely independent; leave
    it off for anything that must run serial (today's default)
+<!-- matecito-ai: rule/bound-serial-apply-dispatch + rule/justify-serial-task-grouping — see the SKILL's
+     "Per-Phase `Est. lines`" note and "Every Phase now owes a stated verdict" paragraph; this step only
+     tells the agent to produce both, never restates their form. -->
+5b. For each Phase in `### Breakdown`, estimate its `Est. lines` — a bare whole number, never a range —
+    per the SKILL's Review Workload Forecast Rules; and author one `### Parallelization Verdict` entry
+    per Phase, stating whether the Phase's tasks are marked (naming the group) or left serial (naming
+    the reason), per the SKILL's "Every Phase now owes a stated verdict" paragraph
 6. Persist tasks to active backend
 
 Do NOT implement — produce the checklist only.
@@ -77,4 +84,8 @@ Phase-specific refinements on top of Section D:
   `none | contradicts-statement | contradicts-record | unverified-assumption` (`sdd-tasks.yaml` is the
   authority on the exact values). An absent or hedged verdict is read as firing — see the Unresolved
   Decisions Guard in `~/.claude/matecito-ai/domains/development.md`
+- This phase declares two sections that split each item into `summary`/`rationale`:
+  `### Tasks not traceable to spec/design` (above, carrying `anchor` and `contested`) and
+  `### Parallelization Verdict` — one entry per Phase of `### Breakdown`, `gates: reported`, carrying
+  `anchor` **only**, no `contested` token: a contested verdict would be inert in a `reported` section
 - `skill_resolution`: per D.4 — `phase-skill` when you loaded this phase's own SKILL.md <!-- matecito-ai: sin inyección -->

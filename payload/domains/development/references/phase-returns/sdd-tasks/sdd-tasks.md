@@ -18,6 +18,7 @@ casing or heading level is a section it will not find.
 | Section | Emitted | Read by |
 | --- | --- | --- |
 | `### Breakdown` | always | the orchestrator, as context |
+| `### Parallelization Verdict` | always | the between-phase summary — `gates: reported`, never a stop-and-ask |
 | `### Implementation Order` | always | the orchestrator, as context |
 | `### Blocker` | only on `status: blocked` | the orchestrator: it puts the question to the user |
 | `### Tasks not traceable to spec/design` | always | Unresolved Decisions Guard — `gates: contested` (Section D.3) |
@@ -26,23 +27,28 @@ casing or heading level is a section it will not find.
 
 Titles are fixed and this phase declares no variants of them.
 
-**Split into summary/rationale.** `### Tasks not traceable to spec/design` declares it. Each item
-carries two parts, `summary` and `rationale`, in the `untraceable_tasks` JSON: `summary` is what the
-gate prints, `rationale` is the full reasoning — always emitted into this block, never printed by
-default. Both are non-empty, single-line strings; a missing one, or one with an embedded newline,
-fails the render naming the item and the part, and nothing reaches stdout. `summary`'s register is
-fixed once in Section D.3 of `sdd-phase-common.md` — not restated here. `summary` also carries a
-**250-character cap**, enforced by `render-return.js`.
+**Split into summary/rationale.** `### Tasks not traceable to spec/design` and `### Parallelization
+Verdict` both declare it. Each item carries two parts, `summary` and `rationale`, in the section's own
+list (`untraceable_tasks`, `parallelization_verdict`): `summary` is what the gate prints, `rationale`
+is the full reasoning — always emitted into this block, never printed by default. Both are non-empty,
+single-line strings; a missing one, or one with an embedded newline, fails the render naming the item
+and the part, and nothing reaches stdout. `summary`'s register is fixed once in Section D.3 of
+`sdd-phase-common.md` — not restated here. `summary` also carries a **250-character cap**, enforced by
+`render-return.js`.
 
-Every item also carries the `· anchor:` token, declared first so it prints directly under the
-summary — the legitimate forms and the not-yet-written-target rule are fixed once in Section D.3 of
-`sdd-phase-common.md`, not restated here.
+Every item in both declaring sections also carries the `· anchor:` token, declared first so it prints
+directly under the summary — the legitimate forms and the not-yet-written-target rule are fixed once in
+Section D.3 of `sdd-phase-common.md`, not restated here.
 
-Every item also carries the `· contested:` token, declared last (`sdd-tasks.yaml` is the authority on
-its legal values — run `--schema` on demand). It asserts whether this item names a concrete
-counterparty it could not clear; the Unresolved Decisions Guard in
+`### Tasks not traceable to spec/design`'s items also carry the `· contested:` token, declared last
+(`sdd-tasks.yaml` is the authority on its legal values — run `--schema` on demand). It asserts whether
+this item names a concrete counterparty it could not clear; the Unresolved Decisions Guard in
 `~/.claude/matecito-ai/domains/development.md` classifies it, and this file does not restate that
 rule.
+
+`### Parallelization Verdict`'s items carry **no** `· contested:` token — a contested verdict would be
+inert in a `gates: reported` section, so an item there closes with `anchor` then `rationale` and
+nothing else.
 
 ## `status: done` — the breakdown was produced
 
@@ -53,12 +59,33 @@ rule.
 **Location**: Engram `sdd/{change-name}/tasks`
 
 ### Breakdown
-| Phase | Tasks | Focus |
-|-------|-------|-------|
-| Phase 1 | {N} | {Phase name} |
-| Phase 2 | {N} | {Phase name} |
-| Phase 3 | {N} | {Phase name} |
-| Total | {N} | |
+| Phase | Tasks | Focus | Est. lines |
+|-------|-------|-------|-----------|
+| Phase 1 | {N} | {Phase name} | {N} |
+| Phase 2 | {N} | {Phase name} | {N} |
+| Phase 3 | {N} | {Phase name} | {N} |
+| Phase 4 | {N} | {Phase name} | {N} |
+
+**Totals**: {N} tasks · {N} work units
+
+### Parallelization Verdict
+| Phase | Verdict | Group |
+|-------|---------|-------|
+| Phase 1 | {marked/serial} | {group id, or —} |
+| Phase 2 | {marked/serial} | {group id, or —} |
+| Phase 3 | {marked/serial} | {group id, or —} |
+| Phase 4 | {marked/serial} | {group id, or —} |
+
+{One entry per Phase of `### Breakdown` — no more, no fewer. A marked Phase states its group id in
+`Group`; a Phase left serial states its reason in the `summary` below. Keyed detail block, same
+`summary`/`anchor`/`rationale` shape every other declaring section carries:}
+
+- {Phase 1} — {the verdict and its reason, one line, ≤250 chars}
+  · anchor: {the concrete source this verdict is about — a `<repo-path>[:line]` or `<engram-key>`}
+  · rationale: {the independence analysis: why these tasks are, or are not, independent}
+- {Phase 2} — {the verdict and its reason, one line, ≤250 chars}
+  · anchor: {...}
+  · rationale: {...}
 
 ### Implementation Order
 {The recommended order and why — what has to exist before what. One short paragraph.}
@@ -105,8 +132,16 @@ carries the work you did complete.
 **Location**: not persisted — or the Engram key, if you did persist. State which.
 
 ### Breakdown
-{The phases you did manage to break down, same table. If you got nowhere:
-"Not produced — see Blocker."}
+{The phases you did manage to break down, same table, `Est. lines` included. If you got nowhere, the
+row list is empty and the renderer emits the sentinel on its own:}
+
+None.
+
+### Parallelization Verdict
+{One entry per Phase you DID manage to break down above — none broken down means an empty list, same
+sentinel:}
+
+None.
 
 ### Implementation Order
 {What IS settled, if anything. Otherwise: "undefined — depends on the blocker below."}
