@@ -60,6 +60,72 @@ Mientras ejecuta trabajo dentro de su mandato, `sdd-apply` puede encontrar un fo
 - **Ejecutor reporta una desviación como `forced` pero no puede nombrar la restricción**: inválido; reclasificar como `chosen` y no aplicar
 - **Un `chosen` aterrizó en el código sin pasar por consulta**: CRITICAL — el gate debe haber parado la edición
 
+## Requisitos
+
+### Requisito: Cómo se clasifica cada buzón de desviación
+
+`### Unmandated Forks` dispara sin condiciones, establecido por su propio contrato en lugar de por auto-reporte de la fase: declara `gates: contested` con el único valor legal de token `unverified-assumption`, y cualquier otro valor falla el render. El mecanismo de consulta es esa sección misma — la sección que dispara, no "la sección Tier 1". Los sustantivos de tier se retiran de este spec: `mandate:` mantiene sus tres valores y su significado, y el buzón donde un item aterriza sigue siendo decidido por `mandate:`, pero si el usuario es detenido es decidido por el criterio de disparo.
+(Previamente: el orquestador imprimía forks `chosen` en una sección Tier-1 y desviaciones `forced`/`covered` en una Tier-2, y el tier decidía el resultado.)
+
+#### Scenario: Toda desviación reportada declara quién la decidió
+
+- **GIVEN** una desviación reportada
+- **WHEN** se producen el retorno y el artefacto
+- **THEN** el item lleva `mandate: covered | forced | chosen`, junto a `verify-checks:`, en el orden declarado
+
+#### Scenario: Token `mandate:` ausente o hedgeado se lee como `chosen`
+
+- **GIVEN** una desviación con ningún token `mandate:`, o uno impreciso
+- **WHEN** el orquestador lee el retorno
+- **THEN** se trata como `chosen` y se enruta a `### Unmandated Forks`, que dispara
+
+#### Scenario: Un fork no puede declararse no controlado
+
+- **GIVEN** `sdd-apply` redactando un item `### Unmandated Forks`
+- **WHEN** renderiza el retorno
+- **THEN** el único valor que el token acepta es `unverified-assumption`
+- **AND** la fase tiene ninguna forma de optar ese item fuera del stop
+
+#### Scenario: Un punto se abre como efecto colateral de una edición mandatada
+
+- **GIVEN** una tarea dentro del mandato cuya edición fuerza una segunda elección que nadie acordó
+- **AND** los artefactos confirmados no fijan esa elección y más de una resolución es válida
+- **WHEN** el ejecutor llega a ese punto
+- **THEN** no aplica ninguna de ellas, y el fork viaja atrás como una pregunta antes del siguiente despacho
+
+### Requisito: Una desviación que fue aplicada y declarada limpia se silencia
+
+`### Mandated Departures` DEBE declarar `gates: muted`. Nunca dispara un gate — eso sin cambios — y deja de ser reportada incondicionalmente: un item ahí declarando `contested: none` NO DEBE aparecer en el resumen entre-fases en absoluto. Un item declarando uno de los dos triggers DEBE aparecer ahí, surfaceado y sin bloqueo. `### Open Questions` toma el mismo valor por la misma razón. El costo aceptado DEBE enunciarse donde el valor se define: el usuario deja de aprender acerca de las asunciones y desviaciones que las fases declararon.
+(Previamente: toda desviación reportada alcanzaba el resumen entre-fases verbatim, sea lo que declarara, porque Tier 2 significaba "surface, no bloquees".)
+
+#### Scenario: Una desviación limpia no llega al usuario
+
+- **GIVEN** una desviación aplicada llevando `mandate: forced` con su restricción nombrada, declarando `contested: none`
+- **WHEN** se produce el resumen entre-fases
+- **THEN** el item no aparece en él
+- **AND** permanece en el `detailed_report` persistido, que no cambia
+
+#### Scenario: Una desviación que contradice algo sí se muestra
+
+- **GIVEN** una desviación aplicada declarando `contested: contradicts-record`
+- **WHEN** se produce el resumen entre-fases
+- **THEN** el `summary` del item aparece ahí con su anchor
+- **AND** nada aguarda en él, porque una sección `muted` nunca dispara un gate
+
+#### Scenario: `### Open Questions` sigue la misma regla
+
+- **GIVEN** un item `### Open Questions` declarando `contested: none`
+- **WHEN** se produce el resumen entre-fases
+- **THEN** no aparece
+- **AND** el mismo item declarando un trigger aparece, sin bloqueo
+
+#### Scenario: El costo está escrito donde la regla vive
+
+- **GIVEN** la definición de `muted` y las reglas de negocio de esta capacidad
+- **WHEN** se leen
+- **THEN** ambas enuncian que desviaciones declaradas y preguntas abiertas dejan de alcanzar al usuario a menos que disparadas
+- **AND** ninguna presenta el bloque persistido como compensación, ya que nadie lo lee entre fases
+
 ## Escenarios
 
 ### Scenario: Un punto se abre como efecto colateral de una edición mandatada

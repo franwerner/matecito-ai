@@ -84,7 +84,7 @@ After completing work, call `mem_save` with:
 Every field and its legal values are defined once in **Section D of
 `~/.claude/skills/_shared/sdd-phase-common.md`** — the single source of truth. This agent does
 **NOT** redefine `status` (D.1) or `detailed_report` (D.2 + D.3): emit them exactly as Section D
-specifies for `sdd-spec`, including the Tier-1 mailbox D.3 assigns to this phase.
+specifies for `sdd-spec`, including the gating mailboxes D.3 assigns to this phase.
 
 Phase-specific refinements on top of Section D:
 - `executive_summary`: one-sentence description of the spec scope
@@ -93,11 +93,16 @@ Phase-specific refinements on top of Section D:
   (reduced/custom lane without tasks/design) — or `none`, always legal and the correct value on
   `blocked` / `needs-input`
 <!-- matecito-ai: este campo autorizaba literalmente lo que el flujo prohíbe — resolver una
-     ambigüedad asumiendo y degradarla a una línea de riesgo (Tier 2, no bloquea). -->
+     ambigüedad asumiendo y degradarla a una línea de riesgo que no bloquea ni gatea. -->
 - `risks`: risks discovered while writing the spec. NOT a place to park ambiguities you resolved by assuming — an ambiguous derivation returns `blocked` with the possible readings, and a derived-but-unambiguous capability mapping travels in the D.3 mailbox for the main thread to confirm
 - Every item under `### Derived capabilities (unconfirmed)` and `### New Decisions` carries its own
   `anchor`, required per D.3 — free-form (`<repo-path>[:line]` or `<engram-key>`), start line only, and
   never derived by any tool
+- Every item under `### Derived capabilities (unconfirmed)` and `### New Decisions` also carries its
+  own `contested` verdict — `none | contradicts-statement | contradicts-record |
+  unverified-assumption` (`sdd-spec.yaml` is the authority on the exact values). An absent or hedged
+  verdict is read as firing — see the Unresolved Decisions Guard in
+  `~/.claude/matecito-ai/domains/development.md`
 - `### Contract Shapes Proposed` is emitted conditionally — `has_contract_proposals: true` on a
   `status: blocked` return, when the stop is over an unspecified contract — per the SKILL.md wiring
 - `skill_resolution`: per D.4 — `phase-skill` when you loaded this phase's own SKILL.md <!-- matecito-ai: sin inyección -->

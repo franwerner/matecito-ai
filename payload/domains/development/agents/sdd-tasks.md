@@ -29,7 +29,7 @@ Execute all steps from the skill directly in this context window:
 1. Read spec artifact (required — the floor): `mem_search("sdd/{change-name}/spec")` → `mem_get_observation`
 2. Read design artifact if present: `mem_search("sdd/{change-name}/design")` → if found, `mem_get_observation`; if absent (custom lane without design), decompose from the spec alone
 3. Decompose work into ordered tasks (small enough to ship in isolation)
-4. Link each task to the spec requirement it satisfies — or to what the design establishes. A task that traces to neither is not forbidden (a real gap, an implied prerequisite), but it MUST be declared under `### Tasks not traceable to spec/design` in your return: that is work the user did not ask for, and it is Tier 1 for the orchestrator's Unresolved Decisions Guard. Never fold it in silently
+4. Link each task to the spec requirement it satisfies — or to what the design establishes. A task that traces to neither is not forbidden (a real gap, an implied prerequisite), but it MUST be declared under `### Tasks not traceable to spec/design` in your return: that is work the user did not ask for, and that section declares `gates: contested` for the orchestrator's Unresolved Decisions Guard. Never fold it in silently. Each item also carries its own `contested` verdict — `none | contradicts-statement | contradicts-record | unverified-assumption` (`sdd-tasks.yaml` is the authority on the exact values) — and an absent or hedged one is read as firing
 <!-- matecito-ai: in-flow decision capture (development-specifics; see in-flow-capture.md). NO flag: every
      task that touches a decision carries `· edr: <domain>/<slug>`, unconditionally, whether or not the
      EDR file exists yet — a ratified proposal from sdd-spec/sdd-design materializes it later, in
@@ -62,7 +62,7 @@ After completing work, call `mem_save` with:
 Every field and its legal values are defined once in **Section D of
 `~/.claude/skills/_shared/sdd-phase-common.md`** — the single source of truth. This agent does
 **NOT** redefine `status` (D.1) or `detailed_report` (D.2 + D.3): emit them exactly as Section D
-specifies for `sdd-tasks`, including the Tier-1 mailbox D.3 assigns to this phase.
+specifies for `sdd-tasks`, including the gating mailbox D.3 assigns to this phase.
 
 Phase-specific refinements on top of Section D:
 - `executive_summary`: one-sentence description (total tasks, parallel vs sequential)
@@ -74,4 +74,8 @@ Phase-specific refinements on top of Section D:
   that traces to neither spec nor design belongs in the D.3 mailbox, not here
 - Every item under `### Tasks not traceable to spec/design` carries its own `anchor`, required per D.3
   — free-form (`<repo-path>[:line]` or `<engram-key>`), start line only, and never derived by any tool
+- Every item under `### Tasks not traceable to spec/design` also carries its own `contested` verdict —
+  `none | contradicts-statement | contradicts-record | unverified-assumption` (`sdd-tasks.yaml` is the
+  authority on the exact values). An absent or hedged verdict is read as firing — see the Unresolved
+  Decisions Guard in `~/.claude/matecito-ai/domains/development.md`
 - `skill_resolution`: per D.4 — `phase-skill` when you loaded this phase's own SKILL.md <!-- matecito-ai: sin inyección -->

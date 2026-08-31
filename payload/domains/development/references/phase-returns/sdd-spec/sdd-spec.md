@@ -2,7 +2,7 @@
      Existe porque el formato vivía inline en la skill y estaba incompleto: declaraba UNA sola forma
      —la del camino feliz— y no decía nada de cómo se devuelve un `blocked`, que es precisamente lo
      que esta fase produce cuando la derivación de capabilities es ambigua. Y emitía
-     `### Derived capabilities (unconfirmed)` sin marcarla como buzón Tier 1, que es lo único que
+     `### Derived capabilities (unconfirmed)` sin declarar `gates: contested`, que es lo único que
      hace disparar el gate del orquestador: sin ese rótulo, un ejecutor la trata como un comentario
      más y la omite cuando "no hay nada que decir".
      Este archivo es LA fuente del formato. La skill y el agente lo referencian; no lo copian. -->
@@ -22,20 +22,20 @@ casing or heading level is a section it will not find.
 | --- | --- | --- |
 | `### Specs Written` | always | the orchestrator, as context |
 | `### Coverage` | always | the orchestrator, as context |
-| `### Contract Shapes Proposed` | conditional — only when `has_contract_proposals` is true and status is `blocked` | Unresolved Decisions Guard — **Tier 1** |
+| `### Contract Shapes Proposed` | conditional — only when `has_contract_proposals` is true and status is `blocked` | Unresolved Decisions Guard — `gates: always` (Section D.3) |
 | `### Blocker` | only on `status: blocked` | the orchestrator: it puts the question to the user |
-| `### Derived capabilities (unconfirmed)` | always | Unresolved Decisions Guard — **Tier 1** |
-| `### New Decisions` | conditional — only when the lane running has no `design` add-on active | Unresolved Decisions Guard — **Tier 1** |
+| `### Derived capabilities (unconfirmed)` | always | Unresolved Decisions Guard — `gates: contested` (Section D.3) |
+| `### New Decisions` | conditional — only when the lane running has no `design` add-on active | Unresolved Decisions Guard — `gates: contested` (Section D.3) |
 | `### Next Step` | always | the orchestrator, to route |
 
 Titles are fixed. This phase declares no accepted variants of them.
 
-`### Derived capabilities (unconfirmed)` is the **only unconditional** Tier-1 mailbox of this phase.
-It is what makes the Unresolved Decisions Guard fire: a derived capability mapping is a guess about
-which durable capability-spec this change belongs to, and at archive that mapping decides which file
-the delta gets merged into. Emit it **always** — with the `None — mapping was explicit.` sentinel when
-the upstream proposal carried its own Capabilities section — because a missing section and an empty
-one mean opposite things to the guard.
+`### Derived capabilities (unconfirmed)` is the **only unconditional** gating mailbox of this phase —
+it declares `gates: contested` (Section D.3 of `sdd-phase-common.md` fixes what that means). A derived
+capability mapping is a guess about which durable capability-spec this change belongs to, and at
+archive that mapping decides which file the delta gets merged into. Emit it **always** — with the
+`None — mapping was explicit.` sentinel when the upstream proposal carried its own Capabilities
+section — because a missing section and an empty one mean opposite things to the guard.
 
 **Split into summary/rationale.** Each item declares two parts, `summary` and `rationale`, in the
 `derived_capabilities` JSON: `summary` is what the gate prints, `rationale` is the full reasoning —
@@ -47,6 +47,12 @@ not restated here. `summary` also carries a **250-character cap**, enforced by `
 Every item also carries the `· anchor:` token, declared first so it prints directly under the
 summary — the legitimate forms and the not-yet-written-target rule are fixed once in Section D.3 of
 `sdd-phase-common.md`, not restated here.
+
+Every item also carries the `· contested:` token, declared last (`sdd-spec.yaml` is the authority on
+its legal values — run `--schema` on demand). It asserts whether this item names a concrete
+counterparty it could not clear; the Unresolved Decisions Guard in
+`~/.claude/matecito-ai/domains/development.md` classifies it, and this file does not restate that
+rule.
 
 **`### Contract Shapes Proposed`** is the dedicated home for an unpinned contract or definition — the
 shape "Contract & definition shapes — never inferred" (`~/.claude/matecito-ai/domains/development.md`)
@@ -75,21 +81,23 @@ what was drafted before the stop.
 
 <!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism:
      ~/.claude/references/decision-capture/in-flow-capture.md — this section only fixes the RETURN shape. -->
-`### New Decisions` is this phase's **conditional** Tier-1 mailbox — the ratification gate for an
-architecture decision this phase finds, in a lane where `sdd-design` will NOT also run (so no later
-mailbox would ever ratify it). Emit it, with content or with the `None.` sentinel, **only** when
-`decisions_gate_here` is `true` — read from the intake brief's `### Triage` line (`Lane: ... —
-add-ons: [...]`): `true` iff `design` is NOT one of the add-ons listed. When `design` IS active, omit
-this section entirely — `sdd-design`'s own `### New Decisions` is the single gate, and emitting a
-second one here would ask the user to ratify the same decision twice. Same title as `sdd-design`'s
-plain variant, byte-identical, because it is the same mailbox concept surfacing one lane earlier — the
-Unresolved Decisions Guard applies the identical rule to it. Each item carries `summary` +
-`· rationale:` (same split as above) plus three tokens, in this order: `· anchor:` (the concrete
-source this decision is about — a `<repo-path>[:line]` or `<engram-key>`, per Section D.3 of
-`sdd-phase-common.md`), `· blocking-test:` (identical meaning and values to `sdd-design`'s — see
-`sdd-design.md`, "The blocking-test token") and `· record: <domain>/<slug>` — the EDR identity the
-proposal would occupy if ratified, free-form (no closed value set), still required (an item missing
-any of these tokens fails `TOKEN-MISSING`, the strict reading of an omission).
+`### New Decisions` is this phase's **conditional** gating mailbox — it declares `gates: contested`
+(Section D.3 of `sdd-phase-common.md`) — the ratification gate for an architecture decision this
+phase finds, in a lane where `sdd-design` will NOT also run (so no later mailbox would ever ratify
+it). Emit it, with content or with the `None.` sentinel, **only** when `decisions_gate_here` is `true`
+— read from the intake brief's `### Triage` line (`Lane: ... — add-ons: [...]`): `true` iff `design`
+is NOT one of the add-ons listed. When `design` IS active, omit this section entirely —
+`sdd-design`'s own `### New Decisions` is the single gate, and emitting a second one here would ask
+the user to ratify the same decision twice. Same title as `sdd-design`'s plain variant, byte-identical,
+because it is the same mailbox concept surfacing one lane earlier — the Unresolved Decisions Guard
+applies the identical rule to it. Each item carries `summary` + `· rationale:` (same split as above)
+plus four tokens, in this order: `· anchor:` (the concrete source this decision is about — a
+`<repo-path>[:line]` or `<engram-key>`, per Section D.3 of `sdd-phase-common.md`), `· blocking-test:`
+(identical meaning and values to `sdd-design`'s — see `sdd-design.md`, "The blocking-test token"),
+`· record: <domain>/<slug>` — the EDR identity the proposal would occupy if ratified, free-form (no
+closed value set) — and `· contested:` (`none | contradicts-statement | contradicts-record |
+unverified-assumption`, classified by the Unresolved Decisions Guard). All four tokens are still
+required (an item missing any of them fails `TOKEN-MISSING`, the strict reading of an omission).
 
 Only two statuses have a shape here: `done` and `blocked`. This phase's skill does not designate
 `needs-input`, and a spec is written whole or not at all, so `partial` does not arise.
@@ -118,6 +126,7 @@ Only two statuses have a shape here: `done` and `blocked`. This phase's skill do
 
 - {the capability you derived, as `New` or `Modified`, and its name}
   · anchor: {the intake brief's Engram key, or the durable capability-spec path for a Modified capability}
+  · contested: {none | contradicts-statement | contradicts-record | unverified-assumption}
   · rationale: {one line: what you derived it from — the brief's Affected Areas, its structured Request}
 
 These are NOT contract until the main thread confirms them.
@@ -133,6 +142,7 @@ test, same values). One item per decision:
   · anchor: {the concrete source this decision is about — a `<repo-path>[:line]` or `<engram-key>`}
   · blocking-test: none
   · record: {domain}/{slug}
+  · contested: {none | contradicts-statement | contradicts-record | unverified-assumption}
   · rationale: {one line: the full reasoning}
 
 If genuinely none: "None."}
@@ -218,7 +228,7 @@ what the orchestrator needs in order to route and to gate. The orchestrator neve
      (sección que ya se emite siempre) en vez de abrir una sección nueva que sería un buzón fantasma. -->
 The `ui-scenarios` block written in the skill's Step 4b follows that same split: it belongs to the
 **artifact**, because `sdd-verify` executes it from there. The return carries only the `UI scenarios`
-count on the `### Coverage` line — deliberately not a section of its own. It is not a Tier-1 mailbox
+count on the `### Coverage` line — deliberately not a section of its own. It is not a gating mailbox
 and opens no gate: the `ui-test` flag it derives from was already confirmed by the user at the INTAKE
 GATE, so there is nothing left for the orchestrator to decide. When the brief says `not-needed`, the
 bullet reads `none — ui-test: not-needed`; the bullet itself is never dropped, so a missing count is
@@ -237,6 +247,6 @@ flag said `needed` lies about the flag, and `0 written` lies about the block, an
 `sdd-verify`'s UI gate close **silently** so nobody learns the verification will not run.
 
 Note the asymmetry with `sdd-design`, where `New Decisions` exists in both the artifact and the
-return. Here the Tier-1 mailbox lives **only in the return** — a delta spec has no section for it,
+return. Here the gating mailbox lives **only in the return** — a delta spec has no section for it,
 and no other copy of it exists anywhere. Dropping it does not degrade the gate; it deletes the
 information.

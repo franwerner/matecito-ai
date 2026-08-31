@@ -321,11 +321,49 @@ case, the notice shape — `~/.claude/references/phase-returns/sdd-apply/paralle
 
 <!-- matecito-ai: los buzones de cada fase (Open Questions, New Decisions, Deviations, Derived capabilities, risks) existían sin que nadie los consumiera: eran el lugar barato donde depositar lo no resuelto y seguir. Este guard los convierte en disparador. -->
 ### Unresolved Decisions Guard (MANDATORY)
-After EVERY phase returns and before dispatching the next one, inspect the return envelope for unresolved-decision mailboxes. **Two tiers — do not conflate them.**
+After EVERY phase returns and before dispatching the next one, inspect the return envelope for items
+that fire a gate. **A gate fires per item, not per section — two closed triggers decide it.**
 
 <!-- matecito-ai: la lista de buzones vivía duplicada acá y en el contrato canónico, y cada edición
      desalineaba una de las dos copias. Este guard ya NO mantiene su propia lista: referencia la tabla. -->
-**Tier 1 — pending decision → STOP and ask.** The Tier-1 mailboxes are **exactly** the sections marked Tier 1 in the canonical mailbox table (`_shared/sdd-phase-common.md`, **Section D.3**) — read the list there. This guard does NOT keep a parallel copy of it. One matching note only: `sdd-design`'s `New Decisions` is titled `New Decisions (not yet in EDRs)` when the EDR store is active and plain otherwise — **emitted either way**, the activation gate does not suppress it. Content in any Tier-1 section means the phase produced something the user has not agreed to. Present it and wait before the next dispatch. **Automatic mode does NOT skip this gate** (same pattern as the INTAKE GATE and the mine gate). When a Tier-1 section's contract splits its items into `summary`/`rationale` (the phase-return contract's `items.rationale`), present each item's `summary` at the gate — that is the section's own **declared** presentation, not you judging what is brief — and reproduce an item's `rationale` verbatim, from the block already in context, only when the user asks for it.
+**The two firing triggers.** An item fires — stops the flow and asks the user — when either holds:
+(a) its `contested` token is anything other than `none`, including absent or hedged; or (b) the item is
+a proposed contract shape (`### Contract Shapes Proposed`). Classify on the token alone, never by
+reading the item's prose and re-deriving the verdict yourself — see "Reading the `contested` token"
+below. The candidate sections are **exactly** the ones the canonical mailbox table marks `contested`,
+`always` or `muted` (`_shared/sdd-phase-common.md`, **Section D.3**) — read the list there; this guard
+does NOT keep a parallel copy of it. One matching note only: `sdd-design`'s `New Decisions` is titled
+`New Decisions (not yet in EDRs)` when the EDR store is active and plain otherwise — **emitted either
+way**, the activation gate does not suppress it.
+
+An item that does NOT fire proceeds with no user turn — where it goes next is decided by its section's
+`gates:` value, not by this guard: `contested` and `reported` sections put it in the between-phase
+summary; a `muted` section puts it nowhere. A firing item means the phase produced something the user
+has not agreed to (trigger a) or something that must be reviewed as a whole before it exists in code
+(trigger b) — present it and wait before the next dispatch. **Automatic mode does NOT skip this gate**
+(same pattern as the INTAKE GATE and the mine gate). When a firing section's contract splits its items
+into `summary`/`rationale` (the phase-return contract's `items.rationale`), present each item's
+`summary` at the gate — that is the section's own **declared** presentation, not you judging what is
+brief — and reproduce an item's `rationale` verbatim, from the block already in context, only when the
+user asks for it.
+
+**Reading the `contested` token.** Classify each gating-eligible item on its `contested` token alone,
+in the shape of the "Reading the `blocking-test` token" table below:
+
+| Token | What it asserts | What you do |
+| --- | --- | --- |
+| `none` | the phase found nothing contested about this item | no gate — the item proceeds; where it surfaces afterward is decided by its section's `gates:` value (D.3), not this guard |
+| a named value (`contradicts-statement` / `contradicts-record` / `unverified-assumption`) | the item names a concrete counterparty it could not clear | the item fires — present it |
+| absent, or hedged | the phase did not report a verdict, or is withholding one | fires under the strict reading — same default an undeclared deviation gets in `sdd-verify` |
+
+**The self-report cost, stated plainly.** `unverified-assumption` (and its siblings) are self-reported:
+no script can prove the value true, only that it is present and legal (`render-return.js`'s field
+check). This is a **strictly weaker** guarantee than the section-identity rule it replaces — a phase can
+now opt an item out of a gate by writing one word — and neither the strict absent/hedged default above
+nor the between-phase summary is a detection of that failure; nothing in the ecosystem checks whether
+`none` was true. In a `muted` section the cost compounds: a wrongly-clean item there reaches the user
+nowhere at all, because there is no between-phase line for it to fall back on either (see D.3's `muted`
+row).
 
 <!-- matecito-ai: `sdd-design`'s blocking test was pure self-assessment — the executor ran it in its head
      and published only the verdict. A decision whose OWN text said "this needs a queue and a worker the
@@ -340,9 +378,9 @@ reading the decision and re-running the test yourself:
 
 | Token | What it asserts | What you do |
 | --- | --- | --- |
-| `none` | the test ran and came back negative | ordinary Tier 1 — present it with the rest of the batch |
-| an axis named (`infra` / `contract` / `data-model`) | the item is in the wrong mailbox: a differing axis makes the decision `blocked`, not a Tier-1 note | stop and surface it as you would a `blocked` return, quoting the token |
-| absent, or hedged | the test did not run, or the answer is being withheld | Tier 1 under the strict reading — same default an undeclared deviation gets in `sdd-verify` |
+| `none` | the test ran and came back negative | present it with the rest of the gating batch, subject to its own `contested` token above |
+| an axis named (`infra` / `contract` / `data-model`) | the item is in the wrong mailbox: a differing axis makes the decision `blocked`, not a gating note | stop and surface it as you would a `blocked` return, quoting the token |
+| absent, or hedged | the test did not run, or the answer is being withheld | fires under the strict reading — same default an undeclared deviation gets in `sdd-verify` |
 
 The token is the only evidence the test ran at all. Do not accept a decision's prose as a substitute
 for it, and do not fill one in on the phase's behalf.
@@ -368,6 +406,12 @@ to re-derive:
 - **Rejected** — its `record:` token and `summary` alone, marked rejected. The full text already
   travels in the design's `## New Decisions`; the token and summary are enough for `sdd-apply` to know
   which item and what it was about.
+- **Auto-ratified** (the gate never fired because the item declared `contested: none`) — forwarded
+  exactly as the ratified case above: its authored text verbatim, plus its `record:` token, marked
+  ratified. The dispatch prompt is **byte-identical** whether ratification came from a user turn at the
+  gate or from the gate never firing — `sdd-apply` cannot tell which path produced it, and does not need
+  to: its materialization step (Step 4b) and its "a missing resolution returns `blocked`" rule are
+  unchanged either way.
 
 The resolution never travels as a token on the mailbox item itself, and none should be added: `New
 Decisions` has no `resolution:` field, because `sdd-spec`/`sdd-design` write the item at propose time,
@@ -401,7 +445,9 @@ This is the one and only channel `sdd-apply` reads a proposal's resolution from 
 `sdd-apply` dispatch prompt — the orchestrator writes one row per ratified item to
 `sdd/{change-name}/ratified-decisions`: `record` (the item's `<domain>/<slug>` token), `ratified_summary`
 (the adjusted text when the user corrected it at this gate, the offered text otherwise), `anchor` (per
-`~/.claude/references/gate-presentation.md`'s anchor rule), and `gate` (which gate ratified it). Only a
+`~/.claude/references/gate-presentation.md`'s anchor rule), and `gate` (which gate ratified it — an item
+auto-ratified because its verdict was `none` gets `gate: auto` here instead of a gate name; the field's
+value space widens to include the absence of a gate, the field itself is unchanged). Only a
 LATER gate of the same change reads this key — to recognize a decision that re-emerges (matched on
 `record`, exact string — see `~/.claude/references/gate-presentation.md` → "Re-emergence") and offer its
 short form instead of walking it again. **`sdd-apply` MUST NOT read `sdd/{change-name}/ratified-decisions`**:
@@ -459,14 +505,28 @@ when a proposal's resolution is missing from its dispatch prompt (the closing pa
 <!-- matecito-ai: `New Decisions` y `Open Questions` se solapaban — las dos recibían decisiones
      pendientes, el ejecutor terminaba duplicando contenido y el usuario confirmaba lo mismo dos
      veces (fatiga de confirmación, el fallo que este guard existe para evitar). Desde ahora el
-     único buzón Tier 1 de `sdd-design` es `New Decisions`. -->
-**Tier 2 — accomplished fact or information → surface, do not block.** The Tier-2 mailboxes are **exactly** the sections marked Tier 2 in that same canonical table (`_shared/sdd-phase-common.md`, **Section D.3**) — read the list there. This guard does NOT keep a parallel copy of it either: enumerating Tier 1 by reference and Tier 2 inline was the same duplication, one tier later. Plus `risks`, which is an envelope field (D.4) and therefore not in that table, and is Tier 2 for every phase. These report what already happened or what is merely worth knowing. `Open Questions` is **informative**: it carries what does NOT fix a decision — anything that does fix one belongs in `New Decisions`, the single Tier-1 mailbox of that phase. Show them verbatim in the between-phase summary — never compress them to "no news" — and call out a deviation explicitly when it touches something `sdd-verify` will check against the design, because the design artifact is now stale. Where a section's contract splits its items into `summary`/`rationale`, "verbatim" binds to the `summary` — the part the contract declares printable; the `rationale` still ships in the block and is reproduced verbatim on request, not printed by default.
+     único buzón que dispara de `sdd-design` es `New Decisions`. -->
+**A non-firing item still has somewhere to go — decided by its section's `gates:` value.** The
+sections marked `contested` or `reported` in that same canonical table (`_shared/sdd-phase-common.md`,
+**Section D.3**) surface a non-firing item in the between-phase summary; a `muted` section reaches the
+user nowhere — see D.3's `muted` row for the compounded cost. This guard does NOT keep a parallel copy
+of D.3's table either: enumerating the firing criterion by reference and the surfacing rule inline was
+the same duplication, one level later. Plus `risks`, which is an envelope field (D.4) and therefore not
+in that table, and always surfaces the same way a `contested`/`reported` section's non-firing item does.
+`Open Questions` (`muted`) is **informative**: it carries what does NOT fix a decision — anything that
+does fix one belongs in `New Decisions`, the single gating mailbox of that phase — and an untriggered
+`Open Questions` item reaches the user nowhere, per the `muted` row's cost. Show a surfaced item
+verbatim in the between-phase summary — never compress it to "no news" — and call out a deviation
+explicitly when it touches something `sdd-verify` will check against the design, because the design
+artifact is now stale. Where a section's contract splits its items into `summary`/`rationale`,
+"verbatim" binds to the `summary` — the part the contract declares printable; the `rationale` still
+ships in the block and is reproduced verbatim on request, not printed by default.
 
-**One gate per phase, walked per the shared presentation.** Collect every Tier-1 item the phase returned and walk it through `~/.claude/references/gate-presentation.md`: one index over the phase's Tier-1 items, then each one shown in turn — item by item is the default here, not a batch-first summary — with "confirm the rest" the only bulk shortcut, offered before the first item and at any item while walking. This guard states no batching mechanic of its own. Gate fatigue is still the failure mode this exists to avoid — a gate the user clicks through without reading is worse than no gate — and the index up front plus "confirm the rest" mid-walk are what covers it now. This matters most in a repo with no `.matecito-ai/edr/`, where every architectural choice lands under `New Decisions`.
+**One gate per phase, walked per the shared presentation.** Collect every firing item the phase returned and walk it through `~/.claude/references/gate-presentation.md`: one index over the phase's firing items, then each one shown in turn — item by item is the default here, not a batch-first summary — with "confirm the rest" the only bulk shortcut, offered before the first item and at any item while walking. This guard states no batching mechanic of its own. Gate fatigue is still the failure mode this exists to avoid — a gate the user clicks through without reading is worse than no gate — and the index up front plus "confirm the rest" mid-walk are what covers it now. This matters most in a repo with no `.matecito-ai/edr/`, where every architectural choice lands under `New Decisions`.
 
 <!-- matecito-ai: las secciones se emiten SIEMPRE, así que sin esta regla toda sección tiene "contenido"
      (la cadena `None…`) y el gate se abriría en cada fase — la gate fatigue que este guard dice evitar. -->
-**Empty → silent.** A Tier-1 section whose body is only an empty sentinel — any line starting with `None`, with or without a trailing explanation (`None.`, `None — mapping was explicit.`, `None — every task links to spec or design.`) — counts as EMPTY, not as content. **The sentinel is also recognized in Spanish** — a line starting with `Ninguna`, `Ninguno` or `Nada`, same rule, same trailing-explanation tolerance. Phase bodies are written in English and the canonical sentinel is `None`, but this ecosystem converses in Spanish and executors drift into it; a `Ninguna.` read as content opens a gate over nothing, and a gate the user clicks through without reading is the failure mode this guard is trying to avoid. No Tier-1 content means no gate: dispatch the next phase without mentioning this guard at all.
+**Empty → silent.** A gating-eligible section whose body is only an empty sentinel — any line starting with `None`, with or without a trailing explanation (`None.`, `None — mapping was explicit.`, `None — every task links to spec or design.`) — counts as EMPTY, not as content. **The sentinel is also recognized in Spanish** — a line starting with `Ninguna`, `Ninguno` or `Nada`, same rule, same trailing-explanation tolerance. Phase bodies are written in English and the canonical sentinel is `None`, but this ecosystem converses in Spanish and executors drift into it; a `Ninguna.` read as content opens a gate over nothing, and a gate the user clicks through without reading is the failure mode this guard is trying to avoid. No firing content means no gate: dispatch the next phase without mentioning this guard at all.
 
 <!-- matecito-ai: esta regla trataba como retorno roto TODA sección ausente, y hay reglas vigentes que
      ordenan omitir secciones enteras de forma legítima y condicional (conflictos de EDR con el store
@@ -480,7 +540,7 @@ when a proposal's resolution is missing from its dispatch prompt (the closing pa
      verify. El corte es la columna "Emitted", no la pertenencia a la tabla. -->
 **Omitted → depends on whether the section was unconditional.** Only sections declared **unconditional** are broken when missing — in the mailbox table of `_shared/sdd-phase-common.md`, **Section D.3**, those are the rows marked `always`; that table also carries conditional rows, which follow the rule below. The phase's own return template (`~/.claude/references/phase-returns/<phase>/<phase>.md`) marks the same distinction for every section it declares, mailbox or not. A section that the phase's own skill declares **conditional**, and whose condition does not hold, is **legitimately absent** — not a broken return, no gate, no mention (e.g. `sdd-intake`'s `### Early guard (EDRs)` when the EDR store is inactive, the UI verdict when the UI check does not apply, the TDD evidence table outside Strict TDD). <!-- matecito-ai: the first example used to be `## EDR Conflicts`, which exists only in the design ARTIFACT and never in a return — precisely the artifact/return confusion these rules exist to close. The other two really are return sections. -->
 
-When an **unconditional** section is missing, do NOT assume there was nothing and do NOT silently dispatch the next phase — but do not demand a "re-emission" either: no such command or status exists, and re-dispatching re-runs the whole phase (for `sdd-apply` a re-dispatch is defined as a **continuation batch**, not a re-emission). Handle it with what exists: treat the omission as unresolved Tier-1 content and open the same gate you would open for real content, naming the phase and the missing section, and let the user pick — proceed as if empty / re-run that phase / adjust. You own the channel; the decision is theirs, not a repair you improvise.
+When an **unconditional** section is missing, do NOT assume there was nothing and do NOT silently dispatch the next phase — but do not demand a "re-emission" either: no such command or status exists, and re-dispatching re-runs the whole phase (for `sdd-apply` a re-dispatch is defined as a **continuation batch**, not a re-emission). Handle it with what exists: treat the omission as unresolved gating content and open the same gate you would open for real content, naming the phase and the missing section, and let the user pick — proceed as if empty / re-run that phase / adjust. You own the channel; the decision is theirs, not a repair you improvise.
 
 ### Review Workload Guard (MANDATORY)
 After `sdd-tasks` and before `sdd-apply`, inspect `Review Workload Forecast`. If chained PRs recommended / 400-line budget risk High / decision needed → apply cached `delivery_strategy` (`ask-on-risk` default: STOP and ask chained PRs vs `size:exception`). Automatic mode does not override this guard.

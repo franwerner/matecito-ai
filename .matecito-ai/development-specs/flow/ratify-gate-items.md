@@ -73,6 +73,59 @@ Un gate entrega todo a la vez, y cada item llega sin nombrar sobre qué trata, a
 - **Summary sobre límite**: la renderización falla antes de llegar al gate; exit 1
 - **El usuario no responde a un item**: el gate sigue esperando; no hay timeout silencioso
 
+## Requisitos
+
+### Requisito: Qué cuenta como item ratificable en un gate
+
+El conjunto de items ratificables en un retorno se decide **por item**, por los dos triggers de disparo, no por la sección donde el item aparece. El índice cuenta solo los items que disparan; el walkthrough presenta solo aquellos. Un item que no dispara ninguno aparece en el resumen entre-fases con su anchor y toma ningún resultado, o no alcanza al usuario — decidido por el valor `gates:` de su sección, no por el gate. Todo lo demás acerca del gate no cambia — el template fijo, la regla de conteo 0/1/≥2, uno-a-uno como default, "confirmar el resto" como único atajo global, el requerimiento de anchor suministrado por la fase, la excepción de anchor del Discovery Gate, la forma de item compuesto para un contrato, y la oferta de ritmo cuando dos o más contratos llegan.
+(Previamente: cualquier contenido en una sección marcada Tier 1 hacía que todos sus items fueran ratificables, así un nombre obvio de capacidad y una contradicción genuina detenían al usuario del mismo modo.)
+
+#### Scenario: Items informativos quedan fuera
+
+- **GIVEN** un retorno con dos items que disparan y uno que no, el último en una sección cuyo valor es `contested`
+- **WHEN** su gate abre
+- **THEN** el índice cuenta dos, el walkthrough presenta dos, y el item no-disparador aparece solo en el resumen entre-fases
+
+#### Scenario: Un buzón con items que disparan y otros que no
+
+- **GIVEN** una única sección llevando cinco items, de los cuales dos declaran un veredicto no-`none`
+- **WHEN** su gate abre
+- **THEN** el índice cuenta dos, no cinco
+- **AND** la identidad de la sección juega ningún papel en el conteo
+
+#### Scenario: Un item que no dispara en una sección muted no llega a ningún lado
+
+- **GIVEN** un item no-disparador en una sección cuyo valor es `muted`
+- **WHEN** se producen el gate y el resumen entre-fases
+- **THEN** no aparece en ninguno
+- **AND** el índice del gate no se ve afectado por él de ninguna forma
+
+#### Scenario: Cero items ratificables, silencio total
+
+- **GIVEN** un gate cuyo material está vacío o contiene ningún item disparador
+- **WHEN** se intenta presentación
+- **THEN** nada se muestra y el mecanismo se salta
+- **AND** el siguiente paso continúa sin mención del gate
+
+### Requisito: Qué gates ratifican
+
+El gate de decisiones pendientes deja de ratificar items de `### New Decisions` por default: tal item está ratificado por el gate **no controlándolo**. Los gates que ratifican cada vez que abren se estrechan a dos — scope-confirmation (el INTAKE GATE) y mined-confirmation. El gate de decisiones pendientes sigue ratificando, a través de este mismo walkthrough, los items que sí disparan.
+(Previamente: el gate de decisiones pendientes ratificaba cada item de cada buzón Tier-1 sin condiciones, así `### New Decisions` era por sí mismo un gate ratificante.)
+
+#### Scenario: Tres gates ratifican por este walkthrough
+
+- **GIVEN** el gate de decisiones pendientes, el gate de scope-confirmation, y ambos gates de confirmación-minada
+- **WHEN** cada uno abre
+- **THEN** todos presentan items a través del mismo template compartido, con un índice único y un walkthrough uno-a-uno
+- **AND** el gate de decisiones pendientes abre solo cuando al menos un item dispara, mientras los otros abren toda vez que su momento ocurre
+
+#### Scenario: Una proposal se ratifica sin que un gate jamás abra para ella
+
+- **GIVEN** un retorno cuya única proposal de decisión declara `contested: none`
+- **WHEN** el momento de decisiones pendientes pasa
+- **THEN** no abre gate y la proposal se trata como ratificada
+- **AND** ratificación significa que el gate no la controló
+
 ## Escenarios
 
 ### Scenario: Un índice por retorno, nunca acumulado en el flow
@@ -256,6 +309,6 @@ Un gate entrega todo a la vez, y cada item llega sin nombrar sobre qué trata, a
 
 ## Referencias
 
-- **Contrato compartido** → [`../../shared/references/gate-presentation.md`](../../shared/references/gate-presentation.md) — El walkthrough (índice → uno a uno → confirmar-el-resto), el template fijo de slots (summary, anchor, acciones, sin narrativa), los nueve momentos (tres gates de fase + seis momentos de orquestador), la regla de conteo (0/1/≥2), y la excepción de anchor del Discovery Gate
-- **Guard de orquestador** → [`../../payload/domains/development/CLAUDE.md`](../../payload/domains/development/CLAUDE.md) — Los seis momentos de orquestador (Discovery Gate, Uncommitted-Work Gate, Review Workload Guard, `blocked` returns, findings de validadores, risks) citan el archivo compartido
-- **Anchoring criterion** → [`../../payload/domains/development/skills/gentle-ai/_shared/sdd-phase-common.md`](../../payload/domains/development/skills/gentle-ai/_shared/sdd-phase-common.md) Section D.3 — Formas legales de anchor (`<repo-path>[:line]` | `<engram-key>`), start-line-only, regla target-not-yet-written; Discovery Gate es la excepción explícita
+- **Contrato compartido** → [`../../../payload/shared/references/gate-presentation.md`](../../../payload/shared/references/gate-presentation.md) — El walkthrough (índice → uno a uno → confirmar-el-resto), el template fijo de slots (summary, anchor, acciones, sin narrativa), los nueve momentos (tres gates de fase + seis momentos de orquestador), la regla de conteo (0/1/≥2), y la excepción de anchor del Discovery Gate
+- **Guard de orquestador** → [`../../../payload/domains/development/CLAUDE.md`](../../../payload/domains/development/CLAUDE.md) — Los seis momentos de orquestador (Discovery Gate, Uncommitted-Work Gate, Review Workload Guard, `blocked` returns, findings de validadores, risks) citan el archivo compartido
+- **Anchoring criterion** → [`../../../payload/domains/development/skills/gentle-ai/_shared/sdd-phase-common.md`](../../../payload/domains/development/skills/gentle-ai/_shared/sdd-phase-common.md) Section D.3 — Formas legales de anchor (`<repo-path>[:line]` | `<engram-key>`), start-line-only, regla target-not-yet-written; Discovery Gate es la excepción explícita

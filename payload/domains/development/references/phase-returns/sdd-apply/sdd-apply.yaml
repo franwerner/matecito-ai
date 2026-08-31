@@ -76,7 +76,7 @@ sections:
   # wrong section and belongs in `### Mandated Departures` below.
   - title: "### Unmandated Forks"
     emitted: always
-    tier: 1
+    gates: contested
     sentinel: true
     render: items
     field: unmandated_forks
@@ -88,13 +88,14 @@ sections:
         - { name: anchor, field: anchor }
         - { name: mandate, field: mandate, values: [covered, forced, chosen], passing: [chosen] }
         - { name: verify-checks, field: verify_checks, values: [yes, no], passing: [yes, no] }
+        - { name: contested, field: contested, values: [unverified-assumption] }
   # A deviation that WAS applied — either a confirmed artifact fixed it (`covered`) or no alternative
   # was valid and the constraint is named (`forced`). `verify-checks` keeps both values legal here:
   # this mailbox reports accomplished facts, and the token only tells `sdd-verify` how to classify
   # each one.
   - title: "### Mandated Departures"
     emitted: always
-    tier: 2
+    gates: muted
     sentinel: true
     render: items
     field: mandated_departures
@@ -106,6 +107,7 @@ sections:
         - { name: anchor, field: anchor }
         - { name: mandate, field: mandate, values: [covered, forced, chosen], passing: [covered, forced] }
         - { name: verify-checks, field: verify_checks, values: [yes, no], passing: [yes, no] }
+        - { name: contested, field: contested, values: [none, contradicts-statement, contradicts-record, unverified-assumption] }
   # matecito-ai: contract-shape-gate. An unpinned contract/definition — the shape "Contract &
   # definition shapes — never inferred" (domain CLAUDE.md) forbids guessing — proposed as one
   # compound item, never as free prose inside `### Blocker`. Both conditions must hold: the phase's
@@ -114,6 +116,7 @@ sections:
     emitted: conditional
     when: has_contract_proposals
     statuses: [blocked]
+    gates: always
     render: items
     field: contract_proposals
     items:

@@ -30,7 +30,7 @@ Titles are fixed. `### Ready for Proposal` keeps that title in every lane, inclu
 the `propose` add-on is off — the **body** names the phase that actually comes next; the title does
 not change with the lane.
 
-This phase has **no Tier-1 mailbox** (see the mailbox table, Section D.3): nothing it returns opens
+This phase has **no gating mailbox** (see the mailbox table, Section D.3): nothing it returns opens
 the Unresolved Decisions Guard. It investigates and reports; it fixes nothing.
 
 `### Risks` here is the analysis: what could go wrong with the approaches you compared. It is part of

@@ -293,16 +293,20 @@ rename or re-level is a gate that never fires.
 
 Two things that file makes explicit and that this phase gets wrong most often:
 
-- `### Derived capabilities (unconfirmed)` is this phase's **Tier-1 mailbox**. It carries the
-  mapping you derived in Step 2 and it is emitted **always** — with the `None — mapping was
-  explicit.` sentinel when the upstream artifact had its own Capabilities section. A derived mapping
-  is not contract until the main thread confirms it.
+- `### Derived capabilities (unconfirmed)` declares `gates: contested` (Section D.3 of
+  `sdd-phase-common.md` fixes what that means). It carries the mapping you derived in Step 2 and it is
+  emitted **always** — with the `None — mapping was explicit.` sentinel when the upstream artifact had
+  its own Capabilities section. A derived mapping is not contract until the main thread confirms it.
 - The ambiguous-derivation stop from Step 2 returns `blocked`, and the possible readings go in the
   `### Blocker` section that file designates — never in `risks`, never as a mapping you picked.
-- `### New Decisions` (Step 4c) is a **second, conditional** Tier-1 mailbox — emitted only when
-  `decisions_gate_here` is true, omitted entirely otherwise. Do not confuse it with `### Derived
+- `### New Decisions` (Step 4c) is a **second, conditional** `gates: contested` mailbox — emitted only
+  when `decisions_gate_here` is true, omitted entirely otherwise. Do not confuse it with `### Derived
   capabilities (unconfirmed)`: a capability mapping and an architecture-decision proposal are
   different things, each in its own section.
+- Every item under both mailboxes carries a `· contested:` verdict — `none | contradicts-statement |
+  contradicts-record | unverified-assumption` (`sdd-spec.yaml` is the authority on the exact values;
+  run `--schema` on demand). An absent or hedged verdict is read as firing: do not omit it and do not
+  write `none` without actually checking against a statement or an Accepted record.
 <!-- matecito-ai: el bloque `ui-scenarios` va en el ARTEFACTO, no en el retorno; del retorno sólo
      cuelga el conteo, y en una sección que ya existe — no se abre un buzón nuevo por esto. -->
 - The `ui-scenarios` you wrote in Step 4b are reported in the return **only as a count**, on the

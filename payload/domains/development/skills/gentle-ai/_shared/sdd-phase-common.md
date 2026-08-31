@@ -164,38 +164,54 @@ distinguishable.
 
 ### D.3 Mailboxes the orchestrator's guards read
 
-These live **inside `detailed_report`**, never in `risks`. Tier definitions and gate behavior are in
-the domain fragment (`~/.claude/matecito-ai/domains/development.md`, `## Guards`); this table only
-fixes which section belongs to which phase.
+These live **inside `detailed_report`**, never in `risks`. What each `gates:` value means, and gate
+behavior itself, are in the domain fragment (`~/.claude/matecito-ai/domains/development.md`, `##
+Guards`); this table only fixes which section belongs to which phase and which value it takes.
 
-| Phase | Section | Tier | Emitted |
+| Phase | Section | Gates on | Emitted |
 | --- | --- | --- | --- |
-| `sdd-propose` | `### Scope and approach (unconfirmed)` | 1 | always |
-| `sdd-spec` | `### Derived capabilities (unconfirmed)` | 1 | always |
-| `sdd-spec` | `### New Decisions` — a proposal's ratification gate for a lane with no `design` add-on active (see `~/.claude/references/decision-capture/in-flow-capture.md`) | 1 | conditional — only when the lane running has no `design` add-on |
-| `sdd-design` | `### New Decisions` — or `### New Decisions (not yet in EDRs)` when the decision store is active; **both titles are valid and the orchestrator accepts either** | 1 | always |
-| `sdd-design` | `### Open Questions` | 2 | always |
-| `sdd-tasks` | `### Tasks not traceable to spec/design` | 1 | always |
-| `sdd-apply` | `### Unmandated Forks` | 1 | always |
-| `sdd-apply` | `### Mandated Departures` | 2 | always |
-| `sdd-verify` | `## Decision Gaps` | — | only when the change materialized at least one decision record (`### Decisions Materialized` in `apply-progress` carries ≥1 row) — no flag, see `in-flow-capture.md` |
-| `sdd-verify` | `## UI Verdict` | — | only when the UI check applies |
+| `sdd-propose` | `### Scope and approach (unconfirmed)` | contested | always |
+| `sdd-spec` | `### Derived capabilities (unconfirmed)` | contested | always |
+| `sdd-spec` | `### New Decisions` — a proposal's ratification gate for a lane with no `design` add-on active (see `~/.claude/references/decision-capture/in-flow-capture.md`) | contested | conditional — only when the lane running has no `design` add-on |
+| `sdd-design` | `### New Decisions` — or `### New Decisions (not yet in EDRs)` when the decision store is active; **both titles are valid and the orchestrator accepts either** | contested | always |
+| `sdd-design` | `### Open Questions` | muted | always |
+| `sdd-tasks` | `### Tasks not traceable to spec/design` | contested | always |
+| `sdd-apply` | `### Unmandated Forks` | contested | always |
+| `sdd-apply` | `### Mandated Departures` | muted | always |
+| `sdd-verify` | `## Decision Gaps` | reported | only when the change materialized at least one decision record (`### Decisions Materialized` in `apply-progress` carries ≥1 row) — no flag, see `in-flow-capture.md` |
+| `sdd-verify` | `## UI Verdict` | reported | only when the UI check applies |
 
-**Tier 1** stops the flow and asks the user; **Tier 2** is surfaced but does not block. `sdd-apply`'s
-two rows are not a Tier-1/Tier-2 pair over the same content: `### Unmandated Forks` carries a fork
-the confirmed artifacts do not fix and that `sdd-apply` did NOT apply (its item's `mandate:` token is
-always `chosen`); `### Mandated Departures` carries what it DID apply, either because an artifact
-already fixed the point (`mandate: covered`) or because no alternative was valid and the constraint
-is named (`mandate: forced`). A missing or hedged `mandate:` is read as `chosen`, so an absorbed
-deviation nobody can back with a named constraint routes to the Tier-1 section by default, never the
-cheap way past the gate. `sdd-spec`'s `### New Decisions` row is the SAME mailbox concept as
-`sdd-design`'s — a decision-proposal ratification gate — surfacing conditionally, one lane earlier;
-it is not a third kind of thing. `sdd-verify`'s `## Decision Gaps` is not a tier section: for
-`development` it feeds nothing kernel-side (the domain declares its own in-flow decision-capture
-mechanism, materialized during `sdd-apply` — see `~/.claude/references/decision-capture/in-flow-capture.md`);
-a domain with no such mechanism (e.g. `design`) may still feed a post-verify mine gate under its own
-flag. Gate behavior lives in the domain fragment (`~/.claude/matecito-ai/domains/development.md`, `##
-Guards`) — it reads this table and keeps no parallel copy of it.
+**The four `gates:` values — read as a ladder, loudest to quietest.** Each value states what an item's
+section does when that item declares **no** trigger; an item that does declare one gates in every value
+except `reported`, where it only ever surfaces.
+
+| Value | An item that declares a trigger | An item that declares none |
+| --- | --- | --- |
+| `always` | gates | n/a — every item in a `gates: always` section gates by construction |
+| `contested` | gates | surfaces in the between-phase summary |
+| `reported` | surfaces | surfaces |
+| `muted` | surfaces | **nothing reaches the user** |
+
+The `muted` row's cost compounds: a wrongly-clean item in a `muted` section is not merely
+non-blocking, it is **invisible** — there is no between-phase line to fall back on, unlike a
+`contested` section's untriggered item.
+
+`sdd-apply`'s two rows are not a matched pair over the same content: `### Unmandated Forks` carries a
+fork the confirmed artifacts do not fix and that `sdd-apply` did NOT apply (its item's `mandate:`
+token is always `chosen`, and its `contested` token's value set is a single legal value —
+`unverified-assumption` — so every item in that section fires); `### Mandated Departures` carries what
+it DID apply, either because an artifact already fixed the point (`mandate: covered`) or because no
+alternative was valid and the constraint is named (`mandate: forced`). A missing or hedged `mandate:`
+is read as `chosen`, so an absorbed deviation nobody can back with a named constraint routes to
+`### Unmandated Forks` by default, never the cheap way past the gate. `sdd-spec`'s `### New Decisions`
+row is the SAME mailbox concept as `sdd-design`'s — a decision-proposal ratification gate — surfacing
+conditionally, one lane earlier; it is not a third kind of thing. `sdd-verify`'s `## Decision Gaps` and
+`## UI Verdict` take `reported`, so neither ever gates: for `development`, `## Decision Gaps` feeds
+nothing kernel-side (the domain declares its own in-flow decision-capture mechanism, materialized
+during `sdd-apply` — see `~/.claude/references/decision-capture/in-flow-capture.md`); a domain with no
+such mechanism (e.g. `design`) may still feed a post-verify mine gate under its own flag. Gate behavior
+lives in the domain fragment (`~/.claude/matecito-ai/domains/development.md`, `## Guards`) — it reads
+this table and keeps no parallel copy of it.
 
 **Sixteen of these mailboxes split each item into `summary`/`rationale`**: `sdd-propose`'s `Scope and
 approach`, `sdd-spec`'s `Derived capabilities` and its conditional `New Decisions`, both `sdd-design`
@@ -215,8 +231,8 @@ moment it is asked for.
 
 **Register.** Write an item's `summary` in plain language: state what was decided and what follows
 from it, so a reader who does not know this flow's vocabulary understands the outcome. The
-ecosystem's internal vocabulary — phase names, token names, section titles, the tier/mailbox nouns —
-belongs in `rationale`, not in `summary`. This binds the item's prose only; a section's own title
+ecosystem's internal vocabulary — phase names, token names, section titles, the `gates:`/mailbox
+nouns — belongs in `rationale`, not in `summary`. This binds the item's prose only; a section's own title
 (which may legitimately carry that vocabulary, e.g. `### Derived capabilities (unconfirmed)`) is
 untouched. Where a check keys off literal words in the envelope's `Summary` — `validate-return.js`
 check 4 matches a section's `summary_claims` pattern together with a non-zero digit — keep those

@@ -147,12 +147,17 @@ Two things that file makes explicit and that this phase gets wrong most often:
 <!-- matecito-ai: esta fase pasó a tener buzón. Fija el approach y el mapeo de capabilities —
      lo que `sdd-spec` consume como contrato— y hasta ahora nada de eso llegaba a un gate: en
      Automatic la propuesta pasaba derecho y el error asomaba una fase después. -->
-- `### Scope and approach (unconfirmed)` is this phase's **Tier-1 mailbox**, emitted always. Carries
-  the approach you fixed and the capability mapping (`New` / `Modified`), which is what `sdd-spec`
-  turns into full specs or deltas — a wrong name there writes the delta against the wrong capability.
-  It is never `None`: a proposal always fixes an approach and always touches some capability. The
-  artifact's `## Capabilities` section must still be filled in and must match what you report here;
-  leaving it as a placeholder is what forces `sdd-spec` to derive its own mapping downstream.
+- `### Scope and approach (unconfirmed)` declares `gates: contested` (Section D.3 of
+  `sdd-phase-common.md` fixes what that means), emitted always. Carries the approach you fixed and
+  the capability mapping (`New` / `Modified`), which is what `sdd-spec` turns into full specs or
+  deltas — a wrong name there writes the delta against the wrong capability. It is never `None`: a
+  proposal always fixes an approach and always touches some capability. Each item MUST also carry a
+  `contested` verdict — `none | contradicts-statement | contradicts-record | unverified-assumption`
+  (`sdd-propose.yaml` is the authority on the exact values; run `--schema` on demand) — and an absent
+  or hedged one is read as firing, same as a missing token anywhere else in this ecosystem: do not
+  omit it and do not default to `none` without actually checking. The artifact's `## Capabilities`
+  section must still be filled in and must match what you report here; leaving it as a placeholder is
+  what forces `sdd-spec` to derive its own mapping downstream.
 - Anything that would fix scope or approach on the user's behalf returns `blocked`, with the
   question and the options in the `### Blocker` section that file designates — never in `risks`, and
   never resolved by picking the option you prefer so the happy-path block can be emitted.

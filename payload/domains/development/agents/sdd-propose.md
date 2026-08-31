@@ -58,6 +58,10 @@ Phase-specific refinements on top of Section D:
   an unresolved tradeoff returns `blocked` with the options you weighed
 - Every item under `### Scope and approach (unconfirmed)` carries its own `anchor`, required per D.3 —
   free-form (`<repo-path>[:line]` or `<engram-key>`), start line only, and never derived by any tool
+- Every item under `### Scope and approach (unconfirmed)` also carries its own `contested` verdict —
+  `none | contradicts-statement | contradicts-record | unverified-assumption` (`sdd-propose.yaml` is
+  the authority on the exact values). An absent or hedged verdict is read as firing — see the
+  Unresolved Decisions Guard in `~/.claude/matecito-ai/domains/development.md`
 - `### Contract Shapes Proposed` is emitted conditionally — `has_contract_proposals: true` on a
   `status: blocked` return, when the stop is over an unspecified contract — per the SKILL.md wiring
 - `skill_resolution`: per D.4 — `phase-skill` when you loaded this phase's own SKILL.md <!-- matecito-ai: sin inyección -->

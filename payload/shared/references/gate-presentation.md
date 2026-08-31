@@ -169,12 +169,12 @@ possible readings is a discrete choice and goes the same way. When the answer is
 writes — an open discovery question, a correction, an adjustment to an offered item — there are no
 alternatives to enumerate, and the prose template above is the form.
 
-### Tier-2 items stay out of the walkthrough
+### A non-gating item stays out of the walkthrough
 
-An item that is informative rather than ratifiable — a Tier-2 mailbox item, per the domain fragment's
-tier definitions — never enters the index and never blocks anything. It keeps appearing in the
-between-phase summary exactly as it does today, and it still carries its anchor like any other item:
-staying out of the walkthrough is about not gating on it, not about withholding where it comes from.
+An item that is informative rather than ratifiable — one the domain fragment's own firing rule does not
+gate — never enters the index and never blocks anything. It keeps appearing in the between-phase
+summary exactly as it does today, and it still carries its anchor like any other item: staying out of
+the walkthrough is about not gating on it, not about withholding where it comes from.
 
 ## Re-emergence
 
@@ -222,12 +222,16 @@ Still applies? (yes / no / see detail)
 
 This walkthrough and this template govern the same mechanism wherever it applies — the count decides
 the form (see above), never a hardcoded list of gates. Nine moments cite this file today; a tenth would
-cite it the same way, without this section growing to keep up.
+cite it the same way, without this section growing to keep up. **Nine is not the whole inventory of
+interruption points** — it is only the count of moments that cite this walkthrough. The Change
+Workspace's merge-conflict report and the commit-atomicity STOP (`~/.claude/skills/git/SKILL.md`) both
+stop the flow too, outside this file: no trigger this walkthrough governs reaches either one, and
+neither is modified by anything here.
 
 **The three gates that ratify a batch of items:**
 
 - **The pending-decisions gate** — the domain's guard that ratifies a phase's pending decisions before
-  the next phase dispatches (in `development`, the Unresolved Decisions Guard's Tier-1 mailboxes).
+  the next phase dispatches (in `development`, the Unresolved Decisions Guard's gating mailboxes).
 - **The confirmed-scope gate** — the INTAKE GATE. Its ratifiable items are the recommended lane and
   each of the brief's decision flags; each one's anchor slot is filled from fields the brief already
   carries (its Engram key, the `### Classification` block, the flag's own label) — the brief is not
