@@ -182,8 +182,8 @@ Guards`); this table only fixes which section belongs to which phase and which v
 | `sdd-verify` | `## UI Verdict` | reported | only when the UI check applies |
 
 **The four `gates:` values — read as a ladder, loudest to quietest.** Each value states what an item's
-section does when that item declares **no** trigger; an item that does declare one gates in every value
-except `reported`, where it only ever surfaces.
+section does when that item declares **no** trigger; an item that does declare one gates only in
+`always` and `contested`, and merely surfaces in `reported` and `muted`.
 
 | Value | An item that declares a trigger | An item that declares none |
 | --- | --- | --- |
