@@ -8,9 +8,11 @@
 
 An architecture decision that surfaces while a `development` change is in flight is **proposed** by
 the phase that finds it, **ratified once** at the lane's gate, and **materialized** as an `Accepted`
-EDR in the same `sdd-apply` step that implements the code the decision governs. There is no post-verify
-mining pass for `development` — the kernel's generic mine gate never fires here (see the override
-clause it carries).
+EDR in the same `sdd-apply` step that implements the code the decision governs. **"Ratified" covers two
+paths, not one**: the user confirmed the proposal at the gate, OR the gate never fired for it because
+its `contested` verdict was `none` — a proposal the gate did not contest is ratified exactly as one it
+confirmed. There is no post-verify mining pass for `development` — the kernel's generic mine gate never
+fires here (see the override clause it carries).
 
 ## The proposal — one mailbox item, two tokens
 
@@ -70,7 +72,12 @@ No later phase re-asks a proposal the gate already ratified, and `sdd-apply` nev
 confirmation for it — the ratified text reaches it verbatim through the orchestrator's dispatch prompt
 (the same channel already used for `delivery_strategy`, strict-TDD, and the apply-progress continuity
 note). An adjustment the user makes AT the gate wins for free: what is in the dispatch prompt IS what
-was ratified. Automatic mode does not skip this gate — same as every other Tier-1 mailbox.
+was ratified. Automatic mode does not skip this gate — same as every other gating mailbox.
+
+A proposal declaring `contested: none` follows the **other** ratified path: the gate never opens for
+it — no user turn, no walkthrough — and it is still forwarded to `sdd-apply` marked ratified, verbatim
+as authored. The dispatch prompt is byte-identical to the confirmed-at-the-gate case; `sdd-apply` does
+not know, and does not need to know, which path produced it.
 
 **Every item that reached the gate travels with its resolution — ratified or rejected — never left for
 `sdd-apply` to infer from the design's `## New Decisions` prose alone**, and a content conflict between
