@@ -20,7 +20,7 @@ Decisiones sobre cómo se organiza el payload del repo (dónde vive cada concept
 | [verdict-classified-by-the-orchestrator.md](verdict-classified-by-the-orchestrator.md) | Accepted | Vas a tocar quién clasifica un token declarado por una fase, o a agregar un tercer token del mecanismo de captura in-flow. |
 | [pr-base-branch-rule-reach.md](pr-base-branch-rule-reach.md) | Accepted | Vas a tocar la descripción de una estrategia de cadena de PRs (stacked-to-main, feature-branch-chain) o a agregar una nueva. |
 | [pr-base-explicit-argument-form.md](pr-base-explicit-argument-form.md) | Accepted | Vas a documentar o revisar cómo se abre un PR (por el flujo o a mano) y te tienta enunciarlo como norma en vez de argumento obligatorio. |
-| [change-isolation-activation-flag.md](change-isolation-activation-flag.md) | Accepted | Vas a tocar cómo se activa o se recomienda una elección junto con el lane en el fork o el INTAKE GATE. |
+| [change-isolation-activation-flag.md](change-isolation-activation-flag.md) | Accepted | Vas a tocar cómo se activa el aislamiento por cambio, o cómo se decide y se reporta esa elección. |
 | [change-workspace-identity.md](change-workspace-identity.md) | Accepted | Vas a tocar la identidad (rama, directorio) del espacio de trabajo aislado de un cambio, o cómo se lo mantiene fuera de la vista de git. |
 | [change-level-integration-act.md](change-level-integration-act.md) | Accepted | Vas a tocar cómo se cierra el ciclo de un cambio con aislamiento activo, o cómo se maneja un conflicto al integrarlo. |
 | [change-workspace-cleanup.md](change-workspace-cleanup.md) | Accepted | Vas a tocar la limpieza del espacio de trabajo de un cambio, en cualquiera de sus dos resultados (integración limpia o fallida). |
