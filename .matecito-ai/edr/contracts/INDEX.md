@@ -48,6 +48,7 @@ Decisiones sobre los contratos entre piezas del ecosistema: qué forma tiene lo 
 | [backing-check-not-applicable-to-record-edits.md](backing-check-not-applicable-to-record-edits.md) | Accepted | Vas a tocar qué chequea el grupo decision-gaps sobre una fila de `### Decisions Materialized`, o a decidir si una fila `modified` debe pasar o fallar el chequeo de backing. |
 | [two-totals-in-one-table-footer.md](two-totals-in-one-table-footer.md) | Accepted | Vas a tocar cómo una sección de tabla del retorno de una fase muestra más de un total agregado, o te tienta agregarle un segundo footer al renderizador. |
 | [est-lines-is-a-bare-integer.md](est-lines-is-a-bare-integer.md) | Accepted | Vas a agregar o tocar una columna de estimación por Phase que alimenta un guard que acumula aritméticamente, o te tienta permitirle un rango. |
+| [ladder-prose-states-triggered-case-only.md](ladder-prose-states-triggered-case-only.md) | Accepted | Vas a editar el párrafo de la escalera de `gates:` en D.3 de `_shared/sdd-phase-common.md`, o a escribirle una cláusula de comparación entre el caso disparado y el no disparado. |
 
 ## No aplican en este dominio
 
