@@ -17,8 +17,8 @@ Concurrent sessions on one repository stop sharing a single working tree. Isolat
 
 ## Flujo principal
 
-1. User chooses isolation at the lane fork or confirms it with the change's scope
-2. Orchestrator opens the change workspace on its own branch, on first file write (for direct/ad-hoc work) or after scope confirmation (for flow work)
+1. User chooses isolation explicitly in the request
+2. Orchestrator opens the change workspace on its own branch, on first file write (for direct/ad-hoc work) or immediately after intake returns (for flow work)
 3. Every subsequent phase writes files inside the change workspace
 4. When a parallel implementation batch is eligible, its isolated runs open on top of the change workspace
 5. The consolidation run integrates commits into the change workspace
@@ -27,7 +27,7 @@ Concurrent sessions on one repository stop sharing a single working tree. Isolat
 ## Ramas / flujos alternativos
 
 - **Isolation is inactive** → the system behaves exactly as before this change; the base and integration destination remain the working branch, and no workspace is opened.
-- **Opening moment differs by lane** → in the flow, the workspace opens after the INTAKE GATE once the scope is confirmed; in direct/ad-hoc work, it opens right before the first file is written.
+- **Opening moment differs by lane** → in the flow, the workspace opens right after intake returns a brief carrying isolation `active`, before the next phase is dispatched; in direct/ad-hoc work, it opens right before the first file is written.
 - **Base mismatch in pre-write check** → an isolated run detects its head does not match the received base or the tree is not clean; it reports `not-implemented / base-not-established` and does not proceed.
 - **Commit parent mismatch in integration** → the consolidation run detects a reported commit's parent is not the expected base; the commit is not integrated, the report is recorded as `base-mismatch`, and the branch remains intact.
 
@@ -40,8 +40,8 @@ Concurrent sessions on one repository stop sharing a single working tree. Isolat
 
 ## Reglas de negocio
 
-- Isolation is opt-in and never activated by default; the user must choose it explicitly at the lane fork.
-- Once confirmed, the isolation choice applies to the entire change; no later phase re-asks it.
+- Isolation is opt-in and never activated by default; it is active only when the user's request explicitly asks for it.
+- Once decided, the isolation value applies to the entire change; no gate confirms it and no later phase re-asks it.
 - The base handshake checks are performed against the immediate container's head — the change workspace when nested isolation is active, the original branch when it is not.
 - An isolated run must verify its head equals the received base and its tree is clean before writing anything; failing either, it writes nothing and reports `not-implemented / base-not-established`.
 - The consolidation run must verify each reported commit's parent equals the base it received; commits with mismatched parents are not integrated.
@@ -51,7 +51,7 @@ Concurrent sessions on one repository stop sharing a single working tree. Isolat
 ## Entidades y estados
 
 - **Change workspace** — a git worktree opened on its own branch (`matecito-ai/<change-name>`), stored in `.matecito-ai/workspaces/<change-name>`. States: created (open) → integrated (merge complete) → cleaned up (branch deleted). Transitions triggered by orchestrator actions.
-- **Isolation state** — for a change: `active` or `inactive`, confirmed at scope confirmation and persisted for the entire cycle.
+- **Isolation state** — for a change: `active` or `inactive`, decided by the intake phase, carried in the brief, and persisted for the entire cycle.
 - **Base of an isolated run** — the current head of its immediate container (the change workspace when nested, the original branch when not); used to verify the run's head in the pre-write check.
 
 ## Errores de cara al actor

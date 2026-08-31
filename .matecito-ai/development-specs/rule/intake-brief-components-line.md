@@ -6,7 +6,7 @@
 
 ## Propósito
 
-El Intake Brief declara **qué superficies del repo toca un cambio**. Es la proyección **por-cambio** del set declarado en `repo.components`: granularidad de cambio, vida del cambio, ratificada una sola vez en la INTAKE GATE. Esta capability fija su contrato — cómo se llama, dónde vive, qué se emite cuando nada matchea, cómo se apaga, quién la infiere, quién la ratifica y, sobre todo, que **nadie la consume**: es metadata que lee una persona.
+El Intake Brief declara **qué superficies del repo toca un cambio**. Es la proyección **por-cambio** del set declarado en `repo.components`: granularidad de cambio, vida del cambio, decidida por `sdd-intake` y reportada. Esta capability fija su contrato — cómo se llama, dónde vive, qué se emite cuando nada matchea, cómo se apaga, quién la infiere, que nunca se ratifica, y, sobre todo, que **nadie la consume**: es metadata que lee una persona.
 
 ## Reglas de negocio
 
@@ -15,7 +15,7 @@ El Intake Brief declara **qué superficies del repo toca un cambio**. Es la proy
 - **Gate presence-based**: sin `repo.components` declarado en el config del proyecto, el campo no existe en el brief y no se menciona. Con el set declarado, la línea se emite siempre (su ausencia es anomalía, como la ausencia de `Diagram`).
 - El valor no se hereda del config global; sólo cuenta el config de proyecto.
 - Con el eje activo y ninguna `paths` cubriendo el alcance, la línea se emite con el valor único `unassigned`. Si al menos una `paths` cubre el alcance, la línea nombra sólo esos componentes sin agregar `unassigned`.
-- `sdd-intake` infiere el valor mapeando el alcance del pedido contra `repo.components[].paths`. Es una propuesta que el usuario ratifica en la INTAKE GATE — su única ratificación. El orquestador la surfacea por nombre porque está declarada en la tabla de campos-del-brief del fragmento del dominio.
+- `sdd-intake` infiere el valor mapeando el alcance del pedido contra `repo.components[].paths`. El valor queda **decidido y reportado**, nunca ratificado: el orquestador lo reporta junto con los otros tres flags en una línea de aviso cuando el brief vuelve, y nada aguarda en él. Ningún gate lo confirma.
 - El valor es **metadata del cambio para un lector humano**. Ninguna fase lo lee para cambiar su comportamiento, ninguna lo consulta en `sdd-verify`/`sdd-tasks`, y ninguna lo escribe o extiende hacia la línea `Components:` de los capability-specs durables. La proyección por-capability conserva su propia ratificación.
 - El renderizador del bloque de retorno soporta un gate **por bullet** dentro de una sección etiquetada, con el mismo shape que el gate de sección: el bullet declara su condición y el ejecutor suministra el booleano. Resuelto en falso, el bullet se omite sin fallar. Resuelto en verdadero, el bullet exige su valor. El booleano es obligatorio: su ausencia falla el render nombrando el campo, nunca se interpreta como "apagado" ni omite en silencio. El impresor del esquema declara el gate de cada bullet que lo lleve, como ya lo hace para las secciones.
 

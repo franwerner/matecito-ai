@@ -57,7 +57,6 @@ Un gate entrega todo a la vez, y cada item llega sin nombrar sobre qué trata, a
 - Lo que el usuario ve en el gate es solo lo que el contrato declara para esa sección (summary, anchor, tokens, fields si el item es compuesto)
 - La rationale completa viaja siempre en el bloque persistido; nunca se imprime por defecto
 - El ancla DEBE ser suministrado por la fase; nunca se deriva
-- El Discovery Gate es la única excepción al requisito de anchor (porque sus items son preguntas sobre un pedido, no sobre artefactos)
 - Risks se presentan informativaentes: llevan anchor y forma de items, pero no bloquean el gate ni contabilizan en el índice de items ratificables
 - Seis momentos del orquestador (Discovery Gate, Uncommitted-Work Gate, Review Workload Guard, `blocked` returns, findings de validador, risks) presentan través de este mismo template y walkthrough, sin redacción propia
 
@@ -109,7 +108,7 @@ El conjunto de items ratificables en un retorno se decide **por item**, por los 
 
 ### Requisito: Qué gates ratifican
 
-El gate de decisiones pendientes deja de ratificar items de `### New Decisions` por default: tal item está ratificado por el gate **no controlándolo**. Los gates que ratifican cada vez que abren se estrechan a dos — scope-confirmation (el INTAKE GATE) y mined-confirmation. El gate de decisiones pendientes sigue ratificando, a través de este mismo walkthrough, los items que sí disparan.
+El gate de decisiones pendientes deja de ratificar items de `### New Decisions` por default: tal item está ratificado por el gate **no controlándolo**. Los gates que ratifican cada vez que abren se estrechan a uno — mined-confirmation. El gate de decisiones pendientes sigue ratificando, a través de este mismo walkthrough, los items que sí disparan.
 (Previamente: el gate de decisiones pendientes ratificaba cada item de cada buzón Tier-1 sin condiciones, así `### New Decisions` era por sí mismo un gate ratificante.)
 
 #### Scenario: Tres gates ratifican por este walkthrough
@@ -237,13 +236,6 @@ El gate de decisiones pendientes deja de ratificar items de `### New Decisions` 
 - **THEN** el primero muestra índice + walkthrough; el segundo muestra una sola línea confirmando la lectura del pedido
 - **AND** nada en el código clasificó "Discovery" como multi-item: la forma cambió solo por el conteo
 
-### Scenario: Discovery Gate no declara anchor
-
-- **GIVEN** el Discovery Gate presentando preguntas sobre un pedido sin artefactos aún
-- **WHEN** se redactan sus items
-- **THEN** ninguno lleva anchor (porque no hay ubicación recuperable que apuntar)
-- **AND** el archivo de presentación declara esta excepción explícitamente, no por defecto
-
 ### Scenario: Findings de validador, mucho o poco
 
 - **GIVEN** un validador que falla emitiendo hallazgos
@@ -309,6 +301,6 @@ El gate de decisiones pendientes deja de ratificar items de `### New Decisions` 
 
 ## Referencias
 
-- **Contrato compartido** → [`../../../payload/shared/references/gate-presentation.md`](../../../payload/shared/references/gate-presentation.md) — El walkthrough (índice → uno a uno → confirmar-el-resto), el template fijo de slots (summary, anchor, acciones, sin narrativa), los nueve momentos (tres gates de fase + seis momentos de orquestador), la regla de conteo (0/1/≥2), y la excepción de anchor del Discovery Gate
+- **Contrato compartido** → [`../../../payload/shared/references/gate-presentation.md`](../../../payload/shared/references/gate-presentation.md) — El walkthrough (índice → uno a uno → confirmar-el-resto), el template fijo de slots (summary, anchor, acciones, sin narrativa), los ocho momentos (dos gates de fase + seis momentos de orquestador), la regla de conteo (0/1/≥2)
 - **Guard de orquestador** → [`../../../payload/domains/development/CLAUDE.md`](../../../payload/domains/development/CLAUDE.md) — Los seis momentos de orquestador (Discovery Gate, Uncommitted-Work Gate, Review Workload Guard, `blocked` returns, findings de validadores, risks) citan el archivo compartido
-- **Anchoring criterion** → [`../../../payload/domains/development/skills/gentle-ai/_shared/sdd-phase-common.md`](../../../payload/domains/development/skills/gentle-ai/_shared/sdd-phase-common.md) Section D.3 — Formas legales de anchor (`<repo-path>[:line]` | `<engram-key>`), start-line-only, regla target-not-yet-written; Discovery Gate es la excepción explícita
+- **Anchoring criterion** → [`../../../payload/domains/development/skills/gentle-ai/_shared/sdd-phase-common.md`](../../../payload/domains/development/skills/gentle-ai/_shared/sdd-phase-common.md) Section D.3 — Formas legales de anchor (`<repo-path>[:line]` | `<engram-key>`), start-line-only, regla target-not-yet-written; toda pregunta de discovery ancla bajo el criterio ordinario

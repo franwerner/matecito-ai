@@ -16,7 +16,7 @@ La definición repo-level del concepto —qué es un componente, cómo se declar
 
 ### Regla: Cada proyección tiene granularidad, vida y momento de ratificación propios
 
-Una **proyección** es el uso que un consumidor hace del set declarado, con su propia granularidad, su propia vida y su propio momento de ratificación. Hoy hay dos: la línea `Components:` de cada capability-spec (por-capability, durable, ratificada spec por spec) y el valor del cambio (por-cambio, muere con el cambio, ratificado una sola vez en la INTAKE GATE). Toda proyección nueva MUST declarar esas tres cosas.
+Una **proyección** es el uso que un consumidor hace del set declarado, con su propia granularidad, su propia vida y su propio momento de ratificación. Hoy hay dos: la línea `Components:` de cada capability-spec (por-capability, durable, ratificada spec por spec) y el valor del cambio (por-cambio, muere con el cambio, decidido por `sdd-intake` y reportado, nunca ratificado). Toda proyección nueva MUST declarar esas tres cosas.
 
 ### Regla: Las proyecciones comparten el set y el gate, nunca el valor
 
