@@ -30,6 +30,7 @@ Decisiones sobre cómo se organiza el payload del repo (dónde vive cada concept
 | [conditional-section-with-status-filter.md](conditional-section-with-status-filter.md) | Accepted | Vas a agregar una sección condicional de retorno que además tenga que filtrar por el status de la fase. |
 | [side-discussion-prose-homes.md](side-discussion-prose-homes.md) | Accepted | Vas a decidir dónde vive la prosa de un mecanismo del orquestador que tiene un lector fuera de cualquier dominio. |
 | [side-discussion-topic-key-namespace.md](side-discussion-topic-key-namespace.md) | Accepted | Vas a agregar una clave de Engram fuera del namespace `sdd/` para un intercambio entre dos actores. |
+| [gating-vocabulary-sweep-scope.md](gating-vocabulary-sweep-scope.md) | Accepted | Vas a barrer el vocabulario de gating retirado (Tier 1/Tier 2) fuera del Scope original ratificado de un cambio. |
 
 ## No aplican en este dominio
 

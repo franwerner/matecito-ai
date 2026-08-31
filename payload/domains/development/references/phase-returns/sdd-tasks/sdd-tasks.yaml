@@ -29,7 +29,7 @@ sections:
       - { label: What unblocks it, field: blocker.what_unblocks }
   - title: "### Tasks not traceable to spec/design"
     emitted: always
-    tier: 1
+    gates: contested
     sentinel: true
     render: items
     field: untraceable_tasks
@@ -39,6 +39,7 @@ sections:
       summary_max: 250
       tokens:
         - { name: anchor, field: anchor }
+        - { name: contested, field: contested, values: [none, contradicts-statement, contradicts-record, unverified-assumption] }
   - title: "### Review Workload Forecast"
     emitted: always
     render: labeled-bullets

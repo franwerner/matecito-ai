@@ -121,10 +121,12 @@ Every field and its legal values are defined once in **Section D of
 `~/.claude/skills/_shared/sdd-phase-common.md`** — the single source of truth. This agent does
 **NOT** redefine `status` (D.1) or `detailed_report` (D.2 + D.3): emit them exactly as Section D
 specifies for `sdd-apply`, including both mailboxes D.3 assigns to this phase — `### Unmandated
-Forks` (Tier 1: a fork the confirmed artifacts do not fix, not applied, carrying `mandate: chosen`)
-and `### Mandated Departures` (Tier 2: a deviation you did apply, carrying `mandate: covered|forced`)
-— each item also carrying `verify-checks: yes|no`, which states, per deviation, whether `sdd-verify`
-will check it against the design.
+Forks` (`gates: contested`, single legal `contested` value: a fork the confirmed artifacts do not
+fix, not applied, carrying `mandate: chosen`) and `### Mandated Departures` (`gates: muted`: a
+deviation you did apply, carrying `mandate: covered|forced`) — each item also carrying
+`verify-checks: yes|no`, which states, per deviation, whether `sdd-verify` will check it against the
+design, and a `contested` verdict (per D.3's `gates:` classification) that decides whether the item
+fires.
 
 Phase-specific refinements on top of Section D:
 - `executive_summary`: one-sentence description of what was implemented (tasks done / total)
@@ -137,6 +139,10 @@ Phase-specific refinements on top of Section D:
 - Every item under `### Rejected Proposals Checked`, `### Unmandated Forks` and `### Mandated
   Departures` carries its own `anchor`, required per D.3 — free-form (`<repo-path>[:line]` or
   `<engram-key>`), start line only, and never derived by any tool
+- Every item under `### Unmandated Forks` and `### Mandated Departures` also carries its own
+  `contested` verdict — `unverified-assumption` is the ONLY legal value in `### Unmandated Forks`;
+  `### Mandated Departures` takes the full four-value set (`sdd-apply.yaml` is the authority on the
+  exact values). An absent or hedged verdict is read as firing
 - `### Contract Shapes Proposed` is emitted conditionally — `has_contract_proposals: true` on a
   `status: blocked` return, when the stop is over an unspecified contract — per the SKILL.md wiring
 - `skill_resolution`: per D.4 — `phase-skill` when you loaded this phase's own SKILL.md <!-- matecito-ai: sin inyección -->

@@ -19,8 +19,8 @@ casing or heading level is a section it will not find.
 | Section | Emitted | Read by |
 | --- | --- | --- |
 | `### Summary` | always | the orchestrator, as context |
-| `### Scope and approach (unconfirmed)` | always | Unresolved Decisions Guard — **Tier 1** |
-| `### Contract Shapes Proposed` | conditional — only when `has_contract_proposals` is true and status is `blocked` | Unresolved Decisions Guard — **Tier 1** |
+| `### Scope and approach (unconfirmed)` | always | Unresolved Decisions Guard — `gates: contested` (Section D.3) |
+| `### Contract Shapes Proposed` | conditional — only when `has_contract_proposals` is true and status is `blocked` | Unresolved Decisions Guard — `gates: always` (Section D.3) |
 | `### Blocker` | only on `status: blocked` | the orchestrator: it puts the question to the user |
 | `### Next Step` | always | the orchestrator, to route |
 
@@ -31,13 +31,16 @@ Titles are fixed. This phase declares no accepted variants of them.
      fases; en Automatic la propuesta pasaba derecho, y un mapeo equivocado recién asomaba una fase
      después, cuando spec derivaba el suyo. Propose es un add-on opcional: si lo encendiste, es
      justamente porque querías confirmar el alcance antes de especificar. -->
-**`### Scope and approach (unconfirmed)` is this phase's Tier-1 mailbox**, and it is emitted always.
-It carries the two things this phase fixes on the user's behalf: the **approach** chosen (with the
-alternatives you weighed, if any) and the **capability mapping** — which capabilities this change
-adds or modifies, since `sdd-spec` consumes that mapping as a contract and turns it into delta specs.
-Neither has been agreed to yet: the guard raises the batch and the user confirms or corrects before
-spec runs. It is never a `None` case — a proposal always fixes an approach and always touches some
-capability; if you genuinely cannot name them, you do not have a proposal, you have a `blocked`.
+**`### Scope and approach (unconfirmed)` declares `gates: contested`** (Section D.3 of
+`sdd-phase-common.md` fixes what that value means and the Unresolved Decisions Guard classifies its
+items — not restated here), and it is emitted always. It carries the two things this phase fixes on
+the user's behalf: the **approach** chosen (with the alternatives you weighed, if any) and the
+**capability mapping** — which capabilities this change adds or modifies, since `sdd-spec` consumes
+that mapping as a contract and turns it into delta specs. Neither has been agreed to yet, and each
+item's `contested` verdict decides whether it stops the flow: an honest `none` still surfaces in the
+between-phase summary before spec runs. It is never a `None` case — a proposal always fixes an
+approach and always touches some capability; if you genuinely cannot name them, you do not have a
+proposal, you have a `blocked`.
 
 **Split into summary/rationale.** Each item declares two parts, `summary` and `rationale`, in the
 `scope_unconfirmed` JSON: `summary` is what the gate prints, `rationale` is the full reasoning behind
@@ -51,6 +54,12 @@ Every item also carries the `· anchor:` token, declared first so it prints dire
 summary. What counts as a legitimate anchor — `<repo-path>[:line]` or `<engram-key>`, and what a
 not-yet-written target anchors to — is fixed once in Section D.3 of `sdd-phase-common.md`; not
 restated here.
+
+Every item also carries the `· contested:` token, declared last (`sdd-propose.yaml` is the authority
+on its legal values — run `--schema` on demand). It asserts whether this item names a concrete
+counterparty it could not clear; the Unresolved Decisions Guard in
+`~/.claude/matecito-ai/domains/development.md` classifies it, and this file does not restate that
+rule.
 
 **`### Contract Shapes Proposed`** is the dedicated home for an unpinned contract or definition — a
 domain entity, a DB model, a DTO, a public type — the shape "Contract & definition shapes — never
@@ -95,14 +104,17 @@ Only two statuses have a shape here: `done` and `blocked`. This phase's skill do
 ### Scope and approach (unconfirmed)
 - **Approach**: {the approach this proposal fixes, and what you weighed against it and discarded. If the alternatives differ in new infrastructure, in the public contract or in the data model, this is not yours to fix — return `blocked` instead.}
   · anchor: {the concrete source this item is about — a `<repo-path>[:line]` or `<engram-key>`; not-yet-written work anchors to what surfaced it (e.g. the intake brief's Engram key)}
+  · contested: {none | contradicts-statement | contradicts-record | unverified-assumption}
   · rationale: {one line: the full reasoning behind this approach and why it beat the alternatives}
 
 - **Capability mapping**: {which capabilities this change touches, as `New` or `Modified`, exactly as the artifact's `## Capabilities` section states them. `sdd-spec` consumes this as its contract: a New becomes a full spec, a Modified becomes a delta against the durable capability-spec of that name. A wrong name here silently writes the delta against the wrong capability.}
   · anchor: {e.g. the durable capability-spec path for a Modified capability, or the intake brief's Engram key for a New one}
+  · contested: {none | contradicts-statement | contradicts-record | unverified-assumption}
   · rationale: {one line: what in the artifact's Affected Areas or Request grounds this mapping}
 
 - **In scope / deferred**: {what this proposal deliberately leaves out, if the boundary is not obvious.}
   · anchor: {what surfaced this boundary — the intake brief's Engram key, or a repo path if code already draws the line}
+  · contested: {none | contradicts-statement | contradicts-record | unverified-assumption}
   · rationale: {one line: why this boundary and not another}
 
 ### Next Step

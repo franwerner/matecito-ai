@@ -20,7 +20,7 @@ casing or heading level is a section it will not find.
 | `### Breakdown` | always | the orchestrator, as context |
 | `### Implementation Order` | always | the orchestrator, as context |
 | `### Blocker` | only on `status: blocked` | the orchestrator: it puts the question to the user |
-| `### Tasks not traceable to spec/design` | always | Unresolved Decisions Guard — **Tier 1** |
+| `### Tasks not traceable to spec/design` | always | Unresolved Decisions Guard — `gates: contested` (Section D.3) |
 | `### Review Workload Forecast` | always | Review Workload Guard — matched **line by line** |
 | `### Next Step` | always | the orchestrator, to route |
 
@@ -37,6 +37,12 @@ fixed once in Section D.3 of `sdd-phase-common.md` — not restated here. `summa
 Every item also carries the `· anchor:` token, declared first so it prints directly under the
 summary — the legitimate forms and the not-yet-written-target rule are fixed once in Section D.3 of
 `sdd-phase-common.md`, not restated here.
+
+Every item also carries the `· contested:` token, declared last (`sdd-tasks.yaml` is the authority on
+its legal values — run `--schema` on demand). It asserts whether this item names a concrete
+counterparty it could not clear; the Unresolved Decisions Guard in
+`~/.claude/matecito-ai/domains/development.md` classifies it, and this file does not restate that
+rule.
 
 ## `status: done` — the breakdown was produced
 
@@ -65,6 +71,7 @@ NOT fold them in as if they came from the spec; list them and let the user decid
 
 - {the task, as one line}
   · anchor: {the concrete source this task is about — a `<repo-path>[:line]` or `<engram-key>`}
+  · contested: {none | contradicts-statement | contradicts-record | unverified-assumption}
   · rationale: {one line: what motivated it — a gap you found, an implied prerequisite, a project convention}
 
 If every task traces: "None — every task links to spec or design."}

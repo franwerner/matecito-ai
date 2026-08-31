@@ -13,7 +13,7 @@ sections:
     field: summary
   - title: "### Scope and approach (unconfirmed)"
     emitted: always
-    tier: 1
+    gates: contested
     sentinel: true
     render: items
     field: scope_unconfirmed
@@ -23,6 +23,7 @@ sections:
       summary_max: 250
       tokens:
         - { name: anchor, field: anchor }
+        - { name: contested, field: contested, values: [none, contradicts-statement, contradicts-record, unverified-assumption] }
   # matecito-ai: contract-shape-gate. An unpinned contract/definition — the shape "Contract &
   # definition shapes — never inferred" (domain CLAUDE.md) forbids guessing — proposed as one
   # compound item, never as free prose inside `### Blocker`. Both conditions must hold: the phase's
@@ -31,6 +32,7 @@ sections:
     emitted: conditional
     when: has_contract_proposals
     statuses: [blocked]
+    gates: always
     render: items
     field: contract_proposals
     items:

@@ -34,9 +34,9 @@ batch; this file does not repeat its content.
 | `### Rejected Proposals Checked` | only when the dispatch prompt forwarded ≥1 rejected proposal | Unresolved Decisions Guard — classifies each `design-conflict` verdict; a `conflicts` verdict requires `status: blocked` — see `~/.claude/matecito-ai/domains/development.md` → "Forwarding a proposal's resolution to `sdd-apply`" |
 | `### TDD Cycle Evidence` | only in **Strict TDD Mode** | the orchestrator, as context; `sdd-verify` reads it from the artifact |
 | `### Test Summary` | only in **Strict TDD Mode** | the orchestrator, as context |
-| `### Unmandated Forks` | always | Unresolved Decisions Guard — **Tier 1** |
-| `### Mandated Departures` | always | Unresolved Decisions Guard — **Tier 2** |
-| `### Contract Shapes Proposed` | conditional — only when `has_contract_proposals` is true and status is `blocked` | Unresolved Decisions Guard — **Tier 1** |
+| `### Unmandated Forks` | always | Unresolved Decisions Guard — `gates: contested` (Section D.3), single legal `contested` value |
+| `### Mandated Departures` | always | Unresolved Decisions Guard — `gates: muted` (Section D.3) |
+| `### Contract Shapes Proposed` | conditional — only when `has_contract_proposals` is true and status is `blocked` | Unresolved Decisions Guard — `gates: always` (Section D.3) |
 | `### Blocker` | only when a blocker stopped you | the orchestrator: it puts the question to the user |
 | `### Issues Found` | always | the orchestrator, as context — **never** the blocker |
 | `### Remaining Tasks` | always | the orchestrator, to route: continuation batch vs verify |
@@ -83,9 +83,11 @@ carries a **250-character cap**, enforced by `render-return.js`. Each item also 
 tokens, each on its own `· ` line, in fixed order, with `· rationale:` always last — every one of the
 three sections leads with `· anchor:` (free-form, per Section D.3 of `sdd-phase-common.md`), then:
 for `### Unmandated Forks` / `### Mandated Departures`, `mandate: covered|forced|chosen`, then
-`verify-checks: yes|no`; for `### Rejected Proposals Checked`, `record: <domain>/<slug>`, then
-`design-conflict: none|conflicts`. `summary`'s register is fixed once in Section D.3 of
-`sdd-phase-common.md` — not restated here.
+`verify-checks: yes|no`, then `contested:` (`unverified-assumption` only, in `### Unmandated Forks`;
+the full four-value set in `### Mandated Departures`); for `### Rejected Proposals Checked`,
+`record: <domain>/<slug>`, then `design-conflict: none|conflicts` (this section declares no
+`contested` token — its firing is decided by `design-conflict` alone). `summary`'s register is fixed
+once in Section D.3 of `sdd-phase-common.md` — not restated here.
 
 **`### Contract Shapes Proposed`** is the dedicated home for an unpinned contract or definition — the
 shape "Contract & definition shapes — never inferred" (`~/.claude/matecito-ai/domains/development.md`)
@@ -176,10 +178,12 @@ What each column means, and what counts as evidence, is in `~/.claude/skills/sdd
 - **Approval tests** (refactoring): {N}, or "None — no refactoring tasks"
 - **Pure functions created**: {N}
 
-<!-- matecito-ai: two Tier sections replace the old single mailbox — the guard classifies by section,
-     so an unresolved fork routes to Tier 1 (consult before applying) and everything you did apply
-     routes to Tier 2 (surface, don't block). Each item's tokens are literal, not prose — a phrase the
-     reader has to interpret is how "no declaration" and "declared clean" become indistinguishable. -->
+<!-- matecito-ai: two sections replace the old single mailbox — the guard classifies each ITEM by its
+     `contested` token, and the section decides what a non-firing item does with itself afterward:
+     `### Unmandated Forks` declares `gates: contested` (fires unconditionally — its `contested` token
+     has a single legal value), `### Mandated Departures` declares `gates: muted` (surfaces only what
+     is triggered). Each item's tokens are literal, not prose — a phrase the reader has to interpret is
+     how "no declaration" and "declared clean" become indistinguishable. -->
 ### Unmandated Forks
 {One entry per point the confirmed artifacts do not fix, where more than one resolution was valid.
 You applied NONE of them — the point stays untouched, its task stays open in `### Remaining Tasks`,
@@ -190,10 +194,14 @@ and the fork travels back as a question before the next dispatch:
   · anchor: {the concrete source this fork is about — a `<repo-path>[:line]` or `<engram-key>`}
   · mandate: chosen
   · verify-checks: yes|no
+  · contested: unverified-assumption
   · rationale: {the resolutions that were valid, and why you recommend the one you do}
 
 `mandate: chosen` is the only legal value in this section — an item whose mandate is `covered` or
-`forced` belongs in `### Mandated Departures` instead.
+`forced` belongs in `### Mandated Departures` instead. `contested: unverified-assumption` is
+likewise the ONLY legal value here — the render fails naming the field if you write anything else,
+including `none`: a fork by definition admits more than one valid resolution, so there is no clean
+case for this section to declare.
 If none: "None."}
 
 ### Mandated Departures
@@ -207,6 +215,7 @@ alternative was valid and you can name the concrete constraint that closed the o
   · anchor: {the concrete source this deviation is about — a `<repo-path>[:line]` or `<engram-key>`}
   · mandate: covered|forced
   · verify-checks: yes|no
+  · contested: {none | contradicts-statement | contradicts-record | unverified-assumption}
   · rationale: {one line: the full reasoning behind the deviation — always emitted here, never printed at the gate by default}
 
 `verify-checks:` is a **literal token, not prose** — `sdd-verify` matches it to classify the
@@ -217,7 +226,11 @@ which; the orchestrator is not, and verify will not guess.
 **A deviation with no `verify-checks:` token, or a hedged one, is treated as `yes`** — the strict
 default, so forgetting to declare is never the cheap way past the gate. **A missing or hedged
 `mandate:` is treated as `chosen`** — an item you cannot back with a named `covered` or `forced`
-constraint was never legally absorbed; it belongs in `### Unmandated Forks` instead.
+constraint was never legally absorbed; it belongs in `### Unmandated Forks` instead. This section
+declares `gates: muted`: an item declaring `contested: none` reaches the user nowhere — not even in
+the between-phase summary — because there is no fallback line for it to surface on. Write `none`
+here only when you actually checked; a wrongly-clean `Mandated Departures` item is invisible, not
+merely unblocking.
 If none: "None."}
 
 ### Issues Found
@@ -417,17 +430,17 @@ Reports) MUST keep each row's `Task` column intact through the merge — never c
 
 ### Unmandated Forks
 {Every fork from every batch that reached this point unresolved, each in the exact shape this
-template declares above, including its `· anchor:`, `mandate: chosen` and `verify-checks: yes|no`
-tokens and its `· rationale:` line. `sdd-verify` reads THIS copy — not the return — alongside
-`### Mandated Departures` below, to find every declared deviation.}
+template declares above, including its `· anchor:`, `mandate: chosen`, `verify-checks: yes|no` and
+`contested: unverified-assumption` tokens and its `· rationale:` line. `sdd-verify` reads THIS
+copy — not the return — alongside `### Mandated Departures` below, to find every declared deviation.}
 
 ### Mandated Departures
 {Every deviation from every batch that you applied without consulting, each in the exact shape this
-template declares above, including its `· anchor:`, `mandate: covered|forced` and
-`verify-checks: yes|no` tokens and its `· rationale:` line. `sdd-verify` reads THIS copy — not the
-return — to classify each
-deviation. A deviation that reaches the orchestrator and not the artifact is a deviation `sdd-verify`
-will never see; a rationale that never left the return is a rationale nobody persisted.}
+template declares above, including its `· anchor:`, `mandate: covered|forced`,
+`verify-checks: yes|no` and `contested:` tokens and its `· rationale:` line. `sdd-verify` reads THIS
+copy — not the return — to classify each deviation. A deviation that reaches the orchestrator and not
+the artifact is a deviation `sdd-verify` will never see; a rationale that never left the return is a
+rationale nobody persisted.}
 
 <!-- matecito-ai: artifact-only, and only present when a parallel batch actually ran — it is the
      integration record `parallel-batch.md` promises, not something a serial batch produces or needs.
@@ -487,10 +500,10 @@ case that group flags CRITICAL.}
 ```
 
 **`### Unmandated Forks` and `### Mandated Departures` go in BOTH places**, with the same content: in
-the return, because the Unresolved Decisions Guard reads them there — Tier 1 and Tier 2
-respectively; in the artifact, because `sdd-verify` reads both there to find every declared deviation
-and apply the `verify-checks` classification. Same reason the TDD evidence lives in both. Dropping
-either copy breaks a different consumer, and neither failure is loud.
+the return, because the Unresolved Decisions Guard reads them there — `gates: contested` and
+`gates: muted` respectively; in the artifact, because `sdd-verify` reads both there to find every
+declared deviation and apply the `verify-checks` classification. Same reason the TDD evidence lives
+in both. Dropping either copy breaks a different consumer, and neither failure is loud.
 
 **`### Rejected Proposals Checked` is return-only — it does NOT go in the artifact.** Its one
 consumer is the orchestrator's Unresolved Decisions Guard, at the moment this batch's return is

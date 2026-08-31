@@ -490,7 +490,7 @@ section because you have nothing to report: it ships with a `None…` sentinel.
 
 Three things the template expects you to already know from this skill:
 
-<!-- matecito-ai: el tier de estos buzones y quién los consume están fijados en Sección D.3 + el guard
+<!-- matecito-ai: el gates: de estos buzones y quién los consume están fijados en Sección D.3 + el guard
      del fragmento de dominio; acá no se re-declaran. Lo que SÍ es tuyo: marcar el impacto en verify,
      porque vos tenés el contexto del código escrito y el orquestador no. -->
 - `### Unmandated Forks` and `### Mandated Departures` between them carry every place the

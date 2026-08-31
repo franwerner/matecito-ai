@@ -69,9 +69,20 @@ Execute all steps from the skill directly in this context window:
      alone. A decision whose own text named axis 1 ("needs a queue and a worker the project does not
      have today") arrived here with `status: done` and nothing caught it. The token makes the verdict
      readable without re-deriving it. Same shape as `verify-checks:` in sdd-apply. -->
-4b-bis. Declare the blocking test per decision: every item you file under `### New Decisions` (and its `## New Decisions` twin in the artifact) carries one token line beneath it — `· blocking-test: none | infra | contract | data-model`. `none` asserts the alternatives differ in NONE of the three axes, which is the only value consistent with the item being filed here rather than returned `blocked`. The orchestrator classifies on the token alone: an axis named → it stops, the item is in the wrong mailbox; absent or hedged → Tier 1 under the strict reading. Shape and the reader's table: `~/.claude/references/phase-returns/sdd-design/sdd-design.md`, section "The blocking-test token".
+4b-bis. Declare the blocking test per decision: every item you file under `### New Decisions` (and its `## New Decisions` twin in the artifact) carries one token line beneath it — `· blocking-test: none | infra | contract | data-model`. `none` asserts the alternatives differ in NONE of the three axes, which is the only value consistent with the item being filed here rather than returned `blocked`. The orchestrator classifies on the token alone: an axis named → it stops, the item is in the wrong mailbox; absent or hedged → fires under the strict reading. Shape and the reader's table: `~/.claude/references/phase-returns/sdd-design/sdd-design.md`, section "The blocking-test token".
 <!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism: in-flow-capture.md. -->
 4b-ter. Every item under `### New Decisions` also carries a second token, directly beneath `· blocking-test:` — `· record: <domain>/<slug>` — the EDR identity the proposal would occupy if ratified. Free-form (no closed value set), but still required: an item missing it fails `TOKEN-MISSING`, same strict reading as an omitted `blocking-test`. `sdd-apply` reads it verbatim, from the dispatch prompt, to materialize the record in the same step that implements the code it governs. Full mechanism: `~/.claude/references/decision-capture/in-flow-capture.md`.
+<!-- matecito-ai: narrow-gating-triggers. Both `### New Decisions` and `### Open Questions` declare
+     `gates: contested` / `gates: muted` (Section D.3) — this token is what an item fires or surfaces on. -->
+4b-quater. Every item under `### New Decisions` AND under `### Open Questions` also carries a
+`· contested:` token, declared last — `· contested: none | contradicts-statement |
+contradicts-record | unverified-assumption`. It asserts whether the item names a concrete
+counterparty (an explicit user or orchestrator statement, an Accepted decision record, an assumption
+you could not verify) it could not clear. `none` is the honest default only when you actually checked
+against one; an absent or hedged verdict fires, same strict reading as the other tokens. In
+`### Open Questions` (`gates: muted`) the stakes are higher: a `none` verdict there means the item
+reaches the user nowhere at all if it turns out to be wrong — there is no between-phase fallback line
+for a `muted` section. Shape and legal values: `sdd-design.yaml` (run `--schema` on demand).
 <!-- matecito-ai: diagram inference test — single source of truth in matecito-ai:behavior (Ecosystem). Diagrams are EPHEMERAL: this headless phase does NOT generate or export any diagram file. -->
 4c. Architecture diagram: read the flag from the **intake brief** (step 1a) at its literal location — the line `- Diagram: {needed|not-needed}` under `### Classification`. If it reads `needed`, NOTE it in your `executive_summary` — one clause saying a live diagram of the chosen architecture is recommended. <!-- matecito-ai: antes decía "(summary/`risks`)", pero `risks` es para riesgos y supuestos a validar (Sección D.4), no para recomendaciones operativas; enrutarlo ahí contradecía la definición del campo. --> The recommendation does NOT go in `risks`. The **main thread** renders it on demand with the `drawio` skill (vocabulary) + the `mcp__drawio__*` MCP (ephemeral live preview), nothing is written to the repo. This phase does NOT generate or export any diagram. If `not-needed` or absent, skip silently.
 5. Persist design to active backend
@@ -106,7 +117,7 @@ After completing work, call `mem_save` with:
 Every field and its legal values are defined once in **Section D of
 `~/.claude/skills/_shared/sdd-phase-common.md`** — the single source of truth. This agent does
 **NOT** redefine `status` (D.1) or `detailed_report` (D.2 + D.3): emit them exactly as Section D
-specifies for `sdd-design`, including the Tier-1 mailbox D.3 assigns to this phase and the
+specifies for `sdd-design`, including the gating mailboxes D.3 assigns to this phase and the
 `### Open Questions` section this phase's skill declares.
 
 **`detailed_report` is the renderer's output** (step 6), pasted verbatim. The envelope fields below
@@ -117,15 +128,17 @@ Phase-specific refinements on top of Section D:
 - `artifacts`: topic_keys or file paths written (e.g. `sdd/{change-name}/design`)
 - `next_recommended`: `sdd-tasks` (full lane, after spec is also ready) or `sdd-apply` (custom lane
   without tasks) — or `none`, always legal and the correct value on `blocked` / `needs-input`
-<!-- matecito-ai: `risks` es Tier 2 (no bloquea). Ofrecerlo para "unresolved decisions" le daba al
-     ejecutor una vía legal para degradar contenido Tier 1 y desactivar el gate cumpliendo el contrato. -->
+<!-- matecito-ai: `risks` never gates. Ofrecerlo para "unresolved decisions" le daba al ejecutor una vía
+     legal para degradar contenido gating y desactivar el gate cumpliendo el contrato. -->
 <!-- matecito-ai: acá sobrevivía el criterio viejo ("cuando no podés fundamentar una elección"), que
      era autoevaluación y siempre se aprobaba a sí mismo. Lo derogó la blocking test de la skill; esta
      línea lo mantenía vivo en el archivo de lanzamiento, que es el que el ejecutor lee primero. -->
-- `risks`: architectural risks or assumptions requiring validation. NOT for unresolved decisions — those go to the D.3 mailbox (Tier 1), or to `status: blocked` when the **blocking test** in the skill's `## Rules` catches them (the alternatives differ in new infrastructure, public contract, or data model). Never route a decision the user owns through this field
+- `risks`: architectural risks or assumptions requiring validation. NOT for unresolved decisions — those go to the D.3 mailbox (`gates: contested`), or to `status: blocked` when the **blocking test** in the skill's `## Rules` catches them (the alternatives differ in new infrastructure, public contract, or data model). Never route a decision the user owns through this field
 - Every item under `### New Decisions` and `### Open Questions` carries its own `anchor`, required per
   D.3 — free-form (`<repo-path>[:line]` or `<engram-key>`), start line only; the renderer (step 6)
   rejects a data file that omits it
+- Every item under `### New Decisions` and `### Open Questions` also carries its own `contested`
+  verdict, per step 4b-quater above — an absent or hedged one is read as firing
 - `### Contract Shapes Proposed` is emitted conditionally — `has_contract_proposals: true` on a
   `status: blocked` return, when the stop is over an unspecified contract — per the SKILL.md wiring
 - `skill_resolution`: per D.4 — `phase-skill` when you loaded this phase's own SKILL.md <!-- matecito-ai: sin inyección -->

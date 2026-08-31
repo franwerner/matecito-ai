@@ -18,10 +18,10 @@ casing or heading level is a section it will not find.
 | Section | Emitted | Read by |
 | --- | --- | --- |
 | `### Summary` | always | the orchestrator, as context |
-| `### Contract Shapes Proposed` | conditional — only when `has_contract_proposals` is true and status is `blocked` | Unresolved Decisions Guard — **Tier 1** |
+| `### Contract Shapes Proposed` | conditional — only when `has_contract_proposals` is true and status is `blocked` | Unresolved Decisions Guard — `gates: always` (Section D.3) |
 | `### Blocker` | only on `status: blocked` | the orchestrator: it puts the question to the user |
-| `### New Decisions` | always | Unresolved Decisions Guard — **Tier 1** |
-| `### Open Questions` | always | Unresolved Decisions Guard — Tier 2, informative |
+| `### New Decisions` | always | Unresolved Decisions Guard — `gates: contested` (Section D.3) |
+| `### Open Questions` | always | Unresolved Decisions Guard — `gates: muted` (Section D.3), informative |
 | `### Next Step` | always | the orchestrator, to route |
 
 Titles are fixed. `### New Decisions` becomes `### New Decisions (not yet in EDRs)` **only** when the
@@ -33,9 +33,10 @@ item carries two parts, `summary` and `rationale`, in the `new_decisions` / `ope
 block, never printed by default. Both are non-empty, single-line strings; a missing one, or one with
 an embedded newline, fails the render naming the item and the part, and nothing reaches stdout.
 `summary` also carries a **250-character cap**, enforced by `render-return.js`. In `### New
-Decisions`, the `· rationale:` line sits directly below the item's three tokens (`· anchor:`, then
-`· blocking-test:`, then `· record:`) — same item, same section, no separate channel. `summary`'s
-register is fixed once in Section D.3 of `sdd-phase-common.md` — not restated here.
+Decisions`, the `· rationale:` line sits directly below the item's four tokens (`· anchor:`, then
+`· blocking-test:`, then `· record:`, then `· contested:`) — same item, same section, no separate
+channel. `summary`'s register is fixed once in Section D.3 of `sdd-phase-common.md` — not restated
+here.
 
 **`### Contract Shapes Proposed`** is the dedicated home for an unpinned contract or definition — the
 shape "Contract & definition shapes — never inferred" (`~/.claude/matecito-ai/domains/development.md`)
@@ -77,6 +78,14 @@ it, declared first so it prints directly under the summary. Free-form, same as `
 legitimate forms and the not-yet-written-target rule are fixed once in Section D.3 of
 `sdd-phase-common.md`, not restated here.
 
+**The `· contested:` token.** Every item under both `### New Decisions` and `### Open Questions` also
+carries it, declared last (`sdd-design.yaml` is the authority on its legal values — run `--schema` on
+demand). It asserts whether this item names a concrete counterparty it could not clear; the
+Unresolved Decisions Guard in `~/.claude/matecito-ai/domains/development.md` classifies it, and this
+file does not restate that rule. `### Open Questions` declares `gates: muted` (Section D.3) — an item
+there declaring `contested: none` reaches the user nowhere; one declaring a named value surfaces,
+without blocking.
+
 ## `status: done` — the design was produced
 
 ```markdown
@@ -104,6 +113,7 @@ If there are genuinely none: "None."}
   · anchor: {the concrete source this decision is about — a `<repo-path>[:line]` or `<engram-key>`}
   · blocking-test: none
   · record: {domain}/{slug}
+  · contested: {none | contradicts-statement | contradicts-record | unverified-assumption}
   · rationale: {one line: the full reasoning — why this choice, restated for the record even though the gate only prints the line above}
 
 ### Open Questions
@@ -113,6 +123,7 @@ If there are none: "None."}
 
 - {the open question, as one line}
   · anchor: {the concrete source this question is about — a `<repo-path>[:line]` or `<engram-key>`}
+  · contested: {none | contradicts-statement | contradicts-record | unverified-assumption}
   · rationale: {one line: why it is open — what makes it not yours to settle here}
 
 ### Next Step
@@ -204,9 +215,9 @@ The orchestrator reads it mechanically, without reopening the decision:
 
 | Token | What it asserts | What the orchestrator does |
 | --- | --- | --- |
-| `none` | the test ran and came back negative | ordinary Tier 1 — the user confirms |
+| `none` | the test ran and came back negative | present it with the rest of the gating batch, subject to its own `contested` token |
 | an axis named | the item is in the wrong mailbox | stop and surface, as it would for a `blocked` |
-| absent, or hedged | the test did not run, or the answer is being withheld | Tier 1 under the strict reading — same default as an undeclared deviation |
+| absent, or hedged | the test did not run, or the answer is being withheld | fires under the strict reading — same default as an undeclared deviation |
 
 The token is what makes the skill's own requirement satisfiable: it demands the test be *auditable
 from outside* — a reader who sees only the alternatives reaching the same verdict without

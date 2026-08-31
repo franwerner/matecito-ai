@@ -34,6 +34,7 @@ sections:
     emitted: conditional
     when: has_contract_proposals
     statuses: [blocked]
+    gates: always
     render: items
     field: contract_proposals
     items:
@@ -54,7 +55,7 @@ sections:
       - { label: What unblocks it, field: blocker.what_unblocks }
   - title: "### Derived capabilities (unconfirmed)"
     emitted: always
-    tier: 1
+    gates: contested
     sentinel: true
     render: items
     field: derived_capabilities
@@ -64,6 +65,7 @@ sections:
       summary_max: 250
       tokens:
         - { name: anchor, field: anchor }
+        - { name: contested, field: contested, values: [none, contradicts-statement, contradicts-record, unverified-assumption] }
   # In-flow decision capture (development-specifics; see ../../decision-capture/in-flow-capture.md).
   # This phase's ratification gate for a lane with NO `design` add-on active — read `decisions_gate_here`
   # from the intake brief's `### Triage` line, never re-derived any other way. Same mailbox concept as
@@ -71,7 +73,7 @@ sections:
   - title: "### New Decisions"
     emitted: conditional
     when: decisions_gate_here
-    tier: 1
+    gates: contested
     sentinel: true
     render: items
     field: new_decisions
@@ -83,6 +85,7 @@ sections:
         - { name: anchor, field: anchor }
         - { name: blocking-test, field: blocking_test, values: [none, infra, contract, data-model], passing: [none] }
         - { name: record, field: record }
+        - { name: contested, field: contested, values: [none, contradicts-statement, contradicts-record, unverified-assumption] }
   - title: "### Next Step"
     emitted: always
     render: line

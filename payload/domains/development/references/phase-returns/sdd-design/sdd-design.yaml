@@ -43,6 +43,7 @@ sections:
     emitted: conditional
     when: has_contract_proposals
     statuses: [blocked]
+    gates: always
     render: items
     field: contract_proposals
     items:
@@ -72,7 +73,7 @@ sections:
     variant:
       title: "### New Decisions (not yet in EDRs)"
       when: decision_store_active
-    tier: 1
+    gates: contested
     sentinel: true
     render: items
     field: new_decisions
@@ -88,10 +89,11 @@ sections:
         - { name: anchor, field: anchor }
         - { name: blocking-test, field: blocking_test, values: [none, infra, contract, data-model], passing: [none] }
         - { name: record, field: record }
+        - { name: contested, field: contested, values: [none, contradicts-statement, contradicts-record, unverified-assumption] }
 
   - title: "### Open Questions"
     emitted: always
-    tier: 2
+    gates: muted
     sentinel: true
     render: items
     field: open_questions
@@ -101,6 +103,7 @@ sections:
       summary_max: 250
       tokens:
         - { name: anchor, field: anchor }
+        - { name: contested, field: contested, values: [none, contradicts-statement, contradicts-record, unverified-assumption] }
 
   - title: "### Next Step"
     emitted: always
