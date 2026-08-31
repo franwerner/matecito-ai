@@ -33,10 +33,10 @@ item carries two parts, `summary` and `rationale`, in the `new_decisions` / `ope
 block, never printed by default. Both are non-empty, single-line strings; a missing one, or one with
 an embedded newline, fails the render naming the item and the part, and nothing reaches stdout.
 `summary` also carries a **250-character cap**, enforced by `render-return.js`. In `### New
-Decisions`, the `· rationale:` line sits directly below the item's four tokens (`· anchor:`, then
-`· blocking-test:`, then `· record:`, then `· contested:`) — same item, same section, no separate
-channel. `summary`'s register is fixed once in Section D.3 of `sdd-phase-common.md` — not restated
-here.
+Decisions`, the `· rationale:` line sits directly below the item's five tokens (`· anchor:`, then
+`· blocking-test:`, then `· record:`, then `· record-mode:`, then `· contested:`) — same item, same
+section, no separate channel. `summary`'s register is fixed once in Section D.3 of
+`sdd-phase-common.md` — not restated here.
 
 **`### Contract Shapes Proposed`** is the dedicated home for an unpinned contract or definition — the
 shape "Contract & definition shapes — never inferred" (`~/.claude/matecito-ai/domains/development.md`)
@@ -72,6 +72,16 @@ still **required** — an item missing the line fails `TOKEN-MISSING` at the Ret
 same strict reading as any other omitted token. This is what `sdd-apply` reads, verbatim from the
 ratified proposal forwarded in its dispatch prompt, to materialize the record in the same step that
 implements the code it governs.
+
+**The `· record-mode:` token.** Every item under `### New Decisions` also carries `· record-mode:
+create | modify`, directly beneath `· record:`. Closed value set, declared with **no `passing:` key** —
+every value in the set is legal, so an illegal value cannot occur; only an absent token fails
+`TOKEN-MISSING`, the same strict reading as `· record:`. It declares whether ratifying this item creates
+a new record at `· record:`, or edits an existing one **in place**. **It is a routing token, read
+verbatim by `sdd-apply` — not a verdict the orchestrator classifies**: it follows `· record:`'s
+precedent, not the precedent for a token like `· blocking-test:` or `· contested:`, which the
+orchestrator DOES classify to decide whether the flow stops. Full mechanism, including the two
+Materialization branches this token selects between: `~/.claude/references/decision-capture/in-flow-capture.md`.
 
 **The `· anchor:` token.** Every item under both `### New Decisions` and `### Open Questions` carries
 it, declared first so it prints directly under the summary. Free-form, same as `· record:` — the
@@ -113,6 +123,7 @@ If there are genuinely none: "None."}
   · anchor: {the concrete source this decision is about — a `<repo-path>[:line]` or `<engram-key>`}
   · blocking-test: none
   · record: {domain}/{slug}
+  · record-mode: {create | modify}
   · contested: {none | contradicts-statement | contradicts-record | unverified-assumption}
   · rationale: {one line: the full reasoning — why this choice, restated for the record even though the gate only prints the line above}
 

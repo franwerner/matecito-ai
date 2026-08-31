@@ -83,12 +83,16 @@ sections:
       summary_max: 250
       # In-flow decision capture (development-specifics; see ../../decision-capture/in-flow-capture.md).
       # `record` is free-form (`<domain>/<slug>`, no `values`) — any present, non-null value passes;
-      # still required (`TOKEN-MISSING` when absent). `blocking-test` is unchanged. `anchor` is free-form
-      # too, declared first so it prints adjacent to the summary.
+      # still required (`TOKEN-MISSING` when absent). `record-mode` is a routing token (create|modify) —
+      # closed values but no `passing:`, so every declared value is legal; read verbatim by `sdd-apply`,
+      # not classified by the orchestrator (follows `record:`'s precedent, not
+      # `structure/verdict-classified-by-the-orchestrator.md`'s). `blocking-test` is unchanged. `anchor`
+      # is free-form too, declared first so it prints adjacent to the summary.
       tokens:
         - { name: anchor, field: anchor }
         - { name: blocking-test, field: blocking_test, values: [none, infra, contract, data-model], passing: [none] }
         - { name: record, field: record }
+        - { name: record-mode, field: record_mode, values: [create, modify] }
         - { name: contested, field: contested, values: [none, contradicts-statement, contradicts-record, unverified-assumption] }
 
   - title: "### Open Questions"

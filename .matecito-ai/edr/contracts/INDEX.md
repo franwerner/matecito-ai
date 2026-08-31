@@ -44,6 +44,8 @@ Decisiones sobre los contratos entre piezas del ecosistema: qué forma tiene lo 
 | [discovery-answers-live-in-explore.md](discovery-answers-live-in-explore.md) | Accepted | Vas a tocar dónde se persisten las respuestas de discovery del usuario, o qué fase las carga verbatim en su retorno. |
 | [explore-blocked-narrows-to-non-question-stops.md](explore-blocked-narrows-to-non-question-stops.md) | Accepted | Vas a decidir si un stop de una fase headless que corre discovery es needs-input o blocked. |
 | [intake-brief-passthrough-sections.md](intake-brief-passthrough-sections.md) | Accepted | Vas a tocar qué secciones lleva el brief de sdd-intake, o te tienta agregarle una recomendación de lane o un tamaño. |
+| [record-mode-token.md](record-mode-token.md) | Accepted | Vas a agregar un token que decida entre crear o editar en el lugar un registro, o a tocar el mecanismo de materialización de sdd-apply. |
+| [backing-check-not-applicable-to-record-edits.md](backing-check-not-applicable-to-record-edits.md) | Accepted | Vas a tocar qué chequea el grupo decision-gaps sobre una fila de `### Decisions Materialized`, o a decidir si una fila `modified` debe pasar o fallar el chequeo de backing. |
 
 ## No aplican en este dominio
 

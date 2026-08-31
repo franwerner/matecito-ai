@@ -240,7 +240,10 @@ resolves, emit one `### Rejected Proposals Checked` item (`design-conflict: none
 that proposal before its governed task counts as implemented — the verdict is part of running this
 guard, not an afterthought reported once the task is already done.
 
-For each ratified proposal forwarded in your launch prompt that this task implements:
+For each ratified proposal forwarded in your launch prompt that this task implements, branch on its
+`record-mode` token.
+
+**`record-mode: create`** — the four steps as before this change:
 
 1. Build the EDR's `--data` JSON per `node ~/.claude/scripts/render-artifact.js --type edr --schema`:
    `status: Accepted`, `domain`/`slug` from the proposal's `record:` token, `title` from its summary,
@@ -252,7 +255,9 @@ For each ratified proposal forwarded in your launch prompt that this task implem
    `in-flow-capture.md` → "Materialization"), and an item missing `mechanism` ships unmarked.
 2. `node ~/.claude/scripts/render-artifact.js --type edr --data <file>` → the record's body — **write
    it yourself** to `.matecito-ai/edr/<domain>/<slug>.md`. The script renders to stdout only; it never
-   writes to disk in either invocation (confirmed by execution — see `in-flow-capture.md`).
+   writes to disk in either invocation (confirmed by execution — see `in-flow-capture.md`). A `create`
+   naming a file that already exists is a failure, not an overwrite — see "Declaration versus reality"
+   below.
 3. `node ~/.claude/scripts/render-artifact.js --type edr --data <file> --index-entries` → the domain
    and root INDEX rows, as JSON, in a **second, separate call** (no write either).
    - **Serial mode**: apply those rows to `.matecito-ai/edr/<domain>/INDEX.md` and the root
@@ -261,15 +266,42 @@ For each ratified proposal forwarded in your launch prompt that this task implem
    - **Isolated Run Mode**: do NOT touch either INDEX file. Carry the rows, unapplied, in your Task Run
      Report's `### Decisions Materialized` — the consolidation run applies them once, after its
      cherry-pick loop, deduping the root row by `domain` (see `parallel-batch.md`).
-4. Record the outcome — `record | task | result` — in `apply-progress`'s (or your Task Run Report's)
-   `### Decisions Materialized`. `result` is `materialized` on success, or `failed: <reason>` on any
-   failure (invalid data, the renderer refusing to run, an impossible write).
+4. Record the outcome as `materialized` — see "Recording the outcome" below.
+
+**`record-mode: modify`** — edits the named record **in place** instead of rendering a new one. Steps
+1-2 of the `create` path do NOT run: `render-artifact.js` is a creator, and re-rendering means retyping
+every section this change does not touch.
+
+1. Open `.matecito-ai/edr/<domain>/<slug>.md`. A `modify` naming a file that does not exist is a
+   failure, not a first materialization — `modify` cannot bootstrap an absent store (see "Declaration
+   versus reality" below).
+2. Edit **only** the clauses the ratified proposal names, leaving every other byte identical. Rewrite
+   the record's INDEX row (its trigger cell) **only when the proposal states the record's trigger
+   changed**; otherwise leave that row alone. No `--index-entries` call runs, and no new INDEX row is
+   added — the record already has its one row.
+3. `node ~/.claude/scripts/validate-artifact.js --type edr --file <path>` — the structural check the
+   `create` path gets for free from the renderer, run explicitly here since nothing rendered. Any
+   finding is a failure.
+4. Record the outcome as `modified` — see "Recording the outcome" below.
+
+**Declaration versus reality, checked both directions.** `modify` naming a file that does not exist, or
+`create` naming one that already exists, is a failure — never a silent switch to the other path, and
+never an overwrite. You never probe the filesystem to *decide* which mode to use; only to *contradict*
+a declaration that does not match what is on disk.
+
+**Recording the outcome.** In `apply-progress`'s (or your Task Run Report's) `### Decisions
+Materialized` — `record | task | result` — `result` is `materialized` (created), `modified` (edited in
+place), or `failed: <reason>` on any failure (invalid data, the renderer or validator refusing to run,
+an impossible write, or a declaration-versus-reality mismatch).
 
 **A failed materialization does NOT mark the implementing task complete.** Do not leave a partial or
 malformed record on disk. Name the failed proposal explicitly in your return (`### Decisions
 Materialized` row, plus `### Issues Found` or `### Blocker` depending on severity) — the code you
 already wrote for the task is NOT reverted; the gap is exactly what `sdd-verify`'s `decision-gaps`
 group is built to find.
+
+Full mechanism, including the reason each branch exists and the exact wording for `sdd-verify`'s
+`decision-gaps` handling of a `modified` row: `~/.claude/references/decision-capture/in-flow-capture.md`.
 
 No ratified proposal in your launch prompt, or none of them map to a task in this batch → skip this
 step entirely, no mention, no `### Decisions Materialized` section.

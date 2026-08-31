@@ -154,6 +154,38 @@ test('sdd-explore Discovery Form: an omitted `anchor` token raises TOKEN-MISSING
   assert.equal(problems[0].code, 'TOKEN-MISSING');
 });
 
+// `record-mode` (two-lanes-fixed-flow, task 5.7): a closed value set declared WITHOUT `passing:` —
+// `checkItems` resolves `passing = t.passing || legal`, so every declared value is legal and none is
+// illegal-but-non-passing. Only presence is enforced.
+
+test('record-mode: `create` passes — a declared value with no `passing:` key is legal', () => {
+  const section = { items: { tokens: [{ name: 'record-mode', field: 'record_mode', values: ['create', 'modify'] }] } };
+  const body = ['- item one', '  · record-mode: create'].join('\n');
+  assert.deepEqual(checkItems(section, '### New Decisions', body), []);
+});
+
+test('record-mode: `modify` passes — the other declared value is equally legal', () => {
+  const section = { items: { tokens: [{ name: 'record-mode', field: 'record_mode', values: ['create', 'modify'] }] } };
+  const body = ['- item one', '  · record-mode: modify'].join('\n');
+  assert.deepEqual(checkItems(section, '### New Decisions', body), []);
+});
+
+test('record-mode: a value outside the closed set fails TOKEN-ILLEGAL', () => {
+  const section = { items: { tokens: [{ name: 'record-mode', field: 'record_mode', values: ['create', 'modify'] }] } };
+  const body = ['- item one', '  · record-mode: supersede'].join('\n');
+  const problems = checkItems(section, '### New Decisions', body);
+  assert.equal(problems.length, 1);
+  assert.equal(problems[0].code, 'TOKEN-ILLEGAL');
+});
+
+test('record-mode: an absent token fails TOKEN-MISSING, not silently optional', () => {
+  const section = { items: { tokens: [{ name: 'record-mode', field: 'record_mode', values: ['create', 'modify'] }] } };
+  const body = ['- item one', '  · record: contracts/some-slug'].join('\n');
+  const problems = checkItems(section, '### New Decisions', body);
+  assert.equal(problems.length, 1);
+  assert.equal(problems[0].code, 'TOKEN-MISSING');
+});
+
 // The round-trip: the exact grammars must agree with each other, not merely by reading both sides —
 // a compound item rendered by `render-return.js` MUST read back clean through `validate-return.js`'s
 // `checkItems()`, with no `SECTION-UNPARSEABLE` false positive and no field line skipped in silence.

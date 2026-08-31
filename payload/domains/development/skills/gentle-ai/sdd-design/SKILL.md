@@ -198,6 +198,7 @@ If there are genuinely none, state "None."}
 - {the choice}: {what you chose} — {alternatives weighed, and why this one}
   · blocking-test: none
   · record: {domain}/{slug}
+  · record-mode: {create | modify}
 
 ## EDR Conflicts (BLOCKER if any)
 
@@ -384,6 +385,7 @@ Three things that file makes explicit and that this phase gets wrong most often:
   `none` means "I put the alternatives side by side and they differ in NONE of the three axes; that is why this item is here and not in `blocked`" — the only value consistent with the item's location, and therefore the normal one. Naming an axis instead contradicts the item's own destination: an axis that differs makes the decision `blocked`. The orchestrator reads the token mechanically and never reopens your reasoning: `none` → present it with the rest of the gating batch, subject to its own `contested` token; an axis named → it stops, because the item is in the wrong mailbox; absent or hedged → fires under the strict reading, the same default an undeclared deviation gets in `sdd-apply`. Do not hedge it, do not omit it, and do not write `none` for a decision you did not actually put side by side — one line per decision, and the token IS the audit trail the paragraph above asks for. Shape and the reader's table: `~/.claude/references/phase-returns/sdd-design/sdd-design.md`, section "The blocking-test token".
 <!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism: in-flow-capture.md. -->
 - **Every item under `## New Decisions` / `### New Decisions` ALSO carries `· record: <domain>/<slug>`** — free-form (no closed value set), still required (an omission fails `TOKEN-MISSING`). It is the EDR identity the proposal would occupy if ratified; `sdd-apply` reads it verbatim from the dispatch prompt to materialize the record in the same step it implements the governing code. Full mechanism: `~/.claude/references/decision-capture/in-flow-capture.md`.
+- **Every item ALSO carries `· record-mode: create | modify`, directly beneath `· record:`** — closed value set, but no `passing:` key: every declared value is legal, only an absent token fails `TOKEN-MISSING`. It declares whether ratifying this item creates a new record, or edits an existing one **in place**. It is a **routing token**, read verbatim by `sdd-apply` — not a verdict you or the orchestrator classify (that precedent belongs to `· blocking-test:` and `· contested:`, not this token). Full mechanism: `~/.claude/references/decision-capture/in-flow-capture.md`.
 <!-- matecito-ai: narrow-gating-triggers. The firing decision moved from the section's identity to a
      per-item token — every item now declares one, in both mailboxes. -->
 - **Every item under `### New Decisions` and `### Open Questions` ALSO carries `· contested: none | contradicts-statement | contradicts-record | unverified-assumption`**, declared last — `sdd-design.yaml` is the authority on the exact values (run `--schema` on demand). An absent or hedged verdict is read as firing, same strict reading as the other tokens.
