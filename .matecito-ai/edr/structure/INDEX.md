@@ -34,6 +34,7 @@ Decisiones sobre cómo se organiza el payload del repo (dónde vive cada concept
 | [retired-vocabulary-in-record-stores.md](retired-vocabulary-in-record-stores.md) | Accepted | Vas a decidir si el sweep final de un cambio de vocabulario debe extender su scope a un record store pre-existente cuyo sustantivo queda desactualizado. |
 | [lane-vocabulary-sweep-in-record-stores.md](lane-vocabulary-sweep-in-record-stores.md) | Accepted | Vas a barrer vocabulario de lane retirado y necesitás decidir si el sweep alcanza una fila de navegación de un índice de store durable, o un archivo cuyo sustantivo incidental sobrevive como residuo aceptado. |
 | [sdd-propose-contract-joins-lane-sweep.md](sdd-propose-contract-joins-lane-sweep.md) | Accepted | Vas a barrer vocabulario de lane retirado y encontrás un archivo fuera del Scope original que describe un mecanismo (add-on opcional, contraste de modos) que el cambio retira. |
+| [serial-apply-dispatch-budget.md](serial-apply-dispatch-budget.md) | Accepted | Vas a tocar el guard que corta un despacho serial de sdd-apply por costo estimado, o a decidir dónde vive un mecanismo de este tipo. |
 
 ## No aplican en este dominio
 
