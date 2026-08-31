@@ -14,9 +14,7 @@ This domain does NOT touch code — the design→code handoff belongs to the
 | Kernel slot | Design binding |
 | --- | --- |
 | Structured flow name | SDD (Spec-Driven **Design**) — "spec" = "brief" |
-| Phase pipeline | `intake → explore → propose → brief → system → tasks → produce → verify → archive` |
-| Mandatory base phases | `intake → brief → produce → verify → archive` |
-| Optional add-on phases | `explore`, `propose`, `system`, `tasks` |
+| Phase pipeline | `intake → explore → propose → brief → system → tasks → produce → verify → archive` — every phase always runs, in this order, the single source for what `full` runs |
 | Phase agents | `design-*` (`design-intake`, `design-explore`, …, `design-archive`) |
 | Alignment artifact | `brief` |
 | Decision record | `DDR` (Design Decision Record), stored in `.matecito-ai/ddr/` |
@@ -57,9 +55,10 @@ design-intake → design-explore → design-propose → design-brief → design-
 
 Mirrors development's pipeline: `brief` is design's `spec`; `system` is design's
 `design` phase (locks the visual system — palette, type scale, grid, components —
-and reads/writes DDRs); `produce` is design's `apply`. The lane fork (in the
-kernel) governs which phases run: a quick flyer goes `reduced` (base only), a
-rebrand goes `full`.
+and reads/writes DDRs); `produce` is design's `apply`. The kernel's two fixed
+lanes (its "Lanes" rule) govern which phases run: `full` runs every phase above,
+always; `direct` runs none of them, only when the user explicitly asks for
+direct/ad-hoc work.
 
 ### Phase → agent + skills
 
