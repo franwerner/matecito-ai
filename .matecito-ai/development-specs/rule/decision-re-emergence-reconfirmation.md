@@ -16,7 +16,7 @@ Una decisión ratificada en un gate puede reaparecer en un gate posterior del mi
 
 ## Precondiciones
 
-- Un primer gate de ratificación (gate de decisiones pendientes, INTAKE GATE, o gate de minería) ha cerrado en el cambio
+- Un primer gate de ratificación (gate de decisiones pendientes o gate de minería) ha cerrado en el cambio
 - Cada item ratificado en ese gate lleva un `record:` token que identifica la decisión de forma única (un slug de dominio)
 - Un gate posterior en el mismo cambio presenta un item cuyo `record` coincide con uno registrado
 
@@ -140,7 +140,7 @@ Una decisión ratificada en un gate puede reaparecer en un gate posterior del mi
 
 ## Referencias
 
-- **Contrato compartido** → [`../../shared/references/gate-presentation.md`](../../shared/references/gate-presentation.md) — La forma corta de reconfirmación (una sola pregunta de sí/no, mostrando summary y anchor registrados)
-- **Ledger persistencia** → [`../../payload/domains/development/CLAUDE.md`](../../payload/domains/development/CLAUDE.md) — El orquestador escribe el ledger al cerrar cada gate, Engram key `sdd/{change-name}/ratified-decisions`, cuatro campos (`record`, `ratified_summary`, `anchor`, `gate`)
+- **Contrato compartido** → [`../../../payload/shared/references/gate-presentation.md`](../../../payload/shared/references/gate-presentation.md) — La forma corta de reconfirmación (una sola pregunta de sí/no, mostrando summary y anchor registrados)
+- **Ledger persistencia** → [`../../../payload/domains/development/CLAUDE.md`](../../../payload/domains/development/CLAUDE.md) — El orquestador escribe el ledger al cerrar cada gate, Engram key `sdd/{change-name}/ratified-decisions`, cuatro campos (`record`, `ratified_summary`, `anchor`, `gate`)
 - **Prohibición en apply** → Mismo archivo — `sdd-apply` MUST NOT read this key; its only channel is the dispatch prompt
 - **Identificación de decisión** → [`../rule/scenario-verification-scope-token.md`](../rule/scenario-verification-scope-token.md) — El token `record:` es el identificador estable de una decisión dentro de una fase

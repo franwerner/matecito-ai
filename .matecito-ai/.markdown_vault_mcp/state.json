@@ -31,7 +31,7 @@
     "development-specs/rule/component-inference-ratification.md": "129dabf36a8f83db4539728f418835d8db4ea9082ff9a1ac975d41450e25957a",
     "development-specs/rule/component-projection-independence.md": "c4db1c07ccdf735d99df82bc07acc1a738c54c37d29842293cd8b9683da5b3d2",
     "development-specs/rule/contract-shape-proposal.md": "ffa0c012a8c11eeedf892a730dba13a376b9911dd7d0e8a8ec41340bc45305f5",
-    "development-specs/rule/decision-re-emergence-reconfirmation.md": "06945da9d4a70a9488131b90fbf10c43e4f007c2d9f6a40ef388d5a313cb2392",
+    "development-specs/rule/decision-re-emergence-reconfirmation.md": "01191a9dfc10d918d119991f1bdb3ef017997948be52f2923761b1ff9c7eaef2",
     "development-specs/rule/deviation-consult-before-applying.md": "f0b1dd1e5a842076dfd25d606508c2fd6cc90d9b43168e5971ff2b558fdedb53",
     "development-specs/rule/domain-activation-shim.md": "dfdb166f3606bde90b4910ad17157968e935112e14c5f569adab24f73100904b",
     "development-specs/rule/event-scoping.md": "d5410b34248d8f6b09e622474c2f2cbc05491887687370eb4f3a801d7e02c102",
@@ -108,7 +108,11 @@
     "edr/structure/validate-side-needs-no-mirror.md": "d167aa779056ad0b84771734a92dc84dd554b5b976c6e7e90ed6ec7743cf56bc",
     "edr/structure/verdict-classified-by-the-orchestrator.md": "d7599b914b0f0932577a429a57886c185098dcf22012ec2e80cc3ffd6991e839",
     "edr/tech/husky.md": "6e549f06fd2f6dcfa5c7eba5a41a6b7115b1d20b15854987c6e02a7ae0049295",
-    "edr/tech/lint-staged.md": "c59b24104639bcfa8ed8f757ad7bcfa961e87752c300bed96e3df71e6dfd722b"
+    "edr/tech/lint-staged.md": "c59b24104639bcfa8ed8f757ad7bcfa961e87752c300bed96e3df71e6dfd722b",
+    "development-specs/flow/two-fixed-lanes.md": "f485f1731a82a634d0cd44e30d0827cc25d1f8269b89b2a9207286c0d13d190a",
+    "development-specs/flow/discovery-runs-in-explore.md": "b2150e93414a2c3612728435049f44ecbf4d11b9fe6717cb60d20922d322b6c0",
+    "development-specs/rule/intake-passthrough-contract.md": "3b97d8f93b28a646180ec1cef57f63c22d6fba1cc444ec738204c915c95a005a",
+    "development-specs/rule/gate-firing-triggers.md": "5410aa914a305df802e50d5df0aeaf85f4278641468317cba5744bfc3c2843f0"
   },
   "skip_reasons": {},
   "skipped": {},
