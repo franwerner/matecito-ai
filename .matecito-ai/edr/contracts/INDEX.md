@@ -40,6 +40,10 @@ Decisiones sobre los contratos entre piezas del ecosistema: qué forma tiene lo 
 | [side-discussion-launch-boundary.md](side-discussion-launch-boundary.md) | Accepted | Vas a tocar el comando de lanzamiento de la sesión lateral o el límite de qué puede hacer. |
 | [side-discussion-pickup-on-consult.md](side-discussion-pickup-on-consult.md) | Accepted | Vas a tocar cómo el principal decide si esperar o seguir trabajando durante una discusión lateral, o cómo recoge su conclusión. |
 | [side-discussion-launcher-test.md](side-discussion-launcher-test.md) | Accepted | Vas a tocar cómo se lanza la sesión lateral, qué cuenta como un lanzamiento válido, o el mensaje cuando no hay ninguno disponible. |
+| [explore-return-variant-by-status.md](explore-return-variant-by-status.md) | Accepted | Vas a tocar cómo el retorno de una fase con más de un status expresa contenido distinto por pasada — variants vs. secciones on-status. |
+| [discovery-answers-live-in-explore.md](discovery-answers-live-in-explore.md) | Accepted | Vas a tocar dónde se persisten las respuestas de discovery del usuario, o qué fase las carga verbatim en su retorno. |
+| [explore-blocked-narrows-to-non-question-stops.md](explore-blocked-narrows-to-non-question-stops.md) | Accepted | Vas a decidir si un stop de una fase headless que corre discovery es needs-input o blocked. |
+| [intake-brief-passthrough-sections.md](intake-brief-passthrough-sections.md) | Accepted | Vas a tocar qué secciones lleva el brief de sdd-intake, o te tienta agregarle una recomendación de lane o un tamaño. |
 
 ## No aplican en este dominio
 
