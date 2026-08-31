@@ -22,7 +22,7 @@ The form of your return lives in your own skill. Section A (skill loading, inclu
 fragment) and Section B (artifact retrieval) bind you exactly as they bind a phase, and so does the
 no-self-invented-defaults rule below.
 
-No self-invented defaults (absolute): if you hit a genuine decision or an open question that your inputs (brief / spec / design / tasks / confirmed scope + this phase's skill) do NOT resolve, do NOT pick a "most likely" default to keep going. Return `status: blocked` with the exact question so the orchestrator can put it to the user (or `needs-input`, when your phase skill designates that status for this situation — see Section D). A missing or unanswered question is NOT permission and NOT a default. This holds even in Automatic mode. (Executor-side of the kernel's "Open question = blocked, not permission" rule.)
+No self-invented defaults (absolute): if you hit a genuine decision or an open question that your inputs (brief / spec / design / tasks / confirmed scope + this phase's skill) do NOT resolve, do NOT pick a "most likely" default to keep going. Return `status: blocked` with the exact question so the orchestrator can put it to the user (or `needs-input`, when your phase skill designates that status for this situation — see Section D). A missing or unanswered question is NOT permission and NOT a default. This holds always. (Executor-side of the kernel's "Open question = blocked, not permission" rule.)
 
 ## A. Skill Loading
 
@@ -103,7 +103,7 @@ enumerated below on purpose.
 - `done` — the phase finished its work. (Historical note: some older text says `success`; `done` is the value, they are the same thing.)
 - `partial` — real work landed but the phase is not finished (e.g. an apply batch with tasks left).
 - `blocked` — you cannot continue without a resolution that is not yours to make. Carry the exact question and the options you weighed.
-- `needs-input` — you need an answer only the user can give, and the flow resumes by **re-dispatching this same phase** with it. NOT a failure. Used by `sdd-intake` Pass 1; any phase may use it if its own skill says so.
+- `needs-input` — you need an answer only the user can give, and the flow resumes by **re-dispatching this same phase** with it. NOT a failure. Used by `sdd-explore` Pass 1; any phase may use it if its own skill says so.
 - `needs-decision` — an architectural decision must be captured before the flow proceeds (`sdd-intake` early guard, when decision records are active). The orchestrator routes to the decision-capture skill.
 
 ### D.2 `detailed_report` — MANDATORY, by phase
@@ -151,8 +151,8 @@ distinguishable.
 
 | Phase | Block to carry |
 | --- | --- |
-| `sdd-intake` | `## Intake Brief: {title}` (Pass 2) · `## Discovery Form: {title}` (Pass 1) |
-| `sdd-explore` | `## Exploration: {topic}` |
+| `sdd-intake` | `## Intake Brief: {title}` |
+| `sdd-explore` | `## Discovery Form: {topic}` (Pass 1) · `## Exploration: {topic}` (Pass 2) |
 | `sdd-propose` | `## Proposal Created` |
 | `sdd-spec` | `## Specs Created` |
 | `sdd-design` | `## Design Created` |
@@ -172,7 +172,6 @@ Guards`); this table only fixes which section belongs to which phase and which v
 | --- | --- | --- | --- |
 | `sdd-propose` | `### Scope and approach (unconfirmed)` | contested | always |
 | `sdd-spec` | `### Derived capabilities (unconfirmed)` | contested | always |
-| `sdd-spec` | `### New Decisions` — a proposal's ratification gate for a lane with no `design` add-on active (see `~/.claude/references/decision-capture/in-flow-capture.md`) | contested | conditional — only when the lane running has no `design` add-on |
 | `sdd-design` | `### New Decisions` — or `### New Decisions (not yet in EDRs)` when the decision store is active; **both titles are valid and the orchestrator accepts either** | contested | always |
 | `sdd-design` | `### Open Questions` | muted | always |
 | `sdd-tasks` | `### Tasks not traceable to spec/design` | contested | always |
@@ -203,9 +202,7 @@ token is always `chosen`, and its `contested` token's value set is a single lega
 it DID apply, either because an artifact already fixed the point (`mandate: covered`) or because no
 alternative was valid and the constraint is named (`mandate: forced`). A missing or hedged `mandate:`
 is read as `chosen`, so an absorbed deviation nobody can back with a named constraint routes to
-`### Unmandated Forks` by default, never the cheap way past the gate. `sdd-spec`'s `### New Decisions`
-row is the SAME mailbox concept as `sdd-design`'s — a decision-proposal ratification gate — surfacing
-conditionally, one lane earlier; it is not a third kind of thing. `sdd-verify`'s `## Decision Gaps` and
+`### Unmandated Forks` by default, never the cheap way past the gate. `sdd-verify`'s `## Decision Gaps` and
 `## UI Verdict` take `reported`, so neither ever gates: for `development`, `## Decision Gaps` feeds
 nothing kernel-side (the domain declares its own in-flow decision-capture mechanism, materialized
 during `sdd-apply` — see `~/.claude/references/decision-capture/in-flow-capture.md`); a domain with no
@@ -213,13 +210,13 @@ such mechanism (e.g. `design`) may still feed a post-verify mine gate under its 
 lives in the domain fragment (`~/.claude/matecito-ai/domains/development.md`, `## Guards`) — it reads
 this table and keeps no parallel copy of it.
 
-**Sixteen of these mailboxes split each item into `summary`/`rationale`**: `sdd-propose`'s `Scope and
-approach`, `sdd-spec`'s `Derived capabilities` and its conditional `New Decisions`, both `sdd-design`
+**Fifteen of these mailboxes split each item into `summary`/`rationale`**: `sdd-propose`'s `Scope and
+approach`, `sdd-spec`'s `Derived capabilities`, both `sdd-design`
 rows (`New Decisions` and `Open Questions`), `sdd-tasks`'s `Tasks not traceable`, all three
 `sdd-apply` rows (`Unmandated Forks`, `Mandated Departures` and the conditional `Rejected Proposals
 Checked`), all three `sdd-verify` sections (`## Decision Gaps`, `## UI Verdict` and `### Issues
 Found`), and the conditional `### Contract Shapes Proposed` in each of `sdd-propose`, `sdd-spec`,
-`sdd-design` and `sdd-apply` — sixteen sections in total, over **six** contract pairs (`.yaml` + `.md`;
+`sdd-design` and `sdd-apply` — fifteen sections in total, over **six** contract pairs (`.yaml` + `.md`;
 `sdd-verify` is one pair covering its three sections, not three; `### Contract Shapes Proposed` adds no
 new pair, it lands inside the four pairs already counted). The split is declared **per section**, never by which
 renderer draws it (`table`, `labeled-lists` or the `items` render form) — a table-rendered section

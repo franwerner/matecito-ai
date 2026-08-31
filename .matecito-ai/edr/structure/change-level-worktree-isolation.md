@@ -19,16 +19,17 @@ cambio** y coordina el ciclo adentro; el batch de implementación paralelo abre 
 espacio**, no sobre la rama original; al cerrar el ciclo, el orquestador integra el espacio del cambio
 a la rama original.
 
-Se activa por **elección explícita en el fork de lane**, nunca por default. El momento de apertura
-depende del lane: cuando el trabajo pasa por el flujo, después de que se confirma su alcance; cuando no
-—trabajo directo o edición ad-hoc, donde no hay alcance que confirmar—, antes del primer archivo que se
-escribe.
+Se activa solo cuando el pedido del usuario lo pide **explícitamente**, nunca por default; ningún gate
+lo confirma. El momento de apertura depende de si el trabajo pasa por el flujo: cuando sí, el espacio se
+abre apenas `sdd-intake` devuelve un brief con el aislamiento activo, antes de despachar la fase
+siguiente; cuando no —trabajo directo o edición ad-hoc, que nunca produce un brief—, el momento sigue
+siendo el mismo de siempre: antes del primer archivo que se escribe.
 
 ## Reglas verificables
 
 - **[manual]** Con el aislamiento por cambio activo, las corridas aisladas de un batch paralelo parten del espacio de trabajo del cambio, nunca de la rama original.
-- **[manual]** La apertura del espacio de trabajo del cambio ocurre después de confirmarse el alcance cuando el trabajo pasa por el flujo, y antes del primer archivo escrito cuando no.
-- **[manual]** El aislamiento por cambio se activa por elección explícita en el fork de lane; ningún camino lo activa por default ni lo asume activo sin haberlo visto elegir.
+- **[manual]** La apertura del espacio de trabajo del cambio ocurre apenas `sdd-intake` devuelve un brief con el aislamiento activo, antes de despachar la fase siguiente, cuando el trabajo pasa por el flujo; y antes del primer archivo escrito, cuando no.
+- **[manual]** El aislamiento por cambio se activa solo cuando el pedido lo pide explícitamente; ningún camino lo activa por default ni lo asume activo sin haberlo visto elegir.
 
 ## Alternativas consideradas
 

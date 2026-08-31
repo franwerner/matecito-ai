@@ -61,7 +61,7 @@ Present 2-3 options to the user. Let them choose or suggest their own.
  WHY: a vague ask produces a vague deliverable; locking scope first is the cheapest edit."
 ```
 
-Run `design-intake` behavior inline — ask 2-4 targeted questions, classify the piece, triage the lane. Explain the triage call in plain language.
+Run `design-intake` behavior inline — ask 2-4 targeted questions, classify the piece. Explain each classification call in plain language.
 
 Conclude with:
 ```
@@ -175,8 +175,8 @@ Here's what we made together:
 **The design cycle in one line**:
 intake → brief → system → tasks → produce → verify → archive
 
-**When to use the full flow**: Any change where you want to agree on WHAT before making pixels.
-Quick flyer? Go reduced. Rebrand, a new surface, system-wide decisions? Full flow first.
+**When to use the full flow**: Every change, by default — a quick flyer and a rebrand both run the
+full pipeline; only an explicit direct/ad-hoc ask skips it.
 
 **Next steps**:
 - Try /design-intake for your next real piece

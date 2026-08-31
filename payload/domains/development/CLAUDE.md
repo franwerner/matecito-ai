@@ -10,16 +10,14 @@
 | Kernel slot | Development binding |
 | --- | --- |
 | Structured flow name | SDD (Spec-Driven Development) |
-| Phase pipeline | `intake → explore → propose → spec → design → tasks → apply → verify → archive` |
-| Mandatory base phases | `intake → spec → apply → verify → archive` |
-| Optional add-on phases | `explore`, `propose`, `design`, `tasks` |
+| Phase pipeline | `intake → explore → propose → spec → design → tasks → apply → verify → archive` — every phase always runs, in this order, the single source for what `full` runs |
 | Phase agents | `sdd-*` (`sdd-intake`, `sdd-explore`, …, `sdd-archive`) |
 | Phase dispatch | the orchestrator dispatches the phase agent — there are no `/sdd-*` commands (see "How a phase runs") |
 | Alignment artifact | `spec` |
 | Decision record | `EDR`, stored in `.matecito-ai/edr/` |
 | Decision-record concept reference | `~/.claude/references/edr/README.md` |
 | Canonical catalog | `design-patterns` at `~/.claude/references/design-patterns/` (`Applied pattern: X` → `patterns/<x>.md`) |
-| Decision-capture mechanism | in-flow — propose (per phase) → ratify once (lane gate) → materialize (`sdd-apply`); no flag, no post-verify mine gate — `~/.claude/references/decision-capture/in-flow-capture.md` |
+| Decision-capture mechanism | in-flow — propose (`sdd-design`'s `### New Decisions`, the single ratification gate) → ratify (Unresolved Decisions Guard, only when an item fires) → materialize (`sdd-apply`); no flag, no post-verify mine gate — `~/.claude/references/decision-capture/in-flow-capture.md` |
 | Decision-mining executor | `development-decisions-mine` — standalone brownfield scan (Mode A) only; its in-flow Mode B has no `development` caller |
 | Decision-capture skill | `development-decisions-bootstrap` — standalone use only, no flow hook |
 | Exploration index | CodeGraph (`mcp__codegraph__*`), active when `.codegraph/` exists |
@@ -49,7 +47,7 @@ This is a specialization of the kernel's "Open question = blocked, not permissio
 Code exploration prefers CodeGraph when `.codegraph/` exists (structural questions); grep for literal text or non-indexed files. The SDD fork assumes the `mcp__codegraph__*` prefix. Reference the server by capability — never hardcode individual tool names (they drift between server versions); resolve the actual registered tool names at use time.
 
 ## Architecture diagrams (drawio)
-Diagramming here is two complementary pieces: the **`drawio` skill** owns the *vocabulary* — how to build the diagram XML (shapes, branded/AI icons via `shapesearch`/`aiicons`, style presets, layout, diagram-type templates) — and the **`mcp__drawio__*` MCP** owns the *live render* — it renders the skill's `<mxGraphModel>` as an ephemeral preview; the skill itself never writes files. This rule is the **single source of truth for when to draw**. Diagrams are generated **on demand, never automatically**, and only when the change has structural complexity worth visualizing. **Diagram inference test — generate when** the change introduces or rewires ≥3-4 components with relationships, data flow crosses boundaries (layers/services/new modules), there is a non-trivial process with branches or states, or the task is to understand existing code spread across many files (CodeGraph can feed the graph) — **plus** capturing the shape of an architectural decision (EDR). **Do NOT generate** for a small fix, rename, config tweak, single-file/single-unit change, or linear logic — there prose or a snippet is clearer. **Model — offer-and-confirm, never unilateral.** **Decide vs generate (timing):** the structure does not exist yet at intake, so `sdd-intake` only *decides* — it sets `diagram: needed | not-needed` in the brief per this test, and the user confirms it at the **INTAKE GATE** (that gate IS the confirmation for the in-flow case; no re-ask later). **Generation is EPHEMERAL — always a live preview, NEVER a file in the project (zero `.drawio` artifacts in the repo).** The diagram is rendered by the **main thread** with a live preview (`mcp__drawio__*` — `start_session` reports the preview URL; the port is assigned dynamically, not fixed); nothing is exported or persisted. When the flag is `needed`, the main thread offers to render it live at the design step — the **headless `sdd-design` sub-agent does NOT generate or export diagrams**; it only notes that a live diagram is recommended. Same for a `direct` lane / outside the flow. Apply this same test before offering.
+Diagramming here is two complementary pieces: the **`drawio` skill** owns the *vocabulary* — how to build the diagram XML (shapes, branded/AI icons via `shapesearch`/`aiicons`, style presets, layout, diagram-type templates) — and the **`mcp__drawio__*` MCP** owns the *live render* — it renders the skill's `<mxGraphModel>` as an ephemeral preview; the skill itself never writes files. This rule is the **single source of truth for when to draw**. Diagrams are generated **on demand, never automatically**, and only when the change has structural complexity worth visualizing. **Diagram inference test — generate when** the change introduces or rewires ≥3-4 components with relationships, data flow crosses boundaries (layers/services/new modules), there is a non-trivial process with branches or states, or the task is to understand existing code spread across many files (CodeGraph can feed the graph) — **plus** capturing the shape of an architectural decision (EDR). **Do NOT generate** for a small fix, rename, config tweak, single-file/single-unit change, or linear logic — there prose or a snippet is clearer. **Model — offer-and-confirm, never unilateral.** **Decide vs generate (timing):** the structure does not exist yet at intake, so `sdd-intake` only *decides* — it sets `diagram: needed | not-needed` in the brief per this test, and reports it with the rest of the brief's decision flags; the user is not asked to confirm it, and no later phase re-asks. **Generation is EPHEMERAL — always a live preview, NEVER a file in the project (zero `.drawio` artifacts in the repo).** The diagram is rendered by the **main thread** with a live preview (`mcp__drawio__*` — `start_session` reports the preview URL; the port is assigned dynamically, not fixed); nothing is exported or persisted. When the flag is `needed`, the main thread offers to render it live at the design step — the **headless `sdd-design` sub-agent does NOT generate or export diagrams**; it only notes that a live diagram is recommended. Same for a `direct` lane / outside the flow. Apply this same test before offering.
 
 ## Debugger MCP (mcp-debugger)
 The debugger MCP (`mcp__debugger__*`, DAP step-through via `@debugmcp/mcp-debugger`) is **on-demand only** — it is NEVER invoked automatically. Its primary home is `sdd-apply`: when a runtime defect is encountered and the per-language debug toolchain is available (detected by `sdd-init` and cached in `sdd/{project}/testing-capabilities`), `sdd-apply` MAY diagnose the root cause AND apply a fix in the same context. In `sdd-verify`, the debugger is **diagnosis-only**: it MAY be used to understand why a test or scenario fails, but MUST NOT apply fixes there — any fix found belongs in a subsequent `sdd-apply` invocation. When the per-language debug toolchain is absent (`debugger.available = ❌` in testing-capabilities), both phases skip debugger usage silently — no error, no warning, no section. **For the full usage guide** — preflight (adapter vs. toolchain binary distinction), per-language install helper, and the debug loop — read the **`debugger` skill** (`~/.claude/skills/debugger/SKILL.md`).
@@ -76,9 +74,10 @@ self-invoke them either. A phase runs by **the orchestrator dispatching its agen
 phases dispatch as exactly one agent, one call, one return; two named cases fan out into more than one
 dispatch instead — see "Phase fan-out" below.
 
-So you ask for the work in plain language ("arreglá X", "agregá Y"); the orchestrator resolves the lane
-at the INTAKE GATE and drives the pipeline from there. Naming a phase ("corré el verify", "seguimos con
-apply") is a request to dispatch that agent, not a command the harness resolves.
+So you ask for the work in plain language ("arreglá X", "agregá Y"); the orchestrator dispatches
+`sdd-intake` and drives the pipeline straight through from there — `full` always, `direct` only when you
+asked for it explicitly. Naming a phase ("corré el verify", "seguimos con apply") is a request to
+dispatch that agent, not a command the harness resolves.
 
 <!-- matecito-ai: phase fan-out. `sdd-verify` used to run as ~9 serial steps in one agent (~30 min
      wall-clock); that account is unchanged below. `sdd-apply` gained a second, independent fan-out
@@ -137,8 +136,10 @@ out, and this section is not an invitation to add a third without its own change
 | `sdd-explore` | intake (brief) | `explore` |
 | `sdd-propose` | exploration (optional) | `proposal` |
 <!-- matecito-ai: spec pasó a leer el intake brief SIEMPRE, no sólo como upstream de fallback: es el
-     único lugar que lleva el flag `ui-test`, y la proposal no lo transporta. Sin esa lectura, la
-     producción de `ui-scenarios` funcionaría en lane `reduced` y fallaría en `full`. -->
+     único lugar que lleva el flag `ui-test`, y la proposal no lo transporta. Bajo el modelo de cuatro
+     lanes (direct/reduced/full/custom) — retirado por `two-lanes-fixed-flow`, que lo reemplazó por dos
+     lanes fijos sin fork ni gate de confirmación — sin esa lectura la producción de `ui-scenarios`
+     habría funcionado en lane `reduced` y fallado en `full`. -->
 | `sdd-spec` | proposal (required) + **intake brief (always, for the `ui-test` flag)** + **durable capability-spec** (for Modified Capabilities) | `spec` (incl. the **behavioral** `ui-scenarios` when `ui-test: needed` — domain language, no routes or locators) |
 | `sdd-design` | proposal + **intake brief (always, for the `diagram` flag)** + **EDRs** + **durable capability-specs** (required) | `design` |
 | `sdd-tasks` | spec + design + **durable capability-specs touched** (required) | `tasks` |
@@ -150,31 +151,31 @@ out, and this section is not an invitation to add a third without its own change
 | `sdd-verify` | spec (incl. the behavioral `ui-scenarios`) + design + tasks + apply-progress (incl. the **counterparts**, paired by `name`) + **intake brief (always, for the `ui-test` flag)** + **EDRs touched** + **capability-specs touched** | `verify-report` |
 | `sdd-archive` | all artifacts | `archive-report` + **durable capability-specs (merge)** |
 
-The "Reads" column lists the **full-lane** ideal. In `reduced`/`custom` lanes some upstream phases don't run, so each phase reads the **nearest available upstream**: `sdd-spec` falls back to the intake brief when there is no proposal; `sdd-apply` treats `spec` as the floor and skips `tasks`/`design` when absent. The **durable capability-specs** are read only when `.matecito-ai/development-specs/` exists; absent → skip silently (same presence-based gate as EDRs).
+The "Reads" column is read unconditionally — every phase always runs, so no phase falls back to a nearer upstream. The **durable capability-specs** are read only when `.matecito-ai/development-specs/` exists; absent → skip silently (same presence-based gate as EDRs).
 
-<!-- matecito-ai: the kernel's INTAKE GATE surfaces the lane plus "the decision flags the domain declares",
-     and stays domain-agnostic on purpose — this block is that declaration. Before it existed, the
-     instruction to surface these two lived only in `agents/sdd-intake.md` and its skill, both read by the
-     intake executor and neither read by the orchestrator that has to act on it. The flags were visible
-     inside the brief but never raised as something to ratify, and since neither is re-asked later, the
-     phases downstream acted on values nobody confirmed. -->
-### Brief decision flags (confirmed at the INTAKE GATE)
+<!-- matecito-ai: no gate ratifies these anymore — the flags are decided by `sdd-intake` and simply
+     reported, per the "Two fixed lanes" change. The instruction to surface them still has to live
+     somewhere the orchestrator reads (not only in `agents/sdd-intake.md` and its skill, which the intake
+     executor reads and the orchestrator does not) — this block is that declaration, unchanged in that
+     respect from before this change. -->
+### Brief decision flags (decided and reported, never ratified)
 
 `sdd-intake` decides these on the user's behalf and writes them into the brief under
-`### Classification`. The orchestrator surfaces each at the INTAKE GATE, by name, with its value and
-its one-line reason. **That gate is their only confirmation** — no phase re-asks, and each reader
-treats an absent or unconfirmed flag as `not-needed` and closes **silently**, so a flag that slips
-through the gate is a check nobody notices was skipped.
+`### Classification`. The orchestrator reports each in a single notice line when the brief returns —
+by name, with its value — and nothing waits on it. **No gate confirms them**: each reader treats an
+absent flag as `not-needed` and closes **silently**, so a wrongly-decided flag now reaches its reader
+with nobody having checked it.
 
 | Flag | Line in the brief | Decided by | Read by | What it drives |
 | --- | --- | --- | --- | --- |
 | `diagram` | `- Diagram: {needed\|not-needed}` | `sdd-intake` per the diagram inference test in `## Architecture diagrams (drawio)` above | `sdd-design` | Whether a **drawio** architecture diagram is warranted. `sdd-design` only NOTES the recommendation in its `executive_summary`; the main thread renders it live via `mcp__drawio__*`. Nothing is ever written to the repo. |
 | `ui-test` | `- UI test: {needed\|not-needed}` | `sdd-intake`, by keyword inference over the request (`browser`, `page`, `form`, `screen`, `visual`, `click`, `render`), overridable explicitly in the request | `sdd-spec`, `sdd-verify` | Whether UI verification via **proofshot** is warranted. `sdd-spec` authors the `ui-scenarios` block only when this is `needed`; `sdd-verify` runs the ProofShot session only when this is `needed` AND `uiTest.available = ✅`. |
-| `components` | `- Components: {name[, name...] \| unassigned}` | `sdd-intake`, by mapping the request's scope against `repo.components[].paths` | ninguno | Nothing — it is metadata for the person confirming the gate, not a phase input. **Presence-based, unlike the two above**: with no `repo.components` declared for the project the field does not exist and is never mentioned; declared, it is multivalued and always emitted (`unassigned` when no `paths` match — never omitted to mean "no match"). |
-| `worktree-isolation` | `- Worktree isolation: {active\|inactive}` | `sdd-intake`, recommended together with the lane per `structure/change-isolation-activation-flag.md` | the orchestrator (kernel's "Change Workspace (opt-in)") | Whether the orchestrator opens a dedicated **git worktree** for this change — its own branch and directory, where every phase's work lands, merged back once at the end. Named for what it is: the flag was `isolation`, which read as a policy rather than as the concrete thing it opens. For `direct`/ad-hoc work — which never reaches the INTAKE GATE — the choice is confirmed at the lane fork itself instead; a fork never surfaced means inactive. |
+| `components` | `- Components: {name[, name...] \| unassigned}` | `sdd-intake`, by mapping the request's scope against `repo.components[].paths` | ninguno | Nothing — it is metadata reported alongside the rest of the brief's flags, not a phase input. **Presence-based, unlike the two above**: with no `repo.components` declared for the project the field does not exist and is never mentioned; declared, it is multivalued and always emitted (`unassigned` when no `paths` match — never omitted to mean "no match"). |
+| `worktree-isolation` | `- Worktree isolation: {active\|inactive}` | `sdd-intake`, decided per `structure/change-isolation-activation-flag.md`: active only when the request explicitly asks for isolated work | the orchestrator (kernel's "Change Workspace (opt-in)") | Whether the orchestrator opens a dedicated **git worktree** for this change — its own branch and directory, where every phase's work lands, merged back once at the end. Named for what it is: the flag was `isolation`, which read as a policy rather than as the concrete thing it opens. For `direct`/ad-hoc work — which never reaches an intake brief — the explicit request itself is the only confirmation; a request that never asked for it means inactive. |
 
-None of these is executed by intake: it decides, others (or, for `components`, no one) act. Adjusting
-one at the gate updates the brief like any other correction.
+None of these is executed by intake: it decides, others (or, for `components`, no one) act. A wrong
+value has no gate to catch it — a user who spots one corrects it in conversation, and that correction
+is not routed through any formal mechanism.
 
 <!-- matecito-ai: git mechanics for the kernel's domain-neutral "Change Workspace (opt-in)" policy —
      `structure/change-workspace-prose-homes.md` fixes this split: the kernel keeps the policy in neutral
@@ -222,20 +223,27 @@ both kept, untouched, for inspection.
 ### Strict TDD (resolution + forwarding)
 Same precedence as model resolution — per-project `domainConfig.development.strictTdd` → global `domainConfig.development.strictTdd` → `false` (pre-M7 flat top-level `strictTdd` is auto-migrated into `domainConfig.development` on read). Resolve once per session, cache. If effective `strictTdd` is true, add to the `sdd-apply` / `sdd-verify` prompt: "STRICT TDD MODE IS ACTIVE. Test runner: {test_command}. Follow strict-tdd.md." The `{test_command}` comes from `sdd/{project}/testing-capabilities` in Engram.
 
-<!-- matecito-ai: `sdd-intake` tenía orden de "ask 2-4 questions" corriendo headless, sin canal con el usuario: se las autocontestaba y el brief salía con respuestas inventadas que el flujo trataba como mandato confirmado. El discovery pasa a dos pasadas. -->
+<!-- matecito-ai: discovery moved here from `sdd-intake` (now a passthrough with no discovery role,
+     per the "Two fixed lanes" change) because the two-pass cycle only makes sense once the change's
+     code has actually been read — a question grounded in what `sdd-explore` found, not one invented
+     before opening a file. -->
 ### Discovery Gate (MANDATORY)
-`sdd-intake` runs headless and CANNOT ask the user anything. It formulates the discovery form and returns `status: needs-input` with the questions. That return is neither an error nor a blocker — it is the normal first pass.
+`sdd-explore` runs headless and CANNOT ask the user anything. It reads the affected code FIRST, THEN
+formulates the discovery form and returns `status: needs-input` with the questions. That return is
+neither an error nor a blocker — it is the normal first pass.
 
 `needs-input` is a legal envelope status, not an error. The legal status values are enumerated once in the canonical contract (`_shared/sdd-phase-common.md`, Section D.1) — read them there; this gate does not re-declare them.
 
-When intake returns `needs-input`: put its questions to the user yourself (you own the channel), then **re-dispatch `sdd-intake`** with the raw request plus the answers verbatim so it produces the brief on Pass 2. **An empty question list still requires you to go to the user** — intake returns its one-line reading of the request and the user confirms or corrects it; never treat "no questions" as licence to skip straight to the brief. Never answer them on the user's behalf, never trim the list down to the ones you find interesting, and never skip ahead to another phase — no brief exists yet, so there is nothing downstream to run. If the user leaves one open, hand it back as open instead of resolving it for them.
+When `sdd-explore` returns `needs-input`: put its questions to the user yourself (you own the channel), then **re-dispatch `sdd-explore`** with the raw request plus the answers verbatim so it produces the exploration artifact on Pass 2, carrying the answers verbatim in `### Discovery answers`. **An empty question list still requires you to go to the user** — `sdd-explore` returns its one-line reading of the request and the user confirms or corrects it; never treat "no questions" as licence to skip straight to the exploration artifact. Never answer them on the user's behalf, never trim the list down to the ones you find interesting, and never skip ahead to another phase — the form must be resolved before the phase that fixes the change's scope is dispatched. If the user leaves one open, hand it back as open instead of resolving it for them.
 
 The questions are walked through the shared presentation in `~/.claude/references/gate-presentation.md`
-— one index when there are two or more, the fixed item template either way — under the Discovery
-Gate's own declared exception: no anchor, since the request has not yet produced anything to point at.
-This gate states no index or bulk-action wording of its own.
+— one index when there are two or more, the fixed item template either way. Each question carries an
+anchor under the ordinary anchor criterion, like any other gated item — no exception: a question
+grounded in something `sdd-explore` read anchors to the repo path it came from (with a start line when
+the source is a specific place); a question about the request's own intent anchors to the intake
+brief's artifact key. This gate states no index or bulk-action wording of its own.
 
-This gate sits BEFORE the INTAKE GATE and does not replace it: discovery answers first, then the brief, then confirm / adjust / cancel over that brief. **Automatic mode does NOT skip this gate** — Automatic only skips the between-phase "¿Continuamos?" checkpoint, never a question the user has to answer.
+This gate always fires — running unattended is never licence to skip a question the user has to answer.
 
 <!-- matecito-ai: nada comprobaba que un retorno trajera lo que debía traer. Si una fase se comía una
      sección, el gate correspondiente no disparaba — en silencio, que es el modo de falla que más
@@ -309,7 +317,7 @@ change-level isolation is active, the main repo's when it is not
 (`contracts/uncommitted-gate-follows-the-container.md`). Clean tree, or dirty with no relevant
 intersection → silent, nothing to do. Dirty and relevant → present exactly three outcomes (commit first
 · continue anyway · work on that same container's branch without a worktree) and dispatch nothing until
-the user picks one, not even in Automatic mode; picking "continue anyway" leaves a trace the
+the user picks one — this gate always fires, and running unattended is never licence to skip it; picking "continue anyway" leaves a trace the
 consolidation run records. Those three outcomes are presented through the shared walkthrough in
 `~/.claude/references/gate-presentation.md`, anchored to the dirty paths `git status --porcelain`
 already printed — this gate states no index or bulk-action wording of its own. A serial dispatch and
@@ -340,8 +348,8 @@ An item that does NOT fire proceeds with no user turn — where it goes next is 
 `gates:` value, not by this guard: `contested` and `reported` sections put it in the between-phase
 summary; a `muted` section puts it nowhere. A firing item means the phase produced something the user
 has not agreed to (trigger a) or something that must be reviewed as a whole before it exists in code
-(trigger b) — present it and wait before the next dispatch. **Automatic mode does NOT skip this gate**
-(same pattern as the INTAKE GATE and the mine gate). When a firing section's contract splits its items
+(trigger b) — present it and wait before the next dispatch. **This gate always fires — running
+unattended is never licence to skip it** (same pattern as the mine gate). When a firing section's contract splits its items
 into `summary`/`rationale` (the phase-return contract's `items.rationale`), present each item's
 `summary` at the gate — that is the section's own **declared** presentation, not you judging what is
 brief — and reproduce an item's `rationale` verbatim, from the block already in context, only when the
@@ -386,15 +394,15 @@ The token is the only evidence the test ran at all. Do not accept a decision's p
 for it, and do not fill one in on the phase's behalf.
 
 <!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism, the ratification
-     gate per lane, the materialization contract: in-flow-capture.md. This is the orchestrator-side
-     half — WHO forwards the resolution and WHEN — that neither sdd-spec/sdd-design (who propose) nor
+     gate, the materialization contract: in-flow-capture.md. This is the orchestrator-side
+     half — WHO forwards the resolution and WHEN — that neither sdd-design (who proposes) nor
      sdd-apply (who materializes) can instruct on their own, since it is the launch-prompt construction
      step between them. Written for its two readers: the orchestrator, who builds the prompt (first two
      paragraphs), and the `sdd-apply` executor, who reads this fragment as part of its mandatory load
      protocol (`_shared/sdd-phase-common.md`, Section A) and acts on the last two paragraphs. -->
-**Forwarding a proposal's resolution to `sdd-apply`.** Every item that reached this gate under `New
-Decisions` — `sdd-spec`'s conditional mailbox or `sdd-design`'s — carries a `record: <domain>/<slug>`
-token, and stays in the design's own `## New Decisions` prose whatever the gate decided: the item's
+**Forwarding a proposal's resolution to `sdd-apply`.** Every item that reached this gate under
+`sdd-design`'s `### New Decisions` carries a `record: <domain>/<slug>`
+token and a `record-mode: create | modify` token, and stays in the design's own `## New Decisions` prose whatever the gate decided: the item's
 mere presence there is NOT evidence of ratification or rejection, and `sdd-apply` MUST NOT read it as
 either. Forward each item's resolution explicitly, in the launch prompt of the `sdd-apply` dispatch
 that implements the task governing it — never re-written into an Engram key, never left for `sdd-apply`
@@ -402,19 +410,19 @@ to re-derive:
 
 - **Ratified** (confirmed or adjusted at this gate) — its ratified text (the adjusted summary/rationale
   if the user corrected it at this gate, not the originally-proposed one) verbatim, plus its `record:`
-  token, marked ratified. Unchanged from before this rule.
+  and `record-mode:` tokens, marked ratified.
 - **Rejected** — its `record:` token and `summary` alone, marked rejected. The full text already
   travels in the design's `## New Decisions`; the token and summary are enough for `sdd-apply` to know
   which item and what it was about.
 - **Auto-ratified** (the gate never fired because the item declared `contested: none`) — forwarded
-  exactly as the ratified case above: its authored text verbatim, plus its `record:` token, marked
-  ratified. The dispatch prompt is **byte-identical** whether ratification came from a user turn at the
+  exactly as the ratified case above: its authored text verbatim, plus its `record:` and `record-mode:`
+  tokens, marked ratified. The dispatch prompt is **byte-identical** whether ratification came from a user turn at the
   gate or from the gate never firing — `sdd-apply` cannot tell which path produced it, and does not need
   to: its materialization step (Step 4b) and its "a missing resolution returns `blocked`" rule are
   unchanged either way.
 
 The resolution never travels as a token on the mailbox item itself, and none should be added: `New
-Decisions` has no `resolution:` field, because `sdd-spec`/`sdd-design` write the item at propose time,
+Decisions` has no `resolution:` field, because `sdd-design` writes the item at propose time,
 before the gate has run — the phase authoring the item cannot fill a field for an outcome that does not
 exist yet. The gate happens after the item is written, and the orchestrator, at the moment it forwards,
 is the only participant who ever learns that outcome. That is why this instruction lives here, in the
@@ -484,7 +492,7 @@ legally, never that every rejection you forwarded got one.
 <!-- matecito-ai: same shape as "Forwarding a proposal's resolution to `sdd-apply`" above, for a
      different kind of item — a contract's shape rather than a decision. Kept as its own paragraph
      instead of folded into that one because the readers differ: that rule names `sdd-apply` as the one
-     and only recipient (proposals are `sdd-spec`/`sdd-design`'s mailbox, materialized downstream by
+     and only recipient (decision proposals are `sdd-design`'s mailbox, materialized downstream by
      `sdd-apply` alone); this one reaches all four phases that can stop over an unspecified contract,
      because any of the four can propose one. -->
 **Forwarding a ratified contract shape to the proposing phase.** `### Contract Shapes Proposed`
@@ -543,7 +551,7 @@ ships in the block and is reproduced verbatim on request, not printed by default
 When an **unconditional** section is missing, do NOT assume there was nothing and do NOT silently dispatch the next phase — but do not demand a "re-emission" either: no such command or status exists, and re-dispatching re-runs the whole phase (for `sdd-apply` a re-dispatch is defined as a **continuation batch**, not a re-emission). Handle it with what exists: treat the omission as unresolved gating content and open the same gate you would open for real content, naming the phase and the missing section, and let the user pick — proceed as if empty / re-run that phase / adjust. You own the channel; the decision is theirs, not a repair you improvise.
 
 ### Review Workload Guard (MANDATORY)
-After `sdd-tasks` and before `sdd-apply`, inspect `Review Workload Forecast`. If chained PRs recommended / 400-line budget risk High / decision needed → apply cached `delivery_strategy` (`ask-on-risk` default: STOP and ask chained PRs vs `size:exception`). Automatic mode does not override this guard.
+After `sdd-tasks` and before `sdd-apply`, inspect `Review Workload Forecast`. If chained PRs recommended / 400-line budget risk High / decision needed → apply cached `delivery_strategy` (`ask-on-risk` default: STOP and ask chained PRs vs `size:exception`). This guard always fires — running unattended is never licence to skip it.
 
 The decision this guard raises is presented through the shared walkthrough in
 `~/.claude/references/gate-presentation.md`, anchored to `sdd/{change-name}/tasks` — no index or

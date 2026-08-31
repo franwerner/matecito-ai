@@ -31,10 +31,7 @@ From the orchestrator:
 
 > Follow **Section B** (retrieval) and **Section C** (persistence) from `~/.claude/skills/_shared/sdd-phase-common.md`.
 
-<!-- matecito-ai: declaraba los tres como required, contra la regla de nearest-upstream del fragmento:
-     en lane `reduced`/`custom` no hay proposal ni design, y el agente ya trata design como opcional.
-     Un `required` que no se cumple en el lane por defecto enseña a ignorar los `required`. -->
-- **engram**: Read `sdd/{change-name}/spec` (**required** — the floor). Read `sdd/{change-name}/design` and `sdd/{change-name}/proposal` **when they exist**: in `reduced` and `custom` lanes those phases may not have run, and their absence is normal, not an error — decompose from what you do have. Save as `sdd/{change-name}/tasks`.
+- **engram**: Read `sdd/{change-name}/spec` and `sdd/{change-name}/design` (**required** — every phase always runs). Save as `sdd/{change-name}/tasks`.
 <!-- matecito-ai: also read the durable capability-specs of the capabilities this change touches — `.matecito-ai/development-specs/<type>/<capability>.md` (type ∈ flow|rule|lifecycle|process; concept at ~/.claude/references/spec/README.md), when present. They are the accumulated behavior contract the tasks must uphold, alongside the change spec and the design. -->
 - **none**: Return result only. Never create or modify project files.
 

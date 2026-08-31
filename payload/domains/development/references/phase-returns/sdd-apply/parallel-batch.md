@@ -12,10 +12,9 @@
 Applies to a tasks artifact whenever at least one `· parallel-group: <id>` id has **two or more**
 members — eligibility is stated and evaluated **per group**, never over the artifact as a whole (four
 marked tasks split into two groups of two are two eligible batches run in successive rounds, not one
-eligible batch of four; see "One group is one batch" below). A group with fewer than two members, an
-unmarked task, or no tasks artifact at all (`reduced`/`custom` lanes) runs **serial mode**: today's
-single-agent path, unchanged by this file. Serial mode is not documented here because nothing about it
-changed.
+eligible batch of four; see "One group is one batch" below). A group with fewer than two members, or an
+unmarked task, runs **serial mode**: today's single-agent path, unchanged by this file. Serial mode is
+not documented here because nothing about it changed.
 
 A dirty `git status --porcelain` at dispatch time no longer degrades a round to serial by itself — see
 "Uncommitted-Work Gate" below. Its three outcomes decide the round's fate; "work on the branch, no
@@ -130,7 +129,8 @@ component is an **orphan**.
 - **`repo.components` declared, no intersection, no orphan, and `Components` names something that does
   exist** → total silence — not even a mention that the gate ran.
 
-**Three outcomes — nothing dispatches until the user picks one, not even in Automatic mode:**
+**Three outcomes — nothing dispatches until the user picks one.** This gate always fires — running
+unattended is never licence to skip it:
 
 | Outcome | What happens |
 |---|---|
@@ -138,8 +138,8 @@ component is an **orphan**.
 | **Continue anyway** | The round dispatches isolated as-is, `base` already captured, the warning understood. The consolidation run records the notice (below). |
 | **Work on the branch, no worktree** | The round degrades to the serial path on the container's own branch — the change workspace's branch when isolation is active, the working branch when it is not — no worktree, no fan-out, uncommitted work available to it. No isolated run is dispatched for this round. |
 
-Silence from the user is not consent: with no answer, nothing dispatches — not isolated, not serial, not
-even in Automatic mode.
+Silence from the user is not consent: with no answer, nothing dispatches — not isolated, not serial,
+whatever the execution mode.
 
 **Notice.** Only "continue anyway" leaves a trace — commit-first leaves its commit as the record, and
 "no worktree" removes the risk instead of accepting it. The orchestrator carries what triggered the

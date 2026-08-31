@@ -32,6 +32,6 @@ Return a structured result with these fields:
 - `status`: `done` | `blocked` | `partial`
 - `executive_summary`: one-sentence description of the brief scope
 - `artifacts`: topic_keys or file paths written (e.g. `design/{change-name}/brief`)
-- `next_recommended`: `design-tasks` (full lane, after the system is also ready) or `design-produce` (reduced/custom lane without tasks/system)
+- `next_recommended`: `design-system` — the next phase in the pipeline, always
 - `risks`: ambiguities in the direction that forced brief-level assumptions
 - `skill_resolution`: `capability-skills` (used the domain skills) or `none`

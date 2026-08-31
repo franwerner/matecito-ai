@@ -293,7 +293,7 @@ Los valores de `blocking-test`, su tabla de clasificación y su escalada nombrad
 
 ### Requisito: Solo uno de los nueve momentos de cita cambia, y nueve no es el inventario completo
 
-De los nueve momentos que citan el walkthrough compartido, solo el gate de decisiones pendientes DEBE cambiar. Los otros ocho DEBEN ser sin cambios: el INTAKE GATE, el gate de decisión-minada (que nunca dispara en este dominio), el gate de spec-minada, el Discovery Gate, el Uncommitted-Work Gate, el Review Workload Guard, un retorno `blocked` de fase, y `risks` / Hallazgos del Validador. El texto de gobernanza DEBE NO reclamar que los nueve son el inventario completo de puntos de interrupción.
+De los momentos que citan el walkthrough compartido, solo el gate de decisiones pendientes cambió por aquel cambio. El INTAKE GATE ya no existe, así que los momentos que citan el walkthrough son ocho, y el Discovery Gate sí cambia por este cambio: se muda a `sdd-explore` y pasa a exigir anchor como cualquier otro item. Los otros seis DEBEN quedar sin cambios: el gate de decisión-minada (que nunca dispara en este dominio), el gate de spec-minada, el Uncommitted-Work Gate, el Review Workload Guard, un retorno `blocked` de fase, y `risks` / Hallazgos del Validador. El texto de gobernanza DEBE NO reclamar que los ocho son el inventario completo de puntos de interrupción.
 
 #### Scenario: Los ocho quedan solos
 

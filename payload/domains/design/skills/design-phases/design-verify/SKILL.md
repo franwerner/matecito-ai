@@ -14,8 +14,8 @@ issues (it does not fix them).
 
 ## Reads / writes (design Phase Read/Write)
 
-- **Reads:** `design/{change-name}/brief` (required — the floor) + `design/{change-name}/system`
-  (when present) + `design/{change-name}/produce-progress` (required) + **DDRs touched** (when
+- **Reads:** `design/{change-name}/brief` + `design/{change-name}/system` (both required — every
+  phase always runs) + `design/{change-name}/produce-progress` (required) + **DDRs touched** (when
   active).
 - **Writes:** `design/{change-name}/verify-report`.
 
@@ -31,10 +31,8 @@ This phase ORCHESTRATES those skills; the technique lives in them — do not dup
 
 ## Steps
 
-1. Read brief artifact (required — the floor): `mem_search("design/{change-name}/brief")` →
-   `mem_get_observation`.
-2. Read system artifact if present: `mem_search("design/{change-name}/system")` → if found,
-   `mem_get_observation`; if absent (reduced / custom lane), verify against the brief alone.
+1. Read brief artifact: `mem_search("design/{change-name}/brief")` → `mem_get_observation`.
+2. Read system artifact: `mem_search("design/{change-name}/system")` → `mem_get_observation`.
 3. Read produce-progress (required): `mem_search("design/{change-name}/produce-progress")` →
    `mem_get_observation`.
 4. If a Figma file is connected, READ it (`mcp__figma__*`) to inspect the real colors, type scale,

@@ -63,27 +63,28 @@ Criteria for a good onboarding change:
 Present 2-3 options to the user. Let them choose or suggest their own.
 
 <!-- matecito-ai: el ciclo se narraba arrancando en explore. `intake` es fase BASE obligatoria y la
-     puerta de entrada: estructura el pedido, corre el discovery con el usuario y produce el brief
-     que todo lo demás consume. Un onboarding que la omite enseña un flujo que no es el real. -->
+     puerta de entrada: estructura el pedido, decide sus flags, y produce el brief que todo lo demás
+     consume. Un onboarding que la omite enseña un flujo que no es el real. -->
 ### Phase 2: Intake (narrated)
 
 ```
 "Step 1: Intake — Every change starts here. We turn your raw request into a
- structured brief: what you're asking for, how big it is, and which parts of
- the flow it actually needs. Everything downstream reads this brief."
+ structured brief: what you're asking for, and the flags that steer the rest
+ of the flow. Everything downstream reads this brief."
 ```
 
 Run `sdd-intake` behavior on the chosen improvement. Two things to show the user, because they are the mechanics that surprise people most:
 
-<!-- matecito-ai: `sdd-intake` corre headless y NO puede preguntarle nada al usuario: formula el
-     formulario de discovery y lo devuelve (`needs-input`); el canal con el usuario lo tiene quien
-     orquesta. Narrar "intake te pregunta" enseñaría un comportamiento que no existe. -->
-1. **Intake does not talk to the user — it hands the questions over.** In a real dispatch the phase runs headless and returns `needs-input` with the discovery form; whoever owns the channel with the user (here, you) puts those questions to them and re-dispatches intake with the answers verbatim. Ask the form's questions yourself, one round, and never answer one on the user's behalf.
-2. **The brief is confirmed before anything else runs** — the INTAKE GATE. Show the brief and ask for confirm / adjust / cancel. Point out the recommended lane (`direct | reduced | full | custom`): onboarding walks the full lane to teach every phase, but a real change of this size would usually be `reduced`.
+<!-- matecito-ai: `sdd-intake` runs headless and never talks to the user — it decides its four flags
+     in one pass and returns the brief. Discovery moved to `sdd-explore`, which is where the headless/
+     needs-input mechanics belong in this walkthrough now. -->
+1. **Intake decides four flags and reports them — it never asks anything.** In a real dispatch the phase runs headless: one pass, one brief, no discovery form. It decides `diagram`, `ui-test`, `components` and `worktree-isolation` on the user's behalf and writes them into the brief.
+2. **The brief moves straight downstream — nothing confirms it.** Show the brief and report the four decided flags in one line, exactly as the orchestrator would. Point out: this is the whole flow, always — there is no lane to choose and no gate to pass; the tradeoff is that a wrongly-decided flag reaches its reader with nobody having checked it.
 
 ```
-"Notice what just happened: nothing got decided for you. The brief is your
- scope, agreed up front — that's what keeps the rest of the flow honest."
+"Notice what just happened: the brief moved straight downstream. Its flags were
+ decided and reported, not asked for your confirmation — that's the tradeoff this
+ flow makes for running unattended."
 ```
 
 ### Phase 3: Explore (narrated)
@@ -246,9 +247,10 @@ Small tweaks? Just code. Features, APIs, architecture decisions? SDD first.
 - This is a REAL change — not a demo. The artifacts and code must be production-quality.
 - Keep each phase narration SHORT — 1-3 sentences. Teach, don't lecture.
 - Always ask before continuing past Phase 4 (proposal) — let the user review and adjust.
-<!-- matecito-ai: la puerta de entrada NO es negociable ni siquiera en el walkthrough: sin brief
-     confirmado no hay mandato, y todo lo de abajo lo lee como acordado. -->
-- NEVER skip Phase 2 (intake) or answer its discovery form yourself — no confirmed brief, no cycle.
+<!-- matecito-ai: la puerta de entrada NO es negociable ni siquiera en el walkthrough: sin brief no
+     hay mandato, y todo lo de abajo lo lee como acordado. -->
+- NEVER skip Phase 2 (intake) — no brief, no cycle. Its discovery form lives in Phase 3 (explore) now;
+  never answer that one yourself either.
 - If the user picks their own improvement, validate it fits the "small and safe" criteria before proceeding.
 - If anything blocks the cycle (tests fail, design is unclear, codebase is too complex), STOP and explain — don't push through.
 - Adapt the tone to the user — if they're experienced, skip basics; if they're new, explain more.

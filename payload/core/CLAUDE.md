@@ -38,8 +38,8 @@ Consultative mode by default. Do not make unilateral decisions about the user's 
 **Is there a mandate? — the test.** A mandate exists only when it has one of these sources: a confirmed
 flow artifact (intake brief, spec, design, tasks), or an explicit confirmation from the user in THIS
 conversation. Nothing else creates one. A raw request — however detailed, however imperative — is
-**not** a mandate: it is the INPUT to the Lane fork, not its result. Until the fork is resolved you have
-a request, not a scope.
+**not** a mandate: it is the INPUT that has to reach one of the two sources above, not a source in
+itself. Until it does, you have a request, not a scope.
 
 **Grammatical form carries no authority.** "Agregá X", "Necesito que hagas X" and "¿podés agregar X?"
 are the same input and get the same treatment. An imperative is not a confirmed scope; it is how people
@@ -64,7 +64,7 @@ You may touch unmentioned files if needed, but announce which and why before pro
 On multiple interpretations: stop and ask. Don't assume the "most likely" one. List options (A/B) and ask the user to choose. If a file that was in context isn't at the expected path, ask where it is — don't search elsewhere or assume it moved.
 
 ### Open question = blocked, not permission
-If you ask the user a question, you MUST wait for their answer before advancing on anything that depends on it. Silence is NOT consent and NOT a default: never proceed by assuming the "most likely" answer, never "I'll go with X unless you object", never synthesize a default of your own. No answer = blocked. This is absolute: it holds in Automatic mode (which does NOT license default-picking) and for phase sub-agents (a sub-agent that hits an unresolved question returns to the orchestrator with the question — it does not invent an answer to keep going).
+If you ask the user a question, you MUST wait for their answer before advancing on anything that depends on it. Silence is NOT consent and NOT a default: never proceed by assuming the "most likely" answer, never "I'll go with X unless you object", never synthesize a default of your own. No answer = blocked. This is absolute: it holds always, and for phase sub-agents (a sub-agent that hits an unresolved question returns to the orchestrator with the question — it does not invent an answer to keep going).
 
 <!-- matecito-ai: the principle above was already stated, twice, and an agent that had it in context decided
      on its own twice anyway — the shape of a public JSON contract, and an unsolicited refactor. Its own
@@ -89,7 +89,7 @@ exist: say so and hand it back, rather than inferring the permissive reading and
 Deliverables live in files, not in the chat. Generate code in the chat ONLY if explicitly requested ("show me the code", "paste it here", "what line changed"). These do NOT count: "how would you", "what do you think", "can it" → conceptual answer, no code. After making changes, don't summarize unless asked.
 
 ### Length and tone
-**Default budget: one screen.** Conceptual question: 3-5 lines max. Concrete technical question: the minimum to answer. A bug report, a plan or a finding does NOT license an unbounded answer — it gets the same budget, and the depth below it is delivered **on explicit request** ("more detail", "develop it", "why"), never pre-emptively. Write in plain, direct, human register: name the thing and what it means for the person, not its internal label. No emojis, no motivational phrases. An opening line that carries no information gets dropped — a line that names the reading you took, the file you touched, or the choice you made is content, not an opener. A closing line that offers generic help gets dropped too; it stays only when it states a concrete pending decision the flow itself requires (a gate question, "¿Continuamos?").
+**Default budget: one screen.** Conceptual question: 3-5 lines max. Concrete technical question: the minimum to answer. A bug report, a plan or a finding does NOT license an unbounded answer — it gets the same budget, and the depth below it is delivered **on explicit request** ("more detail", "develop it", "why"), never pre-emptively. Write in plain, direct, human register: name the thing and what it means for the person, not its internal label. No emojis, no motivational phrases. An opening line that carries no information gets dropped — a line that names the reading you took, the file you touched, or the choice you made is content, not an opener. A closing line that offers generic help gets dropped too; it stays only when it states a concrete pending decision the flow itself requires (a gate question).
 
 Length is not a proxy for rigor, and the work of being brief is yours, not the reader's: an answer that dumps everything you weighed and leaves them to filter it is an answer you did not finish.
 
@@ -140,7 +140,7 @@ The active domains are listed in the **"Active domains — load on demand"** ind
 1. **Before creating or modifying the first file of a domain's material** — code, tests, config, design assets. This trigger fires in EVERY lane, `direct` included, and is not conditional on having run intake, classified anything, or entered the flow at all. If you are about to edit, you load first.
 2. **When intake classifies the request**, for work that does go through the flow.
 
-With change-level isolation active (see the Lane fork above), this same first-file trigger is also when
+With change-level isolation active (see "Lanes" above), this same first-file trigger is also when
 the change workspace opens for direct/ad-hoc work — before this first file, not after: see the
 orchestrator's "Change Workspace (opt-in)" section below for what opens and how.
 
@@ -148,7 +148,7 @@ orchestrator's "Change Workspace (opt-in)" section below for what opens and how.
 
 ### Ecosystem (matecito-ai)
 This project runs inside the matecito-ai ecosystem. Apply these defaults (the active domain fragment binds each generic noun to a concrete one):
-- **Substantial changes go through the structured flow** (`intake → … → archive`, the active domain defines its phases), not ad-hoc edits. Trivial fixes can go direct (intake triages this).
+- **Every request goes through the structured flow** (`intake → … → archive`, the active domain defines its phases). `direct` runs instead only when the user explicitly asks for it (see "Lanes" above) — never inferred from a request being small or phrased as an imperative.
 - **Architectural decisions are decision records** (the domain names the record type and where they live). Respect Accepted decision records; surface conflicts instead of overriding them.
 - **Decision-record activation gate (presence-based) — single source of truth.** Decision records are **active only when the domain's decision-record store exists and has content** (an `INDEX.md` or at least one record). Absent or empty → **inactive**: every flow phase skips them **silently** — no early guard, no alignment, no mention at all. Phases check this gate; they do not re-decide it.
 - **Session memory lives in Engram** (discoveries, fixes, context) — persistent across sessions. Architectural decisions go to decision records, not Engram; don't duplicate.
@@ -158,44 +158,32 @@ This project runs inside the matecito-ai ecosystem. Apply these defaults (the ac
 
 > Diagrams, exploration indexes and other concrete tools are **not** kernel concerns — each domain declares its own in its fragment (e.g. drawio diagrams live in the development fragment).
 
-### Lane fork
-When you infer a request is **substantial** (intake-worthy), do NOT silently start the full flow. Surface the choice **once, up front**, and let the user decide — you recommend, the user picks:
-- Present the choice as **four lanes**, not a binary with/without question: `direct | reduced | full | custom`. Recommend ONE and let the user confirm or adjust at the intake gate. Never apply a lane unilaterally.
-- **Default bias — minimum viable lane.** Recommend the *lightest* lane that still covers the change, and escalate only for a **concrete, named reason** (an architectural decision, multiple domains touched, a large surface, or an unclear area). Absent such a reason, `reduced` is the default for substantial work — NOT `full`. `full` is opt-in, justified by a specific trigger; it is *not* the synonym for "the flow".
-- Decision order: trivial/obvious → `direct`; substantial with no escalation trigger → `reduced`; one isolated trigger → `custom` (base + just the add-on that trigger needs); large surface or several triggers → `full`.
-- Offer the fork **once, at the start of the request** — not repeated per phase.
-- **Trivial/obvious changes skip the question** and go direct.
+### Lanes
+Two lanes, fixed — no fork, no recommendation, no confirmation:
+- **`full`** — every request, by default and always. The active domain's `Phase pipeline` row (its
+  vocabulary table) is the single source for what runs, in order; every phase in that row always runs,
+  and none is optional. Nothing about a request's size, phrasing, or grammatical form changes this.
+- **`direct`** — runs only when the user explicitly asks for direct/ad-hoc work. No flow phase runs.
+  Trivial or imperative phrasing is not, by itself, an explicit ask.
 
-The flow path is one mechanism: an **immutable base** plus **opt-in add-ons**. The active domain supplies the concrete phase names for the base and add-ons.
-- **Base (always runs):** the domain's mandatory phases (at minimum `intake → … → verify → archive`). This is the floor; the first specification phase starts from the intake brief when no proposal exists.
-- **Add-ons (toggle on as needed):** the domain's optional phases (e.g. explore, propose, design, tasks). The user picks *which*, not the order — the orchestrator inserts each at its canonical position (see the add-on insertion map in the orchestrator zone).
-
-Presets are shorthands over this same mechanism. Read them top-down and stop at the first that fits — this encodes the minimum-viable-lane bias:
-- **direct** (no flow) → `direct-implementation`. Outside the base+add-ons scheme. Trivial change, no real risk.
-- **reduced** → base, 0 add-ons. **Default for substantial work**: any small/medium change with no escalation trigger. This is the expected recommendation for most intake-worthy requests, not an edge case.
-- **custom** → base + only the add-ons the change's triggers require (e.g. one architectural decision → reduced + the design add-on; unclear area → reduced + the explore add-on). Use this for the common middle ground instead of jumping to `full`.
-- **full** → base + all add-ons. Reserved for `large` changes, or work touching architecture across multiple domains. Requires a named trigger; do not recommend by default.
-
-The lane recommendation is produced by the intake phase; the orchestrator's INTAKE GATE surfaces it for confirm/adjust/cancel.
-
-<!-- matecito-ai: change-level isolation rides with the lane fork itself, not a separate question — see
-     `structure/change-isolation-activation-flag.md`. In-flow, the flag is also confirmed at the INTAKE
-     GATE per "Decision flags travel with the lane" in the orchestrator zone; this paragraph is what
-     covers direct/ad-hoc, which never reaches that gate. -->
-**Change-level workspace isolation rides with the lane fork, never as a separate question.** When you
-offer the lane choice, offer this one alongside it: whether this change's work happens in its own
-isolated workspace instead of the current working tree — off by default, one recommendation, the user
-picks. In the flow, that choice is confirmed together with the lane at the INTAKE GATE (see "Decision
-flags travel with the lane" in the orchestrator zone below) and no later phase re-asks it. For
-direct/ad-hoc work there is no later gate to confirm it at, so the fork itself is the only confirmation
-— a lane resolved without this fork ever being surfaced (a trivial change going straight to `direct`)
-means isolation stays inactive, and nothing downstream assumes otherwise. See the orchestrator's
-"Change Workspace (opt-in)" section below for what isolation actually does once it is active.
+<!-- matecito-ai: change-level isolation is decided the same way `direct` is — only on an explicit
+     request, never inferred and never a default. See `structure/change-isolation-activation-flag.md`
+     (development's binding of this flag). -->
+**Change-level workspace isolation is decided the same way as `direct`: only on an explicit request,
+never by default.** For in-flow work, `sdd-intake` decides it and reports it with the rest of the
+brief's decision flags; nothing waits on it and no gate confirms it. For direct/ad-hoc work, the
+explicit request itself is the only confirmation — a request that never asked for it means isolation
+stays inactive, and nothing downstream assumes otherwise. See the orchestrator's "Change Workspace
+(opt-in)" section below for what isolation does once it is active.
 
 ### Feature discovery (general behavior, outside the flow)
 Max 3 questions per message, grouped, one round. Only what can't be inferred. If the request already has enough detail, start directly. Large feature → brief plan before coding.
 
-> Note: when the flow is active, structured discovery is handled by the **intake** phase (2-4 questions). This custom rule applies to general behavior *outside* the flow. The two are intentionally separate: intake (2-4) for the flow, this rule (max 3) for quick ad-hoc work.
+> Note: when the flow is active, structured discovery is handled by the domain's own discovery-owning
+> phase, not by intake — see the Discovery invariant below (e.g. `development` runs it through
+> `sdd-explore`'s two-pass Discovery Gate cycle). This custom rule applies to general behavior *outside*
+> the flow. The two are intentionally separate: the flow's own discovery cycle for the flow, this rule
+> (max 3) for quick ad-hoc work.
 
 ### Phase agent launch — model & flag forwarding (single source of truth)
 This rule is the **canonical** model/flag resolution for every phase sub-agent. It lives here (a `matecito-ai` zone that survives gentle-ai updates), not in the orchestrator zone. Domain-specific guard forwarding (e.g. test runners) lives in the domain fragment and defers to this block for model/flag resolution.
@@ -359,14 +347,14 @@ Mandatory delegation triggers: 4+ files to understand → delegate exploration; 
 
 ## Structured Flow
 
-The flow is the structured planning layer for substantial changes. The active domain fragment defines the concrete phase pipeline; this kernel defines how the orchestrator drives it.
+The flow is the structured planning layer this ecosystem runs by default (see "Lanes" above). The active domain fragment defines the concrete phase pipeline; this kernel defines how the orchestrator drives it.
 
-`intake` is the entry phase: it structures the raw request, classifies/triages, and runs an early decision-record guard **only when decision records are active per the activation gate** (when the store is absent or empty it skips the guard silently). It produces the Intake Brief.
+`intake` is the entry phase: it receives the raw request and runs an early decision-record guard **only when decision records are active per the activation gate** (when the store is absent or empty it skips the guard silently). It produces the Intake Brief.
 
 <!-- matecito-ai: el kernel afirma el invariante, NO el mecanismo. Antes decía "asks the discovery
      form", que es un cómo — y ese cómo, aplicado a una fase headless, se traducía en que el agente
      se contestara su propio formulario. El slot y el invariante son del kernel; el mecanismo, del dominio. -->
-**Discovery invariant (binding on every domain).** The discovery form is resolved **with the user** before the Intake Brief exists. A headless phase cannot answer its own form: invented answers become a mandate nobody agreed to, because everything downstream reads the brief as *confirmed*. **HOW** it gets resolved is the domain fragment's call — e.g. development runs a two-pass `needs-input` cycle through its Discovery Gate. **THAT** it is resolved with the user is not negotiable, and no execution mode waives it.
+**Discovery invariant (binding on every domain).** The discovery form is resolved **with the user** before the phase that fixes the change's scope is dispatched. A headless phase cannot answer its own form: invented answers become a mandate nobody agreed to, because everything downstream reads the answers as *confirmed*. **HOW** it gets resolved, and which phase owns it, is the domain fragment's call — e.g. development runs a two-pass `needs-input` cycle through its Discovery Gate. **THAT** it is resolved with the user is not negotiable, and no execution mode waives it.
 
 ### Artifact Store Policy
 
@@ -399,70 +387,22 @@ This trigger has **two distinct confirmation moments**, do not conflate them: (1
 
 **Executor (fresh context, never writes) — dispatched only if the offer-to-scan is accepted:** dispatch the domain's spec-mining executor with `scope = repo`. It scans the as-built code (structural index ▸ grep, plus tests as a confidence oracle) and returns `candidates[]`. It is mode-agnostic — being handed a repo scope IS the instruction; it does NOT read the flag and does NOT materialize anything. See the executor/SKILL for the scan detail.
 
-**Gate (main thread) — the second confirmation (materialization):** the orchestrator walks `candidates[]` through the shared presentation in `~/.claude/references/gate-presentation.md`, ordered by confidence and indexed by spec type — one index, item by item, "confirm the rest" as the only bulk shortcut, each candidate anchored to the source it was mined from. **NOTHING is materialized without explicit confirmation — not even in Automatic mode** (same pattern as the INTAKE GATE and the decision mine gate).
+**Gate (main thread) — the second confirmation (materialization):** the orchestrator walks `candidates[]` through the shared presentation in `~/.claude/references/gate-presentation.md`, ordered by confidence and indexed by spec type — one index, item by item, "confirm the rest" as the only bulk shortcut, each candidate anchored to the source it was mined from. **This gate always fires — running unattended is never licence to skip it** (same pattern as the decision mine gate).
 
 **Materialize (main thread, once):** confirmed candidates are written as capability-specs with `Status: Inferred` under `.matecito-ai/development-specs/<type>/<capability>.md`, and the store INDEX is updated **once at the end**. Specs live ONLY as `.md` files — **never recorded in Engram**. An `Inferred` spec is a non-ratified draft: `sdd-verify` ignores it (not a contract) until a human promotes it to `Accepted`.
 
 **Invariant:** the executor NEVER writes specs directly; the gate + materialize step require explicit user confirmation in the main thread. The trigger only offers — it never blocks.
 
-### Execution Mode
+### Execution
 
-On the first flow request (or natural-language "do a flow for X") in a session, ASK execution mode:
+Phases run back-to-back — no mode to ask, no mode to cache, no between-phase checkpoint. Every gate,
+guard and hard-stop still fires and still waits; running unattended skips none of them.
 
-<!-- matecito-ai: "show final result only" contradecía el párrafo de abajo ("only skips the between-phase checkpoint") y se leía como licencia para no surfacear nada hasta el final -->
-<!-- matecito-ai: la restricción "auto no empieza antes del intake" ya estaba en el INTAKE GATE y en la
-     Discovery Gate del dominio, pero NO acá — que es el único punto donde el usuario ve la opción y la
-     elige. Elegía `auto` esperando que corriera desde la primera fase, y las preguntas de discovery se
-     leían como que el modo no se estaba respetando. La restricción va donde se ofrece, no sólo donde se
-     aplica. -->
-- **Automatic** (`auto`): **from the INTAKE GATE onward**, phases run back-to-back, skipping the between-phase checkpoint. It does NOT start at the first phase, and it does NOT mean "show the final result only": gates, guards and hard-stops still surface and still wait — see the paragraph below.
-- **Interactive** (`interactive`, DEFAULT): after each phase, show summary and ask "¿Continuamos?" before the next.
-
-Cache the choice for the session.
-
-**Automatic governs the flow only once the INTAKE GATE has resolved.** Everything up to that point — the domain's discovery cycle and the confirmation of the brief — runs **interactively in every mode**, because until the user confirms the brief there is no agreed scope for an unattended run to execute against. Say this when you offer the choice: a mode presented as running the whole flow unattended, that then stops to ask the discovery questions, reads as the mode being ignored.
-
-In Interactive mode, between phases: show what the phase produced, list what's next, ask "¿Continuamos?" (YES/NO/feedback), incorporate feedback before continuing.
-
-**Automatic never licenses defaults or deviations.** It only skips the between-phase "¿Continuamos?" checkpoint — it does NOT skip the **Deviation hard-stop** or the **Open question = blocked, not permission** rules (see the `matecito-ai:behavior` zone). In Automatic, a real deviation (anything outside the confirmed mandate) or an unanswered question still STOPS the run and surfaces to the user, exactly as in Interactive.
-
-### INTAKE GATE (MANDATORY — matecito-ai)
-
-<!-- matecito-ai: the scope gate ALWAYS applies, even in Automatic mode -->
-After intake returns the Intake Brief, the orchestrator ALWAYS shows it to the user and waits for **confirm / adjust / cancel** before launching the next phase — **even in Automatic mode**. Automatic mode does NOT skip this gate; the scope is always confirmed first.
-
-- **confirm** → proceed per the brief's `next`.
-- **adjust** → update the brief with the user's corrections, re-show, wait again.
-- **cancel** → discard the change.
-
-<!-- matecito-ai: the lane is part of what the user confirms here; the rule lives in the matecito-ai:behavior zone -->
-The brief's recommended **lane** (`direct | reduced | full | custom`) is part of what the user confirms/adjusts at this gate. See the **Lane fork** rule in the `matecito-ai:behavior` zone — that zone owns the with/without-flow fork and the lane definitions; this gate only surfaces them.
-
-<!-- matecito-ai: the intake brief also carries decision FLAGS that intake decided on the user's behalf,
-     and three separate documents said "the user confirms them at the INTAKE GATE" — the intake agent,
-     its skill, and the domain fragment's rule for the flag. All three are read by the intake EXECUTOR;
-     the one who has to act on the instruction is the ORCHESTRATOR, which reads this gate, and this gate
-     did not know the flags existed. Same defect the ecosystem keeps producing: a section declared in one
-     document and read from another. The gate stays domain-agnostic — it never names a flag; the domain
-     declares which ones it has. -->
-**Decision flags travel with the lane.** A domain's brief may carry **decision flags** — values intake
-DECIDED on the user's behalf and that later phases act on without re-asking. They are confirmed or
-adjusted **here, at this gate, together with the lane**: the fragment's rules state this gate is their
-only confirmation, so a flag that passes unremarked is a decision nobody ratified and no later phase
-will revisit.
-
-Which flags exist is **not** a kernel concern: read the active domain's fragment, which declares them
-and what each one drives. The lane and each decision flag are walked through the shared presentation in
-`~/.claude/references/gate-presentation.md` — one index, item by item, "confirm the rest" as the only
-bulk shortcut — with the anchor slot filled from fields the brief already carries (its Engram key, the
-`### Classification` block, the flag's own label); this gate states no presentation or bulk-action
-wording of its own, and a correction to a flag is walked the same way an adjustment is.
-
+<!-- matecito-ai: the decision-record-driven statuses below used to route through the deleted INTAKE
+     GATE; the brief itself still carries them, so a status check on the return is where they land now. -->
 **The decision-record-driven statuses below exist only when decision records are active** (per the activation gate in `matecito-ai:behavior`). When the store is absent or empty, intake never returns `blocked`/`needs-decision` for decision-record reasons; the orchestrator must NOT mention them — undecided architectural questions are resolved as ordinary design decisions in the explore/design phases.
 
 When decision records are active: if the brief came back `status: blocked` (conflicts with an Accepted decision record) → do NOT proceed; present the conflict and options. If `status: needs-decision` (undecided architectural question) → route to the domain's decision-capture skill before proceeding.
-
-After the intake gate, subsequent phases follow the Execution Mode chosen above.
 
 ### Artifact Store Mode
 
@@ -473,17 +413,17 @@ On first flow command in a session, detect: engram available → `engram`, else 
      holds the literal commands (`structure/change-workspace-prose-homes.md`). -->
 ### Change Workspace (opt-in)
 
-When change-level isolation is active for this change (see the Lane fork above), the orchestrator opens
+When change-level isolation is active for this change (see "Lanes" above), the orchestrator opens
 a dedicated **change workspace** — a separate copy of the project, on its own line of history, where
 every phase's work for this change lands instead of the original working tree. With isolation inactive,
 none of this applies: every path behaves exactly as it did before this section existed.
 
-**When it opens — exactly once per change.** In the flow, right after the scope is confirmed at the
-INTAKE GATE, before the first phase that writes files is dispatched. Outside the flow — direct or
-ad-hoc work, where there is no scope to confirm — right before the first file of the work is created or
-modified (the same trigger the kernel already fires for domain-fragment loading; see "Domain resolution
-& on-demand loading" above). A change whose workspace is already open never gets a second one; a later
-phase, or a resumed session, reuses the one that exists.
+**When it opens — exactly once per change.** In the flow, right after intake returns a brief carrying
+isolation as `active`, before the next phase is dispatched — no gate sits between the two. Outside the
+flow — direct or ad-hoc work, where no brief exists — right before the first file of the work is created
+or modified (the same trigger the kernel already fires for domain-fragment loading; see "Domain
+resolution & on-demand loading" above). A change whose workspace is already open never gets a second
+one; a later phase, or a resumed session, reuses the one that exists.
 
 **While it is open.** A session's own working directory is fixed at start and never relocates — every
 phase keeps running from wherever it was launched and reaches the workspace by its absolute path
@@ -573,19 +513,6 @@ The mechanism — the handoff's exact shape, the launch requirement, the conclus
 works in detail — is documented once, in `~/.claude/references/side-discussion.md`, read by the
 orchestrator when it composes a handoff and by the side session itself as the first thing it reads.
 
-### Lane add-on insertion map
-
-A lane is the immutable base plus the add-ons the user enabled. The user picks *which* add-ons, never the order — insert each enabled add-on at its canonical slot in the domain's pipeline:
-
-```
-intake -> [explore] -> [propose] -> spec -> [design] -> [tasks] -> apply -> verify -> archive
-```
-
-- **base (always):** the domain's mandatory phases.
-- **add-ons:** inserted at their canonical slots (explore before propose; propose before spec; design after spec; tasks after design).
-
-`reduced` = no brackets; `full` = all brackets; `custom` = any subset. When an enabled add-on's ideal upstream is absent, it reads the nearest available upstream.
-
 ### Result Contract
 
 Each phase returns: `status`, `executive_summary`, `artifacts`, `next_recommended`, `risks`, `skill_resolution`.
@@ -628,11 +555,11 @@ After verify returns, for a domain that does NOT declare its own mechanism, eval
 
 **Scale (many gaps):** if the gap list is large, split it into batches and dispatch **several executors in parallel**, each with a slice of the scope; then **merge their `candidates[]` and dedup by `domain/slug`** before the gate.
 
-**Gate (main thread):** walk `candidates[]` through the shared presentation in `~/.claude/references/gate-presentation.md`, ordered by confidence and indexed by domain — one index, item by item, "confirm the rest" as the only bulk shortcut, each candidate anchored to the source it was mined from. Nothing is written without explicit confirm (Automatic mode does NOT skip this gate). Confirmed candidates are materialized as `[Inferred]` decision records per the domain's store — write the files and update the store INDEX **once at the end**; the records live ONLY as files, never recorded in Engram. Then proceed to archive.
+**Gate (main thread):** walk `candidates[]` through the shared presentation in `~/.claude/references/gate-presentation.md`, ordered by confidence and indexed by domain — one index, item by item, "confirm the rest" as the only bulk shortcut, each candidate anchored to the source it was mined from. Nothing is written without explicit confirm — this gate always fires, and running unattended is never licence to skip it. Confirmed candidates are materialized as `[Inferred]` decision records per the domain's store — write the files and update the store INDEX **once at the end**; the records live ONLY as files, never recorded in Engram. Then proceed to archive.
 
 **When NOT triggered** (no implemented gaps): skip silently — proceed directly to archive with no mention of this gate. This gate NEVER blocks archive when the condition is not met. (Store absence does NOT skip the gate: with no records, every decision-touching task is a gap, and mine bootstraps the first records through the confirm gate.)
 
-**Invariant:** the mine executor NEVER writes decision records directly; the gate and materialize step require explicit user confirmation in the main thread. Automatic mode does NOT skip the candidate gate — it is always user-confirmed (same pattern as the INTAKE GATE).
+**Invariant:** the mine executor NEVER writes decision records directly; the gate and materialize step require explicit user confirmation in the main thread. This gate always fires — running unattended is never licence to skip it; it is always user-confirmed.
 
 ### Sub-Agent Launch Pattern
 
@@ -654,7 +581,7 @@ No skill registry, no compact-rule injection: skills are loaded via the native `
 
 #### Phase Read/Write principle
 
-The concrete per-phase read/write table lives in the domain fragment. The generic principle: each phase reads the **nearest available upstream** artifact (in `reduced`/`custom` lanes some upstream phases don't run) and writes its own artifact. Decision records are a hard constraint in every lane **when active** per the activation gate; when inactive, phases skip them silently.
+The concrete per-phase read/write table lives in the domain fragment. The generic principle: every phase reads its full upstream row — no fallback to a nearer one, since every phase always runs — and writes its own artifact. Decision records are a hard constraint whenever they are active per the activation gate; when inactive, phases skip them silently.
 
 #### Model & flag forwarding (MANDATORY)
 
@@ -680,7 +607,7 @@ The domain fragment declares its topic-key namespace. Retrieve via `mem_search` 
 
 ### State and Conventions
 
-Shared conventions ship as skills, and each domain declares which ones (development ships `engram-convention` and the phase protocol). Orchestration rules — including the INTAKE GATE — live in this CLAUDE.md, not in a separate file.
+Shared conventions ship as skills, and each domain declares which ones (development ships `engram-convention` and the phase protocol). Orchestration rules live in this CLAUDE.md, not in a separate file.
 <!-- matecito-ai: this line named `persistence-contract` by hand, and that file was deleted — nothing read
      it, and its content was a parallel copy of the phase protocol's persistence section. The kernel has
      no business enumerating a domain's shared files anyway: it is a list that goes stale every time a

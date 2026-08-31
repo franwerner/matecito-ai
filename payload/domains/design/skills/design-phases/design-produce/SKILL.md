@@ -15,8 +15,8 @@ exported files.
 ## Reads / writes (design Phase Read/Write)
 
 - **Reads:** `design/{change-name}/tasks` + `design/{change-name}/brief` +
-  `design/{change-name}/system` + `design/{change-name}/produce-progress`. The brief is the floor;
-  tasks / system are optional (absent in reduced / custom lanes) + **DDRs touched** (when active).
+  `design/{change-name}/system` (all required — every phase always runs) +
+  `design/{change-name}/produce-progress` + **DDRs touched** (when active).
 - **Writes:** `design/{change-name}/produce-progress`.
 
 ## Capability skills this phase invokes
@@ -27,18 +27,13 @@ This phase ORCHESTRATES that skill; the technique lives in it — do not duplica
 
 ## Steps
 
-1. Read brief artifact (required — the floor): `mem_search("design/{change-name}/brief")` →
-   `mem_get_observation`.
-2. Read tasks artifact if present: `mem_search("design/{change-name}/tasks")` → if found,
-   `mem_get_observation`; if absent (reduced / custom lane), produce directly from the brief.
-3. Read system artifact if present: `mem_search("design/{change-name}/system")` → if found,
-   `mem_get_observation`; if absent, there is no locked system to follow.
+1. Read brief artifact: `mem_search("design/{change-name}/brief")` → `mem_get_observation`.
+2. Read tasks artifact: `mem_search("design/{change-name}/tasks")` → `mem_get_observation`.
+3. Read system artifact: `mem_search("design/{change-name}/system")` → `mem_get_observation`.
 3a. DDR activation gate: if `.matecito-ai/ddr/` is absent or empty, DDRs are inactive — skip this
-    step silently. If active: read the applicable DDRs in `.matecito-ai/ddr/` — when a system exists,
-    use the ones listed in its DDR Alignment; without a system (reduced / custom lane), read
-    `.matecito-ai/ddr/INDEX.md` for the touched surfaces. Treat their concrete rules as hard
-    constraints. If the system flagged a DDR conflict / uncaptured decision as a blocker → return
-    `blocked`.
+    step silently. If active: read the applicable DDRs in `.matecito-ai/ddr/` listed in the system's
+    DDR Alignment. Treat their concrete rules as hard constraints. If the system flagged a DDR
+    conflict / uncaptured decision as a blocker → return `blocked`.
 3b. Read previous produce-progress (if it exists):
     `mem_search("design/{change-name}/produce-progress")` → if found, `mem_get_observation` → read
     and merge (skip completed tasks, merge when saving).

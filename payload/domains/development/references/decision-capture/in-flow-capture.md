@@ -7,17 +7,17 @@
      THIS file for the mechanism's rules — they cite it, they do not restate it. -->
 
 An architecture decision that surfaces while a `development` change is in flight is **proposed** by
-the phase that finds it, **ratified once** at the lane's gate, and **materialized** as an `Accepted`
+the phase that finds it, **ratified once** at `sdd-design`'s gate, and **materialized** as an `Accepted`
 EDR in the same `sdd-apply` step that implements the code the decision governs. **"Ratified" covers two
 paths, not one**: the user confirmed the proposal at the gate, OR the gate never fired for it because
 its `contested` verdict was `none` — a proposal the gate did not contest is ratified exactly as one it
 confirmed. There is no post-verify mining pass for `development` — the kernel's generic mine gate never
 fires here (see the override clause it carries).
 
-## The proposal — one mailbox item, two tokens
+## The proposal — one mailbox item, three tokens
 
-A proposal is a single item under a phase's `### New Decisions` return mailbox (`sdd-spec`'s or
-`sdd-design`'s — see "The ratification gate" below for which one, per lane). It travels in two
+A proposal is a single item under `sdd-design`'s `### New Decisions` return mailbox (see "The
+ratification gate" below). It travels in two
 halves, per the phase-return contract (`items.rationale` + `items.tokens`, rendered by the existing
 engine — `render-return.js`/`validate-return.js`, unmodified in shape beyond the free-form-token fix
 below):
@@ -29,6 +29,7 @@ items:
   tokens:
     - { name: blocking-test, field: blocking_test, values: [none, infra, contract, data-model], passing: [none] }
     - { name: record, field: record }          # free-form `<domain>/<slug>`; no `values`
+    - { name: record-mode, field: record_mode, values: [create, modify] }   # closed set, no `passing:`
 ```
 
 - **`summary`** — the point in dispute and the option taken, in one line.
@@ -40,6 +41,18 @@ items:
   engine accepts any present, non-null value for a token declared without `values` (see "The
   free-form-token fix" below). It is still **required** — an item with the token line missing fails
   `TOKEN-MISSING` at the Return Contract Check, same strict reading as any other omitted token.
+- **`· record-mode: create | modify`** — whether the proposal creates a new record at `record:`, or
+  edits an existing one in place. Closed value set, but declared with **no `passing:` key**: every
+  value in the set is legal (`validate-return.js:240` resolves `passing = t.passing || legal`, so an
+  absent `passing:` defaults to the full `values` list), so this is not a verdict with a failing
+  outcome — only an absent token fails, `TOKEN-MISSING`, same strict reading as `record`. **It is a
+  routing token, read verbatim by `sdd-apply` from the dispatch prompt — not a verdict the orchestrator
+  classifies.** It follows `record:`'s precedent, not
+  `structure/verdict-classified-by-the-orchestrator.md`'s: that record governs tokens the orchestrator
+  classifies to decide whether the flow stops (`blocking-test`, `design-conflict`); `record-mode`
+  decides nothing about the flow — `sdd-apply` reads it to pick which of the two Materialization
+  branches below to run, exactly as it already reads `record:` to pick the file. Stated explicitly so
+  nobody reaches for the wrong precedent and builds an orchestrator classification table for it.
 
 A proposal is **not** a record. It MUST NOT create, modify, or touch anything under `.matecito-ai/edr/`,
 and it MUST NOT be persisted to Engram as a record — it only ever travels inside the phase's own return
@@ -60,19 +73,18 @@ bug. The fix: a token with no `values` is free-form (any present, non-null value
 still applies when the token is absent). A token that DOES declare `values` is byte-for-byte unchanged.
 Covered by `payload/domains/development/dev-tests/validate-return-tokens.test.js`.
 
-## The ratification gate — exactly once, per lane
+## The ratification gate — exactly once
 
-| Lane | Gate |
-| --- | --- |
-| `full`, and `custom` with the `design` add-on | `sdd-design`'s `### New Decisions` (unchanged from before this change) |
-| `reduced`, and `custom` without the `design` add-on | `sdd-spec`'s `### New Decisions` (new, conditional — see below) |
-| `direct` | none — the flow does not run, so there is no proposal and no record |
+`sdd-design` always runs, and its `### New Decisions` mailbox is the single ratification gate for
+every architecture decision the change surfaces. For `direct` work, no flow phase runs at all, so
+there is no proposal and no record — the mechanism has nothing to gate.
 
 No later phase re-asks a proposal the gate already ratified, and `sdd-apply` never opens a second
 confirmation for it — the ratified text reaches it verbatim through the orchestrator's dispatch prompt
 (the same channel already used for `delivery_strategy`, strict-TDD, and the apply-progress continuity
 note). An adjustment the user makes AT the gate wins for free: what is in the dispatch prompt IS what
-was ratified. Automatic mode does not skip this gate — same as every other gating mailbox.
+was ratified. This gate always fires — running unattended is never licence to skip it, same as every
+other gating mailbox.
 
 A proposal declaring `contested: none` follows the **other** ratified path: the gate never opens for
 it — no user turn, no walkthrough — and it is still forwarded to `sdd-apply` marked ratified, verbatim
@@ -91,20 +103,15 @@ return section, which the orchestrator classifies — shape and classification b
 `~/.claude/references/phase-returns/sdd-apply/sdd-apply.md` (`### Rejected Proposals Checked`) and the
 same domain-fragment guard, cited here rather than restated too.
 
-### `sdd-spec`'s `### New Decisions` — conditional, same title as `sdd-design`'s
-
-Emitted **only** when the lane running has no `design` add-on active — read from the intake brief's
-`### Triage` line (`Lane: ... — add-ons: [...]`, a line `sdd-spec` already reads for other purposes),
-never re-derived any other way. When `design` IS in the lane's add-ons, `sdd-spec` emits nothing here:
-`sdd-design`'s mailbox is the one and only gate, so a second one would ask the user to ratify the same
-decision twice. The title is byte-identical to `sdd-design`'s plain variant (`### New Decisions`) —
-same guard rule, same items shape, same tokens — because it is the same mailbox concept surfacing at a
-different point in the pipeline, not a new kind of thing.
-
 ## Materialization — `sdd-apply` Step 4b, same step as the implementing task
 
 For each ratified proposal forwarded in the dispatch prompt, `sdd-apply` materializes it in the **same
 work-unit step** that implements the code the decision governs — never a separate pass before or after.
+The steps branch on the proposal's `record-mode` token.
+
+### `record-mode: create`
+
+The four steps as before this change — nothing here is new:
 
 1. Build the EDR's `--data` JSON per `node ~/.claude/scripts/render-artifact.js --type edr --schema`
    (`status: Accepted`, `domain`/`slug` from the proposal's `record:` token, `title` from the
@@ -119,17 +126,51 @@ work-unit step** that implements the code the decision governs — never a separ
    to one without checking whether the rule has a real enforcement mechanism in this change.
 2. `node ~/.claude/scripts/render-artifact.js --type edr --data <file>` → the record's body. **Write
    it to `.matecito-ai/edr/<domain>/<slug>.md` yourself** — the script never writes to disk in either
-   invocation (see "render-artifact.js never writes" below); this is `sdd-apply`'s own file write.
+   invocation (see "render-artifact.js never writes" below); this is `sdd-apply`'s own file write. A
+   `create` naming a file that already exists is a failure, not an overwrite — see "Declaration versus
+   reality" below.
 3. `node ~/.claude/scripts/render-artifact.js --type edr --data <file> --index-entries` → the domain
    and root INDEX rows, as JSON, in a **second, separate call** (same `--data`, no writes either).
    Isolated Run Mode carries these rows in its Task Run Report under `### Decisions Materialized`
    instead of applying them — see "The INDEX writer" below.
-4. Record the outcome in `apply-progress`'s (or the Task Run Report's) `### Decisions Materialized`
-   table — `record | task | result` — `result` is `materialized` on success, or `failed: <reason>` on
-   any failure (invalid data, the renderer refusing to run, an impossible write). **A failed
-   materialization does NOT mark the implementing task complete**, does not leave a partial or
-   malformed record on disk, and is named explicitly in the return — the code already written is not
-   reverted; the gap is what `sdd-verify`'s `decision-gaps` group finds next.
+4. Record the outcome as `materialized` — see "Recording the outcome" below.
+
+### `record-mode: modify`
+
+Edits the named record **in place** instead of rendering a new one. Steps 1-2 of the `create` path do
+NOT run at all: `render-artifact.js` is a creator, and re-rendering means retyping every section this
+change does not touch, which is the cost the ratified alternative (full re-render from `--data`, option
+D) was rejected for.
+
+1. Open `.matecito-ai/edr/<domain>/<slug>.md`. A `modify` naming a file that does not exist is a
+   failure, not a first materialization — see "Declaration versus reality" below. **`modify` cannot
+   bootstrap an absent store** — see "Bootstrapping" below.
+2. Edit **only** the clauses the ratified proposal names, leaving every other byte identical. Rewrite
+   the record's INDEX row (its "Consultá cuando…" / trigger cell) **only when the proposal states the
+   record's trigger changed**; otherwise leave that row alone. No `render-artifact.js --index-entries`
+   call runs, and no new INDEX row is added — the record already has its one row
+   (`structure/root-index-cardinality-per-domain-type.md`); see "The INDEX writer" below.
+3. `node ~/.claude/scripts/validate-artifact.js --type edr --file <path>` — the structural check the
+   `create` path gets for free from the renderer, run explicitly here since nothing rendered this time.
+   Any finding is a failure.
+4. Record the outcome as `modified` — see "Recording the outcome" below.
+
+### Declaration versus reality, checked both directions
+
+`modify` naming a file that does not exist, or `create` naming one that already exists, is a
+**failure** — never a silent switch to the other path, and never an overwrite. `sdd-apply` never probes
+the filesystem to *decide* which mode to use; it probes only to *contradict* a declaration that does not
+match what is on disk.
+
+### Recording the outcome
+
+In `apply-progress`'s (or the Task Run Report's) `### Decisions Materialized` table — `record | task |
+result` — `result` is `materialized` (created), `modified` (edited in place), or `failed: <reason>` on
+any failure (invalid data, the renderer or validator refusing to run, an impossible write, or a
+declaration-versus-reality mismatch). **A failed materialization does NOT mark the implementing task
+complete**, does not leave a partial or malformed record on disk, and is named explicitly in the
+return — the code already written is not reverted; the gap is what `sdd-verify`'s `decision-gaps` group
+finds next.
 
 ### `render-artifact.js` never writes — confirmed by execution (closes the design's Open Question 1)
 
@@ -148,7 +189,9 @@ Applying the `--index-entries` rows to `.matecito-ai/edr/<domain>/INDEX.md` and
 `.matecito-ai/edr/INDEX.md` is governed by `structure/root-index-cardinality-per-domain-type.md`
 (**one entry per record, no duplicates** — not by `contracts/single-writer-per-batch.md`, whose scope
 is the `apply-progress` artifact and task state, and stretching it to the INDEX file would be
-re-deciding it by analogy, not applying it):
+re-deciding it by analogy, not applying it). This split governs `create` rows only: a `modify` row
+carries no `--index-entries` rows forward at all — the existing INDEX row is edited in place, per
+"Materialization" above, so there is nothing for an isolated run to hand the consolidation run for it.
 
 - **Isolated Run Mode**: writes only the record's `.md` body, inside its one commit, beside the code it
   governs (`contracts/one-commit-per-isolated-run.md`). It does NOT touch either INDEX file. It carries
@@ -174,6 +217,10 @@ record, and both INDEX files (scaffolded from the templates) as a side effect of
 materialization step above. Every reader downstream of that point sees a store that now exists; the
 gate they check keeps working exactly as documented, it simply now finds content.
 
+**`modify` cannot bootstrap.** A `modify` proposal against a domain/slug that does not exist is the
+declaration-versus-reality failure above, not a first materialization — the first record for any given
+`domain`/`slug` is always created, never edited into existence.
+
 ## `sdd-verify`'s `decision-gaps` group — always on, two checks, nothing else
 
 Runs on **every** `development` change — no flag, and it does not depend on `.matecito-ai/edr/`
@@ -184,9 +231,9 @@ not there; it reads what apply recorded).
 
 For each row of that table:
 
-- **`result` is not `materialized`** (a failed materialization) → CRITICAL, structure column names the
-  failure reason, backing column is `—`. This is the "propuesta ratificada sin registro materializado"
-  scenario.
+- **`result` is not `materialized` and not `modified`** (a failed materialization) → CRITICAL, structure
+  column names the failure reason, backing column is `—`. This is the "propuesta ratificada sin registro
+  materializado" scenario.
 - **`result` is `materialized`** → run exactly two checks, both structural/mechanical, never semantic:
   1. **Structure** — `node ~/.claude/scripts/validate-artifact.js --type edr --file
      .matecito-ai/edr/<domain>/<slug>.md`. Exit 0 → `OK`; any finding → CRITICAL, naming the file and
@@ -197,6 +244,22 @@ For each row of that table:
      task touched is under `.matecito-ai/edr/` (the record and the INDEX and nothing else), backing is
      CRITICAL — the decision has no implementation behind it in this change. No reading of the record's
      prose, no hunting for matching code elsewhere: the check is exactly this set difference.
+- **`result` is `modified`** → the **structure** check runs unchanged (same command, same OK/CRITICAL
+  reading, against the edited file). The **backing** check does **not** run: it is declared **not
+  applicable**, and the cell reads `n/a — record edited in place, governance-only` — the row is neither
+  `OK` nor `CRITICAL` on that column. Reason: the backing check's premise is "a decision with no
+  implementation behind it **in this change**"; for an edit-in-place, the implementation is the payload
+  edits landing in other tasks of the same change, and the check — a set difference over one task's own
+  changed-file set — has no way to see them. Declaring it not-applicable is honest; passing it would be
+  a false `OK`. Alternatives rejected: leaving the group unaware of `modified` skips the row silently,
+  which is worse than either verdict (an unrecognized `result` value is an "absence is not a clean
+  verdict" failure); running backing as written fails every in-place edit by construction (a
+  governance-only task touches nothing outside `.matecito-ai/edr/`); forcing an unrelated file into the
+  task to satisfy the set difference is gaming the check, not answering it. **Accepted cost, stated
+  plainly and NOT mitigated**: a `modified` row whose edit really is unbacked — a governance change with
+  nothing behind it anywhere in the change — now passes unnoticed. No check catches it, and none is
+  proposed. The section's columns (`record | task | structure | backing`) are unchanged by this — the
+  cells are free text, so no return-contract edit is needed.
 
 Coherence BETWEEN records (whether two EDRs contradict each other) is explicitly out of scope for this
 group — that is `development-decisions-validate`'s standing job, unrelated to what this change

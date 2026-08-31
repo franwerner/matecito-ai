@@ -30,14 +30,10 @@ From the orchestrator:
 
 > Follow **Section B** (retrieval) and **Section C** (persistence) from `~/.claude/skills/_shared/sdd-phase-common.md`.
 
-<!-- matecito-ai: declaraba `proposal` como required, pero esta fase corre en lanes donde `propose` no
-     existe — su propio agente hace fallback a spec y después al intake brief. Tercer archivo con el
-     mismo defecto (los otros dos: `sdd-tasks`, `sdd-apply`); barrido: no quedan más. -->
-- **engram**: Read the nearest available upstream — `sdd/{change-name}/proposal` when it exists, else `sdd/{change-name}/spec`, else `sdd/{change-name}/intake`. In `reduced` / `custom` lanes `propose` may not have run, and its absence is normal, not an error. `sdd/{change-name}/spec` may also be absent when this phase runs in parallel with `sdd-spec`. Save as `sdd/{change-name}/design`.
-<!-- matecito-ai: the brief is the LAST option of the chain above, and in the lanes where this phase runs
-     there is always a proposal or a spec: read only as a fallback, the `diagram` flag never arrived.
-     It is read as well, always, as its own retrieval (same pattern as `ui-test` in `sdd-verify`). -->
-- **engram, additionally and unconditionally**: read `sdd/{change-name}/intake` on top of whatever the chain above resolved — it carries the `diagram` flag this phase acts on (Step 3-bis). It is a separate retrieval, never a fallback: `intake` is a base phase, so the brief always exists.
+- **engram**: Read `sdd/{change-name}/proposal` (required — every phase always runs). Save as `sdd/{change-name}/design`.
+<!-- matecito-ai: the proposal does not carry the `diagram` flag — it is read as its own retrieval
+     (same pattern as `ui-test` in `sdd-verify`), never derived from the proposal. -->
+- **engram, additionally and unconditionally**: read `sdd/{change-name}/intake` on top of the proposal — it carries the `diagram` flag this phase acts on (Step 3-bis). It is a separate retrieval, never a fallback: `intake` is a base phase, so the brief always exists.
 - **none**: Return result only. Never create or modify project files.
 
 ## What to Do
@@ -202,6 +198,7 @@ If there are genuinely none, state "None."}
 - {the choice}: {what you chose} — {alternatives weighed, and why this one}
   · blocking-test: none
   · record: {domain}/{slug}
+  · record-mode: {create | modify}
 
 ## EDR Conflicts (BLOCKER if any)
 
@@ -268,7 +265,7 @@ If none, state "None."}
 
 Read the flag at its literal location in the intake brief: the line `- Diagram: {needed|not-needed}`
 under `### Classification`. Do not look for it anywhere else and do not re-derive it — `sdd-intake`
-decided it and the user confirmed it at the INTAKE GATE.
+decided it and reported it; nothing confirms it.
 
 - `needed` → add ONE clause to your `executive_summary` recommending a live diagram of the chosen
   architecture. That is the whole action.
@@ -388,6 +385,7 @@ Three things that file makes explicit and that this phase gets wrong most often:
   `none` means "I put the alternatives side by side and they differ in NONE of the three axes; that is why this item is here and not in `blocked`" — the only value consistent with the item's location, and therefore the normal one. Naming an axis instead contradicts the item's own destination: an axis that differs makes the decision `blocked`. The orchestrator reads the token mechanically and never reopens your reasoning: `none` → present it with the rest of the gating batch, subject to its own `contested` token; an axis named → it stops, because the item is in the wrong mailbox; absent or hedged → fires under the strict reading, the same default an undeclared deviation gets in `sdd-apply`. Do not hedge it, do not omit it, and do not write `none` for a decision you did not actually put side by side — one line per decision, and the token IS the audit trail the paragraph above asks for. Shape and the reader's table: `~/.claude/references/phase-returns/sdd-design/sdd-design.md`, section "The blocking-test token".
 <!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism: in-flow-capture.md. -->
 - **Every item under `## New Decisions` / `### New Decisions` ALSO carries `· record: <domain>/<slug>`** — free-form (no closed value set), still required (an omission fails `TOKEN-MISSING`). It is the EDR identity the proposal would occupy if ratified; `sdd-apply` reads it verbatim from the dispatch prompt to materialize the record in the same step it implements the governing code. Full mechanism: `~/.claude/references/decision-capture/in-flow-capture.md`.
+- **Every item ALSO carries `· record-mode: create | modify`, directly beneath `· record:`** — closed value set, but no `passing:` key: every declared value is legal, only an absent token fails `TOKEN-MISSING`. It declares whether ratifying this item creates a new record, or edits an existing one **in place**. It is a **routing token**, read verbatim by `sdd-apply` — not a verdict you or the orchestrator classify (that precedent belongs to `· blocking-test:` and `· contested:`, not this token). Full mechanism: `~/.claude/references/decision-capture/in-flow-capture.md`.
 <!-- matecito-ai: narrow-gating-triggers. The firing decision moved from the section's identity to a
      per-item token — every item now declares one, in both mailboxes. -->
 - **Every item under `### New Decisions` and `### Open Questions` ALSO carries `· contested: none | contradicts-statement | contradicts-record | unverified-assumption`**, declared last — `sdd-design.yaml` is the authority on the exact values (run `--schema` on demand). An absent or hedged verdict is read as firing, same strict reading as the other tokens.

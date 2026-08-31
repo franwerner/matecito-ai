@@ -18,7 +18,7 @@ Registrar, en cada capability-spec, qué componentes (superficies) implementan e
 - Si el eje está apagado (sin `repo.components`), la línea **no existe en ningún spec** — es presence-based.
 - Un spec sin la línea (cuando el eje está activo) se reporta como WARNING durante la validación; un spec con un componente no declarado también se reporta como WARNING.
 - La validación **nunca modifica** los specs; solo reporta — el consumidor lee la línea al minar o validar, nunca la escribe unilateralmente.
-- La línea es la proyección **por-capability** del set: su valor describe esa capability y sólo se escribe al autorizar o actualizar **ese** spec. MUST NOT derivarse, copiarse ni ensancharse a partir del valor de otra proyección —en particular, del valor por-cambio ratificado en la INTAKE GATE—, ni al aplicar ni al archivar un cambio.
+- La línea es la proyección **por-capability** del set: su valor describe esa capability y sólo se escribe al autorizar o actualizar **ese** spec. MUST NOT derivarse, copiarse ni ensancharse a partir del valor de otra proyección —en particular, del valor por-cambio que `sdd-intake` decide y reporta en el brief—, ni al aplicar ni al archivar un cambio.
 - La **forma** de la línea no cambia con esta regla: misma línea multivaluada, mismos valores exactos del set, mismos WARNINGs, mismo gate.
 
 ## Escenarios

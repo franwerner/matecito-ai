@@ -14,18 +14,14 @@ built. It does NOT lock the visual system or produce assets.
 
 ## Reads / writes (design Phase Read/Write)
 
-- **Reads:** `design/{change-name}/proposal` (required); falls back to the nearest available upstream
-  — the intake brief — in reduced / custom lanes where no proposal ran.
+- **Reads:** `design/{change-name}/proposal` (required — every phase always runs).
 - **Writes:** `design/{change-name}/brief`.
 
 ## Steps
 
-1. Read the upstream artifact — directions / proposal if present, else fall back to the intake brief:
-   `mem_search("design/{change-name}/proposal")`; if it has no result,
-   `mem_search("design/{change-name}/intake")` → `mem_get_observation`. The nearest available
-   upstream is the source of requirements.
-2. Extract requirements from that upstream artifact (the chosen direction, or the intake brief in
-   reduced / custom lanes).
+1. Read the upstream artifact: `mem_search("design/{change-name}/proposal")` → `mem_get_observation`.
+   The proposal is the source of requirements.
+2. Extract requirements from the chosen direction.
 3. Write the brief — what MUST be true of the finished design (surfaces, tone, constraints,
    deliverables).
 4. Add acceptance criteria (how we will know the design is "done" and on-brief).

@@ -48,11 +48,11 @@ Execute all steps from the skill directly in this context window:
   plus `### Integration Log` in the artifact.
 - **No `mode` field** — serial, run every step below exactly as always.
 
-1. Read spec artifact (required — the floor): `mem_search("sdd/{change-name}/spec")` → `mem_get_observation`
-2. Read tasks artifact if present: `mem_search("sdd/{change-name}/tasks")` → if found, `mem_get_observation`; if absent (reduced/custom lane), implement directly from the spec
-3. Read design artifact if present: `mem_search("sdd/{change-name}/design")` → if found, `mem_get_observation`; if absent, there is no design to follow
-<!-- matecito-ai: EDR activation gate (presence-based); when active EDRs are a hard constraint in every lane -->
-3a. EDR activation gate: if `.matecito-ai/edr/` is absent or empty, EDRs are inactive — skip this step silently. If active: read the applicable EDRs in `.matecito-ai/edr/` — when a design exists, use the ones listed in its EDR Alignment; without a design (reduced/custom lane), read `.matecito-ai/edr/INDEX.md` for the touched domains. Treat their concrete rules as hard constraints. If a design flagged an EDR conflict/uncaptured decision as blocker → return `blocked`. Load the `resolve-library-docs` skill before writing library versions, config, or APIs (it owns the version-resolution and library-docs rules, backed by the `context7` MCP), and ask the codegraph MCP for the impact/blast-radius of a symbol before changing it.
+1. Read spec artifact (required — every phase always runs): `mem_search("sdd/{change-name}/spec")` → `mem_get_observation`
+2. Read tasks artifact (required — every phase always runs): `mem_search("sdd/{change-name}/tasks")` → `mem_get_observation`
+3. Read design artifact (required — every phase always runs): `mem_search("sdd/{change-name}/design")` → `mem_get_observation`
+<!-- matecito-ai: EDR activation gate (presence-based); when active EDRs are a hard constraint -->
+3a. EDR activation gate: if `.matecito-ai/edr/` is absent or empty, EDRs are inactive — skip this step silently. If active: read the applicable EDRs in `.matecito-ai/edr/`, per the design's EDR Alignment. Treat their concrete rules as hard constraints. If a design flagged an EDR conflict/uncaptured decision as blocker → return `blocked`. Load the `resolve-library-docs` skill before writing library versions, config, or APIs (it owns the version-resolution and library-docs rules, backed by the `context7` MCP), and ask the codegraph MCP for the impact/blast-radius of a symbol before changing it.
 3b. Read previous apply-progress (if exists — Consolidation/Serial Mode only, Isolated Run Mode never reaches this): `mem_search("sdd/{change-name}/apply-progress")` → if found, `mem_get_observation` → read and merge (skip completed tasks, merge when saving)
 4. Detect TDD mode from config or existing test patterns
 5. Implement assigned tasks: in TDD mode follow RED → GREEN → REFACTOR; in standard mode write code then verify

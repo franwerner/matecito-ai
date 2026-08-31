@@ -20,7 +20,7 @@ Decisiones sobre cómo se organiza el payload del repo (dónde vive cada concept
 | [verdict-classified-by-the-orchestrator.md](verdict-classified-by-the-orchestrator.md) | Accepted | Vas a tocar quién clasifica un token declarado por una fase, o a agregar un tercer token del mecanismo de captura in-flow. |
 | [pr-base-branch-rule-reach.md](pr-base-branch-rule-reach.md) | Accepted | Vas a tocar la descripción de una estrategia de cadena de PRs (stacked-to-main, feature-branch-chain) o a agregar una nueva. |
 | [pr-base-explicit-argument-form.md](pr-base-explicit-argument-form.md) | Accepted | Vas a documentar o revisar cómo se abre un PR (por el flujo o a mano) y te tienta enunciarlo como norma en vez de argumento obligatorio. |
-| [change-isolation-activation-flag.md](change-isolation-activation-flag.md) | Accepted | Vas a tocar cómo se activa o se recomienda una elección junto con el lane en el fork o el INTAKE GATE. |
+| [change-isolation-activation-flag.md](change-isolation-activation-flag.md) | Accepted | Vas a tocar cómo se activa el aislamiento por cambio, o cómo se decide y se reporta esa elección. |
 | [change-workspace-identity.md](change-workspace-identity.md) | Accepted | Vas a tocar la identidad (rama, directorio) del espacio de trabajo aislado de un cambio, o cómo se lo mantiene fuera de la vista de git. |
 | [change-level-integration-act.md](change-level-integration-act.md) | Accepted | Vas a tocar cómo se cierra el ciclo de un cambio con aislamiento activo, o cómo se maneja un conflicto al integrarlo. |
 | [change-workspace-cleanup.md](change-workspace-cleanup.md) | Accepted | Vas a tocar la limpieza del espacio de trabajo de un cambio, en cualquiera de sus dos resultados (integración limpia o fallida). |
@@ -32,6 +32,8 @@ Decisiones sobre cómo se organiza el payload del repo (dónde vive cada concept
 | [side-discussion-topic-key-namespace.md](side-discussion-topic-key-namespace.md) | Accepted | Vas a agregar una clave de Engram fuera del namespace `sdd/` para un intercambio entre dos actores. |
 | [gating-vocabulary-sweep-scope.md](gating-vocabulary-sweep-scope.md) | Accepted | Vas a barrer el vocabulario de gating retirado (Tier 1/Tier 2) fuera del Scope original ratificado de un cambio. |
 | [retired-vocabulary-in-record-stores.md](retired-vocabulary-in-record-stores.md) | Accepted | Vas a decidir si el sweep final de un cambio de vocabulario debe extender su scope a un record store pre-existente cuyo sustantivo queda desactualizado. |
+| [lane-vocabulary-sweep-in-record-stores.md](lane-vocabulary-sweep-in-record-stores.md) | Accepted | Vas a barrer vocabulario de lane retirado y necesitás decidir si el sweep alcanza una fila de navegación de un índice de store durable, o un archivo cuyo sustantivo incidental sobrevive como residuo aceptado. |
+| [sdd-propose-contract-joins-lane-sweep.md](sdd-propose-contract-joins-lane-sweep.md) | Accepted | Vas a barrer vocabulario de lane retirado y encontrás un archivo fuera del Scope original que describe un mecanismo (add-on opcional, contraste de modos) que el cambio retira. |
 
 ## No aplican en este dominio
 

@@ -129,6 +129,63 @@ test('an item declaring fields but carrying no `· field:` line raises FIELDS-MI
   assert.equal(problems[0].code, 'FIELDS-MISSING');
 });
 
+// `sdd-explore`'s Discovery Form questions (two-lanes-fixed-flow, task 2.9): the `anchor` token is
+// free-form, declared exactly like `sdd-design.yaml`'s own `anchor` token — no `values`, still
+// required. A novel anchor value (a repo path, or the intake brief's key) must never raise
+// TOKEN-ILLEGAL; an absent one must still raise TOKEN-MISSING.
+
+test('sdd-explore Discovery Form: a free-form `anchor` token passes with any present value, never TOKEN-ILLEGAL', () => {
+  const section = { items: { tokens: [{ name: 'anchor', field: 'anchor' }] } };
+  const body = ['- what happens on export failure?', '  · anchor: src/reports/export.ts:42'].join('\n');
+  assert.deepEqual(checkItems(section, '### Questions (unanswered — for the orchestrator to ask)', body), []);
+});
+
+test('sdd-explore Discovery Form: an intent question anchors to the intake brief key — still passes, no `values` set to violate', () => {
+  const section = { items: { tokens: [{ name: 'anchor', field: 'anchor' }] } };
+  const body = ['- is CSV export the only format in scope?', '  · anchor: sdd/two-lanes-fixed-flow/intake'].join('\n');
+  assert.deepEqual(checkItems(section, '### Questions (unanswered — for the orchestrator to ask)', body), []);
+});
+
+test('sdd-explore Discovery Form: an omitted `anchor` token raises TOKEN-MISSING, not silently optional', () => {
+  const section = { items: { tokens: [{ name: 'anchor', field: 'anchor' }] } };
+  const body = ['- what happens on export failure?', '  · rationale: irrelevant to this check'].join('\n');
+  const problems = checkItems(section, '### Questions (unanswered — for the orchestrator to ask)', body);
+  assert.equal(problems.length, 1);
+  assert.equal(problems[0].code, 'TOKEN-MISSING');
+});
+
+// `record-mode` (two-lanes-fixed-flow, task 5.7): a closed value set declared WITHOUT `passing:` —
+// `checkItems` resolves `passing = t.passing || legal`, so every declared value is legal and none is
+// illegal-but-non-passing. Only presence is enforced.
+
+test('record-mode: `create` passes — a declared value with no `passing:` key is legal', () => {
+  const section = { items: { tokens: [{ name: 'record-mode', field: 'record_mode', values: ['create', 'modify'] }] } };
+  const body = ['- item one', '  · record-mode: create'].join('\n');
+  assert.deepEqual(checkItems(section, '### New Decisions', body), []);
+});
+
+test('record-mode: `modify` passes — the other declared value is equally legal', () => {
+  const section = { items: { tokens: [{ name: 'record-mode', field: 'record_mode', values: ['create', 'modify'] }] } };
+  const body = ['- item one', '  · record-mode: modify'].join('\n');
+  assert.deepEqual(checkItems(section, '### New Decisions', body), []);
+});
+
+test('record-mode: a value outside the closed set fails TOKEN-ILLEGAL', () => {
+  const section = { items: { tokens: [{ name: 'record-mode', field: 'record_mode', values: ['create', 'modify'] }] } };
+  const body = ['- item one', '  · record-mode: supersede'].join('\n');
+  const problems = checkItems(section, '### New Decisions', body);
+  assert.equal(problems.length, 1);
+  assert.equal(problems[0].code, 'TOKEN-ILLEGAL');
+});
+
+test('record-mode: an absent token fails TOKEN-MISSING, not silently optional', () => {
+  const section = { items: { tokens: [{ name: 'record-mode', field: 'record_mode', values: ['create', 'modify'] }] } };
+  const body = ['- item one', '  · record: contracts/some-slug'].join('\n');
+  const problems = checkItems(section, '### New Decisions', body);
+  assert.equal(problems.length, 1);
+  assert.equal(problems[0].code, 'TOKEN-MISSING');
+});
+
 // The round-trip: the exact grammars must agree with each other, not merely by reading both sides —
 // a compound item rendered by `render-return.js` MUST read back clean through `validate-return.js`'s
 // `checkItems()`, with no `SECTION-UNPARSEABLE` false positive and no field line skipped in silence.
