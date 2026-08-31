@@ -42,7 +42,7 @@ El Intake Brief declara **qué superficies del repo toca un cambio**. Es la proy
 ### Scenario: el gate apagado no deja línea en el brief
 
 - **GIVEN** un repo sin `repo.components` en el config de proyecto
-- **WHEN** se produce el brief y se muestra en la INTAKE GATE
+- **WHEN** se produce el brief
 - **THEN** no hay línea `Components` en ninguna parte del brief y nada menciona componentes
 
 ### Scenario: el gate encendido y la línea ausente es un defecto
@@ -101,27 +101,27 @@ El Intake Brief declara **qué superficies del repo toca un cambio**. Es la proy
 
 ### Scenario: la propuesta llega al gate junto al resto de la clasificación
 
-- **GIVEN** un brief de Pass 2 con el eje activo
-- **WHEN** el orquestrador abre la INTAKE GATE
-- **THEN** el valor de `Components` se surfacea para confirmar o ajustar, junto con el lane y el resto de la clasificación
+- **GIVEN** un brief de `sdd-intake` con el eje activo
+- **WHEN** el orquestrador reporta los flags decididos
+- **THEN** el valor de `Components` aparece en esa misma línea de aviso, junto con los otros flags decididos, y nada aguarda en él
 
 ### Scenario: el orquestrador lo surfacea por nombre porque está declarado
 
 - **GIVEN** el fragmento del dominio después del cambio
-- **WHEN** el orquestrador busca qué campos del brief se confirman en la INTAKE GATE
+- **WHEN** el orquestrador busca qué flags del brief se reportan decididos
 - **THEN** encuentra `Components` declarado junto a `diagram` y `ui-test`, con su lector registrado como ninguno
 
 ### Scenario: el usuario corrige el valor inferido
 
 - **GIVEN** una inferencia que nombra `cli` y un usuario que sabe que el cambio también toca `api`
-- **WHEN** lo ajusta en la INTAKE GATE
-- **THEN** el brief se actualiza y se re-muestra, exactamente como un ajuste de lane
+- **WHEN** lo observa en la línea de aviso de flags decididos
+- **THEN** el valor fue decidido por intake sin confirmación, así que el usuario no puede corregirlo en el flujo: se toma tal cual fue inferido
 
 ### Scenario: ninguna fase posterior lo vuelve a preguntar
 
-- **GIVEN** un valor ratificado en la INTAKE GATE
-- **WHEN** corre cualquier fase posterior del lane
-- **THEN** ninguna lo re-pregunta ni lo re-infiere: el gate fue su única confirmación
+- **GIVEN** un valor decidido y reportado por `sdd-intake`
+- **WHEN** corre cualquier fase posterior del flujo
+- **THEN** ninguna lo re-pregunta ni lo re-infiere: fue decidido una sola vez por intake
 
 ### Scenario: ninguna fase lee el valor
 

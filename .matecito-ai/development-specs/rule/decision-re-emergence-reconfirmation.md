@@ -105,7 +105,7 @@ Una decisión ratificada en un gate puede reaparecer en un gate posterior del mi
 
 ### Scenario: Una decisión, dos gates posteriores
 
-- **GIVEN** un item ratificado en el gate de Unresolved Decisions, y el mismo `record` resurge en el INTAKE GATE después
+- **GIVEN** un item ratificado en el gate de Unresolved Decisions, y el mismo `record` resurge en el gate de mined-confirmation después
 - **WHEN** el primero se presenta
 - **THEN** se ofrece reconfirmación; se registra el resultado
 - **WHEN** el segundo lo presenta
