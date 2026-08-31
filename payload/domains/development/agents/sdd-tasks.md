@@ -33,12 +33,21 @@ Execute all steps from the skill directly in this context window:
      task that touches a decision carries `· edr: <domain>/<slug>`, unconditionally, whether or not the
      EDR file exists yet — a ratified proposal from sdd-spec/sdd-design materializes it later, in
      sdd-apply's Step 4b of the SAME task. `criteria:` is always required regardless. -->
-4b. Add a verifiable `criteria:` sub-line per task; add `· edr: <domain>/<slug>` on every task that touches a decision — mapped to the ratified proposal's `record:` identity when the task implements one, or to the concern otherwise — whether or not `.matecito-ai/edr/<domain>/<slug>.md` exists yet. Never omit it for a decision-touching task on the grounds that the file is absent: matecito-ai never requires an EDR to pre-exist, and the dangling ref is exactly what makes the decision-touching task findable.
+4b. Add a verifiable `criteria:` sub-line per task; add `· edr: <domain>/<slug>` on every task that touches a decision — mapped to the ratified proposal's `record:` identity when the task implements one, or to the concern otherwise — whether or not `.matecito-ai/edr/<domain>/<slug>.md` exists yet. Never omit it for a decision-touching task on the grounds that the file is absent: matecito-ai never requires an EDR to pre-exist, and the dangling ref is exactly what makes the decision-touching task findable. Never write a separate task or Phase whose only job is producing the record file — the `· edr:` mark travels on the task that changes the governing code itself, per the SKILL's per-task contract.
 <!-- matecito-ai: the form is defined once in the SKILL ("Parallel-group mark"); this step only tells
      the agent to emit it — never restate the form here. -->
 5. For tasks that can run concurrently, add a `· parallel-group: <id>` sub-line per the SKILL's
    "Parallel-group mark" definition — same id ⇒ same batch, ONLY when genuinely independent; leave
    it off for anything that must run serial (today's default)
+<!-- matecito-ai: rule/bound-serial-apply-dispatch + rule/justify-serial-task-grouping — see the SKILL's
+     "Per-Phase `Est. lines`" note and "Every Phase now owes a stated verdict" paragraphs (including the
+     independent-pair-naming one); this step only tells the agent to produce both, never restates their
+     form. -->
+5b. For each Phase in `### Breakdown`, estimate its `Est. lines` — a bare whole number, never a range —
+    per the SKILL's Review Workload Forecast Rules; and author one `### Parallelization Verdict` entry
+    per Phase, stating whether the Phase's tasks are marked (naming the group) or left serial (naming
+    the reason — and naming any genuinely independent pair explicitly rather than generalizing over the
+    whole Phase), per the SKILL's "Every Phase now owes a stated verdict" paragraphs
 6. Persist tasks to active backend
 
 Do NOT implement — produce the checklist only.
@@ -77,4 +86,8 @@ Phase-specific refinements on top of Section D:
   `none | contradicts-statement | contradicts-record | unverified-assumption` (`sdd-tasks.yaml` is the
   authority on the exact values). An absent or hedged verdict is read as firing — see the Unresolved
   Decisions Guard in `~/.claude/matecito-ai/domains/development.md`
+- This phase declares two sections that split each item into `summary`/`rationale`:
+  `### Tasks not traceable to spec/design` (above, carrying `anchor` and `contested`) and
+  `### Parallelization Verdict` — one entry per Phase of `### Breakdown`, `gates: reported`, carrying
+  `anchor` **only**, no `contested` token: a contested verdict would be inert in a `reported` section
 - `skill_resolution`: per D.4 — `phase-skill` when you loaded this phase's own SKILL.md <!-- matecito-ai: sin inyección -->

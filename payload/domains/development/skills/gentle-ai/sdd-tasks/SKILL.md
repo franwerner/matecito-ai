@@ -125,6 +125,7 @@ Each task MUST be:
      the `· edr:` mark's own rule.
 - `criteria:` is MANDATORY on every task: an observable, checkable condition (input → result), not a vague claim. It is what verify consumes later; a "works fine" is useless.
 - `· edr: <domain>/<slug>` is emitted on EVERY task that implements or touches a decision — **unconditionally, no flag, regardless of whether `.matecito-ai/edr/<domain>/<slug>.md` exists yet.** Mechanical tasks (add a field, move a file) carry NO edr — a false ref is worse than none. When the task implements a proposal ratified upstream (`sdd-spec`'s or `sdd-design`'s `### New Decisions`), use that proposal's own `· record:` identity; otherwise map to the concern per the canonical catalog. A dangling ref (the file does not yet exist) is never a reason to omit the mark — `sdd-apply` materializes the file in the same step it implements this task, and `sdd-verify`'s `decision-gaps` group is what confirms the two arrived together.
+- **The marked task IS the implementing task — materialization is never its own task.** `~/.claude/references/decision-capture/in-flow-capture.md` requires a ratified record to be materialized "in the **same work-unit step** that implements the code the decision governs — never a separate pass before or after". Do NOT write a dedicated task or Phase whose only purpose is producing the `.matecito-ai/edr/<domain>/<slug>.md` file — put `· edr:` on the task that actually changes the governing code, and let `sdd-apply`'s Step 4b materialize the record inside that same step. A checklist with a standalone "create the EDR" task is the exact split `in-flow-capture.md` forbids, whether or not you also mark a `criteria:` line for it.
 - What counts as a "decision" (and what does not) is canonical in `~/.claude/references/edr/README.md` — a task carries `· edr:` only if it touches an EDR in that sense, not for every change.
 
 ### Parallel-group mark
@@ -148,6 +149,26 @@ only if their ids are equal.
 - **A group of one is legal**, not malformed — it simply yields no fan-out for that task.
 - **The mark is a form, not prose.** It is the only way to declare parallel eligibility; the emitted
   artifact carries no free-text note about which tasks are parallel.
+
+<!-- matecito-ai: rule/justify-serial-task-grouping — captured per its own capability-spec. Leaving a
+     Phase's tasks unmarked used to be free and silent; it now owes a stated verdict, reported via
+     `### Parallelization Verdict` (never gating). -->
+**Every Phase now owes a stated verdict.** Leaving a Phase's tasks unmarked is no longer free and
+silent: for **every** Phase you break down, evaluate its tasks against the independence criterion
+above (unchanged — same "same id ⇒ concurrently safe, and ONLY when it is" test) and carry the outcome
+into your return's `### Parallelization Verdict`. A marked Phase states its group id(s); a Phase left
+serial states the reason its tasks are not independent. **The default is NOT inverted** — a Phase stays
+serial unless its tasks genuinely pass the criterion; the obligation is to state the reason, never to
+mark more Phases to avoid writing one. Over-marking is paid in cherry-pick conflicts during
+consolidation.
+
+**A genuinely independent pair inside an otherwise-serial Phase is named, not generalized over.** If a
+Phase stays serial overall but you notice one pair of its tasks that DOES pass the independence
+criterion on its own (you are simply choosing not to mark it — e.g. it is not worth a whole extra round
+for two tasks), the verdict's stated reason names that pair explicitly (its task ids) instead of a
+sentence that reads as if the whole Phase were evaluated and found dependent. A reason like "tasks not
+independent" over a Phase that actually contains an independent pair hides the one case a reader would
+want to see.
 
 ### The per-task line budget with the mark
 
@@ -197,6 +218,18 @@ Chain strategy: stacked-to-main|feature-branch-chain|size-exception|pending
 You may keep the table for readability, but the plain-text lines are the guard contract.
 
 For `feature-branch-chain`, suggested work units SHOULD name the intended base boundary: PR #1 base = feature/tracker branch; PR #2 base = PR #1 branch; PR #3 base = PR #2 branch. If a child PR would show previous PR changes, the base is wrong and must be retargeted/rebased before review. How each of these bases is resolved and named explicitly on the actual `gh pr create` (or equivalent) call is defined once, in `~/.claude/skills/git/SKILL.md` ("Pull Request Base Branch") — this section only names the intended boundaries.
+
+<!-- matecito-ai: `Est. lines` feeds the orchestrator's Apply Dispatch Budget guard (a different
+     mechanism than this section's own 400-line PR budget) — captured here per its own EDR:
+     contracts/est-lines-is-a-bare-integer. -->
+**Per-Phase `Est. lines` (feeds `### Breakdown` in the return).** Every Phase you break down carries
+its own `Est. lines` in `### Breakdown`: a bare, non-negative whole number over that Phase's **whole**
+task list — additions + deletions — never a range, never a `~` estimate, no units. Estimate it the same
+way you estimate `Estimated changed lines` above, just split per Phase instead of summed over the whole
+change. This is a **deliberate divergence** from that aggregate line: `Estimated changed lines` keeps
+its "estimate or range" freedom because a human reads it, while `Est. lines` is read by an accumulator
+(the orchestrator's Apply Dispatch Budget guard) that sums it arithmetically — a range, a `~`, or any
+other unparseable value turns that guard's cut off silently, with no error and no warning.
 
 ### Phase Organization Guidelines
 
@@ -259,6 +292,11 @@ Three things the template expects you to already know from this skill:
   per the anchor criterion in `~/.claude/skills/_shared/sdd-phase-common.md`, Section D.3:
   `<repo-path>[:line]` or `<engram-key>`, start line only (say the range in words). You supply it —
   nothing derives it for you.
+- `### Parallelization Verdict` carries exactly one entry per Phase of `### Breakdown` — no more, no
+  fewer, `gates: reported` (surfaces in the between-phase summary, never gates). Each entry declares
+  the `summary`/`rationale` split (the verdict and its reason in `summary`, the independence analysis
+  in `rationale`) plus the `anchor` token — and carries **no** `contested` token: a contested verdict
+  would be inert in a `reported` section.
 
 ## Rules
 

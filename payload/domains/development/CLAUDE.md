@@ -557,6 +557,55 @@ The decision this guard raises is presented through the shared walkthrough in
 `~/.claude/references/gate-presentation.md`, anchored to `sdd/{change-name}/tasks` — no index or
 bulk-action wording of its own.
 
+### Apply Dispatch Budget (MANDATORY)
+Before dispatching the first `sdd-apply` batch of a change — after the Return Contract Check and after
+the Review Workload Guard, which run on the same `sdd-tasks` return — cut the serial dispatch by size,
+at Phase boundaries, off the `Est. lines` column of that return's `### Breakdown`:
+
+1. **Read** `Est. lines` per Phase from `### Breakdown` in the return block you already hold. Never from
+   the tasks artifact — you do not read it.
+2. **Degrade silently** when that section carries the `None.` sentinel, or any Phase's `Est. lines` is
+   absent or is not a whole number: form ONE dispatch, exactly today's behavior — no error, no warning,
+   no gate, no mention. A freshly rendered return cannot reach this case: a row missing the column fails
+   the render by name. An older tasks artifact, written before the column existed, does.
+3. **Accumulate** over the Phases in the order the table lists them, which is implementation order. Open
+   the first slice with the first Phase. For each next Phase: if the running total plus that Phase's
+   estimate would exceed **600**, close the current slice and open a new one with that Phase; otherwise
+   add it to the current slice, and add its estimate to the running total. **A Phase is never split** —
+   a Phase whose own estimate exceeds 600 is dispatched alone, with all of its tasks.
+4. **Dispatch each slice as its own `sdd-apply` call**, one after another, each after the previous
+   returns, named by its Phase range and task ids ("Phase 1-2, tasks 1.1-2.4"). Slices after the first
+   are ordinary continuation batches: the kernel's Apply-Progress Continuity applies unchanged — the
+   prompt tells the run to read `apply-progress` first and MERGE into it. This is not a third fan-out
+   case: the slices run one after another, never concurrently, and the two declared fan-out cases are
+   unchanged.
+5. **Never ask.** This is orchestration mechanics — no gate, nothing waits. Report it in one notice line
+   naming the slice count and each slice's Phase range; a slice count of one is not reported at all.
+
+**Serial only.** Do not apply the budget inside a concurrent round (each isolated run carries one task in
+a fresh context, bounded by construction), across rounds (groups never mix, and rounds already run one
+after another), or to a consolidation run (sized by how many Task Run Reports the group produced —
+residual exposure, not covered here). For a Phase whose tasks are partly marked for a group, accumulate
+the Phase's whole `Est. lines` as-is: it over-counts on purpose, biasing toward one extra cut, because
+making the estimate depend on the marks couples two numbers `sdd-tasks` authors independently.
+
+**Worked example.** Phases estimated 250, 200, 300, 150, in implementation order:
+
+| Step | Phase | Est. | Running | Action |
+|---|---|---|---|---|
+| 1 | P1 | 250 | 250 | opens slice A |
+| 2 | P2 | 200 | 450 | 450 ≤ 600 → joins A |
+| 3 | P3 | 300 | 300 | 450+300 = 750 > 600 → closes A, opens B |
+| 4 | P4 | 150 | 450 | 450 ≤ 600 → joins B |
+
+Two dispatches: `Phase 1-2` (450) then `Phase 3-4` (450), the second a continuation batch. A change
+totalling 380 forms one slice and is dispatched exactly as today. A single Phase estimated at 900 opens
+its own slice, keeps all its tasks, and the next Phase always opens a new one.
+
+**600 is calibrated from one measured cycle, not from a lines-to-cost curve.** Too low re-pays the
+entry-prompt floor once per extra slice; too high never fires, and nothing reports a guard that did not
+fire.
+
 ### Validator Findings (presentation)
 `development-decisions-validate` and `development-spec-validate` are consultative — they only report,
 never write. Their findings are walked through the shared presentation in
