@@ -136,8 +136,10 @@ out, and this section is not an invitation to add a third without its own change
 | `sdd-explore` | intake (brief) | `explore` |
 | `sdd-propose` | exploration (optional) | `proposal` |
 <!-- matecito-ai: spec pasó a leer el intake brief SIEMPRE, no sólo como upstream de fallback: es el
-     único lugar que lleva el flag `ui-test`, y la proposal no lo transporta. Sin esa lectura, la
-     producción de `ui-scenarios` funcionaría en lane `reduced` y fallaría en `full`. -->
+     único lugar que lleva el flag `ui-test`, y la proposal no lo transporta. Bajo el modelo de cuatro
+     lanes (direct/reduced/full/custom) — retirado por `two-lanes-fixed-flow`, que lo reemplazó por dos
+     lanes fijos sin fork ni gate de confirmación — sin esa lectura la producción de `ui-scenarios`
+     habría funcionado en lane `reduced` y fallado en `full`. -->
 | `sdd-spec` | proposal (required) + **intake brief (always, for the `ui-test` flag)** + **durable capability-spec** (for Modified Capabilities) | `spec` (incl. the **behavioral** `ui-scenarios` when `ui-test: needed` — domain language, no routes or locators) |
 | `sdd-design` | proposal + **intake brief (always, for the `diagram` flag)** + **EDRs** + **durable capability-specs** (required) | `design` |
 | `sdd-tasks` | spec + design + **durable capability-specs touched** (required) | `tasks` |
