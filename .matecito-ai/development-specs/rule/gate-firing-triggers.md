@@ -291,23 +291,36 @@ Los valores de `blocking-test`, su tabla de clasificación y su escalada nombrad
 - **THEN** se surfacea como un stop de estilo `blocked`, citando el token
 - **AND** el veredicto `contested` no lo degrada
 
-### Requisito: Solo uno de los nueve momentos de cita cambia, y nueve no es el inventario completo
+### Requisito: Los momentos que citan el walkthrough compartido son nueve, y nueve no es el inventario completo
 
-De los momentos que citan el walkthrough compartido, solo el gate de decisiones pendientes cambió por aquel cambio. El INTAKE GATE ya no existe, así que los momentos que citan el walkthrough son ocho, y el Discovery Gate sí cambia por este cambio: se muda a `sdd-explore` y pasa a exigir anchor como cualquier otro item. Los otros seis DEBEN quedar sin cambios: el gate de decisión-minada (que nunca dispara en este dominio), el gate de spec-minada, el Uncommitted-Work Gate, el Review Workload Guard, un retorno `blocked` de fase, y `risks` / Hallazgos del Validador. El texto de gobernanza DEBE NO reclamar que los ocho son el inventario completo de puntos de interrupción.
+La aritmética, explícita, para que nadie la componga sobre la línea equivocada: **hoy son ocho; este cambio los lleva a nueve**. Las apariciones de «nueve» que este archivo ya lleva en su título de requisito y en un título de escenario son **residuo** del barrido de remoción del INTAKE GATE, no una línea base a la que sumarle uno.
+
+Los ocho de hoy son: el gate de decisiones pendientes · el Discovery Gate · el gate de decisión-minada · el gate de spec-minada · el Uncommitted-Work Gate · el Review Workload Guard · un retorno `blocked` de fase · `risks` / Hallazgos del Validador. El noveno es el gate de confirmación del brief, que este cambio agrega. Toda declaración del conteo en el repo DEBE leer **nueve**, y donde una declaración parte el total en subgrupos, el subgrupo que gana este gate es el de momentos de orquestador. Ninguno de los ocho anteriores cambia por este cambio: no cambian sus disparadores y ninguno adquiere un token `contested`. El texto de gobernanza DEBE NO reclamar que los nueve son el inventario completo de puntos de interrupción.
 
 #### Scenario: Los ocho quedan solos
 
 - **GIVEN** el diff del cambio
-- **WHEN** se inspeccionan las definiciones de los otros ocho momentos
+- **WHEN** se inspeccionan las definiciones de los ocho momentos que ya citaban el walkthrough
 - **THEN** ninguno de sus disparadores cambió
 - **AND** ninguno de ellos adquirió un token `contested`
 
 #### Scenario: Dos puntos de interrupción fuera de los nueve se nombran, no se absorben
 
-- **GIVEN** el reclamo calificado en `gate-presentation.md`
+- **GIVEN** el reclamo calificado en el contrato compartido de presentación
 - **WHEN** se lee
 - **THEN** nombra el reporte de merge-conflict del Change Workspace y el STOP de atomicidad de commit como puntos de interrupción fuera de los nueve
 - **AND** enuncia que ninguno de los triggers lo alcanza, y ninguno se modifica
+
+### Requisito: Ninguna declaración del conteo queda desalineada
+
+Cada archivo que declara el conteo de momentos que citan el walkthrough compartido DEBE leer nueve después del cambio, y ninguna declaración DEBE quedar en ocho. Las declaraciones son tres: el contrato compartido de presentación (dos oraciones más el encabezado de su tabla de momentos), este requisito (cuerpo y ambos títulos de escenario), y la fila de Referencias de `flow/ratify-gate-items`.
+
+#### Scenario: El barrido del conteo no deja un archivo atrás
+
+- **GIVEN** el repo después del cambio
+- **WHEN** se busca cada declaración del conteo de momentos que citan el walkthrough
+- **THEN** las tres leen nueve, y ninguna lee ocho
+- **AND** la fila agregada a la tabla de momentos nombra el gate de confirmación del brief con la clave del brief como su fuente de anchor
 
 ## Escenarios
 

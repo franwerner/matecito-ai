@@ -64,7 +64,7 @@ El intake actual corre un ciclo de dos pasos (Pass 1 formula discovery, Pass 2 i
 
 ### Requisito: The intake phase is a passthrough
 
-The intake phase MUST receive the raw request, decide the four decision flags, run the decision-record early guard when that store is active, and emit the brief — in one pass, one block. It MUST NOT investigate, MUST NOT classify a size, MUST NOT triage or recommend a lane, and MUST NOT return `needs-input`.
+The intake phase MUST receive the raw request, decide the four decision flags, run the decision-record early guard when that store is active, and emit the brief — in one pass, one block. It MUST NOT investigate, MUST NOT classify a size, MUST NOT triage or recommend a lane, and MUST NOT return `needs-input`. A re-dispatch carrying the original request plus a user's correction is a **fresh pass over new input**, not a second pass with memory: the contract above is unchanged by it, and the re-run overwrites the same artifact key.
 
 #### Scenario: One pass, one block
 
@@ -91,16 +91,23 @@ The intake phase MUST receive the raw request, decide the four decision flags, r
 - WHEN the intake phase runs
 - THEN it skips the guard silently and mentions nothing
 
-### Requisito: The four decision flags are decided and reported, never ratified
+#### Scenario: A re-dispatch with a correction is a fresh pass
 
-The intake phase MUST write all four flags into the brief's classification block. The orchestrator MUST report their values in a single notice line when the brief returns; nothing MUST wait on it. Each reader MUST act on the decided value without re-asking. A reader that finds its flag absent MUST treat it as not-needed and close silently. The governing text MUST state, as a consequence rather than by implication, that a wrongly-decided flag now reaches its reader with nobody having checked it.
+- GIVEN a brief the user corrected, and a re-dispatch carrying the original request plus those words
+- WHEN the intake phase runs again
+- THEN it runs one pass over that input, returns once, and still never returns `needs-input`
+- AND it carries nothing over from the previous run beyond what its input states
+
+### Requisito: The four decision flags are decided by intake and travel inside the brief
+
+The intake phase MUST write all four flags into the brief's classification block. The orchestrator MUST report their values and MUST NOT wait on any one of them: no flag is offered, walked or confirmed as an item of its own. Each reader MUST act on the decided value without re-asking, and a reader that finds its flag absent MUST treat it as not-needed and close silently. The flags reach their readers inside a brief the user has confirmed as a whole, so the governing text MUST NOT state that a wrongly-decided flag reaches its reader with nobody having checked it.
 
 #### Scenario: The flags are reported, and the flow does not stop
 
 - GIVEN a brief carrying all four flags
 - WHEN it returns
-- THEN their values are reported in one line and the next phase is dispatched
-- AND nothing offers to confirm or adjust them
+- THEN their values are reported and nothing waits on any individual flag
+- AND the only stop is the one question asked over the brief as a whole
 
 #### Scenario: A reader acts on the decided value
 
@@ -112,5 +119,5 @@ The intake phase MUST write all four flags into the brief's classification block
 
 - GIVEN the governing text for the flags after the change
 - WHEN it is read
-- THEN it states plainly that a wrongly-decided flag now passes unchecked
-- AND that consequence is not presented as mitigated by anything
+- THEN it no longer states that a wrongly-decided flag passes unchecked
+- AND it states instead that a wrong value is corrected by correcting the brief, once, before anything is dispatched

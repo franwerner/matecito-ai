@@ -114,8 +114,9 @@ El Intake Brief declara **qué superficies del repo toca un cambio**. Es la proy
 ### Scenario: el usuario corrige el valor inferido
 
 - **GIVEN** una inferencia que nombra `cli` y un usuario que sabe que el cambio también toca `api`
-- **WHEN** lo observa en la línea de aviso de flags decididos
-- **THEN** el valor fue decidido por intake sin confirmación, así que el usuario no puede corregirlo en el flujo: se toma tal cual fue inferido
+- **WHEN** lo observa en el brief que se le ofrece
+- **THEN** lo corrige escribiendo la corrección sobre el brief, y el brief re-emitido lleva el valor corregido
+- **AND** no hubo una pregunta propia para este campo
 
 ### Scenario: ninguna fase posterior lo vuelve a preguntar
 

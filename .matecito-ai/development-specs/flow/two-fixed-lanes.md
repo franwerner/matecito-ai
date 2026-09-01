@@ -43,7 +43,7 @@ El fork de lane pregunta al usuario por tamaño de cambio **antes** de que nadie
 
 - `full` es el default y NUNCA es cuestionado
 - `direct` SOLAMENTE cuando el usuario lo pide por nombre explícitamente
-- El orquestador no muestra un fork, no pide confirmación, no hace recomendación
+- El orquestador no muestra un fork, no pide confirmación de lane, no hace recomendación
 - Las únicas dos opciones son `direct` (explícitamente pedido) y `full` (todo lo demás)
 - El vocabulario de `reduced`, `custom`, y "add-on" NO APARECE en ningún lado como mecanismo vivo
 
@@ -162,12 +162,12 @@ The lane model lives in the kernel and every domain inherits it. A domain whose 
 
 ### Requisito: Change-workspace isolation activates only on an explicit request
 
-Isolation MUST be `active` only when the user's request explicitly asks for it, and `inactive` otherwise. No gate MUST confirm it. When the brief carries `active`, the workspace MUST be opened immediately after intake returns, before the next phase is dispatched — once per change. For direct/ad-hoc work the opening trigger MUST remain unchanged: right before the first file is created or modified.
+Isolation MUST be `active` only when the user's request explicitly asks for it, and `inactive` otherwise. No gate MUST confirm it **as an item of its own** — it is neither offered nor walked separately; it travels inside the brief the confirmation gate offers as a whole, and a correction to it is written like any other correction to the brief. When the brief carries `active`, the workspace MUST be opened once the brief is confirmed, before the next phase is dispatched — once per change. For direct/ad-hoc work the opening trigger MUST remain unchanged: right before the first file is created or modified.
 
 #### Scenario: An explicit request opens the workspace before the next dispatch
 
 - GIVEN a request that explicitly asks for isolated work, and a brief carrying isolation as active
-- WHEN intake returns
+- WHEN the user confirms that brief
 - THEN the change's workspace exists before the next phase is dispatched
 - AND every phase that writes files works inside it
 
