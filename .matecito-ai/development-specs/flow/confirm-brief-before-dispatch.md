@@ -84,7 +84,7 @@ The orchestrator MUST NOT dispatch any phase after intake, and MUST NOT open the
 
 ### Requisito: The brief is offered as one item, with one question
 
-The orchestrator MUST present the brief as **exactly one** ratifiable item and ask **exactly one** question over it. It MUST delegate the presentation to the shared walkthrough rather than stating a presentation of its own; with one item, that walkthrough resolves to its fixed item template alone — no index, no "confirm the rest". The item's anchor MUST be the brief's own artifact key and its summary MUST be one line carrying intake's reading of the request with the decided flag values folded in. No per-flag question MUST exist anywhere. The brief MUST NOT be modelled as a compound item.
+The orchestrator MUST present the brief as **exactly one** ratifiable item and ask **exactly one** question over it. It MUST delegate the presentation to the shared walkthrough rather than stating a presentation of its own; with one item, that walkthrough resolves to its fixed item template alone — no index, no "confirm the rest". The item's anchor MUST be the brief's own artifact key. Its summary MUST be one line carrying intake's reading of the request **alone**; no decided flag value MUST be folded into it. The brief MUST be modelled as a **compound item**: the brief's change type and each flag intake decided print as their own field line beneath the summary and above the actions, in the order intake writes them into the brief's classification, carrying the brief's own value verbatim. `Domains touched` MUST NOT print — it is the only line of the classification the item leaves out, and it stays reachable through the item's detail retrieval. The governing text MUST enumerate which lines print rather than describing them by category: an orchestrator holding only that text, with no memory of this change, MUST be able to produce the right set from it. A flag whose axis is not declared for the project MUST NOT print a field line, and MUST NOT be stood in for by a placeholder. No per-flag question MUST exist anywhere, and printing a flag as a field line MUST NOT be read as asking about it. The governing text MUST NOT state anywhere that the flag values are folded into the summary. (Previously: the summary folded the decided flag values in, and the brief MUST NOT be modelled as a compound item; the scenario "The compound-item form is not stretched to cover it" is **removed**, not edited, and MUST NOT be preserved by the merge.)
 
 #### Scenario: One item, no index
 
@@ -102,17 +102,38 @@ The orchestrator MUST present the brief as **exactly one** ratifiable item and a
 
 #### Scenario: The whole brief is one retrieval away
 
-- GIVEN an item whose summary is one line and whose anchor is the brief's artifact key
+- GIVEN an item whose summary is one line, whose field lines carry the decided flags, and whose anchor is the brief's artifact key
 - WHEN the user asks to see the detail
 - THEN the whole brief is retrieved through that anchor
 - AND nothing of the brief is hidden by the summary being one line
 
-#### Scenario: The compound-item form is not stretched to cover it
+#### Scenario: Every decided flag prints as its own field line
 
-- GIVEN the definition of the compound item form
-- WHEN it is read after the change
-- THEN it still governs only what it governed before
-- AND nothing widens it to cover the brief
+- GIVEN a brief carrying the four decided flags
+- WHEN the item is presented
+- THEN each one prints as its own field line beneath the summary and above the actions
+- AND the summary carries intake's reading of the request with no flag value in it
+
+#### Scenario: One item, one anchor, one outcome
+
+- GIVEN the brief presented as a compound item
+- WHEN the gate counts what it is holding
+- THEN it is one item with one anchor, and it takes exactly one outcome
+- AND no field line takes an outcome of its own
+
+#### Scenario: A project without the components axis prints one field line fewer
+
+- GIVEN a project that declares no components axis
+- WHEN the item is presented
+- THEN the change type and the three remaining decided flags print, one field line each
+- AND no placeholder or "n/a" line stands in for the absent one
+
+#### Scenario: The domains touched stay out of the field lines
+
+- GIVEN a brief whose classification also carries the change type and the domains touched
+- WHEN the item is presented
+- THEN the change type prints as a field line and the domains touched does not
+- AND the domains touched stays reachable through the item's detail retrieval
 
 ### Requisito: The two actions go through the host's question widget
 

@@ -49,7 +49,7 @@ Un gate entrega todo a la vez, y cada item llega sin nombrar sobre qué trata, a
 ## Reglas de negocio
 
 - El índice es único por retorno, nunca acumulativo across el flow
-- La forma del gate es decidida por conteo (0/1/≥2) Y por si un item es compuesto. Un item cuyo contenido es un conjunto de fields tipados (un contrato) se presenta dentro del mismo template compartido que cualquier otro, como UN item, con sus fields mostrados debajo de su summary y encima de las acciones. Cuenta como un item en el índice y toma exactamente un resultado
+- La forma del gate es decidida por conteo (0/1/≥2) Y por si un item es compuesto. Un item cuyo contenido es un conjunto de campos se presenta dentro del mismo template compartido que cualquier otro, como UN item, con sus campos debajo de su summary y encima de las acciones. Cuenta como un item en el índice y toma exactamente un resultado. La aridad de la línea de campo la decide el tipo de item: tres partes (nombre — tipo — descripción) para un contrato, dos (nombre — valor) para el brief; ambas son líneas de continuación del mismo item, nunca viñetas anidadas.
 - Item by item es el default cuando hay múltiples; "confirmar el resto" es el único atajo global, EXCEPTO: cuando hay dos o más contratos (items compuestos), el gate DEBE ofrecer ritmo (uno-a-uno o todos-a-la-vez) antes de mostrar el primero; esta oferta es la única excepción nombrada a "no hay otro bulk action"
 - El template fijo (summary + anchor + acciones + opcionalmente fields) no tiene slot para narrativa libre
 - Los slots del template se separan por línea en blanco; imprimirlos como líneas consecutivas es una violación del template, no una variante de estilo

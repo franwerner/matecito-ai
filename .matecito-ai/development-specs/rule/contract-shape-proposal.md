@@ -18,7 +18,7 @@ Una forma de datos sin especificar — la única cosa que el sistema está prohi
 ## Precondiciones
 
 - La fase declara un stop por contrato no especificado, no por otra razón (ambigüedad, conflicto, fork)
-- El item compuesto lleva: un summary de una línea, un anchor (fuente de la necesidad), y una línea por campo (nombre, tipo, descripción)
+- El contrato (item compuesto) lleva: un summary de una línea, un anchor (fuente de la necesidad), y una línea por campo (nombre, tipo, descripción)
 - La forma propuesta no lleva slot de persistencia declarado
 
 ## Flujo principal
@@ -49,7 +49,7 @@ Una forma de datos sin especificar — la única cosa que el sistema está prohi
 
 - El test de alcance: una forma que persiste, cruza límite o es pública está gobernada. *Cruzar límite* ahora significa alcanzar base de datos, red, o superficie fuera de esta herramienta. Una forma leída solo en coordinación intra-flujo no cruza y se maneja como decisión arquitectónica ordinaria
 - Cada contrato es UN item: uno índice, un turno, un resultado. Campos nunca se dividen en items
-- Un item compuesto lleva un summary, un anchor, y líneas de campo (nombre — tipo — descripción); nada más en slots declarados
+- Un contrato (item compuesto) lleva un summary, un anchor, y líneas de campo (nombre — tipo — descripción); nada más en slots declarados
 - Anchor: uno por contrato (no por-campo); se usa para identificar la forma cuando vuelve
 - La sección `### Contract Shapes Proposed` aparece solo cuando fase declara `has_contract_proposals: true` Y el status es `blocked`; ambas condiciones se requieren
 - Una forma ratificada viaja **solo en las instrucciones de re-despacho**, nunca se re-lee de almacenamiento. Fase re-despachada sin forma en sus instrucciones: retorna `blocked` nombrando la forma faltante, nunca adivina
@@ -58,7 +58,7 @@ Una forma de datos sin especificar — la única cosa que el sistema está prohi
 
 ## Entidades y estados
 
-- **Item compuesto** — Propuesta de contrato: summary (≤250 chars), anchor, lista de campos. Estados: pendiente → ratificado → ajustado → rechazado
+- **Contrato (item compuesto)** — Propuesta de contrato: summary (≤250 chars), anchor, lista de campos. Estados: pendiente → ratificado → ajustado → rechazado
 - **Campo de contrato** — Nombre, tipo, descripción (≤160 chars cada descripción). Emitido como línea `· field: {nombre} — {tipo} — {descripción}`
 - **Oferta de ritmo** — Cuando hay ≥2 contratos: ofrecer uno-a-uno (default) o todos-a-la-vez antes de mostrar el primero
 
@@ -179,6 +179,31 @@ Una forma de datos sin especificar — la única cosa que el sistema está prohi
 - **GIVEN** un gate presentando dos contratos y dos items ordinarios
 - **WHEN** abre
 - **THEN** un índice cuenta cuatro y el walkthrough es plano, cada contrato mostrado con sus propios fields
+
+### Requisito: Las afirmaciones sobre item compuesto están acotadas al contrato
+
+Las tres afirmaciones de esta capability que describen un item compuesto — la precondición sobre lo que lleva el item compuesto, la regla de negocio equivalente, y la entidad "Item compuesto" con su línea de campo de tres partes — DEBEN leerse acotadas al caso del contrato. Ninguna DEBE afirmar, para todo item compuesto del sistema, que un item compuesto es un contrato ni que sus líneas de campo llevan tres partes. La aridad de tres partes sigue siendo obligatoria para un contrato, sin cambios, y ningún escenario de esta capability se reescribe: es un ajuste de alcance en la redacción, no de comportamiento.
+
+#### Scenario: La regla de negocio nombra el contrato, no todo item compuesto
+
+- **GIVEN** la regla de negocio sobre lo que lleva un item compuesto
+- **WHEN** se lee tras este cambio
+- **THEN** dice de un contrato, no de todo item compuesto del sistema
+- **AND** sigue exigiendo summary, anchor y líneas de campo de tres partes para ese caso
+
+#### Scenario: Las declaraciones de la línea de tres partes siguen describiendo la propuesta de contrato
+
+- **GIVEN** la precondición sobre lo que lleva el item compuesto y la entidad "Item compuesto" con su línea `· field: {nombre} — {tipo} — {descripción}`
+- **WHEN** se leen tras este cambio
+- **THEN** ambas describen la propuesta de contrato
+- **AND** ninguna se lee como la forma de todo item compuesto
+
+#### Scenario: Nada acá declara mal formado a un item compuesto de dos partes
+
+- **GIVEN** un item compuesto cuyos campos llevan nombre y valor, sin tipo
+- **WHEN** se chequea contra esta capability
+- **THEN** nada acá lo declara mal formado
+- **AND** ningún escenario de esta capability cambió para permitirlo
 
 ## Referencias
 
