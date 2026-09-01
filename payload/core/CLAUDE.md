@@ -408,9 +408,10 @@ run back-to-back (see "Execution" below).
 `~/.claude/references/gate-presentation.md` — this section states no presentation of its own. That
 file's count rule resolves to its "exactly 1 item" form on its own: the fixed item template alone, no
 index, no "confirm the rest". The item's **anchor** is the brief's own artifact key; its **summary**
-is one line carrying intake's reading of the request with the decided flag values folded in. Asking to
-see the detail retrieves the whole brief through that anchor, so the one-line summary hides nothing.
-No decision flag is ever offered as an item of its own — here or anywhere else.
+is one line carrying intake's reading of the request alone, and the decided flags print as
+compound-item field lines beneath it. Asking to see the detail retrieves the whole brief through that
+anchor, so the one-line summary hides nothing. No decision flag is ever offered as an item of its own —
+here or anywhere else.
 
 **Two answers, through the host's question widget.** The choice is closed, so it goes through the
 harness's own question control, per that same file's discrete-options rule, each answer carrying one
