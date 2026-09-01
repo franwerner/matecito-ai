@@ -221,8 +221,8 @@ Still applies? (yes / no / see detail)
 ## Where this governs
 
 This walkthrough and this template govern the same mechanism wherever it applies — the count decides
-the form (see above), never a hardcoded list of gates. Eight moments cite this file today; a ninth
-would cite it the same way, without this section growing to keep up. **Eight is not the whole inventory
+the form (see above), never a hardcoded list of gates. Nine moments cite this file today; a tenth
+would cite it the same way, without this section growing to keep up. **Nine is not the whole inventory
 of interruption points** — it is only the count of moments that cite this walkthrough. The Change
 Workspace's merge-conflict report and the commit-atomicity STOP (`~/.claude/skills/git/SKILL.md`) both
 stop the flow too, outside this file: no trigger this walkthrough governs reaches either one, and
@@ -236,10 +236,11 @@ neither is modified by anything here.
   and the gate that precedes materializing spec-mine candidates. Candidates are indexed and walked like
   any other item, anchored to the source they were mined from.
 
-**Six more moments cite this same walkthrough**, each anchored per this table:
+**Seven more moments cite this same walkthrough**, each anchored per this table:
 
 | Moment | Anchor source |
 | --- | --- |
+| Brief Confirmation Gate | `sdd/{change-name}/intake` |
 | Discovery Gate | a repo path for a question grounded in what `sdd-explore` read (with a start line when the source is a specific place); the intake brief's Engram key for a question about the request's own intent |
 | Uncommitted-Work Gate | the dirty paths `git status --porcelain` already printed |
 | Review Workload Guard | `sdd/{change-name}/tasks` |
