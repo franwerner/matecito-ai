@@ -7,11 +7,11 @@
 El aislamiento por espacio de trabajo a nivel de cambio (`structure/change-level-worktree-isolation.md`) se activa solo cuando el pedido lo pide explícitamente, nunca por default — pero el brief que produce `sdd-intake` ya tiene tres flags de decisión existentes (`diagram`, `ui-test`, `components`), que `sdd-intake` decide por cuenta del usuario y el orquestador reporta en una única línea de aviso, sin que ningún gate las confirme. Sin un lugar fijo donde viajar, la elección de aislamiento se resolvería con una pregunta ad-hoc, sin artefacto que la sostuviera después — exactamente el problema que el mecanismo de flags ya resuelve para las otras tres.
 
 ## Decisión
-La elección de aislamiento viaja como una cuarta línea del brief, `- Isolation: {active|inactive}`, bajo `### Classification`, junto a `Diagram`, `UI test` y `Components`. `sdd-intake` la decide por cuenta del usuario, per `structure/change-level-worktree-isolation.md`: activa solo cuando el pedido la pide explícitamente. El orquestador la reporta junto con el resto de los flags del brief en una única línea de aviso; ningún gate la confirma. Para trabajo `direct`/ad-hoc — que nunca produce un brief — la elección se resuelve en el pedido mismo: un pedido que nunca la pidió implica aislamiento inactivo.
+La elección de aislamiento viaja como una cuarta línea del brief, `- Isolation: {active|inactive}`, bajo `### Classification`, junto a `Diagram`, `UI test` y `Components`. `sdd-intake` la decide por cuenta del usuario, per `structure/change-level-worktree-isolation.md`: activa solo cuando el pedido la pide explícitamente. El orquestador la reporta junto con el resto de los flags del brief en una única línea de aviso; ningún gate la confirma como ítem propio — viaja dentro del brief que el Brief Confirmation Gate confirma entero. Para trabajo `direct`/ad-hoc — que nunca produce un brief — la elección se resuelve en el pedido mismo: un pedido que nunca la pidió implica aislamiento inactivo.
 
 ## Reglas verificables
 - **[manual]** La elección de aislamiento se agrega como una cuarta línea `- Isolation: {active|inactive}` bajo `### Classification` del brief, junto a `Diagram`, `UI test` y `Components`.
-- **[manual]** La elección se decide por `sdd-intake` y se reporta junto con el resto de los flags del brief; ningún gate la confirma y ninguna fase posterior la vuelve a preguntar.
+- **[manual]** La elección se decide por `sdd-intake` y se reporta junto con el resto de los flags del brief; ningún gate la confirma como ítem propio, y ninguna fase posterior la vuelve a preguntar.
 - **[manual]** Para trabajo `direct`/ad-hoc, la elección se resuelve en el pedido mismo; un pedido que nunca la pidió explícitamente implica aislamiento inactivo.
 
 ## Alternativas consideradas

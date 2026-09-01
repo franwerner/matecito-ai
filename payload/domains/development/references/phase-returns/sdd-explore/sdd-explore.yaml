@@ -1,8 +1,8 @@
-# matecito-ai: shape of the `sdd-explore` return. This phase now runs two passes — a Discovery Form
-# on `needs-input`, an Exploration on `done`/`blocked` — mirroring `sdd-intake`'s prior contract, so
-# the shape is split into `variants` keyed by status the same way. Note this phase's artifact IS the
-# `[done, blocked]` block, so what you trim there you also trim from what the next phase reads.
-# Meaning lives in `sdd-explore.md`.
+# matecito-ai: shape of the `sdd-explore` return. This phase runs a Discovery Form on `needs-input`
+# ONLY when Pass 1 finds real questions; with none, it proceeds straight to the Exploration on `done`
+# in that same pass — mirroring `sdd-intake`'s prior contract, so the shape is split into `variants`
+# keyed by status the same way. Note this phase's artifact IS the `[done, blocked]` block, so what you
+# trim there you also trim from what the next phase reads. Meaning lives in `sdd-explore.md`.
 phase: sdd-explore
 statuses: [needs-input, done, blocked]
 
@@ -14,8 +14,8 @@ variants:
         emitted: always
         render: line
         field: request_raw
-      # MAY be empty: nothing ambiguous is a complete, legitimate return — never a shortcut to the
-      # exploration block. Empty renders the sentinel, and the one-line reading travels in `### Next`.
+      # Never empty: this block is emitted only when Pass 1 found real questions. Nothing ambiguous
+      # means this block is never reached at all — the phase proceeds to `## Exploration` with `done`.
       - title: "### Questions (unanswered — for the orchestrator to ask)"
         emitted: always
         sentinel: true

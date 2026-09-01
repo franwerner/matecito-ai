@@ -30,7 +30,7 @@ Las preguntas de descubrimiento de un cambio NO se formulan sin haber visto el c
 
 ## Ramas / flujos alternativos
 
-- **Exploración sin preguntas** → retorna un resumen de una línea en `### Next` para que el usuario lo confirme o corrija; aún espera confirmación
+- **Exploración sin preguntas** → retorna el artefacto de exploración con `done`; no interrumpe al usuario
 - **Usuario rechaza responder** → le pide que confirme lo que entiende; si el usuario no entiende más que antes, queda `blocked` y deja la pregunta sin respuesta (no inventa una)
 - **Pregunta sobre el pedido mismo** (ambigüedad del request) → es una pregunta de discovery que también lleva anchor (el brief que intake produjo)
 
@@ -65,7 +65,9 @@ Las preguntas de descubrimiento de un cambio NO se formulan sin haber visto el c
 
 ### Requisito: Discovery is formulated and resolved inside the exploration phase
 
-In the development domain, the exploration phase MUST always run, MUST read the code before it asks anything, and MUST own the discovery cycle: it formulates the form and returns `needs-input`; the orchestrator puts the questions to the user and re-dispatches the same phase with the answers verbatim. The development intake phase MUST NOT formulate a discovery form. This placement is this domain's own; another domain's placement of its discovery MUST NOT change.
+In the development domain, the exploration phase MUST always run, MUST read the code before it asks anything, and MUST own the discovery cycle: when it has questions it formulates the form and returns `needs-input`; the orchestrator puts the questions to the user and re-dispatches the same phase with the answers verbatim. When it has **no** questions it MUST return `done` with its exploration artifact and MUST NOT interrupt the user to confirm a no-questions reading — the brief-confirmation gate has already put the request's reading to the user, once, before this phase ran. The development intake phase MUST NOT formulate a discovery form. This placement is this domain's own; another domain's placement of its discovery MUST NOT change.
+
+**Accepted cost, recorded and not mitigated:** nothing now checks what the exploration phase understood *after reading the code*. The brief-confirmation gate covers the request, not the code reading.
 
 #### Scenario: Questions come out after the code was read
 
@@ -85,8 +87,8 @@ In the development domain, the exploration phase MUST always run, MUST read the 
 
 - GIVEN an exploration run that formulated no questions
 - WHEN it returns
-- THEN it still returns its one-line reading of the request for the user to confirm or correct
-- AND no phase downstream is dispatched before that happens
+- THEN its status is `done`, and this phase puts no no-questions reading to the user
+- AND what the user confirms about the request reached them earlier, once, at the brief-confirmation gate
 
 #### Scenario: Nobody answers the form on the user's behalf
 

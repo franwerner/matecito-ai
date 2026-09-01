@@ -34,12 +34,14 @@ Execute all steps from the skill directly in this context window:
    any question. A question formulated before reading the code is a guess, not a discovery question
 3. The discovery form, two-pass. **Pass 1** (your launch prompt carries no answers): having read the
    code, work out the questions genuinely needed to lock down what is ambiguous — each grounded in
-   something you read or in the request's own intent — return `status: needs-input` with them
-   formulated, and STOP. **Pass 1 ALWAYS returns `needs-input`**, with no exception: if you find
-   nothing genuinely ambiguous, return it with an empty question list plus your one-line reading of
-   the request, for the user to confirm. You never decide on their behalf that there was nothing to
-   ask. **Pass 2** (your launch prompt carries the user's answers): continue with the steps below,
-   using those answers verbatim
+   something you read or in the request's own intent. **With real questions**, return
+   `status: needs-input` with them formulated, and STOP. **With no questions, do NOT stop**: continue
+   with the steps below using the code you already read, and return `status: done` with the
+   exploration artifact in this same pass — the request's reading was already put to the user once, at
+   the Brief Confirmation Gate, before this phase ran; you are not deciding on the user's behalf, you
+   are skipping a confirmation this phase no longer owns. **Pass 2** (your launch prompt carries the
+   user's answers to real Pass-1 questions): continue with the steps below, using those answers
+   verbatim
 4. Identify affected areas, constraints, coupling
 5. Compare approaches with pros/cons/effort table
 6. Return structured analysis with recommendation, carrying the discovery answers verbatim
@@ -68,8 +70,9 @@ Every field and its legal values are defined once in **Section D of
 specifies for `sdd-explore` (D.2 assigns this phase a different block per pass — the Discovery Form
 on Pass 1, the Exploration on Pass 2).
 
-Two statuses are load-bearing here in a non-obvious way: Pass 1 ALWAYS returns `needs-input` (step 3),
-and `blocked` narrows to a stop a re-dispatch with answers cannot clear — missing access, or a
+Two statuses are load-bearing here in a non-obvious way: Pass 1 returns `needs-input` only when it
+formulated real questions (step 3) — with none, it continues to `done` in the same pass — and
+`blocked` narrows to a stop a re-dispatch with answers cannot clear — missing access, or a
 contradiction between the ratified inputs — never a question about the request itself, which is a
 Pass-1 discovery question.
 
@@ -77,9 +80,9 @@ Phase-specific refinements on top of Section D:
 - `executive_summary`: one-sentence description of what was explored and the key recommendation —
   on `needs-input`, one sentence naming what was formulated instead
 - `questions`: on `needs-input` only — the formulated discovery questions, each with one line on why
-  it matters and its `anchor`. **The list MAY be empty**: when nothing is genuinely ambiguous, return
-  it empty accompanied by your one-line reading of the request, for the user to confirm or correct.
-  An empty list is a complete, legitimate return — never pad it with invented questions
+  it matters and its `anchor`. Always non-empty: when nothing is genuinely ambiguous you do not stop
+  here at all — you continue to the exploration artifact and return `done` in the same pass instead
+  (see step 3). Never pad the list with invented questions
 - `artifacts`: topic_keys or file paths written (e.g. `sdd/{change-name}/explore`) — `none` on
   `needs-input`, where there is no exploration artifact yet
 - `next_recommended`: `sdd-propose` (tied to a change, on `done`) — or `none`, which is the value when

@@ -159,7 +159,8 @@ This project runs inside the matecito-ai ecosystem. Apply these defaults (the ac
 > Diagrams, exploration indexes and other concrete tools are **not** kernel concerns — each domain declares its own in its fragment (e.g. drawio diagrams live in the development fragment).
 
 ### Lanes
-Two lanes, fixed — no fork, no recommendation, no confirmation:
+Two lanes, fixed — no fork, no recommendation, no confirmation of the **lane** (the brief that carries
+it is still confirmed as a whole, at the orchestrator's Brief Confirmation Gate):
 - **`full`** — every request, by default and always. The active domain's `Phase pipeline` row (its
   vocabulary table) is the single source for what runs, in order; every phase in that row always runs,
   and none is optional. Nothing about a request's size, phrasing, or grammatical form changes this.
@@ -171,7 +172,9 @@ Two lanes, fixed — no fork, no recommendation, no confirmation:
      (development's binding of this flag). -->
 **Change-level workspace isolation is decided the same way as `direct`: only on an explicit request,
 never by default.** For in-flow work, `sdd-intake` decides it and reports it with the rest of the
-brief's decision flags; nothing waits on it and no gate confirms it. For direct/ad-hoc work, the
+brief's decision flags; no gate confirms it **as an item of its own** — it is neither offered nor
+walked separately, and it travels inside the brief the Brief Confirmation Gate offers as a whole, so a
+correction to it is written like any other correction to the brief. For direct/ad-hoc work, the
 explicit request itself is the only confirmation — a request that never asked for it means isolation
 stays inactive, and nothing downstream assumes otherwise. See the orchestrator's "Change Workspace
 (opt-in)" section below for what isolation does once it is active.
@@ -393,10 +396,51 @@ This trigger has **two distinct confirmation moments**, do not conflate them: (1
 
 **Invariant:** the executor NEVER writes specs directly; the gate + materialize step require explicit user confirmation in the main thread. The trigger only offers — it never blocks.
 
+### Brief Confirmation Gate (MANDATORY)
+
+The intake brief is what every later phase reads as this change's confirmed scope, so it gets
+confirmed before any of them runs. When intake returns, the orchestrator stops here: it puts the brief
+to the user as **one** question, and dispatches nothing — and opens no change workspace — until the
+answer arrives. Nothing waives this stop: not how obvious the brief looks, not that phases otherwise
+run back-to-back (see "Execution" below).
+
+**One item, one question.** The brief is exactly **one** ratifiable item, presented through
+`~/.claude/references/gate-presentation.md` — this section states no presentation of its own. That
+file's count rule resolves to its "exactly 1 item" form on its own: the fixed item template alone, no
+index, no "confirm the rest". The item's **anchor** is the brief's own artifact key; its **summary**
+is one line carrying intake's reading of the request with the decided flag values folded in. Asking to
+see the detail retrieves the whole brief through that anchor, so the one-line summary hides nothing.
+No decision flag is ever offered as an item of its own — here or anywhere else.
+
+**Two answers, through the host's question widget.** The choice is closed, so it goes through the
+harness's own question control, per that same file's discrete-options rule, each answer carrying one
+line of what it costs:
+
+| Answer | What it costs |
+| --- | --- |
+| **Accept as-is** | the flow proceeds on this brief — the change workspace opens first when the brief carries isolation as active, then the next phase is dispatched |
+| **Correct it** | you write what is wrong, in prose; intake runs again and this gate runs again over what comes back |
+
+There is no third answer: nothing here cancels the change. An answer that is neither an acceptance nor
+a correction leaves the question standing — nothing is dispatched and nothing is assumed.
+
+**A correction is resolved by the intake phase, never by the orchestrator.** Re-dispatch `sdd-intake`
+with the original request plus the user's words **verbatim**. It runs a fresh single pass and
+overwrites its own brief under the same `topic_key` — the orchestrator never edits that artifact. No
+second channel forwards the accepted version anywhere: later phases retrieve the key at their own
+dispatch time. Then this gate runs again over what came back. The loop has no bound; it closes when
+the user accepts.
+
+**This is not the gate that used to sit here.** It confirms the brief and nothing else: no lane is
+chosen at it (there is no lane to choose — see "Lanes" above), no decision flag is walked one by one,
+no cancel is offered, and it keys off no execution mode. Only its position, and its "nothing
+dispatches until it is answered" character, carry over.
+
 ### Execution
 
-Phases run back-to-back — no mode to ask, no mode to cache, no between-phase checkpoint. Every gate,
-guard and hard-stop still fires and still waits; running unattended skips none of them.
+Once the brief is confirmed at the gate above, phases run back-to-back — no mode to ask, no mode to
+cache, no between-phase checkpoint. Every gate, guard and hard-stop still fires and still waits;
+running unattended skips none of them.
 
 <!-- matecito-ai: the decision-record-driven statuses below used to route through the deleted INTAKE
      GATE; the brief itself still carries them, so a status check on the return is where they land now. -->
@@ -418,8 +462,8 @@ a dedicated **change workspace** — a separate copy of the project, on its own 
 every phase's work for this change lands instead of the original working tree. With isolation inactive,
 none of this applies: every path behaves exactly as it did before this section existed.
 
-**When it opens — exactly once per change.** In the flow, right after intake returns a brief carrying
-isolation as `active`, before the next phase is dispatched — no gate sits between the two. Outside the
+**When it opens — exactly once per change.** In the flow, once the brief is confirmed at the Brief
+Confirmation Gate, before the next phase is dispatched. Outside the
 flow — direct or ad-hoc work, where no brief exists — right before the first file of the work is created
 or modified (the same trigger the kernel already fires for domain-fragment loading; see "Domain
 resolution & on-demand loading" above). A change whose workspace is already open never gets a second

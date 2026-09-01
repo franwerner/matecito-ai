@@ -301,6 +301,6 @@ El gate de decisiones pendientes deja de ratificar items de `### New Decisions` 
 
 ## Referencias
 
-- **Contrato compartido** → [`../../../payload/shared/references/gate-presentation.md`](../../../payload/shared/references/gate-presentation.md) — El walkthrough (índice → uno a uno → confirmar-el-resto), el template fijo de slots (summary, anchor, acciones, sin narrativa), los ocho momentos (dos gates de fase + seis momentos de orquestador), la regla de conteo (0/1/≥2)
+- **Contrato compartido** → [`../../../payload/shared/references/gate-presentation.md`](../../../payload/shared/references/gate-presentation.md) — El walkthrough (índice → uno a uno → confirmar-el-resto), el template fijo de slots (summary, anchor, acciones, sin narrativa), los nueve momentos (dos gates de fase + siete momentos de orquestador), la regla de conteo (0/1/≥2)
 - **Guard de orquestador** → [`../../../payload/domains/development/CLAUDE.md`](../../../payload/domains/development/CLAUDE.md) — Los seis momentos de orquestador (Discovery Gate, Uncommitted-Work Gate, Review Workload Guard, `blocked` returns, findings de validadores, risks) citan el archivo compartido
 - **Anchoring criterion** → [`../../../payload/domains/development/skills/gentle-ai/_shared/sdd-phase-common.md`](../../../payload/domains/development/skills/gentle-ai/_shared/sdd-phase-common.md) Section D.3 — Formas legales de anchor (`<repo-path>[:line]` | `<engram-key>`), start-line-only, regla target-not-yet-written; toda pregunta de discovery ancla bajo el criterio ordinario

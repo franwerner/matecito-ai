@@ -30,7 +30,9 @@ Read the skill file at `~/.claude/skills/sdd-intake/SKILL.md` and follow it exac
 Also read shared conventions at `~/.claude/skills/_shared/sdd-phase-common.md`.
 
 Execute all steps from the skill directly in this context window:
-1. Receive the raw user request (natural language from the chat)
+1. Receive the raw user request (natural language from the chat). On a correction re-dispatch from the
+   Brief Confirmation Gate, this is the original request plus the user's correction, verbatim — still a
+   single, fresh pass; the resulting brief upserts the same `topic_key`, overwriting the prior version
 2. Classify the change: type (feature/bug/refactor/chore), domains touched
 <!-- matecito-ai: diagram inference test — single source of truth in matecito-ai:behavior (Ecosystem) -->
 <!-- matecito-ai: decía "(CLAUDE.md Ecosystem zone)". Dos problemas: el test vive en el fragmento del

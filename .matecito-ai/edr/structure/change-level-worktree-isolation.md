@@ -20,15 +20,15 @@ espacio**, no sobre la rama original; al cerrar el ciclo, el orquestador integra
 a la rama original.
 
 Se activa solo cuando el pedido del usuario lo pide **explícitamente**, nunca por default; ningún gate
-lo confirma. El momento de apertura depende de si el trabajo pasa por el flujo: cuando sí, el espacio se
-abre apenas `sdd-intake` devuelve un brief con el aislamiento activo, antes de despachar la fase
-siguiente; cuando no —trabajo directo o edición ad-hoc, que nunca produce un brief—, el momento sigue
-siendo el mismo de siempre: antes del primer archivo que se escribe.
+lo confirma como ítem propio. El momento de apertura depende de si el trabajo pasa por el flujo: cuando
+sí, el espacio se abre una vez que se confirma en el Brief Confirmation Gate un brief con el aislamiento
+activo, antes de despachar la fase siguiente; cuando no —trabajo directo o edición ad-hoc, que nunca
+produce un brief—, el momento sigue siendo el mismo de siempre: antes del primer archivo que se escribe.
 
 ## Reglas verificables
 
 - **[manual]** Con el aislamiento por cambio activo, las corridas aisladas de un batch paralelo parten del espacio de trabajo del cambio, nunca de la rama original.
-- **[manual]** La apertura del espacio de trabajo del cambio ocurre apenas `sdd-intake` devuelve un brief con el aislamiento activo, antes de despachar la fase siguiente, cuando el trabajo pasa por el flujo; y antes del primer archivo escrito, cuando no.
+- **[manual]** La apertura del espacio de trabajo del cambio ocurre una vez que se confirma en el Brief Confirmation Gate un brief con el aislamiento activo, antes de despachar la fase siguiente, cuando el trabajo pasa por el flujo; y antes del primer archivo escrito, cuando no.
 - **[manual]** El aislamiento por cambio se activa solo cuando el pedido lo pide explícitamente; ningún camino lo activa por default ni lo asume activo sin haberlo visto elegir.
 
 ## Alternativas consideradas

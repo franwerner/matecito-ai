@@ -30,6 +30,10 @@ for it.
 
 - A raw request from the user, in natural language (e.g. "quiero que se puedan exportar los reportes a CSV").
 - Artifact store mode (`engram | none`).
+- On a correction re-dispatch from the Brief Confirmation Gate: the original request plus the user's
+  correction, verbatim. This is still a single, fresh pass — you produce the brief exactly as you
+  would from a first dispatch, and it upserts the same `topic_key` (Step 4), overwriting the prior
+  version.
 
 ## Execution and Persistence Contract
 
@@ -151,9 +155,12 @@ This brief is the entry artifact for the flow. `sdd-explore` reads it as its sta
 the only phase that can read the raw request in more depth than a rough classification, so the flow
 doesn't start from a vague one-liner without ever getting a closer look.
 
-<!-- matecito-ai: sin gate de confirmación — el brief pasa directo a la fase siguiente -->
-The next phase is dispatched immediately once this brief returns — there is no confirmation gate. The
-orchestrator reports the four decided flags in a single notice line; nothing waits on them.
+<!-- matecito-ai: el brief se confirma entero en el Brief Confirmation Gate (kernel) antes de despachar
+     la fase siguiente — ver `~/.claude/matecito-ai.md`. -->
+The next phase is dispatched only once the Brief Confirmation Gate confirms this brief — the
+orchestrator puts it to the user as one question before anything downstream runs or any change
+workspace opens. The orchestrator folds the four decided flags into that same question; nothing waits
+on any one flag individually.
 
 ## Rules
 
@@ -173,5 +180,6 @@ orchestrator reports the four decided flags in a single notice line; nothing wai
 <!-- matecito-ai: la forma del retorno tiene UNA fuente. Si volvés a escribirla acá, creaste la copia que este cambio vino a eliminar. -->
 - The SHAPE of your return is `~/.claude/references/phase-returns/sdd-intake/sdd-intake.md` — one block, all three statuses. Follow it literally and never reconstruct it from memory (Step 5). This skill defines WHAT goes in each section, never how the section looks.
 - Return envelope per **Section D** from `~/.claude/skills/_shared/sdd-phase-common.md`.
-<!-- matecito-ai: no scope-confirmation gate — la fase siguiente se despacha apenas vuelve este brief -->
-- The brief is dispatched onward immediately — no scope-confirmation gate exists in this flow.
+<!-- matecito-ai: el brief se confirma en el Brief Confirmation Gate del kernel antes de despacharse -->
+- The brief is not dispatched onward until the Brief Confirmation Gate (`~/.claude/matecito-ai.md`)
+  confirms it — that gate lives in the kernel, outside this phase.
