@@ -18,24 +18,27 @@ casing or heading level is a section it will not find.
 
 ## Two passes, two different blocks
 
-This phase carries a different block depending on the pass:
+This phase carries a different block depending on what it found and on the pass:
 
 | Pass | Condition | Status | Block |
 | --- | --- | --- | --- |
-| Pass 1 | your launch prompt carries NO answers | `needs-input`, always | `## Discovery Form: {topic}` |
-| Pass 2 | your launch prompt carries the user's answers | `done` · `blocked` | `## Exploration: {topic}` |
+| Pass 1 | your launch prompt carries NO answers, and you found real questions | `needs-input` | `## Discovery Form: {topic}` |
+| Pass 1 | your launch prompt carries NO answers, and you found no questions | `done` | `## Exploration: {topic}` |
+| Pass 2 | your launch prompt carries the user's answers to real Pass-1 questions | `done` · `blocked` | `## Exploration: {topic}` |
 
-**Pass 1 always returns `needs-input`.** You run headless — you have no channel to the user — so a
-question you cannot resolve from the code or the request itself does not get invented, it gets
-returned for the orchestrator to ask. See the empty-list case below: finding nothing to ask is still a
-Pass-1 return, never a shortcut into the exploration block.
+**Pass 1 returns `needs-input` only when it found real questions.** You run headless — you have no
+channel to the user — so a question you cannot resolve from the code or the request itself does not
+get invented, it gets returned for the orchestrator to ask. Finding nothing to ask is NOT a Pass-1
+return: it proceeds straight into the exploration block, in the same pass, with status `done` — the
+request's own reading was already put to the user once, at the Brief Confirmation Gate, before this
+phase ran.
 
 ## Pass 1 — sections of `## Discovery Form`
 
 | Section | Emitted | Read by |
 | --- | --- | --- |
 | `### Request (as received)` | always | the orchestrator, to confirm it dispatched what the user said |
-| `### Questions (unanswered — for the orchestrator to ask)` | always, **may be empty** | the orchestrator: it puts them to the user verbatim |
+| `### Questions (unanswered — for the orchestrator to ask)` | always, **never empty** | the orchestrator: it puts them to the user verbatim |
 | `### Next` | always | the orchestrator, to route back into this same phase |
 
 Nothing else. No current state, no approaches, no recommendation, no exploration artifact, and no
@@ -67,31 +70,10 @@ intake brief's artifact key.
 Re-dispatch `sdd-explore` with these answers (or with the confirmation) to produce the exploration.
 ```
 
-## `status: needs-input` — Pass 1, nothing to ask
-
-Same block. The question list is **empty**, and that is a complete, legitimate return — not a
-degenerate one, and not licence to produce the exploration. You do not get to decide on the user's
-behalf that they had nothing to add: the empty list travels with your one-line reading of the request,
-and the user confirms or corrects it.
-
-```markdown
-## Discovery Form: {topic}
-
-**Status**: needs-input
-
-### Request (as received)
-{the raw request, verbatim}
-
-### Questions (unanswered — for the orchestrator to ask)
-No questions — I read the request as: {one line, grounded in what you read}. Confirm or correct before
-I build the exploration.
-
-### Next
-Re-dispatch `sdd-explore` with the confirmation to produce the exploration.
-```
-
 Never pad the list with invented questions to make the return look fuller, and never answer a question
-yourself. Returning `needs-input` is the successful outcome of Pass 1.
+yourself. Returning `needs-input` is the successful outcome of a Pass 1 that found real questions —
+with none, Pass 1 does not return this block at all; it proceeds to `## Exploration` below, in the same
+pass, with status `done`.
 
 ## Pass 2 — sections of `## Exploration`
 
@@ -136,8 +118,8 @@ you assume is there. If you could not establish something, say so here rather th
 - {question}: {answer verbatim — never paraphrased into something more convenient}
 - ...
 
-{If Pass 1 returned an empty question list: "No questions were asked. The user confirmed the reading:
-{the one line}."}
+{If you reached this block directly from Pass 1, with no questions formulated, leave this list empty —
+it renders the "None." sentinel. Nothing here claims a confirmation this phase did not run.}
 
 ### Affected Areas
 - `path/to/file.ext` — {why it's affected}
@@ -220,8 +202,10 @@ once you have something to choose between.
 
 ## Artifact vs return — the same content here
 
-Unlike most other phases, this one's Pass-2 **artifact** is this same block: the skill persists the
-identical content to Engram (`sdd/{change-name}/explore`, or `sdd/explore/{topic-slug}` when
-standalone). So whatever you trim from the Pass-2 return you also trim from what the next phase reads.
-In `none` mode there is no artifact at all and this block is the entire output. Pass 1 persists
-nothing — there is no exploration yet, only a form.
+Unlike most other phases, this one's `## Exploration` **artifact** is this same block: the skill
+persists the identical content to Engram (`sdd/{change-name}/explore`, or `sdd/explore/{topic-slug}`
+when standalone) — whether it was reached via Pass 2 (real questions, now answered) or directly from
+Pass 1 (no questions found). So whatever you trim from that return you also trim from what the next
+phase reads. In `none` mode there is no artifact at all and this block is the entire output. A Pass 1
+that stops with real questions and returns `## Discovery Form` persists nothing — there is no
+exploration yet, only a form.

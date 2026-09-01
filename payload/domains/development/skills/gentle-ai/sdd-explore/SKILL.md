@@ -50,8 +50,11 @@ The orchestrator will give you:
   context — its shape is fixed by `## Project Context Format` in
   `~/.claude/skills/sdd-init/references/init-details.md` (`### Stack`, `### Architecture`,
   `### Conventions`); read it by those section titles. An axis marked `— not detected` is a gap you
-  may need to establish yourself, not a value to assume. Save the Pass-2 artifact as
-  `sdd/{change-name}/explore` (or `sdd/explore/{topic-slug}` if standalone). Pass 1 persists nothing.
+  may need to establish yourself, not a value to assume. Save the exploration artifact as
+  `sdd/{change-name}/explore` (or `sdd/explore/{topic-slug}` if standalone) — whether it lands on Pass 2
+  (real questions, now answered) or directly on Pass 1 (no questions found, so it proceeded to `done`
+  in the same pass). A Pass 1 that stops with real questions and returns `needs-input` persists nothing
+  yet.
 - **none**: Return result only.
 
 ### Retrieving Context
@@ -135,10 +138,7 @@ requirement nobody agreed to.
 
 **Pass 1 — your launch prompt carries NO answers.** Having read the code (Step 3), work out the
 questions that would genuinely lock down what is ambiguous, each one grounded either in something you
-read or in the request's own intent. Then STOP: return `status: needs-input` with the questions
-formulated (format in Step 7). Do NOT compare approaches, do NOT recommend, do NOT produce the
-exploration artifact, do NOT persist anything. The orchestrator has the channel — it asks the user and
-re-dispatches you with the answers.
+read or in the request's own intent.
 
 Pick the questions that actually matter for *this* request. Typical axes:
 - **Scope:** what exactly is in and out?
@@ -149,11 +149,18 @@ Pick the questions that actually matter for *this* request. Typical axes:
 Formulate only what's genuinely unclear after reading the code. If the request or the code already
 answers something, don't re-ask it.
 
-**Pass 1 always returns `needs-input`. There is no path from Pass 1 to the exploration artifact.** If
-you conclude that nothing is genuinely ambiguous, you still stop: return `needs-input` with an EMPTY
-question list and one line stating what you understood and why you found nothing to ask, grounded in
-what you read. The orchestrator confirms that with the user. You do not get to decide that the user has
-nothing to add.
+**With real questions, STOP:** return `status: needs-input` with the questions formulated (format in
+Step 7). Do NOT compare approaches, do NOT recommend, do NOT produce the exploration artifact, do NOT
+persist anything. The orchestrator has the channel — it asks the user and re-dispatches you with the
+answers (Pass 2, below).
+
+**With no questions, do NOT stop.** If you conclude that nothing is genuinely ambiguous, continue
+straight into Step 5 with the code you already read, and return `status: done` with the exploration
+artifact in this same pass — no discovery form, no round-trip through the orchestrator to confirm a
+"nothing to ask" reading. The request's own reading was already put to the user once, at the Brief
+Confirmation Gate, before this phase ran; asking again here would ask the same thing twice. You are not
+deciding on the user's behalf that they have nothing to add — you are skipping a confirmation this
+phase no longer owns.
 
 **Pass 2 — your launch prompt carries the answers.** Continue with Step 5 onward, using the user's
 real answers. Record them verbatim under `### Discovery answers` — never paraphrase an answer into
@@ -172,8 +179,9 @@ If there are multiple approaches, compare them:
 
 ### Step 6: Persist Artifact
 
-**This step is MANDATORY on Pass 2, when tied to a named change — do NOT skip it. Pass 1 persists
-nothing.**
+**This step is MANDATORY whenever you reach the exploration artifact, when tied to a named change — do
+NOT skip it.** That happens on Pass 2 (real questions, now answered) or directly on Pass 1 (no
+questions found). A Pass 1 that stops with real questions and returns `needs-input` persists nothing.
 
 Follow **Section C** from `~/.claude/skills/_shared/sdd-phase-common.md`.
 - artifact: `explore`
@@ -196,21 +204,20 @@ another phase's return.
 
 #### Pass 1 — what goes in the Discovery Form
 
-When you stopped at Step 4 because the launch prompt carried no answers, the Discovery Form is your
-entire output: no current state, no approaches, no recommendation, no exploration artifact, no
-`mem_save`.
+When you stopped at Step 4 because you formulated real questions, the Discovery Form is your entire
+output: no current state, no approaches, no recommendation, no exploration artifact, no `mem_save`.
+With no questions you do not stop here at all — see Step 4 — so this block never carries an empty
+question list.
 
 - **Request (as received)** — the raw request, verbatim, from the brief.
 - **Questions** — the ones you worked out in Step 4, each with one line on why it matters and an
   `anchor`: the repo path (with a start line, when the source is a specific place) for a question
   grounded in something you read, or the intake brief's artifact key for a question about the
-  request's own intent. **The list MAY be empty**: when nothing is genuinely ambiguous, it carries
-  your one-line reading of the request instead, for the user to confirm or correct. That is a
-  complete, legitimate return — never pad it with invented questions.
-- **Next** — re-dispatch `sdd-explore` with the answers (or with the confirmation).
+  request's own intent.
+- **Next** — re-dispatch `sdd-explore` with the answers.
 
-Never guess an answer to move on. Returning `needs-input` is the successful outcome of Pass 1, not a
-failure.
+Never guess an answer to move on. Returning `needs-input` is the successful outcome of a Pass 1 that
+found real questions, not a failure.
 
 #### Pass 2 — what goes in the Exploration
 
