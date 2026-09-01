@@ -31,15 +31,20 @@ then apply exactly one of these three forms:
 
 The three forms above are decided by **count**; a fourth form is decided by an item's own **content**,
 and it applies independently of which of the three forms above is in effect — it does not replace the
-count rule, it describes what one item can contain. An item whose content is a set of typed fields
-rather than a single line — a contract proposal, per `~/.claude/matecito-ai/domains/development.md`,
-`### Contract Shapes Proposed` — is still exactly **one item**: it takes one slot in the index, one turn
-in the walkthrough, and one outcome. Its field lines print through the same fixed item template as any
-other item (see "The fixed item template" below), beneath its summary and above the actions — never as
-free narrative, and never split into one item per field. A return carrying one compound item resolves to
-"Exactly 1 item" above; a return carrying several compound items, or a mix of compound and ordinary
-ones, resolves to "2 or more items" and is indexed and walked exactly like any other batch — the count
-rule counts items, and a compound item is one.
+count rule, it describes what one item can contain. An item whose content is a set of fields rather than
+a single line is still exactly **one item**: it takes one slot in the index, one turn in the walkthrough,
+and one outcome. Its field lines print through the same fixed item template as any other item (see "The
+fixed item template" below), beneath its summary and above the actions — never as free narrative, and
+never split into one item per field. Two cases take this form today:
+
+- **A contract proposal**, per `~/.claude/matecito-ai/domains/development.md`, `### Contract Shapes
+  Proposed` — a field line of three parts, `· field: {name} — {type} — {description}`.
+- **The intake brief**, at the Brief Confirmation Gate — a field line of two parts, `· field: {name} —
+  {value}`, one per decision flag the brief decided, carrying the flag's own value verbatim.
+
+A return carrying one compound item resolves to "Exactly 1 item" above; a return carrying several
+compound items, or a mix of compound and ordinary ones, resolves to "2 or more items" and is indexed and
+walked exactly like any other batch — the count rule counts items, and a compound item is one.
 
 ### One index, never accumulated
 
