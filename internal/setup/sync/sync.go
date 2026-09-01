@@ -456,7 +456,7 @@ func Sync(opts Options) Result {
 			if a.Kind == ActionInstall {
 				runErr = install.InstallEngram(installOpts)
 			} else {
-				runErr = install.UpdateEngramPlugin(installOpts)
+				runErr = install.UpdateEngram(installOpts)
 			}
 		case "codegraph":
 			runErr = install.InstallCodegraph(installOpts)

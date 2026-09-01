@@ -413,9 +413,18 @@ func InstallProofshot(opts Options) error {
 	return nil
 }
 
-func UpdateEngramPlugin(opts Options) error {
-	if _, err := exec.LookPath("claude"); err != nil {
-		return errors.New("claude no está en PATH")
+// UpdateEngram updates both artifacts the engram component is made of: the CLI
+// binary — which is what sync detects to pick this action, and whose only update
+// path is re-downloading the release — and the Claude Code plugin, only when that
+// one is actually installed at user scope.
+func UpdateEngram(opts Options) error {
+	if err := InstallEngram(opts); err != nil {
+		return err
+	}
+	// `plugin update` exits 1 when the plugin is not installed at user scope, and
+	// on a fresh account it is engramMCPStep, later in this same run, that installs it.
+	if !engramPluginInstalledAtUserScope() {
+		return nil
 	}
 	if err := runIO(opts, "claude", "plugin", "marketplace", "update", "engram"); err != nil {
 		return err
@@ -423,6 +432,32 @@ func UpdateEngramPlugin(opts Options) error {
 	// `plugin update` requires the installed plugin id (plugin@marketplace), not
 	// the short name — `claude plugin list` reports it as `engram@engram`.
 	return runIO(opts, "claude", "plugin", "update", "engram@engram")
+}
+
+// engramPluginInstalledAtUserScope reports whether `claude plugin update` has a
+// target. Every unreadable state (no claude in PATH, a failing or unparseable
+// listing) answers false, so the update is skipped rather than attempted and failed.
+func engramPluginInstalledAtUserScope() bool {
+	if _, err := exec.LookPath("claude"); err != nil {
+		return false
+	}
+	out, err := exec.Command("claude", "plugin", "list", "--json").Output()
+	if err != nil {
+		return false
+	}
+	var plugins []struct {
+		ID    string `json:"id"`
+		Scope string `json:"scope"`
+	}
+	if err := json.Unmarshal(out, &plugins); err != nil {
+		return false
+	}
+	for _, p := range plugins {
+		if p.ID == "engram@engram" && p.Scope == "user" {
+			return true
+		}
+	}
+	return false
 }
 
 func codegraphBinaryStep(opts Options) Step {
