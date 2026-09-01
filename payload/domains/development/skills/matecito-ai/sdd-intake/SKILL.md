@@ -30,6 +30,10 @@ for it.
 
 - A raw request from the user, in natural language (e.g. "quiero que se puedan exportar los reportes a CSV").
 - Artifact store mode (`engram | none`).
+- On a correction re-dispatch from the Brief Confirmation Gate: the original request plus the user's
+  correction, verbatim. This is still a single, fresh pass — you produce the brief exactly as you
+  would from a first dispatch, and it upserts the same `topic_key` (Step 4), overwriting the prior
+  version.
 
 ## Execution and Persistence Contract
 
