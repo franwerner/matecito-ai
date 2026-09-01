@@ -158,13 +158,14 @@ The "Reads" column is read unconditionally — every phase always runs, so no ph
      somewhere the orchestrator reads (not only in `agents/sdd-intake.md` and its skill, which the intake
      executor reads and the orchestrator does not) — this block is that declaration, unchanged in that
      respect from before this change. -->
-### Brief decision flags (decided and reported, never ratified)
+### Brief decision flags (decided by intake, confirmed with the brief)
 
 `sdd-intake` decides these on the user's behalf and writes them into the brief under
 `### Classification`. The orchestrator reports each in a single notice line when the brief returns —
-by name, with its value — and nothing waits on it. **No gate confirms them**: each reader treats an
-absent flag as `not-needed` and closes **silently**, so a wrongly-decided flag now reaches its reader
-with nobody having checked it.
+by name, with its value. **No gate confirms any of them as an item of its own**: they travel inside
+the brief that the kernel's Brief Confirmation Gate confirms once, as a whole, and each reader treats
+an absent flag as `not-needed` and closes **silently**. A wrong value is corrected by correcting the
+brief, before anything is dispatched — not by a per-flag check nobody runs.
 
 | Flag | Line in the brief | Decided by | Read by | What it drives |
 | --- | --- | --- | --- | --- |
@@ -174,8 +175,8 @@ with nobody having checked it.
 | `worktree-isolation` | `- Worktree isolation: {active\|inactive}` | `sdd-intake`, decided per `structure/change-isolation-activation-flag.md`: active only when the request explicitly asks for isolated work | the orchestrator (kernel's "Change Workspace (opt-in)") | Whether the orchestrator opens a dedicated **git worktree** for this change — its own branch and directory, where every phase's work lands, merged back once at the end. Named for what it is: the flag was `isolation`, which read as a policy rather than as the concrete thing it opens. For `direct`/ad-hoc work — which never reaches an intake brief — the explicit request itself is the only confirmation; a request that never asked for it means inactive. |
 
 None of these is executed by intake: it decides, others (or, for `components`, no one) act. A wrong
-value has no gate to catch it — a user who spots one corrects it in conversation, and that correction
-is not routed through any formal mechanism.
+value is caught at the Brief Confirmation Gate — the user corrects the brief there, as a whole, rather
+than any one flag being checked on its own.
 
 <!-- matecito-ai: git mechanics for the kernel's domain-neutral "Change Workspace (opt-in)" policy —
      `structure/change-workspace-prose-homes.md` fixes this split: the kernel keeps the policy in neutral
@@ -229,12 +230,12 @@ Same precedence as model resolution — per-project `domainConfig.development.st
      before opening a file. -->
 ### Discovery Gate (MANDATORY)
 `sdd-explore` runs headless and CANNOT ask the user anything. It reads the affected code FIRST, THEN
-formulates the discovery form and returns `status: needs-input` with the questions. That return is
-neither an error nor a blocker — it is the normal first pass.
+formulates the discovery form. When it has real questions, it returns `status: needs-input` with them
+— neither an error nor a blocker, the normal first pass when something is genuinely ambiguous.
 
 `needs-input` is a legal envelope status, not an error. The legal status values are enumerated once in the canonical contract (`_shared/sdd-phase-common.md`, Section D.1) — read them there; this gate does not re-declare them.
 
-When `sdd-explore` returns `needs-input`: put its questions to the user yourself (you own the channel), then **re-dispatch `sdd-explore`** with the raw request plus the answers verbatim so it produces the exploration artifact on Pass 2, carrying the answers verbatim in `### Discovery answers`. **An empty question list still requires you to go to the user** — `sdd-explore` returns its one-line reading of the request and the user confirms or corrects it; never treat "no questions" as licence to skip straight to the exploration artifact. Never answer them on the user's behalf, never trim the list down to the ones you find interesting, and never skip ahead to another phase — the form must be resolved before the phase that fixes the change's scope is dispatched. If the user leaves one open, hand it back as open instead of resolving it for them.
+When `sdd-explore` returns `needs-input` with real questions: put them to the user yourself (you own the channel), then **re-dispatch `sdd-explore`** with the raw request plus the answers verbatim so it produces the exploration artifact on Pass 2, carrying the answers verbatim in `### Discovery answers`. Never answer them on the user's behalf, never trim the list down to the ones you find interesting, and never skip ahead to another phase — the form must be resolved before the phase that fixes the change's scope is dispatched. If the user leaves one open, hand it back as open instead of resolving it for them. **When `sdd-explore` finds no questions, it returns `done` with the exploration artifact directly** — no separate confirmation of a no-questions reading: the request's reading was already put to the user once, at the Brief Confirmation Gate, before this phase ran.
 
 The questions are walked through the shared presentation in `~/.claude/references/gate-presentation.md`
 — one index when there are two or more, the fixed item template either way. Each question carries an
