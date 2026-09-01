@@ -408,9 +408,14 @@ run back-to-back (see "Execution" below).
 `~/.claude/references/gate-presentation.md` — this section states no presentation of its own. That
 file's count rule resolves to its "exactly 1 item" form on its own: the fixed item template alone, no
 index, no "confirm the rest". The item's **anchor** is the brief's own artifact key; its **summary**
-is one line carrying intake's reading of the request alone, and the decided flags print as
-compound-item field lines beneath it. Asking to see the detail retrieves the whole brief through that
-anchor, so the one-line summary hides nothing. No decision flag is ever offered as an item of its own —
+is one line carrying intake's reading of the request alone. Beneath it print the item's field lines,
+one per line, in the brief's own order, each as `· field: {name} — {value}` — and **which lines those
+are is enumerated here, not left to whoever presents**: the brief's `Type`, then every decided flag
+(`Diagram`, `UI test`, `Components` where the axis is declared, `Worktree isolation`). `Domains
+touched` is the one line of `### Classification` that never prints. An orchestrator that has only this
+text — no memory of why the list is what it is — must be able to produce the right lines from it, which
+is exactly what printing the whole classification block gets wrong. Asking to see the detail retrieves
+the whole brief through that anchor, so the one-line summary hides nothing. No decision flag is ever offered as an item of its own —
 here or anywhere else.
 
 **Two answers, through the host's question widget.** The choice is closed, so it goes through the

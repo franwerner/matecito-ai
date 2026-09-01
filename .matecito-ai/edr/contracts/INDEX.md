@@ -50,6 +50,7 @@ Decisiones sobre los contratos entre piezas del ecosistema: qué forma tiene lo 
 | [est-lines-is-a-bare-integer.md](est-lines-is-a-bare-integer.md) | Accepted | Vas a agregar o tocar una columna de estimación por Phase que alimenta un guard que acumula aritméticamente, o te tienta permitirle un rango. |
 | [ladder-prose-states-triggered-case-only.md](ladder-prose-states-triggered-case-only.md) | Accepted | Vas a editar el párrafo de la escalera de `gates:` en D.3 de `_shared/sdd-phase-common.md`, o a escribirle una cláusula de comparación entre el caso disparado y el no disparado. |
 | [brief-correction-reruns-intake.md](brief-correction-reruns-intake.md) | Accepted | Vas a tocar cómo se resuelve una corrección al brief en el Brief Confirmation Gate, o quién puede reescribir un artefacto de otra fase. |
+| [gate-field-line-arity.md](gate-field-line-arity.md) | Accepted | Vas a presentar un item compuesto con más de una aridad de línea de campo posible, o a decidir cuántas partes lleva la línea de campo de un item que no es una propuesta de contrato. |
 
 ## No aplican en este dominio
 
