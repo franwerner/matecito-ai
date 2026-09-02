@@ -26,7 +26,8 @@ El comportamiento del sistema, capturado por **capacidad** y organizado por **ti
 
 ## Estado y mantenimiento
 
-- Última actualización: 2026-09-01 (archive `sdd/brief-flags-as-compound-fields`) — Modificadas `flow/confirm-brief-before-dispatch`, `flow/ratify-gate-items`, `rule/contract-shape-proposal` (nueva Requisito de scoping)
+- Última actualización: 2026-09-02 (archive `sdd/adopt-qmd-record-search`) — Creadas `flow/find-durable-records`, `process/install-mcp-from-release-tarball`, `process/configure-record-search`
+- Anterior: 2026-09-01 (archive `sdd/brief-flags-as-compound-fields`) — Modificadas `flow/confirm-brief-before-dispatch`, `flow/ratify-gate-items`, `rule/contract-shape-proposal` (nueva Requisito de scoping)
 - Anterior: 2026-09-01 (archive `sdd/confirm-brief-before-dispatch`) — Creada `flow/confirm-brief-before-dispatch`; Modificadas `flow/two-fixed-lanes`, `rule/intake-passthrough-contract`, `rule/gate-firing-triggers`, `rule/intake-brief-components-line`, `flow/discovery-runs-in-explore`, `flow/ratify-gate-items`, `process/isolate-change-workspace`
 - Anterior: 2026-08-31 (archive `sdd/bound-apply-batch-length`) — Creadas `rule/bound-serial-apply-dispatch`, `rule/justify-serial-task-grouping`; Modificada `rule/mailbox-item-summary-rationale-split` (dieciséis secciones declarantes con descomposición corregida sin doble-conteo; nueva `### Parallelization Verdict` de sdd-tasks)
 - Anterior: 2026-08-31 (archive `sdd/two-lanes-fixed-flow`) — Creadas `flow/two-fixed-lanes`, `flow/discovery-runs-in-explore`, `rule/intake-passthrough-contract`; Modificadas `rule/gate-firing-triggers`, `flow/ratify-gate-items`, `process/isolate-change-workspace`, `rule/intake-brief-components-line`, `rule/decision-re-emergence-reconfirmation`, `rule/component-inference-ratification`, `rule/component-projection-independence`, `rule/capability-spec-components-axis`
