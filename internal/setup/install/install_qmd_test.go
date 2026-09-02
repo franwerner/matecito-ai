@@ -217,6 +217,58 @@ func TestQmdMCPStep_Check_CanonicalButBroken(t *testing.T) {
 	}
 }
 
+// TestQmdMCPStep_Check_CanonicalPresentButDirNotOnPATH verifies Check reports
+// nothing pending when the registration is present and a healthy qmd sits in
+// the canonical npm bin dir, even though that dir is absent from the running
+// session's PATH — the fresh-HOME defect this change fixes (design decision
+// structure/mcp-step-guards-both-artifacts, revised): what a prior run
+// installed and persisted for future sessions does not depend on the current
+// session's PATH already having picked it up.
+func TestQmdMCPStep_Check_CanonicalPresentButDirNotOnPATH(t *testing.T) {
+	isolateMCPFind(t, true)
+
+	npmDir := tempDir(t)
+	writeBin(t, npmDir, "npm", 0, "/tmp/npm-global")
+	canonicalBinDir := filepath.Join("/tmp/npm-global", "bin")
+	if err := os.MkdirAll(canonicalBinDir, 0o755); err != nil {
+		t.Fatalf("mkdir canonical bin dir: %v", err)
+	}
+	t.Cleanup(func() { os.RemoveAll("/tmp/npm-global") })
+	writeBin(t, canonicalBinDir, "qmd", 0, "") // healthy, but its dir is deliberately not on PATH
+	isolatedPATH(t, npmDir)                    // canonical dir excluded on purpose
+
+	opts := install.Options{Yes: true}
+	step := findQmdStep(t, opts)
+	if step.Check() {
+		t.Error("expected Check=false when a healthy canonical qmd's dir is absent from PATH, got true")
+	}
+}
+
+// TestQmdMCPStep_Check_CanonicalAbsentWithResolverAvailable verifies Check
+// still reports pending when the registration and resolver both work but no
+// qmd was ever installed into the canonical dir — the widened presence probe
+// must not be read as "never pending" (design decision
+// structure/mcp-step-guards-both-artifacts, revised).
+func TestQmdMCPStep_Check_CanonicalAbsentWithResolverAvailable(t *testing.T) {
+	isolateMCPFind(t, true)
+
+	npmDir := tempDir(t)
+	writeBin(t, npmDir, "npm", 0, "/tmp/npm-global")
+	canonicalBinDir := filepath.Join("/tmp/npm-global", "bin")
+	if err := os.MkdirAll(canonicalBinDir, 0o755); err != nil {
+		t.Fatalf("mkdir canonical bin dir: %v", err)
+	}
+	t.Cleanup(func() { os.RemoveAll("/tmp/npm-global") })
+	// canonicalBinDir left empty — no qmd binary ever written into it.
+	isolatedPATH(t, npmDir)
+
+	opts := install.Options{Yes: true}
+	step := findQmdStep(t, opts)
+	if !step.Check() {
+		t.Error("expected Check=true when the canonical dir has no qmd binary, got false")
+	}
+}
+
 // --- Run failure paths ---
 
 // TestQmdMCPStep_Run_NpmAbsent verifies Run returns a named error when npm is
