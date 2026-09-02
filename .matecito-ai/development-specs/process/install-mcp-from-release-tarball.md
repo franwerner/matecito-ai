@@ -102,7 +102,7 @@ Cuando la corrida encuentra, bajo el nombre de la integración, un ejecutable qu
 
 ### Requisito: La segunda corrida no reporta nada pendiente
 
-Correr la instalación de nuevo sobre una integración que este paso ya instaló y registró DEBE reportar nada pendiente para ella y NO DEBE descargar, reinstalar ni re-registrar. "Ya instalada" NO se satisface con la mera presencia de un ejecutable con ese nombre en PATH: el sistema DEBE distinguir el ejecutable que este paso instala y mantiene de otro que simplemente esté ahí, y uno que no es el suyo DEBE reportarse como pendiente. Qué señal concreta implementa esa distinción —dónde resuelve el ejecutable, de qué release es, si corre— es una elección de ingeniería y no parte de este contrato: lo que el contrato fija es que la distinción existe y es observable en lo que la corrida reporta.
+Correr la instalación de nuevo sobre una integración que este paso ya instaló y registró DEBE reportar nada pendiente para ella y NO DEBE descargar, reinstalar ni re-registrar. "Ya instalada" NO se satisface con la mera presencia de un ejecutable con ese nombre en PATH: el sistema DEBE distinguir el ejecutable que este paso instala y mantiene de otro que simplemente esté ahí, y uno que no es el suyo DEBE reportarse como pendiente. Simétricamente, tampoco se decide por la mera **ausencia**: que el ejecutable de este paso no sea alcanzable desde el entorno de la corrida en curso NO DEBE, por sí solo, hacer que se reporte pendiente. El sistema DEBE reconocer el ejecutable que él mismo dejó instalado —en el lugar donde este paso lo instala, registrado y capaz de correr— aunque el entorno de esa corrida todavía no haya incorporado ese lugar a su PATH, porque lo que la primera corrida deja persistido para sesiones futuras no rige sobre la sesión que la ejecutó. Qué señal concreta implementa esa distinción —dónde resuelve el ejecutable, de qué release es, si corre— es una elección de ingeniería y no parte de este contrato: lo que el contrato fija es que la distinción existe **en ambos sentidos** y es observable en lo que la corrida reporta.
 
 #### Scenario: segunda corrida idempotente
 
@@ -115,6 +115,19 @@ Correr la instalación de nuevo sobre una integración que este paso ya instaló
 - **GIVEN** una máquina donde la corrida anterior instaló y registró la integración por este paso
 - **WHEN** la persona corre la instalación del ecosistema inmediatamente después
 - **THEN** el plan no lista esta integración y nada se descarga ni re-registra
+
+#### Scenario: el lugar donde este paso instala todavía no está en el PATH de la sesión que corre
+
+- **GIVEN** una máquina recién estrenada donde la corrida anterior instaló y registró la integración por este paso, y su ejecutable corre desde el lugar donde este paso lo deja
+- **AND** la sesión que ejecuta esta segunda corrida todavía no incorporó ese lugar a su PATH — lo que la primera corrida dejó persistido rige recién para sesiones futuras
+- **WHEN** la persona corre la instalación del ecosistema inmediatamente después
+- **THEN** el plan no lista esta integración, no se pide confirmación por ella, y nada se descarga ni re-registra
+
+#### Scenario: no alcanzable y tampoco instalada se sigue reportando pendiente
+
+- **GIVEN** una máquina donde la integración está registrada con el host, pero el ejecutable que este paso instala no está en el lugar donde este paso lo deja
+- **WHEN** la persona corre la instalación del ecosistema
+- **THEN** el plan lista esta integración como pendiente
 
 #### Scenario: un ejecutable que este paso no instaló no cuenta como instalada
 
