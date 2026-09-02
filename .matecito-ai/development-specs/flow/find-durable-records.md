@@ -92,14 +92,27 @@ En verificación, los resultados de los caminos de búsqueda DEBEN ser tratados 
 
 ### Requisito: Disponible para las fases que leen registros, sin nombrar la integración
 
-Las dos fases que deben leer "los registros que este cambio toca" — diseño y verificación — DEBEN empezar con esta capacidad ya disponible para ellas, y con la integración de búsqueda entre sus tools. Sus instrucciones NO DEBEN nombrar la integración: la capacidad la conoce, las fases conocen la capacidad.
+Toda fase que deba leer registros durables — hoy especificación, diseño, tareas y verificación, las cuatro que la tabla de lectura del dominio marca leyendo decisiones o capability-specs — DEBE empezar con esta capacidad ya disponible para ella, y con la integración de búsqueda entre sus tools. Sus instrucciones DEBEN nombrar la capacidad y decir cuándo recurrir a ella, y NO DEBEN nombrar la integración que la implementa: la capacidad la conoce, las fases conocen la capacidad.
 
-#### Scenario: las dos fases empiezan cableadas
+#### Scenario: las cuatro fases empiezan cableadas
 
-- **GIVEN** las fases de diseño y verificación
+- **GIVEN** las fases de especificación, diseño, tareas y verificación
 - **WHEN** cualquiera de ellas arranca
 - **THEN** esta capacidad está precargada y la integración de búsqueda está entre sus tools
 - **AND** ninguna de las instrucciones de la fase menciona la integración por nombre
+
+#### Scenario: las instrucciones nombran la capacidad, no lo que la implementa
+
+- **GIVEN** el cuerpo de instrucciones de cualquiera de esas fases
+- **WHEN** se lo lee buscando cómo localizar los registros que la fase debe leer
+- **THEN** nombra la capacidad y dice cuándo recurrir a ella
+- **AND** no aparece el nombre de la integración de búsqueda en ninguna parte
+
+#### Scenario: una fase que no lee registros no se cablea
+
+- **GIVEN** una fase cuya fila de lectura no incluye decisiones ni capability-specs
+- **WHEN** arranca
+- **THEN** ni la capacidad ni la integración están entre lo que se le precarga
 
 #### Scenario: el helper se resuelve donde la capacidad lo dice
 

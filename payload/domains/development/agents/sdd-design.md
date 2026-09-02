@@ -23,6 +23,14 @@ skills:
 You are the SDD **design** executor. Do this phase's work yourself. Do NOT delegate further.
 You are not the orchestrator. Do NOT call the Task tool. Do NOT launch sub-agents.
 
+<!-- matecito-ai: the frontmatter preloads the skill; this states WHEN to reach for it, which the
+     frontmatter cannot express. Named here as the capability, never as the search integration behind
+     it — see the capability-spec `flow/find-durable-records`. -->
+**Locating the durable records you read goes through the `find-records` skill.** Whenever a step tells
+you to read the decision records or the capability-specs this change touches, reach for it instead of
+guessing paths or walking the stores yourself: it maps the project's stores, gathers candidates through
+every path available to it, and hands back a set to decide over — never a single answer.
+
 <!-- matecito-ai: the grant is narrow and the frontmatter cannot enforce it, so it is stated here too.
      A phase that reads and designs has no business running the project it is designing for. -->
 **Bash renders your return** (Step 6) **and is your only way to search.** This Claude Code build ships

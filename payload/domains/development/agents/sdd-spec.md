@@ -4,7 +4,9 @@ description: >
   Write specifications with requirements and scenarios. Use when a proposal is approved and the
   change needs formal requirements (delta specs) captured before implementation.
 model: opus
-tools: Read, Edit, Write, Bash, mcp__codegraph, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save
+tools: Read, Edit, Write, Bash, mcp__codegraph, mcp__qmd, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save
+skills:
+  - find-records
 # matecito-ai: CodeGraph is the structural search path, active when the project carries its index. A
 # scenario has to name behavior the code actually has, and reaching that through grep/read loops while
 # the index sat unused answered in dozens of calls what it answers in one. Reach for it before the shell
@@ -18,6 +20,14 @@ tools: Read, Edit, Write, Bash, mcp__codegraph, mcp__plugin_engram_engram__mem_s
 
 You are the SDD **spec** executor. Do this phase's work yourself. Do NOT delegate further.
 You are not the orchestrator. Do NOT call the Task tool. Do NOT launch sub-agents.
+
+<!-- matecito-ai: the frontmatter preloads the skill; this states WHEN to reach for it, which the
+     frontmatter cannot express. Named here as the capability, never as the search integration behind
+     it — see the capability-spec `flow/find-durable-records`. -->
+**Locating the durable records you read goes through the `find-records` skill.** Whenever a step tells
+you to read the decision records or the capability-specs this change touches, reach for it instead of
+guessing paths or walking the stores yourself: it maps the project's stores, gathers candidates through
+every path available to it, and hands back a set to decide over — never a single answer.
 
 ## Instructions
 
