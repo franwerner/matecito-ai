@@ -52,8 +52,11 @@ func stubRunner(t *testing.T, output string) *int {
 	return &calls
 }
 
-// TestFindJSONFirst verifies that Find returns from the JSON source without
-// invoking the CLI runner when the name is present in ~/.claude.json mcpServers.
+// TestFindJSONFirst verifies that Find resolves presence from the JSON source
+// (never from the CLI listing) while still consulting the CLI runner once, to
+// enrich the hit with the host's own connectivity — a deliberate reversal:
+// before the tri-state Connection field existed, a JSON hit never invoked the
+// CLI runner at all.
 func TestFindJSONFirst(t *testing.T) {
 	home := t.TempDir()
 	writeClaudeJSON(t, home, map[string]any{
@@ -61,7 +64,7 @@ func TestFindJSONFirst(t *testing.T) {
 	})
 	withHome(t, home)
 
-	calls := stubRunner(t, "") // runner must not be called
+	calls := stubRunner(t, "context7: npx -y @upstash/context7-mcp - ✓ Connected\n")
 
 	f, ok := mcp.Find("context7")
 	if !ok {
@@ -70,8 +73,8 @@ func TestFindJSONFirst(t *testing.T) {
 	if f.Source != "json" {
 		t.Fatalf("Find: expected source=json, got %q", f.Source)
 	}
-	if *calls != 0 {
-		t.Fatalf("Find: CLI runner invoked %d time(s), expected 0", *calls)
+	if *calls != 1 {
+		t.Fatalf("Find: CLI runner invoked %d time(s), expected 1 (enrichment)", *calls)
 	}
 }
 
@@ -96,6 +99,86 @@ func TestFindCLIFallback(t *testing.T) {
 	}
 	if *calls != 1 {
 		t.Fatalf("Find: CLI runner invoked %d time(s), expected 1", *calls)
+	}
+}
+
+// TestFindEnrichesJSONHitConnectionUp verifies scenario 1: a registered
+// integration the host launches successfully is found (from JSON, for
+// presence) and reports ConnectionUp (from the CLI listing, for connectivity).
+func TestFindEnrichesJSONHitConnectionUp(t *testing.T) {
+	home := t.TempDir()
+	writeClaudeJSON(t, home, map[string]any{
+		"context7": map[string]any{"type": "stdio"},
+	})
+	withHome(t, home)
+	stubRunner(t, "context7: npx -y @upstash/context7-mcp - ✓ Connected\n")
+
+	f, ok := mcp.Find("context7")
+	if !ok {
+		t.Fatal("Find: expected found=true")
+	}
+	if f.Connection != mcp.ConnectionUp {
+		t.Fatalf("Find: expected Connection=ConnectionUp, got %v", f.Connection)
+	}
+}
+
+// TestFindEnrichesJSONHitConnectionDown verifies scenario 2: a registered
+// integration the host fails to launch is still found (presence unaffected)
+// and reports ConnectionDown, not simply absent.
+func TestFindEnrichesJSONHitConnectionDown(t *testing.T) {
+	home := t.TempDir()
+	writeClaudeJSON(t, home, map[string]any{
+		"qmd": map[string]any{"type": "stdio"},
+	})
+	withHome(t, home)
+	stubRunner(t, "qmd: qmd mcp - ✗ Failed to connect\n")
+
+	f, ok := mcp.Find("qmd")
+	if !ok {
+		t.Fatal("Find: expected found=true")
+	}
+	if f.Connection != mcp.ConnectionDown {
+		t.Fatalf("Find: expected Connection=ConnectionDown, got %v", f.Connection)
+	}
+}
+
+// TestFindUnregisteredNotConfusedWithDown verifies scenario 3: an integration
+// absent from both the JSON registration and the CLI listing is reported as
+// not found — never as a hit with a negative connection state.
+func TestFindUnregisteredNotConfusedWithDown(t *testing.T) {
+	home := t.TempDir()
+	writeClaudeJSON(t, home, map[string]any{
+		"context7": map[string]any{"type": "stdio"},
+	})
+	withHome(t, home)
+	stubRunner(t, "context7: npx -y @upstash/context7-mcp - ✓ Connected\n")
+
+	_, ok := mcp.Find("never-registered")
+	if ok {
+		t.Fatal("Find: expected found=false for an unregistered integration")
+	}
+}
+
+// TestFindOtherPresenceUnchangedByConnectivity verifies scenario 4: enriching
+// one integration's connectivity does not change whether every other
+// registered (or unregistered) integration is found.
+func TestFindOtherPresenceUnchangedByConnectivity(t *testing.T) {
+	home := t.TempDir()
+	writeClaudeJSON(t, home, map[string]any{
+		"context7": map[string]any{"type": "stdio"},
+		"qmd":      map[string]any{"type": "stdio"},
+	})
+	withHome(t, home)
+	stubRunner(t, "context7: npx -y @upstash/context7-mcp - ✓ Connected\nqmd: qmd mcp - ✗ Failed to connect\n")
+
+	if _, ok := mcp.Find("context7"); !ok {
+		t.Error("Find(context7): expected found=true")
+	}
+	if _, ok := mcp.Find("qmd"); !ok {
+		t.Error("Find(qmd): expected found=true")
+	}
+	if _, ok := mcp.Find("not-registered-anywhere"); ok {
+		t.Error("Find(not-registered-anywhere): expected found=false")
 	}
 }
 

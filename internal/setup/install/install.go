@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/franwerner/matecito-ai/internal/check"
 	"github.com/franwerner/matecito-ai/internal/hook"
 	"github.com/franwerner/matecito-ai/internal/manifest"
 	"github.com/franwerner/matecito-ai/internal/mcp"
@@ -484,6 +485,22 @@ func isSystemPath(p string) bool {
 	return strings.HasPrefix(p, "/usr/") || strings.HasPrefix(p, "/opt/")
 }
 
+// resolveUserNpmBinDir reports the bin directory this step installs into,
+// without mutating npm config or the process PATH — a read-only call to `npm
+// config get prefix`, joined with "bin". It mirrors the directory
+// ensureUserNpmPrefix computes and, when that function later reconfigures the
+// prefix to ~/.npm-global (system-owned prefix case), the two intentionally
+// diverge until the mutation runs: this resolver always reports the prefix
+// npm reports *right now*, never the one a mutation would set.
+func resolveUserNpmBinDir() (string, error) {
+	out, err := exec.Command("npm", "config", "get", "prefix").CombinedOutput()
+	if err != nil {
+		return "", err
+	}
+	prefix := strings.TrimSpace(string(out))
+	return filepath.Join(prefix, "bin"), nil
+}
+
 func ensureUserNpmPrefix(opts Options) error {
 	out, err := exec.Command("npm", "config", "get", "prefix").CombinedOutput()
 	if err != nil {
@@ -711,13 +728,36 @@ func qmdMCPStep(opts Options) Step {
 			if _, ok := mcp.Find("qmd"); !ok {
 				return true
 			}
-			_, err := exec.LookPath("qmd")
-			return err != nil
+			qmdPath, err := exec.LookPath("qmd")
+			if err != nil {
+				return true
+			}
+			// Provenance: the qmd winning on PATH must live in the directory this
+			// step installs into — an unresolved-path comparison, deliberately not
+			// following symlinks (npm's own global bin entry is itself a symlink
+			// into lib/node_modules/). When the resolver itself fails (e.g. npm
+			// absent), the honest answer is pending: this step cannot establish
+			// that the qmd it found is its own, and Run will fail naming npm.
+			binDir, err := resolveUserNpmBinDir()
+			if err != nil {
+				return true
+			}
+			if filepath.Dir(qmdPath) != binDir {
+				return true
+			}
+			// Health: the binary in the canonical location must actually run.
+			return check.RunVersion("qmd", qmdPath, []string{"--version"}, false, "").Status == check.StatusMissing
 		},
 		Run: func() error {
 			if _, err := exec.LookPath("npm"); err != nil {
 				return errors.New("npm no está instalado")
 			}
+			// Captured BEFORE ensureUserNpmPrefix mutates the process PATH (it
+			// prepends the npm bin dir): otherwise LookPath after that point always
+			// resolves to this step's own qmd, even on a machine whose shell will
+			// keep picking a different one, and the foreign-path check below would
+			// never fire.
+			preQmdPath, preErr := exec.LookPath("qmd")
 			if err := ensureUserNpmPrefix(opts); err != nil {
 				return err
 			}
@@ -735,7 +775,18 @@ func qmdMCPStep(opts Options) Step {
 				if _, err := exec.LookPath("claude"); err != nil {
 					return errors.New("claude no está en PATH")
 				}
-				return runIO(opts, "claude", "mcp", "add", "--scope", "user", "qmd", "--", "qmd", "mcp")
+				if err := runIO(opts, "claude", "mcp", "add", "--scope", "user", "qmd", "--", "qmd", "mcp"); err != nil {
+					return err
+				}
+			}
+			// This step's own qmd is installed and registered. If a qmd it did
+			// NOT install still wins on PATH, reinstalling cannot repair that
+			// (this only ever writes into its own prefix) — fail naming the exact
+			// foreign path so the person can remove or rename it.
+			if preErr == nil {
+				if binDir, err := resolveUserNpmBinDir(); err == nil && filepath.Dir(preQmdPath) != binDir {
+					return fmt.Errorf("qmd: %q sigue ganando en PATH y no es el que este paso instaló; borralo o renombralo para que el que este paso instaló quede activo", preQmdPath)
+				}
 			}
 			return nil
 		},

@@ -41,6 +41,8 @@ Decisiones sobre cómo se organiza el payload del repo (dónde vive cada concept
 | [release-asset-by-stable-name.md](release-asset-by-stable-name.md) | Accepted | Vas a resolver qué asset de una release de GitHub instalar por nombre. |
 | [mcp-step-guards-both-artifacts.md](mcp-step-guards-both-artifacts.md) | Accepted | Vas a tocar el paso de instalación del MCP de qmd, o a decidir cómo un paso de MCP con binario propio detecta trabajo pendiente. |
 | [installer-step-ships-with-tests.md](installer-step-ships-with-tests.md) | Accepted | Vas a escribir o revisar un paso de instalación nuevo y te tienta omitir sus tests porque el Scope del spec no los menciona. |
+| [mcp-connectivity-read-from-host.md](mcp-connectivity-read-from-host.md) | Accepted | Vas a leer `.Connection` sobre un `Found` de `mcp.Find` —o a tratar sus tres estados, incluido el "no preguntado"—, o a escribir la lógica de `Describe()` para una integración registrada por MCP. |
+| [qmd-run-fails-on-shadowing-executable.md](qmd-run-fails-on-shadowing-executable.md) | Accepted | Vas a tocar `qmdMCPStep.Run`, o a decidir qué hacer con un ejecutable que un paso de instalación no instaló pero sigue ganando en PATH. |
 
 ## No aplican en este dominio
 

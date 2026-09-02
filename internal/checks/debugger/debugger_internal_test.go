@@ -14,7 +14,7 @@ func TestDetectMCP_RegisteredReportsOK(t *testing.T) {
 	orig := find
 	t.Cleanup(func() { find = orig })
 	find = func(string) (mcp.Found, bool) {
-		return mcp.Found{Name: "debugger", Connected: true, Source: "cli"}, true
+		return mcp.Found{Name: "debugger", Connection: mcp.ConnectionUp, Source: "cli"}, true
 	}
 
 	r := detectMCP()

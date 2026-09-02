@@ -148,18 +148,72 @@ func TestQmdMCPStep_Check_RegistrationPresentBinaryAbsent(t *testing.T) {
 }
 
 // TestQmdMCPStep_Check_BothPresent verifies Check reports nothing pending when
-// both the registration and the binary are present.
+// the registration is present and the qmd binary resolves inside the
+// canonical npm bin dir and runs — the good case under the widened,
+// provenance-aware Check (design decision structure/mcp-step-guards-both-artifacts,
+// revised). The fake qmd lives in the canonical bin dir (mirroring the npm
+// stub's "npm config get prefix" answer) rather than an arbitrary temp dir,
+// so it is not mistaken for a foreign executable.
 func TestQmdMCPStep_Check_BothPresent(t *testing.T) {
 	isolateMCPFind(t, true)
 
-	d := tempDir(t)
-	writeBin(t, d, "qmd", 0, "")
-	isolatedPATH(t, d)
+	npmDir := tempDir(t)
+	writeBin(t, npmDir, "npm", 0, "/tmp/npm-global")
+	canonicalBinDir := filepath.Join("/tmp/npm-global", "bin")
+	if err := os.MkdirAll(canonicalBinDir, 0o755); err != nil {
+		t.Fatalf("mkdir canonical bin dir: %v", err)
+	}
+	t.Cleanup(func() { os.RemoveAll("/tmp/npm-global") })
+	writeBin(t, canonicalBinDir, "qmd", 0, "")
+	isolatedPATH(t, canonicalBinDir, npmDir)
 
 	opts := install.Options{Yes: true}
 	step := findQmdStep(t, opts)
 	if step.Check() {
-		t.Error("expected Check=false when both registration and binary are present, got true")
+		t.Error("expected Check=false when registration is present and the binary is in the canonical dir and runs, got true")
+	}
+}
+
+// TestQmdMCPStep_Check_ForeignLocation verifies Check reports pending when the
+// registration is present and the qmd winning on PATH runs fine but lives
+// outside the canonical npm bin dir — the incident this widened Check exists
+// to close (design decision structure/mcp-step-guards-both-artifacts, revised).
+func TestQmdMCPStep_Check_ForeignLocation(t *testing.T) {
+	isolateMCPFind(t, true)
+
+	npmDir := tempDir(t)
+	writeBin(t, npmDir, "npm", 0, "/tmp/npm-global")
+	foreignDir := tempDir(t)
+	writeBin(t, foreignDir, "qmd", 0, "") // runs fine, but not in the canonical dir
+	isolatedPATH(t, foreignDir, npmDir)
+
+	opts := install.Options{Yes: true}
+	step := findQmdStep(t, opts)
+	if !step.Check() {
+		t.Error("expected Check=true when the winning qmd lives outside the canonical bin dir, got false")
+	}
+}
+
+// TestQmdMCPStep_Check_CanonicalButBroken verifies Check reports pending when
+// the qmd in the canonical bin dir is present but fails to run — the health
+// clause, catching the incident's "Cannot find package 'fast-glob'" symptom.
+func TestQmdMCPStep_Check_CanonicalButBroken(t *testing.T) {
+	isolateMCPFind(t, true)
+
+	npmDir := tempDir(t)
+	writeBin(t, npmDir, "npm", 0, "/tmp/npm-global")
+	canonicalBinDir := filepath.Join("/tmp/npm-global", "bin")
+	if err := os.MkdirAll(canonicalBinDir, 0o755); err != nil {
+		t.Fatalf("mkdir canonical bin dir: %v", err)
+	}
+	t.Cleanup(func() { os.RemoveAll("/tmp/npm-global") })
+	writeBin(t, canonicalBinDir, "qmd", 1, "") // in the canonical dir, but exits non-zero
+	isolatedPATH(t, canonicalBinDir, npmDir)
+
+	opts := install.Options{Yes: true}
+	step := findQmdStep(t, opts)
+	if !step.Check() {
+		t.Error("expected Check=true when the canonical qmd fails to run, got false")
 	}
 }
 
@@ -241,17 +295,25 @@ func TestQmdMCPStep_Run_ClaudeAbsent(t *testing.T) {
 // TestQmdMCPStep_Run_AlreadyRegistered_SkipsClaudeMCPAdd verifies a repair run
 // (binary missing, registration already present) reinstalls the binary and
 // returns nil without requiring claude on PATH at all — Run must not attempt
-// a duplicate `claude mcp add`.
+// a duplicate `claude mcp add`. The pre-existing qmd lives in the canonical
+// npm bin dir (mirroring the npm stub's prefix answer) — not an arbitrary
+// temp dir — so decision 2's shadowing-executable check does not fire here;
+// that check has its own dedicated cases below.
 func TestQmdMCPStep_Run_AlreadyRegistered_SkipsClaudeMCPAdd(t *testing.T) {
 	isolateMCPFind(t, true)
 	stubGitHubReleaseServer(t, qmdReleaseHandler("v2.8.3-mate.6", "https://example.com/qmd.tgz"))
 
 	d := tempDir(t)
 	writeBin(t, d, "npm", 0, "/tmp/npm-global")
-	writeBin(t, d, "qmd", 0, "")
+	canonicalBinDir := filepath.Join("/tmp/npm-global", "bin")
+	if err := os.MkdirAll(canonicalBinDir, 0o755); err != nil {
+		t.Fatalf("mkdir canonical bin dir: %v", err)
+	}
+	t.Cleanup(func() { os.RemoveAll("/tmp/npm-global") })
+	writeBin(t, canonicalBinDir, "qmd", 0, "")
 	// claude is intentionally NOT written — if Run tried to register again it
 	// would fail on this LookPath; its absence proves the branch was skipped.
-	isolatedPATH(t, d)
+	isolatedPATH(t, canonicalBinDir, d)
 
 	var out bytes.Buffer
 	opts := install.Options{Stdout: &out, Stderr: &out, Yes: true}
@@ -298,15 +360,22 @@ func TestQmdMCPStep_Run_AssetAbsent(t *testing.T) {
 // TestQmdMCPStep_Run_AssetFound_ReachesInstall verifies the happy path of
 // asset resolution: when qmd.tgz IS present, Run proceeds past resolution and
 // into the npm install step (observed here by npm exiting 0 and the binary
-// landing, i.e. no asset-resolution error at all).
+// landing, i.e. no asset-resolution error at all). The pre-existing qmd lives
+// in the canonical npm bin dir so decision 2's shadowing-executable check
+// does not fire — that behavior has its own dedicated cases below.
 func TestQmdMCPStep_Run_AssetFound_ReachesInstall(t *testing.T) {
 	isolateMCPFind(t, true) // already registered → no claude needed
 	stubGitHubReleaseServer(t, qmdReleaseHandler("v2.8.3-mate.6", "https://example.com/qmd.tgz"))
 
 	d := tempDir(t)
 	writeBin(t, d, "npm", 0, "/tmp/npm-global")
-	writeBin(t, d, "qmd", 0, "")
-	isolatedPATH(t, d)
+	canonicalBinDir := filepath.Join("/tmp/npm-global", "bin")
+	if err := os.MkdirAll(canonicalBinDir, 0o755); err != nil {
+		t.Fatalf("mkdir canonical bin dir: %v", err)
+	}
+	t.Cleanup(func() { os.RemoveAll("/tmp/npm-global") })
+	writeBin(t, canonicalBinDir, "qmd", 0, "")
+	isolatedPATH(t, canonicalBinDir, d)
 
 	var out bytes.Buffer
 	opts := install.Options{Stdout: &out, Stderr: &out, Yes: true}
@@ -314,6 +383,106 @@ func TestQmdMCPStep_Run_AssetFound_ReachesInstall(t *testing.T) {
 
 	if err := step.Run(); err != nil {
 		t.Fatalf("expected nil once qmd.tgz resolves and npm install succeeds, got: %v", err)
+	}
+}
+
+// TestQmdMCPStep_Run_FailsNamingShadowingExecutable verifies decision 2
+// (structure/qmd-run-fails-on-shadowing-executable): when a qmd this step did
+// not install still wins on PATH before ensureUserNpmPrefix mutates it, Run
+// still installs and registers its own copy into the canonical bin dir, then
+// fails naming the exact foreign absolute path — not the canonical one.
+func TestQmdMCPStep_Run_FailsNamingShadowingExecutable(t *testing.T) {
+	isolateMCPFind(t, true) // already registered → registration branch is not what's under test
+	stubGitHubReleaseServer(t, qmdReleaseHandler("v2.8.3-mate.6", "https://example.com/qmd.tgz"))
+
+	npmDir := tempDir(t)
+	writeBin(t, npmDir, "npm", 0, "/tmp/npm-global")
+	foreignDir := tempDir(t)
+	writeBin(t, foreignDir, "qmd", 0, "") // the shadowing executable, ahead in PATH before mutation
+	canonicalBinDir := filepath.Join("/tmp/npm-global", "bin")
+	if err := os.MkdirAll(canonicalBinDir, 0o755); err != nil {
+		t.Fatalf("mkdir canonical bin dir: %v", err)
+	}
+	t.Cleanup(func() { os.RemoveAll("/tmp/npm-global") })
+	writeBin(t, canonicalBinDir, "qmd", 0, "") // what "npm install" is standing in for
+	// canonicalBinDir is deliberately absent from the PATH set here: Run's own
+	// ensureUserNpmPrefix call is what prepends it, mirroring production.
+	isolatedPATH(t, foreignDir, npmDir)
+
+	var out bytes.Buffer
+	opts := install.Options{Stdout: &out, Stderr: &out, Yes: true}
+	step := findQmdStep(t, opts)
+
+	err := step.Run()
+	if err == nil {
+		t.Fatal("expected error when a foreign qmd shadows the canonical install, got nil")
+	}
+	wantPath := filepath.Join(foreignDir, "qmd")
+	if !strings.Contains(err.Error(), wantPath) {
+		t.Errorf("error should name the foreign absolute path %q; got: %v", wantPath, err)
+	}
+	if strings.Contains(err.Error(), canonicalBinDir) {
+		t.Errorf("error should not name the canonical path %q; got: %v", canonicalBinDir, err)
+	}
+}
+
+// --- Regression: a legitimate install does not start reporting pending forever ---
+
+// TestQmdMCPStep_Check_SecondRunIdempotent mirrors the spec's "segunda corrida
+// idempotente" scenario: on a machine where the canonical qmd is the only qmd
+// on PATH and the registration is present, Check reports not-pending, and
+// calling it again changes nothing — the guard against the widened Check
+// itself becoming a source of permanent false pendings.
+func TestQmdMCPStep_Check_SecondRunIdempotent(t *testing.T) {
+	isolateMCPFind(t, true)
+
+	npmDir := tempDir(t)
+	writeBin(t, npmDir, "npm", 0, "/tmp/npm-global")
+	canonicalBinDir := filepath.Join("/tmp/npm-global", "bin")
+	if err := os.MkdirAll(canonicalBinDir, 0o755); err != nil {
+		t.Fatalf("mkdir canonical bin dir: %v", err)
+	}
+	t.Cleanup(func() { os.RemoveAll("/tmp/npm-global") })
+	writeBin(t, canonicalBinDir, "qmd", 0, "")
+	isolatedPATH(t, canonicalBinDir, npmDir)
+
+	opts := install.Options{Yes: true}
+	step := findQmdStep(t, opts)
+	if step.Check() {
+		t.Fatal("expected Check=false on the first run over a canonical-only machine")
+	}
+	if step.Check() {
+		t.Error("expected Check=false again on the second run — nothing should have changed")
+	}
+}
+
+// TestQmdMCPStep_Check_NotPendingRightAfterRun mirrors the spec's "lo que este
+// paso acaba de instalar no vuelve a reportarse pendiente" scenario: right
+// after a successful Run, Check reports not-pending — what this step just
+// installed and registered counts as installed by its own Check.
+func TestQmdMCPStep_Check_NotPendingRightAfterRun(t *testing.T) {
+	isolateMCPFind(t, true) // already registered → Run's registration branch is a no-op
+	stubGitHubReleaseServer(t, qmdReleaseHandler("v2.8.3-mate.6", "https://example.com/qmd.tgz"))
+
+	npmDir := tempDir(t)
+	writeBin(t, npmDir, "npm", 0, "/tmp/npm-global")
+	canonicalBinDir := filepath.Join("/tmp/npm-global", "bin")
+	if err := os.MkdirAll(canonicalBinDir, 0o755); err != nil {
+		t.Fatalf("mkdir canonical bin dir: %v", err)
+	}
+	t.Cleanup(func() { os.RemoveAll("/tmp/npm-global") })
+	writeBin(t, canonicalBinDir, "qmd", 0, "") // what "npm install" is standing in for
+	isolatedPATH(t, canonicalBinDir, npmDir)   // no foreign qmd anywhere on PATH
+
+	var out bytes.Buffer
+	opts := install.Options{Stdout: &out, Stderr: &out, Yes: true}
+	step := findQmdStep(t, opts)
+
+	if err := step.Run(); err != nil {
+		t.Fatalf("expected Run to succeed on a clean machine, got: %v", err)
+	}
+	if step.Check() {
+		t.Error("expected Check=false immediately after a successful Run, got true (pending)")
 	}
 }
 

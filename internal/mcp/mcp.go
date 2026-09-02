@@ -11,10 +11,23 @@ import (
 	"sync"
 )
 
+// ConnectionState represents whether the host was asked about a registered
+// integration's connectivity, and, if it was, what it answered.
+// ConnectionUnknown (the zero value) means the host was never consulted — it
+// is distinct from ConnectionDown, which means the host was consulted and
+// reported the integration not connected.
+type ConnectionState int
+
+const (
+	ConnectionUnknown ConnectionState = iota
+	ConnectionUp
+	ConnectionDown
+)
+
 type Found struct {
-	Name      string
-	Connected bool
-	Source    string
+	Name       string
+	Connection ConnectionState
+	Source     string
 }
 
 func defaultRunMCPList() ([]byte, error) {
@@ -75,6 +88,7 @@ func cachedCLIOutput() ([]byte, error) {
 
 func Find(needle string) (Found, bool) {
 	if f, ok := findInJSON(needle); ok {
+		f.Connection = connectionFromCLI(f.Name)
 		return f, true
 	}
 	if f, ok := findViaCLI(needle); ok {
@@ -84,16 +98,46 @@ func Find(needle string) (Found, bool) {
 }
 
 func (f Found) Describe() string {
-	switch {
-	case f.Source == "cli" && f.Connected:
+	switch f.Connection {
+	case ConnectionUp:
 		return fmt.Sprintf("%q (conectado)", f.Name)
-	case f.Source == "cli":
+	case ConnectionDown:
 		return fmt.Sprintf("%q (registrado, no conectado)", f.Name)
-	case f.Source == "json":
-		return fmt.Sprintf("%q en ~/.claude.json", f.Name)
 	default:
+		if f.Source == "json" {
+			return fmt.Sprintf("%q en ~/.claude.json", f.Name)
+		}
 		return fmt.Sprintf("%q", f.Name)
 	}
+}
+
+// connectionFromCLI reports the host's own connectivity for a registered
+// integration by name, read from the memoized "claude mcp list" output. It
+// stays ConnectionUnknown when the CLI cannot be consulted at all (no claude
+// in PATH, a failing or unparseable listing) or when the listing has no line
+// for this name — the honest "not asked" answer, never a negative one by
+// default.
+func connectionFromCLI(name string) ConnectionState {
+	out, err := cachedCLIOutput()
+	if err != nil {
+		return ConnectionUnknown
+	}
+	lo := strings.ToLower(name)
+	for _, line := range strings.Split(string(out), "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		idx := strings.Index(line, ": ")
+		if idx <= 0 || strings.ToLower(line[:idx]) != lo {
+			continue
+		}
+		if strings.Contains(line, "✓ Connected") {
+			return ConnectionUp
+		}
+		return ConnectionDown
+	}
+	return ConnectionUnknown
 }
 
 func findViaCLI(needle string) (Found, bool) {
@@ -111,8 +155,11 @@ func findViaCLI(needle string) (Found, bool) {
 		if idx := strings.Index(line, ": "); idx > 0 {
 			name = line[:idx]
 		}
-		connected := strings.Contains(line, "✓ Connected")
-		return Found{Name: name, Connected: connected, Source: "cli"}, true
+		state := ConnectionDown
+		if strings.Contains(line, "✓ Connected") {
+			state = ConnectionUp
+		}
+		return Found{Name: name, Connection: state, Source: "cli"}, true
 	}
 	return Found{}, false
 }
