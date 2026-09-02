@@ -7,7 +7,13 @@ import (
 
 	"github.com/franwerner/matecito-ai/internal/check"
 	"github.com/franwerner/matecito-ai/internal/mcp"
+	"github.com/franwerner/matecito-ai/internal/setup/install"
 )
+
+// resolveBinary is the install-location seam so tests can exercise every
+// branch (including a resolver error) without depending on the host's actual
+// install state — mirrors internal/checks/debugger/debugger.go's `var find`.
+var resolveBinary = install.EngramBinaryPath
 
 func All() []check.Result {
 	return []check.Result{
@@ -18,7 +24,7 @@ func All() []check.Result {
 }
 
 func detectBinary() check.Result {
-	return check.RunVersion("engram", "engram", []string{"version"}, true,
+	return check.ProbeAt("engram", resolveBinary, []string{"version"}, true,
 		"Instalá Engram: matecito-ai install")
 }
 

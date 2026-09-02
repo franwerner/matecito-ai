@@ -232,11 +232,11 @@ func Detect(opts Options) ([]ComponentState, error) {
 
 	// --- Engram ---
 	if wantBinary("engram") {
-		engramResult := check.RunVersion("engram", "engram", []string{"version"}, false, "")
+		engramPresent, engramVersion := probeInstalledBinary("engram", install.EngramBinaryPath, []string{"version"})
 		engramState := ComponentState{
 			Name:           "engram",
-			Present:        engramResult.Status != check.StatusMissing,
-			CurrentVersion: engramResult.Version,
+			Present:        engramPresent,
+			CurrentVersion: engramVersion,
 		}
 		latestEngram, err := fetchLatestEngram(t)
 		if err != nil {
@@ -249,11 +249,11 @@ func Detect(opts Options) ([]ComponentState, error) {
 
 	// --- CodeGraph ---
 	if wantBinary("codegraph") {
-		cgResult := check.RunVersion("codegraph", "codegraph", []string{"--version"}, false, "")
+		cgPresent, cgVersion := probeInstalledBinary("codegraph", install.CodegraphBinaryPath, []string{"--version"})
 		cgState := ComponentState{
 			Name:           "codegraph",
-			Present:        cgResult.Status != check.StatusMissing,
-			CurrentVersion: cgResult.Version,
+			Present:        cgPresent,
+			CurrentVersion: cgVersion,
 		}
 		latestCG, err := fetchLatestCodeGraph(t)
 		if err != nil {
@@ -266,11 +266,11 @@ func Detect(opts Options) ([]ComponentState, error) {
 
 	// --- ProofShot ---
 	if wantBinary("proofshot") {
-		psResult := check.RunVersion("proofshot", "proofshot", []string{"--version"}, false, "")
+		psPresent, psVersion := probeInstalledBinary("proofshot", install.ProofshotBinaryPath, []string{"--version"})
 		psState := ComponentState{
 			Name:           "proofshot",
-			Present:        psResult.Status != check.StatusMissing,
-			CurrentVersion: psResult.Version,
+			Present:        psPresent,
+			CurrentVersion: psVersion,
 		}
 		latestPS, err := fetchLatestProofshot(t)
 		if err != nil {
@@ -314,6 +314,16 @@ func Detect(opts Options) ([]ComponentState, error) {
 	states = append(states, configState)
 
 	return states, nil
+}
+
+// probeInstalledBinary reports whether name is installed and healthy at the
+// canonical location resolve returns — the place its own step installs it to,
+// never the running session's PATH. Adapter over check.ProbeAt, mapping its
+// Result onto the (present, version) tuple Detect assembles ComponentState
+// from; the signature is unchanged from before this adapter existed.
+func probeInstalledBinary(name string, resolve func() (string, error), versionArgs []string) (present bool, version string) {
+	r := check.ProbeAt(name, resolve, versionArgs, false, "")
+	return r.Status != check.StatusMissing, r.Version
 }
 
 // payloadChanged reports whether the payload is out of date: something new to

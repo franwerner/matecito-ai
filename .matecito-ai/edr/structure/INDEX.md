@@ -43,6 +43,11 @@ Decisiones sobre cómo se organiza el payload del repo (dónde vive cada concept
 | [installer-step-ships-with-tests.md](installer-step-ships-with-tests.md) | Accepted | Vas a escribir o revisar un paso de instalación nuevo y te tienta omitir sus tests porque el Scope del spec no los menciona. |
 | [mcp-connectivity-read-from-host.md](mcp-connectivity-read-from-host.md) | Accepted | Vas a leer `.Connection` sobre un `Found` de `mcp.Find` —o a tratar sus tres estados, incluido el "no preguntado"—, o a escribir la lógica de `Describe()` para una integración registrada por MCP. |
 | [qmd-run-fails-on-shadowing-executable.md](qmd-run-fails-on-shadowing-executable.md) | Accepted | Vas a tocar `qmdMCPStep.Run`, o a decidir qué hacer con un ejecutable que un paso de instalación no instaló pero sigue ganando en PATH. |
+| [binary-presence-probe-shared-by-both-surfaces.md](binary-presence-probe-shared-by-both-surfaces.md) | Accepted | Vas a agregar un segundo caller de "probar si un binario está instalado en su ubicación canónica" a check.ProbeAt, o a decidir si un check de presencia va en internal/check o en el paquete que lo consume. |
+| [binary-detection-at-canonical-path.md](binary-detection-at-canonical-path.md) | Accepted | Vas a tocar cómo sync.Detect resuelve la presencia de engram, codegraph o proofshot, o a decidir si conviene reemplazar los tres bloques por una tabla. |
+| [step-install-location-accessors.md](step-install-location-accessors.md) | Accepted | Vas a necesitar la ubicación canónica donde un paso de instalación deja su binario, desde fuera de internal/setup/install. |
+| [npm-bin-dir-single-resolver.md](npm-bin-dir-single-resolver.md) | Accepted | Vas a resolver dónde npm deja los ejecutables globales, en vez de volver a derivarlo con tu propio `npm config get prefix`. |
+| [check-resolver-seam.md](check-resolver-seam.md) | Accepted | Vas a agregar o tocar un check de verify que prueba la presencia de un binario que otro paso instala. |
 
 ## No aplican en este dominio
 

@@ -337,6 +337,14 @@ func TestDecide_MatecitoAIDevBuild(t *testing.T) {
 			s:    ComponentState{Name: "engram", Present: true, CurrentVersion: "0.1.0-dev", LatestVersion: "v0.2.0"},
 			want: ActionUpdate,
 		},
+		{
+			// spec process/binary-install-step-idempotency, "Un binario presente y
+			// sano no se vuelve a descargar ni a reinstalar": a present, up-to-date
+			// engram must never be classified ActionInstall.
+			name: "a present, up-to-date engram never returns ActionInstall",
+			s:    ComponentState{Name: "engram", Present: true, CurrentVersion: "1.20.0", LatestVersion: "1.20.0"},
+			want: ActionSkip,
+		},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

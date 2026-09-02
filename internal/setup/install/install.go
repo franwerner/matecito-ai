@@ -501,6 +501,41 @@ func resolveUserNpmBinDir() (string, error) {
 	return filepath.Join(prefix, "bin"), nil
 }
 
+// UserNpmBinDir reports the bin directory the npm-installed steps write into,
+// without mutating npm config or the process PATH. Read-only accessor over
+// resolveUserNpmBinDir, exported so detection code outside this package (the
+// install-surface's own Detect and the verify-surface checks) asks the
+// installer where npm puts global executables instead of re-deriving it.
+func UserNpmBinDir() (string, error) {
+	return resolveUserNpmBinDir()
+}
+
+// EngramBinaryPath reports the absolute path the engram step installs its
+// binary to — the same destination InstallEngram writes to.
+func EngramBinaryPath() (string, error) {
+	return releasedl.DefaultBinaryPath(releasedl.EngramRepo)
+}
+
+// CodegraphBinaryPath reports the absolute path the codegraph step installs
+// its binary to, inside the canonical npm bin dir.
+func CodegraphBinaryPath() (string, error) {
+	dir, err := UserNpmBinDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(dir, "codegraph"), nil
+}
+
+// ProofshotBinaryPath reports the absolute path the proofshot step installs
+// its binary to, inside the canonical npm bin dir.
+func ProofshotBinaryPath() (string, error) {
+	dir, err := UserNpmBinDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(dir, "proofshot"), nil
+}
+
 func ensureUserNpmPrefix(opts Options) error {
 	out, err := exec.Command("npm", "config", "get", "prefix").CombinedOutput()
 	if err != nil {
