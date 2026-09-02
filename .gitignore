@@ -8,6 +8,7 @@
 *.out
 .atl
 .codegraph
+.qmd/
 .claude
 proofshot-artifacts/
 node_modules/
