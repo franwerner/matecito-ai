@@ -6,9 +6,17 @@ El **mecanismo** de deploy (aplanamiento, reglas de colisión, hooks siempre act
 
 ## Componentes
 
-`skills/` y `agents/` están reservados como placeholders: todavía no entregan ningún componente. Cuando
-aparezca una skill o un agente genuinamente cross-domain —que valga para todos los dominios activos, sin
-importar cuáles tengas instalados— se cataloga acá.
+`skills/` entrega:
+
+- **`find-records`** — localiza los records durables que gobiernan una parte del proyecto (EDR, DDR,
+  capability-specs) antes de escribir código, proponer un diseño o verificar contra ellos, combinando
+  el índice del store, la búsqueda literal y la búsqueda por significado.
+- **`setup-record-search`** — configura la búsqueda por significado sobre esos records: crea una
+  colección por store, declara sus exclusiones y las credenciales de embeddings, e indexa.
+
+`agents/` está reservado como placeholder: todavía no entrega ningún componente. Cuando aparezca un
+agente genuinamente cross-domain —que valga para todos los dominios activos, sin importar cuáles tengas
+instalados— se cataloga acá.
 
 `references/` entrega:
 

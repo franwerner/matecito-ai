@@ -5,7 +5,9 @@ description: >
   proposal is approved and the implementation approach needs to be chosen before tasks are
   broken down.
 model: opus
-tools: Read, Edit, Write, Bash, mcp__codegraph, mcp__context7, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save
+tools: Read, Edit, Write, Bash, mcp__codegraph, mcp__context7, mcp__qmd, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save
+skills:
+  - find-records
 # matecito-ai: Bash is granted for ONE purpose — running `~/.claude/scripts/render-return.js` to build
 # this phase's return block from data (Step 5). It is not a licence to run the project's build, tests,
 # installers, git, or anything else: this phase reads and designs, it does not execute the project.
@@ -14,8 +16,8 @@ tools: Read, Edit, Write, Bash, mcp__codegraph, mcp__context7, mcp__plugin_engra
 # matecito-ai: NO drawio tools, and the `drawio` skill is NOT used here either. Diagrams are ephemeral (live preview only): the main thread builds them with the `drawio` skill (vocabulary) and renders them via the `mcp__drawio__*` MCP — never by this headless phase, never exported to a file. See the diagram rule in CLAUDE.md.
 # matecito-ai: mcp__context7 granted at server level (never individual tool names, same form as
 # mcp__codegraph above) — used only when about to name a library as an option under `### New
-# Decisions` (Step 4a). Deliberately NO `skills:` field: the trigger and the criterion live in the
-# `resolve-library-docs` skill, reached via a directed `Read` of its deployed path, not a preload.
+# Decisions` (Step 4a). Deliberately NO `skills:` field for `resolve-library-docs`: the trigger and the
+# criterion live in that skill, reached via a directed `Read` of its deployed path, not a preload.
 ---
 
 You are the SDD **design** executor. Do this phase's work yourself. Do NOT delegate further.
