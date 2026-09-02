@@ -717,9 +717,14 @@ func qmdLatestTarballURL(apiBaseURL ...string) (url, tag string, err error) {
 // npx-based siblings, qmd has two durable artifacts — a globally installed
 // binary and a host registration — so Check guards both: a machine that keeps
 // the registration but loses the binary out of band still reports pending and
-// gets repaired on the next run. Run reinstalls the binary unconditionally and
-// registers only when the registration is still absent, so a repair run does
-// not attempt a duplicate `claude mcp add`.
+// gets repaired on the next run. Presence and health are probed directly at
+// the canonical absolute path this step installs into (resolveUserNpmBinDir),
+// not through the running session's PATH — so a location the shell RC has not
+// been sourced to pick up yet still counts as installed. exec.LookPath is
+// consumed only for provenance (spotting a foreign qmd shadowing this step's
+// own), never as a presence signal. Run reinstalls the binary unconditionally
+// and registers only when the registration is still absent, so a repair run
+// does not attempt a duplicate `claude mcp add`.
 func qmdMCPStep(opts Options) Step {
 	return Step{
 		Name: "qmd MCP (record search)",
@@ -728,24 +733,33 @@ func qmdMCPStep(opts Options) Step {
 			if _, ok := mcp.Find("qmd"); !ok {
 				return true
 			}
-			qmdPath, err := exec.LookPath("qmd")
-			if err != nil {
-				return true
-			}
-			// Provenance: the qmd winning on PATH must live in the directory this
-			// step installs into — an unresolved-path comparison, deliberately not
-			// following symlinks (npm's own global bin entry is itself a symlink
-			// into lib/node_modules/). When the resolver itself fails (e.g. npm
-			// absent), the honest answer is pending: this step cannot establish
-			// that the qmd it found is its own, and Run will fail naming npm.
+			// Canonical location this step installs into and maintains — the same
+			// read-only resolver Run itself uses. When it fails (e.g. npm absent),
+			// the honest answer is pending: this step cannot establish where its
+			// own qmd would live, and Run will fail naming npm.
 			binDir, err := resolveUserNpmBinDir()
 			if err != nil {
 				return true
 			}
-			if filepath.Dir(qmdPath) != binDir {
-				return true
+			// Provenance: only fires when the ambient lookup actually succeeds. An
+			// error here says nothing about whether qmd is installed — it only
+			// means this session's PATH cannot reach one — so the clause is
+			// skipped entirely rather than read as pending or as clean. Runs
+			// before presence/health so a foreign winning qmd keeps being caught
+			// here, deliberately not following symlinks (npm's own global bin
+			// entry is itself a symlink into lib/node_modules/), instead of being
+			// silently absorbed by the presence/health probe below.
+			if qmdPath, err := exec.LookPath("qmd"); err == nil {
+				if filepath.Dir(qmdPath) != binDir {
+					return true
+				}
 			}
-			// Health: the binary in the canonical location must actually run.
+			// Presence and health: probed directly at the canonical absolute path,
+			// deliberately not through PATH — Go's exec.LookPath tries a path
+			// containing a separator directly without consulting PATH, so this
+			// answers correctly even when the running session's PATH does not
+			// include binDir yet.
+			qmdPath := filepath.Join(binDir, "qmd")
 			return check.RunVersion("qmd", qmdPath, []string{"--version"}, false, "").Status == check.StatusMissing
 		},
 		Run: func() error {
