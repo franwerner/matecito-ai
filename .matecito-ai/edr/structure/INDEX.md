@@ -37,6 +37,10 @@ Decisiones sobre cómo se organiza el payload del repo (dónde vive cada concept
 | [serial-apply-dispatch-budget.md](serial-apply-dispatch-budget.md) | Accepted | Vas a tocar el guard que corta un despacho serial de sdd-apply por costo estimado, o a decidir dónde vive un mecanismo de este tipo. |
 | [edr-mark-is-the-implementing-task.md](edr-mark-is-the-implementing-task.md) | Accepted | Vas a escribir un checklist de tareas (`sdd-tasks`) que incluye una decisión de arquitectura, o a decidir si la materialización de un EDR va en su propia tarea. |
 | [falsified-clause-joins-the-sweep.md](falsified-clause-joins-the-sweep.md) | Accepted | Vas a barrer el vocabulario que un cambio retira y encontrás una cláusula falsificada fuera del Scope original del spec. |
+| [release-resolution-helper-home.md](release-resolution-helper-home.md) | Accepted | Vas a resolver un release de GitHub para instalar algo, y te tienta agregarle un modo a releasedl. |
+| [release-asset-by-stable-name.md](release-asset-by-stable-name.md) | Accepted | Vas a resolver qué asset de una release de GitHub instalar por nombre. |
+| [mcp-step-guards-both-artifacts.md](mcp-step-guards-both-artifacts.md) | Accepted | Vas a tocar el paso de instalación del MCP de qmd, o a decidir cómo un paso de MCP con binario propio detecta trabajo pendiente. |
+| [installer-step-ships-with-tests.md](installer-step-ships-with-tests.md) | Accepted | Vas a escribir o revisar un paso de instalación nuevo y te tienta omitir sus tests porque el Scope del spec no los menciona. |
 
 ## No aplican en este dominio
 

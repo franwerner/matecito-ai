@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -68,6 +69,7 @@ var mcpRegistry = map[string]mcpDef{
 	"figma":     {step: figmaMCPStep},
 	"canva":     {step: canvaMCPStep},
 	"skillsmp":  {step: skillsmpMCPStep},
+	"qmd":       {step: qmdMCPStep},
 }
 
 // defaultMCP is the development set, used only as a safety net when the active
@@ -631,6 +633,111 @@ func skillsmpMCPStep(opts Options) Step {
 				return errors.New("claude no está en PATH")
 			}
 			return runIO(opts, "claude", "mcp", "add", "--transport", "http", "skillsmp", "https://skillsmp.com/mcp")
+		},
+	}
+}
+
+// qmdAssetName is the fixed, version-independent name qmd's GitHub releases
+// publish for its npm-installable tarball. Selecting by this exact name —
+// never a name derived from tag_name — avoids depending on two things that
+// drift independently: the tag→version mapping and the npm package's scope.
+const qmdAssetName = "qmd.tgz"
+
+// qmdLatestTarballURL resolves franwerner/qmd's latest published release and
+// returns the download URL of its qmd.tgz asset, plus the release tag. It
+// does not reuse releasedl: releasedl's contract is goreleaser-style
+// per-OS/arch assets plus a mandatory checksums.txt (releasedl.go:138-164),
+// and qmd's release has neither — one platform-independent npm tarball, no
+// checksum manifest.
+//
+// apiBaseURL exists only for tests (httptest.Server), mirroring
+// releasedl.LatestReleaseWithTimeout's own seam (releasedl.go:88-96);
+// production callers omit it.
+func qmdLatestTarballURL(apiBaseURL ...string) (url, tag string, err error) {
+	base := "https://api.github.com"
+	if len(apiBaseURL) > 0 && apiBaseURL[0] != "" {
+		base = apiBaseURL[0]
+	}
+	apiURL := base + "/repos/franwerner/qmd/releases/latest"
+
+	resp, err := http.Get(apiURL)
+	if err != nil {
+		return "", "", fmt.Errorf("consultando la última release de qmd: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return "", "", fmt.Errorf("GitHub API devolvió status %d consultando la última release de franwerner/qmd", resp.StatusCode)
+	}
+
+	var payload struct {
+		TagName string `json:"tag_name"`
+		Assets  []struct {
+			Name string `json:"name"`
+			URL  string `json:"browser_download_url"`
+		} `json:"assets"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&payload); err != nil {
+		return "", "", fmt.Errorf("parseando respuesta de GitHub: %w", err)
+	}
+
+	for _, a := range payload.Assets {
+		if a.Name == qmdAssetName {
+			return a.URL, payload.TagName, nil
+		}
+	}
+
+	available := make([]string, 0, len(payload.Assets))
+	for _, a := range payload.Assets {
+		available = append(available, a.Name)
+	}
+	return "", "", fmt.Errorf(
+		"no se encontró el asset %q en la última release (%s) de franwerner/qmd — el esquema de nombres del release pudo haber cambiado.\nAssets disponibles: %s\nDescargá manualmente desde https://github.com/franwerner/qmd/releases",
+		qmdAssetName, payload.TagName, strings.Join(available, ", "))
+}
+
+// qmdMCPStep registers the qmd MCP (semantic record search), distributed as a
+// GitHub release tarball rather than an npm-registry package. Unlike its
+// npx-based siblings, qmd has two durable artifacts — a globally installed
+// binary and a host registration — so Check guards both: a machine that keeps
+// the registration but loses the binary out of band still reports pending and
+// gets repaired on the next run. Run reinstalls the binary unconditionally and
+// registers only when the registration is still absent, so a repair run does
+// not attempt a duplicate `claude mcp add`.
+func qmdMCPStep(opts Options) Step {
+	return Step{
+		Name: "qmd MCP (record search)",
+		Plan: "npm install -g <última release de franwerner/qmd> && claude mcp add --scope user qmd -- qmd mcp",
+		Check: func() bool {
+			if _, ok := mcp.Find("qmd"); !ok {
+				return true
+			}
+			_, err := exec.LookPath("qmd")
+			return err != nil
+		},
+		Run: func() error {
+			if _, err := exec.LookPath("npm"); err != nil {
+				return errors.New("npm no está instalado")
+			}
+			if err := ensureUserNpmPrefix(opts); err != nil {
+				return err
+			}
+			tarballURL, _, err := qmdLatestTarballURL()
+			if err != nil {
+				return err
+			}
+			if err := runIO(opts, "npm", "install", "-g", tarballURL); err != nil {
+				return err
+			}
+			if _, err := exec.LookPath("qmd"); err != nil {
+				return errors.New("qmd: npm install terminó pero el binario no quedó en PATH")
+			}
+			if _, ok := mcp.Find("qmd"); !ok {
+				if _, err := exec.LookPath("claude"); err != nil {
+					return errors.New("claude no está en PATH")
+				}
+				return runIO(opts, "claude", "mcp", "add", "--scope", "user", "qmd", "--", "qmd", "mcp")
+			}
+			return nil
 		},
 	}
 }
