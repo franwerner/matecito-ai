@@ -65,6 +65,8 @@ Permitir que items en secciones buzón (12 secciones de fase-returns que imprime
 - Una sección que no declara fields está sin cambios, byte por byte
 - El `summary_max` MUST medir solo la línea del item summary, manteniéndose en 250 caracteres. Cada descripción de field MUST llevar su propio máximo de 160 caracteres. La cantidad de fields MUST NOT limitarse: todo field propuesto se emite
 - El checker MUST reconocer las field lines como fueron emitidas, nunca saltarlas. Una field line malformada (part vacía) y un item declarante con cero field lines MUST cada uno producir un hallazgo nombrando el item ofensor. Un bloque emitido con field lines MUST leer de vuelta limpio, sin hallazgo de sección no-parseable
+- El anuncio de la forma (la herramienta que dice qué forma tienen los datos) DEBE enunciar para toda sección que declara el split las dos restricciones que la renderización impone: que `summary` y `rationale` son obligatorias, de una sola línea y no vacías; y que `summary` está topeado en la cantidad de caracteres que esa sección declara. Ese enunciado NO DEBE depender de la forma de renderización de la sección (lista, tabla o labeled-list): rige igual para todas. El anuncio DEBE nombrar el tope que declara esa sección, nunca un valor fijo, y NO DEBE enunciar una restricción que la renderización no impone.
+- La restricción de una sola línea para `summary` y `rationale` DEBE ser enunciada donde el productor la lee (la prosa de su método y la definición de su grupo), junto al tope de caracteres que esa prosa ya enuncia. La prosa DEBE presentarse como reenunciado de la regla que la renderización impone, nombrando dónde vive la autoridad, y NO DEBE fijar un valor propio ni sumar una restricción que la renderización no aplique.
 
 ## Entidades y estados
 
@@ -80,6 +82,76 @@ Permitir que items en secciones buzón (12 secciones de fase-returns que imprime
 - **Declaración en contrato sin marker en template**: `--self-check` reporta DRIFT, exit 1
 
 ## Escenarios
+
+### Requisito: El anuncio de la forma declara las restricciones que la renderización impone
+
+La herramienta que le dice a una fase qué forma tienen sus datos DEBE enunciar, para toda sección que declara el split, las dos restricciones que la renderización impone sobre las partes de cada item: que `summary` y `rationale` son obligatorias, de una sola línea y no vacías; y que `summary` está topeado en la cantidad de caracteres que esa sección declara, con la consecuencia de superarlo — la renderización falla, salida 1, stdout vacío.
+
+Ese enunciado NO DEBE depender de la forma de renderización de la sección: rige igual para una lista de items, para una tabla y para una labeled-list. El anuncio DEBE nombrar el tope que declara esa sección, nunca un valor fijo, y NO DEBE enunciar una restricción que la renderización no imponga ni omitir una que sí imponga. Una sección que no declara el split NO DEBE ganar ninguna de las dos notas.
+
+#### Scenario: sección tabla declarante
+
+- **GIVEN** una sección renderizada como tabla cuyo contrato declara el split y un tope de summary
+- **WHEN** una fase le pide a la herramienta la forma de sus datos
+- **THEN** el anuncio de esa sección enuncia que summary y rationale son obligatorias, de una sola línea y no vacías
+- **AND** enuncia el tope de summary con el valor que la sección declara y la consecuencia de superarlo
+
+#### Scenario: sección labeled-list declarante
+
+- **GIVEN** una sección renderizada como labeled-list cuyo contrato declara el split y un tope de summary
+- **WHEN** una fase le pide a la herramienta la forma de sus datos
+- **THEN** el anuncio de esa sección enuncia las dos restricciones, igual que lo haría una sección lista
+
+#### Scenario: sección lista de items declarante
+
+- **GIVEN** una sección renderizada como lista de items cuyo contrato declara el split
+- **WHEN** una fase le pide a la herramienta la forma de sus datos
+- **THEN** el anuncio de esa sección es idéntico al de antes de este cambio
+
+#### Scenario: sección que no declara el split
+
+- **GIVEN** una sección cuyo contrato no declara el split, en cualquier forma de renderización
+- **WHEN** una fase le pide a la herramienta la forma de sus datos
+- **THEN** el anuncio de esa sección no enuncia ninguna de las dos restricciones, y es idéntico al de antes de este cambio
+
+#### Scenario: otra fase con la misma combinación hereda el anuncio
+
+- **GIVEN** otra fase cuyo contrato tiene una sección tabla declarante, sin ninguna edición propia
+- **WHEN** esa fase le pide a la herramienta la forma de sus datos
+- **THEN** su anuncio también enuncia las dos restricciones
+- **AND** el contrato de esa fase no necesitó cambiar para obtenerlo
+
+#### Scenario: dos secciones con topes declarados distintos
+
+- **GIVEN** dos secciones declarantes que declaran topes de summary distintos entre sí
+- **WHEN** una fase le pide a la herramienta la forma de sus datos
+- **THEN** cada sección enuncia el tope que ella declara, y ninguna enuncia el de la otra
+
+### Requisito: La restricción de una sola línea se enuncia donde el productor la lee
+
+Un productor de retorno que no le pide a la herramienta la forma de sus datos —lee la prosa de su método y la definición de su grupo— DEBE encontrar ahí enunciada la restricción de una sola línea para `summary` y `rationale`, junto al tope de caracteres que esa prosa ya enuncia. Ambas restricciones DEBEN quedar enunciadas juntas: hoy una está y la otra no, que es peor que ninguna, porque leer una completa se lee como haber leído todas.
+
+La prosa DEBE presentarse como reenunciado de la regla que la renderización impone, nombrando dónde vive la autoridad, y NO DEBE fijar un valor propio ni sumar una restricción que la renderización no aplique.
+
+#### Scenario: un productor lee la prosa antes de redactar sus items
+
+- **GIVEN** un productor que arma un fragmento de retorno y sólo lee la prosa de su método y la definición de su grupo
+- **WHEN** consulta qué restricciones tienen las partes de un item
+- **THEN** encuentra enunciadas las dos: el tope de caracteres del summary y la prohibición de salto de línea en summary y rationale
+
+#### Scenario: la prosa reenuncia, no legisla
+
+- **GIVEN** la prosa que el productor lee
+- **WHEN** se la compara con lo que la renderización efectivamente impone
+- **THEN** enuncia las mismas restricciones, sin agregar ninguna
+- **AND** nombra a la renderización como la autoridad de la regla, en vez de fijarla por su cuenta
+
+#### Scenario: un item multi-línea de un productor sólo se detecta al construir el bloque final
+
+- **GIVEN** varios productores que arman fragmentos en paralelo, y uno redacta un item con un salto de línea en su rationale pese a la prosa
+- **WHEN** los fragmentos se consolidan y el bloque se construye una sola vez, al final
+- **THEN** la construcción falla nombrando el item y el campo, sin emitir bloque
+- **AND** ningún productor alcanzó a detectarlo dentro de su propio turno — la prosa es la única barrera previa que este cambio agrega
 
 ### Scenario: Sección que declara el split
 

@@ -26,7 +26,8 @@ El comportamiento del sistema, capturado por **capacidad** y organizado por **ti
 
 ## Estado y mantenimiento
 
-- Última actualización: 2026-09-02 (archive `sdd/fix-binary-step-detect-before-mutation`) — Creada `process/binary-install-step-idempotency` (nueva capacidad que unifica criterio de presencia en ambas superficies)
+- Última actualización: 2026-09-03 (archive `sdd/phase-return-contract-gaps`) — Creada `rule/store-wide-finding-summary-slot` (nuevo slot de resumen para hallazgos de alcance store); Modificada `rule/mailbox-item-summary-rationale-split` (extensión de independencia respecto de forma de renderización, desde imposición hacia anuncio)
+- Anterior: 2026-09-02 (archive `sdd/fix-binary-step-detect-before-mutation`) — Creada `process/binary-install-step-idempotency` (nueva capacidad que unifica criterio de presencia en ambas superficies)
 - Anterior: 2026-09-02 (archive `sdd/second-install-run-fresh-home-idempotency`) — Modificada `process/install-mcp-from-release-tarball` (ampliada "La segunda corrida no reporta nada pendiente" de 4 a 6 escenarios: casos fresh-HOME y guarda de no-alcanzable)
 - Anterior: 2026-09-02 (archive `sdd/adopt-qmd-record-search`) — Creadas `flow/find-durable-records`, `process/install-mcp-from-release-tarball`, `process/configure-record-search`
 - Anterior: 2026-09-01 (archive `sdd/brief-flags-as-compound-fields`) — Modificadas `flow/confirm-brief-before-dispatch`, `flow/ratify-gate-items`, `rule/contract-shape-proposal` (nueva Requisito de scoping)
