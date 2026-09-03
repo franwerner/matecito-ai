@@ -173,17 +173,22 @@ absence.}
 | `<type>/<capability>.md` | Accepted | ❌ Diverged | CRITICAL | {the accumulated behavior the code does not honor} |
 | `<type>/<capability>.md` | Inferred | ➖ Not checked | — | non-ratified draft — never a contract |
 
-<!-- matecito-ai: la línea estructural va acá, dentro de la sección, y no como sección propia: es por
-     store y no por capability, así que una tabla repetiría el mismo dato en cada fila. Existe para que
-     "limpio" y "no corrió" dejen de ser indistinguibles — que es como un merge mal formado pasó tres
-     verificaciones seguidas. -->
-{Structural validation (Execution Step 6e) — one line, emitted whenever that step ran; omitted when the
-change declares no New or Modified capabilities. The command, and the PRE-EXISTING finding counts by
-severity. Findings on a capability-spec this change touched do NOT appear here: they are this change's
-own and go to `### Issues Found`.}
+<!-- matecito-ai: la línea estructural va acá, dentro de la sección, como FOOTER de la tabla (mismo
+     mecanismo que `**Compliance summary**` en `### Spec Compliance Matrix`) y no como sección propia:
+     es por store y no por capability, así que una tabla repetiría el mismo dato en cada fila. Existe
+     para que "limpio" y "no corrió" dejen de ser indistinguibles — que es como un merge mal formado
+     pasó tres verificaciones seguidas. El footer declara `on_sentinel`, así que sobrevive incluso al
+     caso `None.` (tabla vacía): ahí es exactamente donde "limpio" y "nunca corrió" se confunden. -->
+**Store structure (pre-existing)**: {one of three lines, always present whenever this section is —
+whatever the table above renders, `None.` included:}
 
-`validate-artifact.js --type capability-spec`: {N} error / {M} warning / {K} nota, ninguno sobre los
-archivos de este cambio.
+- Ran with findings: `` `validate-artifact.js --type capability-spec` → 2 CRITICAL, 1 WARNING
+  pre-existing (not counted in this change's verdict) ``
+- Ran clean: `` `validate-artifact.js --type capability-spec` → 0 pre-existing findings ``
+- Not run: `not run — this change declares no new or modified capabilities`
+
+{Findings on a capability-spec THIS change touched do NOT appear here: they are this change's own and go
+to `### Issues Found`. Only pre-existing findings — on files outside this change — land in this line.}
 
 {Strict TDD only: insert here the sections of `## Report Template Extension` from
 `~/.claude/skills/sdd-verify/strict-tdd-verify.md`. Outside Strict TDD, nothing goes here.}

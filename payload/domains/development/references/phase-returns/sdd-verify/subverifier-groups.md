@@ -25,7 +25,7 @@ every gate (see "Who resolves what" below) — no sub-verifier re-evaluates its 
 | `correctness` | always | 5 (static half) | `correctness` |
 | `design-coherence` | always | 6 | `coherence_design` |
 | `edr-coherence` | `.matecito-ai/edr/` non-empty | 6b | `coherence_edrs` |
-| `spec-coherence` | `.matecito-ai/development-specs/` non-empty | 6d, 6e | `coherence_specs` |
+| `spec-coherence` | `.matecito-ai/development-specs/` non-empty | 6d, 6e | `coherence_specs`, `spec_store_structure` |
 | `ui` | `ui-test: needed` ∧ `uiTest.available` ✅ | 3b-bis–3f | `ui_verdict`, `error_gate` |
 | `decision-gaps` | always — no flag, does not depend on `.matecito-ai/edr/` existing (see `~/.claude/references/decision-capture/in-flow-capture.md`) | 6c | `decision_gaps`, `records_in_change` |
 
@@ -100,6 +100,11 @@ names, `rationale` is the full reasoning (never printed by default, reproduced v
 `decision-gaps` and `ui` groups shape their table rows the identical way — the row's typed columns
 (`record`/`task`/`structure`/`backing`; `scenario`/`counterpart`/`covers`/`state`/`failure_reason`)
 **plus** `summary`/`anchor`/`rationale` on the same object; `render-return.js` reads both off the one row.
+
+**Both `summary` and `rationale` are single-line, with no exception.** A line break in either fails the
+consolidated render (`~/.claude/scripts/render-return.js`, exit 1, nothing to stdout) — and because that
+render runs once, at the merge, that failure surfaces only after every dispatched group has already
+finished its own work.
 
 ```json
 { "issues": {

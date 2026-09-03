@@ -155,7 +155,7 @@ Run only the steps `subverifier-groups.md` maps to your assigned group; every ot
 3c. Static validation (counterparts found): for every counterpart, reject any step target matching `@e\d+`. A matched target is CRITICAL — fail that scenario immediately.
 3d. ProofShot session (gate and static validation passed): generate a collision-safe `outputDir` (`proofshot-artifacts/{change}-{timestamp}-{random}/`); `proofshot start --run "{uiTest.devServer.command}" --port {port} --output {outputDir}` (same `### UI Test` table); for EACH scenario drive its steps then take a LIVE agent-browser `snapshot` and evaluate `visible`/`text_contains` STATE assertions against it; after ALL scenarios `proofshot stop`; read `SUMMARY.md` aggregates `consoleErrorCount`/`serverErrorCount` for the session-level ERROR GATE; delete `{outputDir}/session.webm` by default (retain only with explicit `retain-video` flag).
 3e. SPLIT verdict: `ui-verdict = (all STATE assertions PASS) AND (error gate PASS)`; any FAIL → CRITICAL → blocks archive.
-3f. Return `ui_verdict` and `error_gate` in your Sub-Report — the `ui` group's data keys, per your row in `subverifier-groups.md`. They carry the per-scenario STATE results, the session-level ERROR GATE (`consoleErrorCount`, `serverErrorCount`, PASS/FAIL) and the artifact path `proofshot-artifacts/{outputDir}/`. Each `ui_verdict` row also carries `summary`, `anchor` and `rationale` — the shaped-item fields `subverifier-groups.md` declares — never a bare row: `summary` is the ≤250-char line a gate would print, `anchor` names the counterpart or the spec's `ui-scenarios` entry the row is about, `rationale` is the full reasoning behind that row's STATE. The orchestrator renders them as `## UI Verdict` in the consolidated report, at the position and `##` level `~/.claude/references/phase-returns/sdd-verify/sdd-verify.md` fixes — you do not render that markdown section yourself.
+3f. Return `ui_verdict` and `error_gate` in your Sub-Report — the `ui` group's data keys, per your row in `subverifier-groups.md`. They carry the per-scenario STATE results, the session-level ERROR GATE (`consoleErrorCount`, `serverErrorCount`, PASS/FAIL) and the artifact path `proofshot-artifacts/{outputDir}/`. Each `ui_verdict` row also carries `summary`, `anchor` and `rationale` — the shaped-item fields `subverifier-groups.md` declares — never a bare row: `summary` is the ≤250-char, single-line line a gate would print, `anchor` names the counterpart or the spec's `ui-scenarios` entry the row is about, `rationale` is the full reasoning behind that row's STATE, also single-line (see `~/.claude/references/phase-returns/sdd-verify/subverifier-groups.md`'s Sub-Report envelope for the full rule). The orchestrator renders them as `## UI Verdict` in the consolidated report, at the position and `##` level `~/.claude/references/phase-returns/sdd-verify/sdd-verify.md` fixes — you do not render that markdown section yourself.
 4. Count completed and incomplete tasks.
 5. Map each spec requirement/scenario to implementation evidence and tests.
 <!-- matecito-ai: verification-scope-token. Definition owned by `~/.claude/references/spec/README.md`; this step only applies it while building the matrix. -->
@@ -187,7 +187,15 @@ Run only the steps `subverifier-groups.md` maps to your assigned group; every ot
    node ~/.claude/scripts/validate-artifact.js --type capability-spec --store .matecito-ai/development-specs --root <repo root>
    ```
 
-   Partition its JSON findings **by file**. A finding on a capability-spec this change created or modified is this change's own: map the tool's severity (`error` → CRITICAL, `warning` → WARNING, `nota` → SUGGESTION) and list it under `### Issues Found`. Every other finding is pre-existing — a store carries defects from changes that are not yours, and letting them push the verdict makes every verify fail for reasons nobody in this change caused. Report those as a single count line in `### Coherence (Capability-Specs)` `Notes`, never as findings. If the store does not exist, skip.
+   Partition its JSON findings **by file**. A finding on a capability-spec this change created or modified is this change's own: map the tool's severity (`error` → CRITICAL, `warning` → WARNING, `nota` → SUGGESTION) and list it under `### Issues Found`. Every other finding is pre-existing — a store carries defects from changes that are not yours, and letting them push the verdict makes every verify fail for reasons nobody in this change caused. Report those in `### Coherence (Capability-Specs)`'s own **footer slot** (`spec_store_structure`, below the table — never the per-row `Notes` cell, which describes one row's own divergence, not the whole store), in one of three states: ran with findings, ran clean, or not run:
+
+   | State | Line |
+   |---|---|
+   | Ran, findings | `` `validate-artifact.js --type capability-spec` → 2 CRITICAL, 1 WARNING pre-existing (not counted in this change's verdict) `` |
+   | Ran, clean | `` `validate-artifact.js --type capability-spec` → 0 pre-existing findings `` |
+   | Not run | `not run — this change declares no new or modified capabilities` |
+
+   The footer is emitted whenever `### Coherence (Capability-Specs)` is (the store is active), including the empty-table case — the "not run" state is exactly what makes "clean" and "never ran" stay distinguishable there. If the store does not exist, skip this step entirely, and the whole section (footer included) never emits.
 <!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism, the ratification gate,
      the materialization contract: ~/.claude/references/decision-capture/in-flow-capture.md — this step
      only runs the two checks and reports them. No flag: `decision-gaps` is dispatched on EVERY run. -->
@@ -210,9 +218,11 @@ Run only the steps `subverifier-groups.md` maps to your assigned group; every ot
    `development-decisions-validate`'s job, unrelated to what this change materialized. Return
    `decision_gaps` (the `record | task | structure | backing` rows) and `records_in_change` in your
    Sub-Report. Each `decision_gaps` row also carries `summary`, `anchor` and `rationale` — the
-   shaped-item fields `subverifier-groups.md` declares — never a bare row: `summary` is the ≤250-char
-   line a gate would print, `anchor` is the EDR file the row is about, `rationale` is the full reasoning
-   behind that row's Structure/Backing finding. The orchestrator renders `## Decision Gaps` in the
+   shaped-item fields `subverifier-groups.md` declares — never a bare row: `summary` is the ≤250-char,
+   single-line line a gate would print, `anchor` is the EDR file the row is about, `rationale` is the
+   full reasoning behind that row's Structure/Backing finding, also single-line (see
+   `~/.claude/references/phase-returns/sdd-verify/subverifier-groups.md`'s Sub-Report envelope for the
+   full rule). The orchestrator renders `## Decision Gaps` in the
    consolidated report only when
    `records_in_change` is `true` — position, columns and `##` level fixed by
    `~/.claude/references/phase-returns/sdd-verify/sdd-verify.md`. A CRITICAL here is `FAIL`, exactly

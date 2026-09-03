@@ -79,7 +79,7 @@ function loadRenderReturnInternals() {
     'function fail(msg) {\n  throw new Error(msg);\n}'
   );
   src = src.replace(/\nmain\(\);\n$/, '\n');
-  src += '\nmodule.exports = { renderItems, renderTable, renderLabeledLists, tokensOf, derive, fail };\n';
+  src += '\nmodule.exports = { renderItems, renderTable, renderLabeledLists, schema, tokensOf, derive, fail };\n';
 
   cachedRenderReturnLoadDir = fs.mkdtempSync(path.join(os.tmpdir(), 'matecito-dev-tests-load-'));
   const tmpFile = path.join(cachedRenderReturnLoadDir, 'render-return.testable.js');

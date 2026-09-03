@@ -198,7 +198,19 @@ function renderTable(section, data) {
   const rows = get(data, section.field);
   if (rows === undefined) fail(`missing required field \`${section.field}\` (renders ${section.title}; use [] when there is nothing)`);
   if (!Array.isArray(rows)) fail(`\`${section.field}\` must be a list of rows`);
-  if (rows.length === 0 && section.sentinel) return 'None.';
+
+  // A footer records evidence a DIFFERENT check ran over the whole store, not a summary of the rows
+  // above it — so a footer declaring `on_sentinel` has to survive the empty-table return below, or
+  // "clean" and "never ran" become indistinguishable exactly when the table is empty.
+  const footerLine = () => {
+    const value = section.footer.derived ? derive(section.footer.derived, data) : get(data, section.footer.field);
+    if (value === undefined) fail(`missing required field \`${section.footer.field}\` (renders the footer of ${section.title})`);
+    return `**${section.footer.label}**: ${section.footer.format ? fmt(section.footer.format, value, section.footer.field) : value}`;
+  };
+
+  if (rows.length === 0 && section.sentinel) {
+    return section.footer && section.footer.on_sentinel ? ['None.', '', footerLine()].join('\n') : 'None.';
+  }
 
   if (section.items && !section.items.key) {
     fail(`\`${section.title}\` declares \`items\` on a table but no \`items.key\` — the detail block needs the column that labels each row`);
@@ -222,11 +234,7 @@ function renderTable(section, data) {
       details.push(`- ${keyValue} — ${text}`, ...lines);
     }
   }
-  if (section.footer) {
-    const value = section.footer.derived ? derive(section.footer.derived, data) : get(data, section.footer.field);
-    if (value === undefined) fail(`missing required field \`${section.footer.field}\` (renders the footer of ${section.title})`);
-    out.push('', `**${section.footer.label}**: ${section.footer.format ? fmt(section.footer.format, value, section.footer.field) : value}`);
-  }
+  if (section.footer) out.push('', footerLine());
   if (details.length) out.push('', ...details);
   return out.join('\n');
 }
@@ -362,6 +370,18 @@ function itemsFields(spec) {
   return fields;
 }
 
+// The constraints `shapeItem()` imposes on every declaring section, whatever its render form.
+// Announced by all three branches (`table`, `labeled-lists`, `items`), so a phase asking the tool for
+// its own shape is never told less than the tool enforces — the announcement no longer depends on the
+// render form the way it used to.
+function itemsNotes(spec) {
+  const notes = [];
+  const text = spec.text || 'text';
+  if (spec.rationale) notes.push(`  (${text} and ${spec.rationale} are both required, single-line, non-empty — ${text} prints at the gate, ${spec.rationale} never does by default)`);
+  if (spec.summary_max) notes.push(`  (${text} is capped at ${spec.summary_max} characters — an over-cap value fails the render, exit 1, no stdout)`);
+  return notes;
+}
+
 // The agent asks the tool for the shape instead of memorizing it, so the two cannot drift.
 function schema(contract) {
   const out = [`Data shape for \`${contract.phase}\` — write this as JSON and pass it with --data.`, ''];
@@ -391,11 +411,17 @@ function schema(contract) {
       const cols = (s.columns || []).map((c) => c.key).join(', ');
       out.push(`  ${s.field}: [{ ${cols} }]   (one row per entry)`);
       if (s.sentinel) out.push('  (empty list renders the "None." sentinel — never omit the field)');
-      if (s.items) out.push(`  (each row also carries { ${itemsFields(s.items).join(', ')} }, rendered as a detail list below the table keyed by its \`${s.items.key}\` column)`);
+      if (s.items) {
+        out.push(`  (each row also carries { ${itemsFields(s.items).join(', ')} }, rendered as a detail list below the table keyed by its \`${s.items.key}\` column)`);
+        out.push(...itemsNotes(s.items));
+      }
       if (s.footer && !s.footer.derived) {
         out.push(`  ${s.footer.field}: ${s.footer.format ? `{ ${keysOf(s.footer.format).join(', ')} }` : 'string'}   ("${s.footer.label}")`);
       } else if (s.footer) {
         out.push(`  (footer "${s.footer.label}" derived from ${s.footer.derived.split(':')[1]} — do NOT supply)`);
+      }
+      if (s.footer && s.footer.on_sentinel) {
+        out.push('  (the footer is emitted even when the list is empty — supply the field either way)');
       }
     } else if (s.render === 'blocks') {
       for (const b of s.blocks || []) out.push(`  ${b.field}: string | { summary, output }   ("${b.label}"; output is fenced verbatim)`);
@@ -404,6 +430,7 @@ function schema(contract) {
         if (s.items) out.push(`  ${l.field}: [{ ${itemsFields(s.items).join(', ')} }]   ("${l.label}"; empty list renders "None")`);
         else out.push(`  ${l.field}: [string]   ("${l.label}"; empty list renders "None")`);
       }
+      if (s.items) out.push(...itemsNotes(s.items));
     } else if (s.render === 'labeled-bullets') {
       for (const b of s.bullets || []) {
         const bWhen = b.emitted === 'conditional' ? ` [emitted only when \`${b.when}\` is true]` : '';
@@ -419,8 +446,7 @@ function schema(contract) {
       const spec = s.items || {};
       out.push(`  ${s.field}: [{ ${itemsFields(spec).join(', ')} }]`);
       out.push(`  (empty list renders the "None." sentinel — never omit the field)`);
-      if (spec.rationale) out.push(`  (${spec.text || 'text'} and ${spec.rationale} are both required, single-line, non-empty — ${spec.text || 'text'} prints at the gate, ${spec.rationale} never does by default)`);
-      if (spec.summary_max) out.push(`  (${spec.text || 'text'} is capped at ${spec.summary_max} characters — an over-cap value fails the render, exit 1, no stdout)`);
+      out.push(...itemsNotes(spec));
       if (spec.fields) {
         out.push(`  (\`${spec.fields.key}\` lists every proposed field, in order — the COUNT is never capped; each entry needs { ${spec.fields.parts.join(', ')} }, all required, single-line)`);
         if (spec.fields.field_max) out.push(`  (the \`description\` part is capped at ${spec.fields.field_max} characters — an over-cap value fails the render, exit 1, no stdout)`);

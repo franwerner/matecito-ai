@@ -23,6 +23,7 @@ El contrato máquina vive **en el mismo directorio que el template legible**, co
 - **[manual]** Todo artefacto durable con contrato máquina tiene su par declarativo en el mismo directorio que su template legible, no en un árbol de esquemas separado.
 - **[auto]** El auto-chequeo de cada herramienta compara el contrato del repo contra el desplegado y falla si divergieron.
 - **[manual]** El template legible ilustra la forma; el contrato declarativo la impone. Ninguno de los dos redefine lo que el otro ya fija.
+- **[manual]** El template legible puede ilustrar un detalle que el auto-chequeo del par no compara byte a byte (por ejemplo, la línea de un footer nuevo) — mostrarlo ahí no es redundante ni está de más: adelanta a quien lee cómo se ve en la práctica, aunque la herramienta no lo exija para pasar.
 
 ## Alternativas consideradas
 

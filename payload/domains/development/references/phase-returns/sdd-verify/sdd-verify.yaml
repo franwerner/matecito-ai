@@ -109,6 +109,10 @@ sections:
       - { key: followed, label: "Followed?" }
       - { key: severity, label: Severity }
       - { key: notes, label: Notes }
+    footer:
+      label: "Store structure (pre-existing)"
+      field: spec_store_structure
+      on_sentinel: true
 
   # `##`, not `###`, and deliberately so: the UI step and the kernel's mine gate match these two at
   # that level. Levelling them down is a gate that never fires.

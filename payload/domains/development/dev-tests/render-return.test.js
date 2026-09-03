@@ -21,9 +21,10 @@ const { loadRenderReturnInternals, cleanupRenderReturnInternals } = require('./s
 let renderItems;
 let renderTable;
 let renderLabeledLists;
+let schema;
 
 before(() => {
-  ({ renderItems, renderTable, renderLabeledLists } = loadRenderReturnInternals());
+  ({ renderItems, renderTable, renderLabeledLists, schema } = loadRenderReturnInternals());
 });
 
 after(() => {
@@ -292,4 +293,239 @@ test('a labeled-lists section with `items` shapes every entry, across every list
     '**Critical**:\n- bad thing\n  · anchor: foo.md\n  · rationale: why it matters\n' +
       '**Warning**:\n- lesser thing\n  · anchor: bar.md\n  · rationale: why it matters less'
   );
+});
+
+// `schema()` — the shape-announcement path. Before this change the two constraint notes (single-line
+// non-empty parts, the summary_max cap) were emitted only inside the `items` render branch; these
+// cases prove every render form that can declare `items` (`table`, `labeled-lists`, `items` itself)
+// announces the same two notes, and that a non-declaring section stays byte-identical.
+
+test('a table section declaring items.rationale and summary_max announces both constraint notes', () => {
+  const contract = {
+    phase: 'test-phase',
+    block: '## Test',
+    statuses: ['done'],
+    sections: [{
+      title: '### T',
+      emitted: 'always',
+      render: 'table',
+      field: 'rows',
+      sentinel: true,
+      columns: [{ key: 'id', label: 'Id' }],
+      items: { key: 'id', text: 'summary', rationale: 'rationale', summary_max: 250 },
+    }],
+  };
+  const out = schema(contract);
+  assert.match(out, /summary and rationale are both required, single-line, non-empty/);
+  assert.match(out, /summary is capped at 250 characters — an over-cap value fails the render, exit 1, no stdout/);
+});
+
+test('a labeled-lists section declaring items announces both notes once per section, not once per list', () => {
+  const contract = {
+    phase: 'test-phase',
+    block: '## Test',
+    statuses: ['done'],
+    sections: [{
+      title: '### Issues',
+      emitted: 'always',
+      render: 'labeled-lists',
+      lists: [{ field: 'critical', label: 'Critical' }, { field: 'warning', label: 'Warning' }],
+      items: { rationale: 'rationale', summary_max: 250 },
+    }],
+  };
+  const out = schema(contract);
+  const rationaleMatches = out.match(/are both required, single-line, non-empty/g) || [];
+  const capMatches = out.match(/is capped at 250 characters/g) || [];
+  assert.equal(rationaleMatches.length, 1);
+  assert.equal(capMatches.length, 1);
+});
+
+test('an items-rendered declaring section announces exactly as before this change', () => {
+  const contract = {
+    phase: 'test-phase',
+    block: '## Test',
+    statuses: ['done'],
+    sections: [{
+      title: '### Decision Gaps',
+      emitted: 'always',
+      render: 'items',
+      field: 'items',
+      items: { rationale: 'rationale', summary_max: 250, tokens: [{ name: 'anchor', field: 'anchor' }] },
+    }],
+  };
+  const out = schema(contract);
+  assert.match(out, /items: \[\{ text: string, anchor: undefined, rationale: string \}\]/);
+  assert.match(out, /\(empty list renders the "None\." sentinel — never omit the field\)/);
+  assert.match(
+    out,
+    /\(text and rationale are both required, single-line, non-empty — text prints at the gate, rationale never does by default\)/
+  );
+  assert.match(
+    out,
+    /\(text is capped at 250 characters — an over-cap value fails the render, exit 1, no stdout\)/
+  );
+});
+
+test('a non-declaring section states nothing about the split, unchanged by this change', () => {
+  const contract = {
+    phase: 'test-phase',
+    block: '## Test',
+    statuses: ['done'],
+    sections: [{
+      title: '### Completeness',
+      emitted: 'always',
+      render: 'table',
+      field: 'rows',
+      columns: [{ key: 'metric', label: 'Metric' }, { key: 'value', label: 'Value' }],
+    }],
+  };
+  const out = schema(contract);
+  assert.doesNotMatch(out, /required, single-line, non-empty/);
+  assert.doesNotMatch(out, /is capped at/);
+});
+
+test('any phase whose contract has the same table+items combination inherits both notes, with no per-phase code', () => {
+  const phaseAContract = {
+    phase: 'phase-a',
+    block: '## A',
+    statuses: ['done'],
+    sections: [{
+      title: '### X',
+      emitted: 'always',
+      render: 'table',
+      field: 'rows',
+      sentinel: true,
+      columns: [{ key: 'id', label: 'Id' }],
+      items: { key: 'id', text: 'summary', rationale: 'rationale', summary_max: 250 },
+    }],
+  };
+  const phaseBContract = {
+    phase: 'phase-b',
+    block: '## B',
+    statuses: ['done'],
+    sections: [{
+      title: '### Y',
+      emitted: 'always',
+      render: 'table',
+      field: 'rows',
+      sentinel: true,
+      columns: [{ key: 'id', label: 'Id' }],
+      items: { key: 'id', text: 'summary', rationale: 'rationale', summary_max: 250 },
+    }],
+  };
+  for (const out of [schema(phaseAContract), schema(phaseBContract)]) {
+    assert.match(out, /are both required, single-line, non-empty/);
+    assert.match(out, /is capped at 250 characters/);
+  }
+});
+
+test('two declaring sections with different summary_max caps each announce only their own', () => {
+  const contract = {
+    phase: 'test-phase',
+    block: '## Test',
+    statuses: ['done'],
+    sections: [
+      { title: '### A', emitted: 'always', render: 'items', field: 'a_items', items: { rationale: 'rationale', summary_max: 250 } },
+      { title: '### B', emitted: 'always', render: 'items', field: 'b_items', items: { rationale: 'rationale', summary_max: 500 } },
+    ],
+  };
+  const out = schema(contract);
+  const [sectionA, sectionB] = out.split('### B');
+  assert.match(sectionA, /is capped at 250 characters/);
+  assert.doesNotMatch(sectionA, /is capped at 500 characters/);
+  assert.match(sectionB, /is capped at 500 characters/);
+  assert.doesNotMatch(sectionB, /is capped at 250 characters/);
+});
+
+// `renderTable()`'s `footer.on_sentinel` opt-in — the store-wide line has to survive the empty-table
+// `None.` return, or "clean" and "never ran" become indistinguishable exactly when the table is empty.
+
+test('an empty table with footer.on_sentinel emits "None." plus the footer line', () => {
+  const section = {
+    field: 'rows',
+    title: '### Coherence (Capability-Specs)',
+    render: 'table',
+    sentinel: true,
+    columns: [{ key: 'spec', label: 'Capability-spec' }],
+    footer: { field: 'spec_store_structure', label: 'Store structure (pre-existing)', on_sentinel: true },
+  };
+  const out = renderTable(section, { rows: [], spec_store_structure: '0 pre-existing findings' });
+  assert.equal(out, 'None.\n\n**Store structure (pre-existing)**: 0 pre-existing findings');
+});
+
+test('an empty table without footer.on_sentinel stays the bare "None." sentinel', () => {
+  const section = {
+    field: 'rows',
+    title: '### Coherence (Capability-Specs)',
+    render: 'table',
+    sentinel: true,
+    columns: [{ key: 'spec', label: 'Capability-spec' }],
+    footer: { field: 'spec_store_structure', label: 'Store structure (pre-existing)' },
+  };
+  const out = renderTable(section, { rows: [], spec_store_structure: '0 pre-existing findings' });
+  assert.equal(out, 'None.');
+});
+
+test('an empty table with footer.on_sentinel and a missing footer field fails naming the field', () => {
+  const section = {
+    field: 'rows',
+    title: '### Coherence (Capability-Specs)',
+    render: 'table',
+    sentinel: true,
+    columns: [{ key: 'spec', label: 'Capability-spec' }],
+    footer: { field: 'spec_store_structure', label: 'Store structure (pre-existing)', on_sentinel: true },
+  };
+  assert.throws(
+    () => renderTable(section, { rows: [] }),
+    /missing required field `spec_store_structure`/
+  );
+});
+
+// Regression: the three pre-existing footers (`compliance_summary`, `breakdown.totals`, `error_gate`)
+// render exactly as before `footerLine()` was extracted out of the non-empty-rows path.
+
+test('the compliance_summary footer renders exactly as before this change', () => {
+  const section = {
+    field: 'spec_compliance',
+    title: '### Spec Compliance Matrix',
+    render: 'table',
+    sentinel: true,
+    columns: [{ key: 'requirement', label: 'Requirement' }],
+    footer: { label: 'Compliance summary', field: 'compliance_summary', format: '{compliant}/{total} scenarios compliant' },
+  };
+  const out = renderTable(section, {
+    spec_compliance: [{ requirement: 'REQ-01' }],
+    compliance_summary: { compliant: 3, total: 4 },
+  });
+  assert.equal(out, '| Requirement |\n|---|\n| REQ-01 |\n\n**Compliance summary**: 3/4 scenarios compliant');
+});
+
+test('the breakdown.totals footer renders exactly as before this change', () => {
+  const section = {
+    field: 'breakdown.phases',
+    title: '### Breakdown',
+    render: 'table',
+    sentinel: true,
+    columns: [{ key: 'phase', label: 'Phase' }],
+    footer: { label: 'Totals', field: 'breakdown.totals', format: '{tasks} tasks · {work_units} work units' },
+  };
+  const out = renderTable(section, {
+    breakdown: { phases: [{ phase: 'Phase 1' }], totals: { tasks: 5, work_units: 2 } },
+  });
+  assert.equal(out, '| Phase |\n|---|\n| Phase 1 |\n\n**Totals**: 5 tasks · 2 work units');
+});
+
+test('the error_gate footer renders exactly as before this change', () => {
+  const section = {
+    field: 'ui_verdict',
+    title: '## UI Verdict',
+    render: 'table',
+    columns: [{ key: 'scenario', label: 'Scenario' }],
+    footer: { label: 'Error gate', field: 'error_gate', format: 'consoleErrorCount {console} / serverErrorCount {server} → {verdict}' },
+  };
+  const out = renderTable(section, {
+    ui_verdict: [{ scenario: 'login' }],
+    error_gate: { console: 0, server: 0, verdict: 'PASS' },
+  });
+  assert.equal(out, '| Scenario |\n|---|\n| login |\n\n**Error gate**: consoleErrorCount 0 / serverErrorCount 0 → PASS');
 });
