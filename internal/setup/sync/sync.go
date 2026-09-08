@@ -12,6 +12,7 @@ import (
 	"github.com/franwerner/matecito-ai/internal/agentmodel"
 	"github.com/franwerner/matecito-ai/internal/check"
 	"github.com/franwerner/matecito-ai/internal/manifest"
+	"github.com/franwerner/matecito-ai/internal/platform"
 	"github.com/franwerner/matecito-ai/internal/setup/deploy"
 	"github.com/franwerner/matecito-ai/internal/setup/install"
 )
@@ -550,6 +551,8 @@ func actionLabel(k ActionKind) string {
 }
 
 func confirmSync(in io.Reader, out io.Writer, prompt string) bool {
+	// bubbletea's init queries the terminal; an unread reply would prefix the answer.
+	platform.FlushPendingInput(in)
 	fmt.Fprint(out, prompt)
 	sc := bufio.NewScanner(in)
 	if !sc.Scan() {

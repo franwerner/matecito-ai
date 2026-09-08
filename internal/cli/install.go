@@ -11,6 +11,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/franwerner/matecito-ai/internal/platform"
 	"github.com/franwerner/matecito-ai/internal/setup/deploy"
 	"github.com/franwerner/matecito-ai/internal/setup/sync"
 )
@@ -192,6 +193,8 @@ func surfaceComponentErrors(result sync.Result) error {
 }
 
 func confirmInstall(in io.Reader, out io.Writer, prompt string) bool {
+	// bubbletea's init queries the terminal; an unread reply would prefix the answer.
+	platform.FlushPendingInput(in)
 	fmt.Fprint(out, prompt)
 	sc := bufio.NewScanner(in)
 	if !sc.Scan() {
