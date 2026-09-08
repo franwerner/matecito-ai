@@ -2,9 +2,7 @@
   "strictTdd": false,
   "repo": {
     "components": [
-      { "name": "cli", "paths": ["cmd", "internal", "payload"] },
-      { "name": "api", "paths": ["apps/api"] },
-      { "name": "ui", "paths": ["apps/ui"] }
+      { "name": "cli", "paths": ["cmd", "internal", "payload"] }
     ]
   }
 }

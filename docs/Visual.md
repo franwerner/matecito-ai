@@ -22,7 +22,7 @@ El lazo central: *abrís una corrida → ves cómo se construyó → remontás c
 
 ## 3. Dirección visual (las tres decisiones)
 
-1. **Tema dual — claro por defecto + oscuro cálido.** Claro por defecto, con un modo oscuro cálido (mejor para data densa y sesiones largas). Toggle. La identidad vive en ambos. *(Actualizado 2026-07-23: el default pasó de oscuro a claro; ver EDR `styling` en `apps/ui/.matecito-ai/edr/frontend/`.)*
+1. **Tema dual — claro por defecto + oscuro cálido.** Claro por defecto, con un modo oscuro cálido (mejor para data densa y sesiones largas). Toggle. La identidad vive en ambos. *(Actualizado 2026-07-23: el default pasó de oscuro a claro.)*
 2. **Cálido en el chrome, limpio en la data.** La personalidad (mascota, calidez, redondeces, violeta) vive en navegación, estados vacíos y acentos. Las zonas densas (grafo, diffs, código) van **limpias, neutras y legibles**.
 3. **Densidad calma.** Jerarquía por contraste sutil y espaciado —no por bordes pesados—; microtransiciones suaves. Calmo, no cargado.
 

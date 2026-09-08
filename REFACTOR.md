@@ -51,65 +51,30 @@ arriba; el resto es documentación y tests.
 
 ## 2. QMD como motor de búsqueda
 
-Adoptar [`tobi/qmd`](https://github.com/tobi/qmd) — MIT, SQLite FTS5 + sqlite-vec, BM25 + vectorial +
-re-ranking por LLM local, con servidor MCP (`query`, `get`, `multi_get`, `status`) — como buscador
-sobre el corpus markdown del proyecto.
+[`tobi/qmd`](https://github.com/tobi/qmd) — MIT, SQLite FTS5 + sqlite-vec, BM25 + vectorial +
+re-ranking por LLM local, con servidor MCP (`query`, `get`, `multi_get`, `status`) — está **adoptado**
+como buscador sobre el corpus markdown del proyecto. No es una propuesta: `process/configure-record-
+search.md` y `flow/find-durable-records.md` (ambos `Accepted`, 2026-09-02) ya fijan cuándo se
+configura y cuándo se usa.
 
-### Lo que justifica adoptarlo
-
-El repo tiene 881 archivos `.md` y ~893.000 palabras. Las zonas que un agente necesita consultar suman
-~447 archivos y ~370.000 palabras: capability-specs (54 archivos / 54k palabras), EDRs (156 / ~48k
-entre root, `apps/api` y `apps/ui`), y `payload/` (237 / 268k). Nada de eso entra en contexto, y hoy
-la navegación es `INDEX.md` curado a mano más grep literal — que falla justo cuando no se conoce el
-término exacto con el que algo fue escrito.
-
-### Costos a asumir
+### Costos asumidos
 
 - ~1,9 GB de modelos GGUF en `~/.cache/qmd/models/`, descargados una vez.
 - El modo híbrido carga tres modelos por invocación salvo que corra como daemon HTTP (`qmd mcp --http --daemon`).
-- El índice se desactualiza al editar un `.md`: hace falta un disparador de reindexado que hoy no existe.
-- Un `.qmd/index.yml` commiteado viaja con el repo y ejecuta update hooks; qmd tiene gate de confianza para eso.
+- El índice se desactualiza al editar un `.md`; el disparador de reindexado es el que
+  `configure-record-search.md` ya declara: correr de nuevo cuando cambian los stores del proyecto.
 
-### El punto a resolver antes de tocar nada
+### El punto a resolver — cerrado
 
-El pedido incluía *quitar el indexado que existe hoy para la búsqueda*. Al medirlo, **ese indexado no
-hace búsqueda**.
+El pedido original incluía *quitar el indexado que existe hoy para la búsqueda*. Al medirlo en su
+momento, ese indexado no hacía búsqueda: `.matecito-ai/development-specs/process/index-decision-
+records.md` definía un índice de **estado** más un **versionado copy-on-write lazy** — pin de versión
+exacta por evento, contenido content-addressable, soft-delete por `(proyecto, rama)` — sin relación
+con capacidades de búsqueda, y dependía de cuatro EDRs y tres specs del broker.
 
-`.matecito-ai/development-specs/process/index-decision-records.md` (Status: **Accepted**) define un
-índice de **estado** más un **versionado copy-on-write lazy**. Su propósito literal:
-
-> Mantener, por proyecto, un índice consultable del estado actual de los records […] junto con su
-> contenido versionado guardado en la base, para poder navegar el estado vigente y mostrar la versión
-> exacta que un evento aplicó. […] el broker se puede deployar/compartir **sin apoyarse en git como
-> store de versiones**.
-
-Lo que sostiene, y que qmd no hace ni pretende hacer:
-
-- el **pin** de la versión exacta de un EDR/spec que aplicó cada evento;
-- el versionado copy-on-write con versiones congeladas que sobreviven al borrado del `.md`;
-- el contenido content-addressable, deduplicado por hash y compartido entre ramas;
-- el soft-delete por `(proyecto, rama)`, para que `active`/`deleted` no flip-flopee al cambiar de rama;
-- la identidad por `owning-root`, que evita colisiones de slug entre `apps/api/` y `apps/ui/`;
-- la superficie de lectura que consume la UI.
-
-Depende de cuatro EDRs de `apps/api` (`storage-sync-model`, `data-access-entity-framework`,
-`data-modeling`, `api-contract`) y de tres specs (`lifecycle/record-version`, `rule/event-scoping`,
-`flow/submit-phase-artifact`).
-
-**No existe hoy una "parte de búsqueda" separable de ese indexado**: no hay FTS ni embeddings en el
-modelo de datos — las entidades son `Record`, `RecordVersion`, `ContentObject`, `EventRecordPin`,
-`ProjectPath`. Con lo cual qmd entra a **agregar** una capacidad que no existe, no a reemplazar una
-que sí. Quitar `index-decision-records` para poner qmd cambiaría un sistema de versionado y
-trazabilidad por un buscador de texto, y se llevaría puesto el pin de eventos y la lectura de la UI.
-
-Ver §5: hay que elegir el alcance real antes de escribir una sola línea.
-
-### Piloto sugerido antes de comprometer nada
-
-Indexar las tres zonas con config local, correr seis u ocho preguntas reales que hoy se resuelven con
-grep, y comparar resultado y esfuerzo contra el grep equivalente. Toca solo `.qmd/`, se descarta con
-un `rm -rf`, y no toca `payload/` ni el MCP del proyecto. Con esa comparación se decide de verdad; si
-gana, recién ahí entra como EDR, entrada en el MCP del proyecto y regla de reindexado.
+Esa pregunta no se respondió: **se cerró**. `index-decision-records` y el broker que lo implementaba se
+retiraron junto con el resto del cockpit (`sdd/drop-apps-subtree`), así que la contraparte que este
+punto discutía ya no existe. No queda nada que argumentar acá.
 
 ---
 
@@ -207,19 +172,10 @@ asomando por dos superficies distintas.
 
 Bloquean el frente que nombran; el resto puede avanzar sin ellas.
 
-1. **§2 — alcance real de qmd.** Tres lecturas posibles, y hay que elegir una:
-   - **(a) qmd suma búsqueda, el indexado queda intacto.** Es la única que no toca capacidades
-     `Accepted`. qmd es un MCP más, sobre markdown, sin relación con el store del broker.
-   - **(b) qmd suma búsqueda y se retira algo puntual del indexado** — habría que nombrar qué, porque
-     hoy no aparece nada que haga búsqueda.
-   - **(c) qmd reemplaza `index-decision-records`.** Implica retirar el pin de versiones, el
-     versionado copy-on-write y la superficie de lectura de la UI, y reescribir cuatro EDRs de
-     `apps/api` y tres specs. Es un cambio de producto, no de herramienta.
-
-2. **§1 — qué pasa con el mine gate del núcleo** una vez que `design`, su único consumidor, no existe:
+1. **§1 — qué pasa con el mine gate del núcleo** una vez que `design`, su único consumidor, no existe:
    se retira, o se conserva como punto de extensión.
 
-3. **§3.1 — cuál de las dos reglas de idioma gana**: los records durables son excepción declarada, o
+2. **§3.1 — cuál de las dos reglas de idioma gana**: los records durables son excepción declarada, o
    los templates se pasan a inglés.
 
 ---
@@ -230,4 +186,4 @@ Bloquean el frente que nombran; el resto puede avanzar sin ellas.
 2. **§1** — la eliminación de `design`, que además resuelve solo el falso pendiente del DDR sin `.yaml`.
 3. **§3.1 y §4** — juntos, porque son el mismo eje; deciden lo que se va a ver de todo lo demás.
 4. **§3.2** — el contrato de `tech-edr`, una vez que el criterio de idioma esté fijado.
-5. **§2** — al final, y arrancando por el piloto, no por la integración.
+5. **§2** — al final; la adopción ya está cerrada, no quedan pasos pendientes que ordenar.

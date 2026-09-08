@@ -2,7 +2,7 @@
 
 El comportamiento del sistema, capturado por **capacidad** y organizado por **tipo**. Cada capability-spec dice *qué hace* el sistema; el *por qué* de cada elección técnica vive en `../edr/`, y el *cómo* literal en el código.
 
-**Alcance:** el store cubre las dos mitades del producto — el **cockpit** (el broker/MCP de `apps/api` y la UI de `apps/ui`) y el **CLI** de matecito-ai (instalación, actualización, despliegue del payload en el host destino, configuración por dominio, hooks y chequeo del entorno).
+**Alcance:** el store cubre el **CLI** de matecito-ai (instalación, actualización, despliegue del payload en el host destino, configuración por dominio, hooks y chequeo del entorno).
 
 ## Cómo usar este índice
 
@@ -27,6 +27,7 @@ El comportamiento del sistema, capturado por **capacidad** y organizado por **ti
 ## Estado y mantenimiento
 
 - Última actualización: 2026-09-08 (archive `sdd/spec-materialization-in-apply`) — Creada `process/materialize-change-delta-spec` (el pliegue del delta lo hace la fase que implementa, no la que archiva); Modificada `rule/scenario-verification-scope-token` (rebinding del actor responsable del pliegue, de sdd-archive a sdd-apply)
+- Anterior: 2026-09-03 (archive `sdd/drop-apps-subtree`) — Retiradas catorce capability-specs cockpit-only (`flow`×7, `lifecycle`×2, `process`×3, `rule`×2), suprimido archivo e índice sin reemplazo — excepción deliberada a la convención de retiro (spec `Deprecated` con link), ratificada y documentada en EDR `structure/spec-deletion-over-deprecation`
 - Anterior: 2026-09-03 (archive `sdd/phase-return-contract-gaps`) — Creada `rule/store-wide-finding-summary-slot` (nuevo slot de resumen para hallazgos de alcance store); Modificada `rule/mailbox-item-summary-rationale-split` (extensión de independencia respecto de forma de renderización, desde imposición hacia anuncio)
 - Anterior: 2026-09-02 (archive `sdd/fix-binary-step-detect-before-mutation`) — Creada `process/binary-install-step-idempotency` (nueva capacidad que unifica criterio de presencia en ambas superficies)
 - Anterior: 2026-09-02 (archive `sdd/second-install-run-fresh-home-idempotency`) — Modificada `process/install-mcp-from-release-tarball` (ampliada "La segunda corrida no reporta nada pendiente" de 4 a 6 escenarios: casos fresh-HOME y guarda de no-alcanzable)
