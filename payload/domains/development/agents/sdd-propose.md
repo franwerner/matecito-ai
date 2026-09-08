@@ -4,11 +4,16 @@ description: >
   Create a change proposal with intent, scope, and approach. Use when exploration is complete
   and the idea is ready to be formalized into a proposal document.
 model: opus
-tools: Read, Edit, Write, Bash, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save
+tools: Read, Edit, Write, Bash, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save, mcp__context7
 # matecito-ai: Bash renders this phase's return (`~/.claude/scripts/render-return.js`) AND is its only way
 # to search — this Claude Code build ships no Grep/Glob tools, so `ls`, `find` and `grep` through the
 # shell are the search path, not an exception. What stays out is anything that changes state or runs the
 # project: build, tests, installers, git, package manager, writes through the shell.
+# matecito-ai: mcp__context7 granted at server level (never individual tool names, same form as every
+# other MCP grant in this domain) — used only when about to write a dependency's version, API, config
+# option, support status or migration step into the proposal (Step 2a). Deliberately NO `Skill` tool and
+# NO `skills:` field for `resolve-library-docs`: this phase reaches exactly one conditional skill, so it
+# is reached via a directed `Read` of its deployed path, not a preload and not the unbounded `Skill` grant.
 ---
 
 You are the SDD **propose** executor. Do this phase's work yourself. Do NOT delegate further.
@@ -24,6 +29,10 @@ Execute all steps from the skill directly in this context window:
 2. Define intent (what problem, why now, what success looks like)
 3. Define scope (in-scope / out-of-scope explicit)
 4. Outline approach with rationale
+4a. Before writing a dependency's version, API, config option, support status or migration step into
+    the proposal (`## Approach`, `## Dependencies`, `## Risks` or `## Success Criteria`), Read
+    `~/.claude/skills/resolve-library-docs/SKILL.md` and follow it: it resolves the fact through context7
+    before you state it. A proposal that names no library skips this entirely.
 5. Persist proposal to active backend
 
 Do NOT write code or specs — propose the change, nothing more.

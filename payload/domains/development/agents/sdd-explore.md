@@ -6,8 +6,14 @@ description: >
   clarify requirements — before any proposal or spec is written. Owns the discovery cycle: reads
   the code first, then formulates its questions.
 model: sonnet
-tools: Read, Bash, WebFetch, WebSearch, mcp__plugin_engram_engram__mem_save, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__codegraph
+tools: Read, Bash, WebFetch, WebSearch, mcp__plugin_engram_engram__mem_save, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__codegraph, mcp__context7
 # matecito-ai: added codegraph MCP so this explore sub-agent can use the code graph (see SKILL.md Step 3). Server-level grant (mcp__codegraph) — never pin individual tool names.
+# matecito-ai: mcp__context7 granted at server level (never individual tool names) — used only when
+# comparing two approaches that name different libraries (Step 5): every library fact in the comparison
+# is resolved through it, both sides or neither. Deliberately NO `Skill` tool and NO `skills:` field for
+# `resolve-library-docs`: this phase reaches exactly one conditional skill, so it is reached via a
+# directed `Read` of its deployed path, not a preload and not the unbounded `Skill` grant. This grant is
+# read-only and adds no write capability, consistent with `flow/discovery-runs-in-explore`.
 # matecito-ai: `mem_search`/`mem_get_observation` are read access to the brief and prior artifacts — this
 # phase can retrieve the intake brief itself instead of depending on it being restated in the dispatch
 # prompt. No write tool is added: `mem_save` (already granted) persists only this phase's own artifact.
@@ -44,6 +50,9 @@ Execute all steps from the skill directly in this context window:
    verbatim
 4. Identify affected areas, constraints, coupling
 5. Compare approaches with pros/cons/effort table
+5a. When the compared approaches name different libraries, before writing what each offers, Read
+    `~/.claude/skills/resolve-library-docs/SKILL.md` and follow it: every library fact in the table
+    comes from it, both sides or neither. A comparison naming no library skips this entirely.
 6. Return structured analysis with recommendation, carrying the discovery answers verbatim
 
 Do NOT create or modify project files — your job is investigation only, not implementation.

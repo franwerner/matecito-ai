@@ -177,6 +177,12 @@ If there are multiple approaches, compare them:
 | Option A | ... | ... | Low/Med/High |
 | Option B | ... | ... | Low/Med/High |
 
+**When the compared approaches name different libraries, resolve every library fact in this table
+through `resolve-library-docs` — both sides or neither.** Read
+`~/.claude/skills/resolve-library-docs/SKILL.md` and follow it before writing what each library offers;
+never describe one from memory just because the other got resolved. A comparison that names no library
+skips this entirely.
+
 ### Step 6: Persist Artifact
 
 **This step is MANDATORY whenever you reach the exploration artifact, when tied to a named change — do
@@ -249,6 +255,7 @@ Persist the same content per Step 6.
 <!-- matecito-ai: prefer CodeGraph for structural exploration when .codegraph/ exists; grep only for literal text, non-indexed files, or as fallback (see Step 3) -->
 - When `.codegraph/` exists, prefer CodeGraph MCP tools for structural questions; trust their results and do NOT re-read files they already returned. Use grep/Read for literal text, non-indexed files, or when CodeGraph comes up empty.
 - Keep your analysis CONCISE - the orchestrator needs a summary, not a novel
+- **When comparing approaches that name different libraries, resolve every library fact through `resolve-library-docs`** — see Step 5. Both sides or neither, never from memory.
 - If you can't find enough information, say so clearly
 <!-- matecito-ai: `blocked` se estrecha — la ambigüedad del pedido es ahora una pregunta de discovery,
      no un blocker. `blocked` queda para lo que una segunda pasada con respuestas no puede resolver. -->

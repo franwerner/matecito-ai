@@ -49,6 +49,16 @@ Follow **Section A** from `~/.claude/skills/_shared/sdd-phase-common.md`.
 <!-- matecito-ai: openspec/hybrid removidos; engram-only. No se crean directorios openspec/. -->
 Existing context was already retrieved from Engram in the Persistence Contract (or passed inline in `none` mode). Do NOT create any project files or directories. Skip filesystem reads.
 
+### Step 2a: Resolve Library Facts
+
+Before writing a dependency's version, API, a config option, its support/deprecation status, or a
+migration step into `## Approach`, `## Dependencies`, `## Risks` or `## Success Criteria`, resolve it
+through the `resolve-library-docs` capability — never from memory. Read
+`~/.claude/skills/resolve-library-docs/SKILL.md` and follow it: it is the single source of truth for
+this (mandatory triggers, `context7` as the only version source, and the hard "not found → report and
+block, never guess" rule). A proposal that names no external dependency skips this step entirely — the
+obligation is triggered by the assertion, not by the phase running.
+
 ### Step 3: Compose the proposal
 
 <!-- matecito-ai: esto es el CONTENIDO del artefacto que se persiste en Engram en el Step 5,
@@ -183,6 +193,7 @@ Two things that file makes explicit and that this phase gets wrong most often:
 - Every proposal MUST have a rollback plan
 - Every proposal MUST have success criteria
 - Use concrete file paths in "Affected Areas" when possible
+- **Before writing any library fact** (version, API, config option, support status, migration step) into the proposal, resolve it through `resolve-library-docs` — see Step 2a. Never from memory.
 - **ALWAYS fill in the Capabilities section** — this is the contract with sdd-spec.
 - New Capabilities → each becomes a new capability spec for sdd-spec
 - Modified Capabilities → each will become a delta spec inside `sdd-spec`'s `spec` artifact
