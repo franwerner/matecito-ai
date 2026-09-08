@@ -31,6 +31,7 @@ batch; this file does not repeat its content.
 | `### Completed Tasks` | always | the orchestrator, as context |
 | `### Files Changed` | always | the orchestrator, as context — and `sdd-verify` reads it from the artifact (Strict TDD coverage, and the "backing" check of `decision-gaps`, which joins by the row's `Task` column) |
 | `### Decisions Materialized` | only when this run materialized ≥1 ratified proposal | the orchestrator, as context; `sdd-verify`'s `decision-gaps` group reads it from the artifact — see `~/.claude/references/decision-capture/in-flow-capture.md` |
+| `### Capability-Specs Materialized` | only when this run's Step 5b folded ≥1 durable capability-spec | the orchestrator, as context — what the durable behavior store now says |
 | `### Rejected Proposals Checked` | only when the dispatch prompt forwarded ≥1 rejected proposal | Unresolved Decisions Guard — classifies each `design-conflict` verdict; a `conflicts` verdict requires `status: blocked` — see `~/.claude/matecito-ai/domains/development.md` → "Forwarding a proposal's resolution to `sdd-apply`" |
 | `### TDD Cycle Evidence` | only in **Strict TDD Mode** | the orchestrator, as context; `sdd-verify` reads it from the artifact |
 | `### Test Summary` | only in **Strict TDD Mode** | the orchestrator, as context |
@@ -122,6 +123,11 @@ missing contract, exactly as "Consulting an Unmandated Fork" governs any other p
 Resolve in this order, top down, and stop at the first that fits:
 
 1. **`blocked`** — you cannot continue without a resolution that is not yours to make. Emit `### Blocker`.
+   Four causes can land here: an unpinned contract (`### Contract Shapes Proposed`), a
+   `design-conflict: conflicts` verdict, a fork or failure that stops the rest of the batch, or a
+   destructive delta-spec fold (Step 5b) that would drop scenarios or sections the delta never
+   mentions — listed last because it is the only one that can arise *after every task is already
+   complete*.
 2. **`partial`** — the phase is not finished: tasks of this change remain. This is the normal
    continuation batch as much as it is the stop-with-a-blocker case; `partial` does NOT claim
    anything about blockers either way, and `### Blocker` is emitted only if one actually stopped you.
@@ -160,6 +166,15 @@ whole section otherwise, do not even print "None." Full mechanism:
 | Record | Task | Result |
 |--------|------|--------|
 | `<domain>/<slug>` | {task id} | materialized \| failed: {reason} |
+
+{CONDITIONAL — only when this run's Step 5b folded at least one durable capability-spec; omit the
+whole section otherwise, do not even print "None." Full mechanism: Step 5b of
+`~/.claude/skills/sdd-apply/SKILL.md`.}
+
+### Capability-Specs Materialized
+| Capability-spec | Action | Scenarios |
+|------------------|--------|-----------|
+| `<type>/<capability>.md` | Created \| Updated \| Deprecated | {N added, M modified, K removed} |
 
 {The next two sections are Strict TDD Mode ONLY — in Standard Mode omit both, entirely.
 What each column means, and what counts as evidence, is in `~/.claude/skills/sdd-apply/strict-tdd.md`.}
@@ -369,12 +384,23 @@ is `blocked`:}
 ### Remaining Tasks
 - [ ] {everything left, including the task you stopped on}
 
+{OR — when the blocker is the Step 5b destructive-fold stop: every task is already complete, so there
+is no task to list —}
+
+### Remaining Tasks
+None — every task completed; what remains is the fold.
+
 ### Workload / PR Boundary
 {As above.}
 
 ### Status
 {N}/{total} tasks complete. Progress persisted: {yes | no — nothing had been completed yet}.
 Stopped at task {id} — see Blocker.
+
+{OR — the Step 5b destructive-fold stop, which has no task of its own to name:}
+
+### Status
+{N}/{N} tasks complete. Progress persisted: yes. Stopped at the durable-spec fold — see Blocker.
 ```
 
 ## One blocker, one place
@@ -497,6 +523,21 @@ nothing). Cumulative across every batch, same `record | task | result` shape as 
 `sdd-verify`'s `decision-gaps` group reads THIS copy — not the return — to build its check list. A
 `failed` row is never dropped: it is exactly the "propuesta ratificada sin registro materializado"
 case that group flags CRITICAL.}
+
+<!-- matecito-ai: spec-materialization-in-apply — the fold moved here from sdd-archive; reported like
+     `### Decisions Materialized` right above, for the same reason: a durable fact a later reader needs,
+     not only orchestrator context. -->
+### Capability-Specs Materialized
+{CONDITIONAL — only when at least one batch of this change's Step 5b folded at least one durable
+capability-spec; absent otherwise, and that absence is legitimate (a change whose delta touches no
+capability, or one that never reached its final dispatch, folds nothing). Cumulative across every
+batch, no status filter — a partial fold that then hit the destructive-fold blocker still reports what
+it DID fold:
+
+| Capability-spec | Action | Scenarios |
+|------------------|--------|-----------|
+| `<type>/<capability>.md` | Created \| Updated \| Deprecated | {N added, M modified, K removed} |
+}
 ```
 
 **`### Unmandated Forks` and `### Mandated Departures` go in BOTH places**, with the same content: in

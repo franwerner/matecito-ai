@@ -5,7 +5,7 @@ description: Validador de coherencia, completitud y verificabilidad de los capab
 
 # Development Spec Validate
 
-Lee los capability-specs producidos por `development-spec-bootstrap` (o materializados por `sdd-archive`, o editados a mano) y los chequea contra una rúbrica: **completitud**, **coherencia entre capabilities**, **verificabilidad**, **referencias** e **integridad de la taxonomía**. Reporta hallazgos con severidad. No modifica archivos.
+Lee los capability-specs producidos por `development-spec-bootstrap` (o materializados por `sdd-apply`, o editados a mano) y los chequea contra una rúbrica: **completitud**, **coherencia entre capabilities**, **verificabilidad**, **referencias** e **integridad de la taxonomía**. Reporta hallazgos con severidad. No modifica archivos.
 
 Los specs están organizados por tipo (`.matecito-ai/development-specs/<type>/<capability>.md`, `type` ∈ `flow` | `rule` | `lifecycle` | `process`), con un índice raíz (`.matecito-ai/development-specs/INDEX.md`) y un índice por tipo (`.matecito-ai/development-specs/<type>/INDEX.md`).
 

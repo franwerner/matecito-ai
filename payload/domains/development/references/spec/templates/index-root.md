@@ -1,4 +1,4 @@
-<!-- Canonical template: índice RAÍZ de capability-specs (`.matecito-ai/development-specs/INDEX.md`). Enruta por tipo; el detalle de cada capability está en el INDEX de su tipo. Consumido por development-spec-bootstrap (materialización) y actualizado por sdd-archive al consolidar un delta. -->
+<!-- Canonical template: índice RAÍZ de capability-specs (`.matecito-ai/development-specs/INDEX.md`). Enruta por tipo; el detalle de cada capability está en el INDEX de su tipo. Consumido por development-spec-bootstrap (materialización) y actualizado por sdd-apply al plegar el delta de un cambio (Step 5b). -->
 
 # Capability specs — Índice raíz
 
@@ -37,6 +37,6 @@ El comportamiento del sistema, capturado por **capacidad** y organizado por **ti
 - Última actualización: <YYYY-MM-DD>
 - **Definir una capacidad nueva:** usá la skill `development-spec-bootstrap` (o escribí el spec desde `~/.claude/references/spec/templates/capability.md`); creá la carpeta del tipo si no existía y sumá la fila al `INDEX.md` de ese tipo (y a este índice raíz si el tipo es nuevo en el proyecto).
 - **Actualizar comportamiento (cambio menor):** editá el spec. El historial lo lleva git.
-- **Cambio de comportamiento vía flujo SDD:** no edites el spec a mano — el delta del cambio se mergea acá al archivar (`sdd-archive`).
+- **Cambio de comportamiento vía flujo SDD:** no edites el spec a mano — el delta del cambio se mergea acá al aplicar (`sdd-apply`).
 - **Retirar una capacidad:** marcá el spec `Deprecated` con link a su reemplazo; no borres el archivo.
 - **Validar coherencia entre specs:** usá la skill `development-spec-validate`.

@@ -229,7 +229,7 @@ Los templates son el **contrato canónico** y viven en `~/.claude/references/spe
 5. **Después de cualquier cambio, mantené los índices coherentes:** actualizá el índice del tipo afectado y, si agregaste o vaciaste un tipo, el raíz.
 6. **Asegurá que el pointer del `CLAUDE.md` siga presente** (la sección `## Comportamiento del sistema (capability-specs)`); si falta, agregala desde `templates/claude-md-spec.md`.
 
-> Nota: durante el flujo SDD, el comportamiento se actualiza **solo** vía el merge de `sdd-archive` (el delta del cambio → el capability-spec). El modo update es para autoría/mantenimiento manual fuera de un cambio.
+> Nota: durante el flujo SDD, el comportamiento se actualiza **solo** vía el merge de `sdd-apply` (el delta del cambio → el capability-spec). El modo update es para autoría/mantenimiento manual fuera de un cambio.
 
 ---
 

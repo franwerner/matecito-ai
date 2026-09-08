@@ -32,7 +32,7 @@ Titles are fixed. This phase declares no accepted variants of them.
 `### Derived capabilities (unconfirmed)` is the **only unconditional** gating mailbox of this phase —
 it declares `gates: contested` (Section D.3 of `sdd-phase-common.md` fixes what that means). A derived
 capability mapping is a guess about which durable capability-spec this change belongs to, and at
-archive that mapping decides which file the delta gets merged into. Emit it **always** — with the
+apply that mapping decides which file the delta gets merged into. Emit it **always** — with the
 `None — mapping was explicit.` sentinel when the upstream proposal carried its own Capabilities
 section — because a missing section and an empty one mean opposite things to the guard.
 
@@ -159,7 +159,7 @@ to and the evidence in the upstream artifact that supports it. List every readin
 plausible; the point of blocking is that you did not narrow them down.}
 
 **Why this is not mine to settle**: {for an ambiguous derivation: the mapping is not a labelling
-choice — it decides which durable capability-spec the delta merges into at archive, so picking the
+choice — it decides which durable capability-spec the delta merges into at apply, so picking the
 wrong reading silently rewrites the behavior of a capability nobody asked to touch, and naming a
 capability that does not exist invents behavior. For a contract or definition shape: name it as
 what it is under "Contract & definition shapes — never inferred" (entity, DB model/migration/schema,

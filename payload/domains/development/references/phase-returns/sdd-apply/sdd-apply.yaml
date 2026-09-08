@@ -35,6 +35,19 @@ sections:
       - { key: record, label: Record }
       - { key: task, label: Task }
       - { key: result, label: Result }
+  # matecito-ai: spec-materialization-in-apply. Emitted only when this run's Step 5b actually wrote
+  # a durable capability-spec — a run that folded nothing carries no section at all, not even the
+  # sentinel (same shape as `### Decisions Materialized` right above it). No `statuses` filter: a
+  # partial fold that then hit the destructive-fold blocker still reports what it DID fold.
+  - title: "### Capability-Specs Materialized"
+    emitted: conditional
+    when: has_capability_specs_materialized
+    render: table
+    field: capability_specs
+    columns:
+      - { key: spec, label: Capability-spec }
+      - { key: action, label: Action }
+      - { key: scenarios, label: Scenarios }
   # In-flow decision capture, rejection half (see ../../decision-capture/in-flow-capture.md and
   # ../../../CLAUDE.md's "Forwarding a proposal's resolution to `sdd-apply`"). `has_forwarded_rejections`
   # is a fact about the PROMPT, never derived from the list: `true` + an empty list is the omission case

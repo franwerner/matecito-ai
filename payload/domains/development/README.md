@@ -40,9 +40,9 @@ Todo cambio en el lane `full` recorre las nueve, siempre, en este orden — no h
 | `sdd-spec` | proposal (requerido) + **capability-spec durable** (para Modified Capabilities) | `spec` |
 | `sdd-design` | proposal + **EDRs** + **capability-specs durables** (requerido) | `design` |
 | `sdd-tasks` | spec + design + **capability-specs tocados** (requerido) | `tasks` |
-| `sdd-apply` | tasks + spec + design + apply-progress | `apply-progress` |
+| `sdd-apply` | tasks + spec + design + apply-progress + **capability-specs durables** (donde pliega el delta) | `apply-progress` + **merge en capability-specs** |
 | `sdd-verify` | spec + tasks + apply-progress + **EDRs tocados** + **capability-specs tocados** | `verify-report` |
-| `sdd-archive` | todos los artefactos | `archive-report` + **merge en capability-specs** |
+| `sdd-archive` | todos los artefactos | `archive-report` |
 
 Cada fase lee su upstream completo, sin fallback: todas corren siempre, así que no hay upstream ausente que cubrir. Los **capability-specs durables** se leen solo si existe `.matecito-ai/development-specs/` (gate por presencia, igual que los EDRs).
 
@@ -59,7 +59,7 @@ Tres capas, no dos: **capability-spec** (qué hace) · **EDR** (qué se eligió 
 
 **Dos "spec" que no hay que confundir:**
 - el artefacto de fase `spec` (efímero, en Engram, `sdd/{change}/spec`) es el **delta** de un cambio (qué AGREGA / MODIFICA / QUITA);
-- el **capability-spec** durable es el **estado acumulado** del comportamiento. Al archivar, `sdd-archive` **mergea** el delta en el capability-spec (anclado en escenarios, no destructivo); `sdd-spec` lee el durable para construir el delta de una capability existente.
+- el **capability-spec** durable es el **estado acumulado** del comportamiento. Al aplicar, `sdd-apply` **mergea** el delta en el capability-spec (anclado en escenarios, no destructivo, en el despacho que cierra la implementación); `sdd-spec` lee el durable para construir el delta de una capability existente.
 
 **Skills:** `development-spec-bootstrap` define el comportamiento *upfront* (entrevista por capability, por tipo) y asienta el pointer en el `CLAUDE.md` del proyecto; `development-spec-validate` chequea coherencia entre capabilities. **Gate por presencia:** si el proyecto no tiene `development-specs/`, todas las fases lo saltean en silencio (igual que con los EDRs).
 

@@ -5,15 +5,6 @@ statuses: [done, blocked]
 header:
   - { label: Change, field: change }
 sections:
-  - title: "### Capability-Specs Updated"
-    emitted: always
-    sentinel: true
-    render: table
-    field: capability_specs
-    columns:
-      - { key: spec, label: Capability-spec }
-      - { key: action, label: Action }
-      - { key: scenarios, label: Scenarios }
   - title: "### Archive Report (Engram)"
     emitted: always
     sentinel: true

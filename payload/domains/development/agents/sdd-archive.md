@@ -2,8 +2,8 @@
 name: sdd-archive
 description: >
   Archive a completed and verified change. Use when verification has passed and the change
-  needs to be closed — merges the change's delta into the durable capability-specs
-  (`.matecito-ai/development-specs/`) and persists the final archive report. Completes the SDD cycle.
+  needs to be closed — persists the final archive report, with every artifact's observation ID,
+  and marks the change archived. Completes the SDD cycle.
 model: haiku
 tools: Read, Edit, Write, Bash, mcp__plugin_engram_engram__mem_search, mcp__plugin_engram_engram__mem_get_observation, mcp__plugin_engram_engram__mem_save
 # matecito-ai: Bash renders this phase's return (`~/.claude/scripts/render-return.js`) AND is its only way
@@ -27,9 +27,10 @@ Execute all steps from the skill directly in this context window:
    - `mem_search("sdd/{change-name}/design")` → `mem_get_observation`
    - `mem_search("sdd/{change-name}/tasks")` → `mem_get_observation`
    - `mem_search("sdd/{change-name}/verify-report")` → `mem_get_observation`
-<!-- matecito-ai: engram-only para artefactos de flujo; los capability-specs durables SÍ se materializan a archivos. -->
-2. Merge the change's delta spec into the durable capability-specs under `.matecito-ai/development-specs/<type>/<capability>.md` (scenario-anchored, non-destructive; create missing, update indices) — see SKILL Step 2. Skip in `none` mode.
-3. Write final archive report with all observation IDs for traceability
+<!-- matecito-ai: spec-materialization-in-apply — the merge into the durable capability-specs moved to
+     `sdd-apply`'s Step 5b. This phase reads `spec` above only for the archive-report's identities; it
+     writes no file under `.matecito-ai/development-specs/`. -->
+2. Write final archive report with all observation IDs for traceability
 <!-- matecito-ai: Inferred EDRs are NOT recorded here. EDRs (any status) live ONLY in their `.md` under `.matecito-ai/edr/`; never duplicated into Engram or the archive-report. -->
 3. Mark the change state as archived in Engram
 4. Persist archive report to active backend
@@ -56,7 +57,7 @@ specifies for `sdd-archive`.
 
 Phase-specific refinements on top of Section D:
 - `executive_summary`: one-sentence confirmation that the change is archived and closed
-- `artifacts`: topic_keys or file paths written (e.g. `sdd/{change-name}/archive-report`, the durable capability-specs merged)
+- `artifacts`: topic_keys written (e.g. `sdd/{change-name}/archive-report`) — this phase writes no file; the durable capability-specs, when a change touches any, are `sdd-apply`'s output
 - `next_recommended`: `none` — the normal value here, since the change is complete; a new cycle only
   when follow-up work is genuinely needed
 - `risks`: risks and assumptions left standing — e.g. artifacts that could not be merged or archived

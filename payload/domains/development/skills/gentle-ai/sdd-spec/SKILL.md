@@ -81,7 +81,7 @@ When writing a `## MODIFIED Requirements` section, follow this exact workflow:
 5. Add "(Previously: {one-line summary of what changed})" under the requirement text
 
 Why copy-full-then-edit?
-→ At archive, the delta is merged into the durable capability-spec anchored on scenarios (each MODIFIED scenario replaces its match; scenarios not present in the delta are preserved)
+→ At apply, the delta is merged into the durable capability-spec anchored on scenarios (each MODIFIED scenario replaces its match; scenarios not present in the delta are preserved)
 → Copying the full requirement block keeps every scenario visible so the merge maps each one cleanly and nothing is dropped by accident
 → Common pitfall: rewriting only the changed scenario as if it were the whole requirement
 → If adding NEW behavior WITHOUT changing existing behavior, use ADDED instead
@@ -306,7 +306,7 @@ Two things that file makes explicit and that this phase gets wrong most often:
 - **The BEHAVIORAL half of `ui-scenarios` is produced HERE, and only when the intake brief says `ui-test: needed`** — read that flag from `sdd/{change-name}/intake` **always**, whatever your requirements upstream was (the proposal does not carry it; the brief always exists). Flag `not-needed` or absent → skip silently: no block, no mention. The **executable counterpart** — real route, real locators — is `sdd-apply`'s, in its `apply-progress`: you never author it, and you never need a route or a control's name to say what must be true
 - **`ui-scenarios` targets MUST be role+name or CSS — NEVER `@eN` runtime snapshot refs.** `sdd-verify` rejects a `@e\d+` target as CRITICAL and the scenario fails static validation
 - **`ui-scenarios` entries are DERIVED from the Given/When/Then scenarios you already wrote** (for the capabilities with a visual surface), never a parallel set of behavior. Author them against `~/.claude/references/ui-scenarios-schema.md`, read in full first
-- **MODIFIED requirements MUST be the FULL block** — copy entire requirement + all scenarios from main spec, then edit. Partial MODIFIED blocks lose content at archive time.
+- **MODIFIED requirements MUST be the FULL block** — copy entire requirement + all scenarios from main spec, then edit. Partial MODIFIED blocks lose content at apply time.
 - If adding new behavior without changing existing behavior → use ADDED, not MODIFIED
 <!-- matecito-ai: el presupuesto acota la PROSA de requisitos. Contar el YAML de `ui-scenarios` contra
      él haría que un ejecutor recorte escenarios de UI para "entrar" — degradando en silencio lo que

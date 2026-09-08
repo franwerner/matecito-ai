@@ -1,4 +1,4 @@
-<!-- Canonical template: índice de un TIPO (`.matecito-ai/development-specs/<type>/INDEX.md`). Lista los capability-specs de ese tipo y cuándo consultarlos. Consumido por development-spec-bootstrap (materialización) y actualizado por sdd-archive. -->
+<!-- Canonical template: índice de un TIPO (`.matecito-ai/development-specs/<type>/INDEX.md`). Lista los capability-specs de ese tipo y cuándo consultarlos. Consumido por development-spec-bootstrap (materialización) y actualizado por sdd-apply. -->
 
 # Capability specs — `<type>`
 

@@ -91,6 +91,9 @@ Execute all steps from the skill directly in this context window:
      just wrote them, and `sdd-verify` needs exact targets to stay deterministic. Hence the counterparts
      land here. -->
 7b. UI scenario counterparts (conditional): if the spec artifact carries a `ui-scenarios:` block, author one **executable counterpart per behavioral scenario** per **Part 2** of `~/.claude/references/ui-scenarios-schema.md` — the same `name` **verbatim** (it is the key `sdd-verify` pairs on), the real `url` you implemented, the `steps` reaching the state its `when` describes, and the `expect` assertions expressing its `then`. In Consolidation/Serial Mode it goes in the artifact under `### UI Scenario Counterparts`, merged across batches; in Isolated Run Mode it goes in your Task Run Report instead. Targets MUST be role+name or CSS — **never** `@e\d+`, which `sdd-verify` rejects as CRITICAL before the browser opens. Each counterpart **establishes its own starting state** (the `storage` primitive clears or seeds it) instead of chaining off the previous one's leftovers, and declares **`covers: full`** or **`covers: partial: <what is missing>`** — an omitted `covers` reads as `partial: undeclared` and is a WARNING. A scenario whose `when` describes keyboard use is driven with `focus`/`press`, never `click`. Every behavioral scenario needs a counterpart: one missing is `UNTESTED`/CRITICAL at verify, so if its surface is not built yet in this batch, say so in `### Remaining Tasks` instead of omitting it. No `ui-scenarios:` block → skip silently.
+<!-- matecito-ai: spec-materialization-in-apply — the fold moved here from sdd-archive; this step
+     mirrors Step 5b of `~/.claude/skills/sdd-apply/SKILL.md`. -->
+7c. Fold the change's delta spec into the durable store (Consolidation/Serial Mode only, mirroring Step 5b of the skill): immediately after marking tasks (step 7), evaluate one predicate — does the tasks artifact, as just updated, contain no `- [ ]`? False → skip entirely, no section, no mention. True → for each capability the delta touches, fold it into `.matecito-ai/development-specs/<type>/<capability>.md` (non-destructive: default is copy-not-recompose, with named synthesis exceptions for a new capability's header sections and pre-existing prose the delta makes stale; the `verification:` token's line is copied like the rest of its scenario, and on a MODIFIED scenario the delta's token wins outright, unmerged), update both INDEX levels, and report what you folded in `### Capability-Specs Materialized`. A merge that would drop scenarios or sections the delta never mentions does NOT apply — stop and route it through `### Blocker` as a fourth listed cause, never a section of its own. Isolated Run Mode never reaches this step (single-writer rule).
 8. Persist progress to active backend (Consolidation/Serial Mode only)
 
 ## Engram Save (mandatory — Consolidation/Serial Mode only)
@@ -145,4 +148,8 @@ Phase-specific refinements on top of Section D:
   exact values). An absent or hedged verdict is read as firing
 - `### Contract Shapes Proposed` is emitted conditionally — `has_contract_proposals: true` on a
   `status: blocked` return, when the stop is over an unspecified contract — per the SKILL.md wiring
+- `### Capability-Specs Materialized` is emitted conditionally — `has_capability_specs_materialized: true`
+  when the final dispatch's Step 5b (step 7c above) folded at least one durable capability-spec into
+  `.matecito-ai/development-specs/`; a destructive fold that would drop unmentioned scenarios or
+  sections is a fourth `### Blocker` cause instead — never a section of its own
 - `skill_resolution`: per D.4 — `phase-skill` when you loaded this phase's own SKILL.md <!-- matecito-ai: sin inyección -->

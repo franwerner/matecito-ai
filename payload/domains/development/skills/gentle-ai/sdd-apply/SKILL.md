@@ -64,14 +64,17 @@ From the orchestrator:
   run neither reads nor writes `apply-progress` (single-writer rule). Run the new **Step 3b: Reposition,
   Then Base Handshake** before Step 4. Step 4 implements your one assigned task. Run the new **Step 4a: Commit**
   immediately after. Step 6b (if the spec carries `ui-scenarios:`) authors its counterparts **into your
-  Task Run Report**, not into a persisted artifact. **Skip Steps 5 and 6 entirely.** Step 7 returns the
+  Task Run Report**, not into a persisted artifact. **Skip Steps 5, 5b and 6 entirely** — an isolated
+  run never folds the durable store either (single-writer rule). Step 7 returns the
   **Task Run Report** (`parallel-batch.md`), never `## Implementation Progress`.
 - **`mode: consolidation`** → **skip Step 4** — you integrate already-implemented work, you do not
   implement. Run Step 2b to read prior `apply-progress` if any. Run the **Integration procedure**
   (`parallel-batch.md` → "Consolidation run: integrate, then write once") over every Task Run Report
-  the batch returned. Then run Steps 5 and 6 **once**, over the union of everything the reports carry.
-  Step 7 returns `## Implementation Progress` exactly as always, and the artifact gains `### Integration
-  Log`.
+  the batch returned. Then run Steps 5 and 6 **once**, over the union of everything the reports carry,
+  and evaluate Step 5b's own predicate once, right after — a round that leaves a task unintegrated
+  leaves it unmarked, so the predicate reads false and the fold is skipped, matching
+  `parallel-batch.md`'s "never `done` with an unintegrated task". Step 7 returns `## Implementation
+  Progress` exactly as always, and the artifact gains `### Integration Log`.
 - **No `mode` field (serial)** → every step below applies exactly as it always has. Nothing in this
   section changes serial mode.
 
@@ -416,6 +419,93 @@ checklist below shows the shape of the artifact's content, not a file to edit:
 - [ ] 1.3 Add auth routes to `internal/server/server.go`  ← still pending
 ```
 
+### Step 5b: Fold the Change's Delta Spec into the Durable Store
+
+<!-- matecito-ai: transplanted verbatim from `sdd-archive`'s former Step 2 — the fold now happens at the
+     dispatch that closes the implementation, not at archive. The two governing decisions: WHEN this
+     fires (`structure/spec-fold-fires-on-the-final-dispatch.md`) and how the destructive stop is
+     reported (`contracts/destructive-fold-uses-the-single-blocker.md`). -->
+
+**Consolidation/Serial Mode only.** Immediately after Step 5 (marking tasks `[x]`), evaluate one
+mechanical predicate: does the tasks artifact, as just updated, contain no `- [ ]`? **True** → run this
+step. **False** — tasks remain — skip entirely: no section, no mention, and this predicate is the ONLY
+trigger. Never key it off `status` (resolved later, in Step 7) or off `### Remaining Tasks` (also built
+in Step 7): both are downstream of this step and do not exist yet when it runs. **Isolated Run Mode
+never reaches this step** — it already skips Steps 5 and 6 (single-writer rule). A re-dispatch after
+this step stops on the destructive-fold blocker (below) re-arms it for free: `apply-progress` already
+shows every task `[x]`, so the re-dispatched batch implements nothing, reaches Step 5 with nothing to
+mark, and evaluates this predicate again against the corrected delta — do not read "no task to
+implement" as an error.
+
+Read the change's delta spec from Engram (`sdd/{change-name}/spec`). For each capability it touches,
+fold the delta into the durable capability-spec under `.matecito-ai/development-specs/<type>/<capability>.md`
+(source of truth of the system's behavior). Read the templates from `~/.claude/references/spec/templates/`
+and the concept from `~/.claude/references/spec/README.md` before writing.
+
+**The bridge is the scenario:** the durable spec's `## Escenarios` use the same Given/When/Then that the
+delta spec produces. Merge anchored on scenarios, **NON-DESTRUCTIVE**:
+
+- **Default: copy, don't recompose.** Any prose the delta already writes out in full, that crosses into
+  the durable spec, is carried by reproducing the delta's characters — never by re-typing, re-describing,
+  translating, re-flowing, or "correcting" it (an accent, a term, a citation, a parenthetical: none of
+  those are yours to touch while merging). This is the default for the **whole document** on that
+  boundary, not a named set of protected parts — it covers the `## Purpose`/`## Propósito` paragraph,
+  every scenario's `GIVEN`/`WHEN`/`THEN` body (including a `verification:` token line and its inline
+  Markdown markup — backticks, bold, italics — around the token's value), and any other sentence the
+  delta already wrote out in full. The verb is **copy**, not reproduce or preserve: you are moving
+  characters, not restating an idea in your own words.
+  The only content this default does NOT bind is what you yourself legitimately generate or transform
+  because the delta never wrote it out in the first place: the file's `Status`/`Date`/`Components`
+  header, a **new** capability's `Actores`/`Reglas de negocio`/`Entidades y estados` sections
+  synthesized from the delta's `Requirements` prose (there is no literal counterpart in the delta to
+  copy from), the `INDEX.md` entries, and — when the delta's `ADDED` or `MODIFIED` requirement lands on
+  an **existing** capability — the durable prose sections (`Flujo`/`Ramas`/`Casos borde`/`Reglas`/
+  `Estados`/`Errores`) that were **already in the file before this merge** and that the new or changed
+  scenario now makes stale: reading them, deciding whether they still hold, and rewriting the ones that
+  don't is synthesis, the same kind as the New-capability case, because the delta carries no literal
+  counterpart in that section's shape to copy from — only a scenario body and/or `Requirements` prose to
+  synthesize from. This fourth exception is scoped to that pre-existing prose alone: anything the delta
+  itself writes out in full — a new scenario's `GIVEN`/`WHEN`/`THEN` body, a new sentence, a rewritten
+  `Purpose` paragraph — is still copied by the general default, even on the ADDED/MODIFIED path, exactly
+  as in the New-capability case. Outside those four, copy.
+- **New capability** (the file does not exist) → create it from `capability.md`, classifying its
+  `<type>` (`flow`/`rule`/`lifecycle`/`process`); fill its `## Escenarios` from the delta's
+  `ADDED Requirements` (one scenario per `#### Scenario`, copied per the default above) and its
+  surrounding `Actores`/`Reglas de negocio`/`Entidades y estados` by synthesis, per the exception above.
+- **ADDED** → add the new scenarios (copied per the default) and update the affected prose sections
+  (Flujo/Ramas/Casos borde/Reglas/Estados/Errores) to reflect the new behavior — that update is the
+  fourth exception above: only the pre-existing prose the new scenario makes stale, synthesized, never
+  the scenario itself.
+- **MODIFIED** → replace the scenario that changed (copied per the default) and adjust the affected
+  prose — same fourth exception: the adjustment is bound to pre-existing prose the change makes stale,
+  not to the scenario, which is copied. PRESERVE every scenario and section the delta does not mention.
+- **REMOVED** → drop the removed scenario/behavior; if a capability is left with no behavior at all,
+  mark its spec `Deprecated` (do not delete the file).
+- **`verification:` token** (canonical definition: `~/.claude/references/spec/README.md`) → its line is
+  bound by the copy default above like the rest of the scenario body it belongs to; what is specific to
+  it is a precedence rule, not a text rule: do NOT reconcile the delta's token against the durable
+  copy's — the delta is the source, so on a MODIFIED scenario the delta's token wins outright, unmerged,
+  same as the rest of its content. A scenario with no token merges without one.
+- If the merge would be **destructive** (losing scenarios or sections the delta does not mention) → do
+  NOT apply it: this is the destructive-fold stop (below) — it does not write anything to the durable
+  store.
+- Update the `INDEX.md` of the affected type and the root index (`development-specs/INDEX.md`).
+- **Vocabulary:** write the durable spec in domain language + public contract; NEVER volatile internal
+  identifiers (classes, methods, columns, routes, internal errors). The *how* belongs to the code; the
+  *why* belongs to the EDR — that relation stays conceptual, never a link or a name under "Referencias"
+  (the store is closed; `## Referencias` is for spec→spec links only).
+
+In `none` mode there is no durable store to update — skip this step.
+
+**The destructive-fold stop.** A merge that would drop scenarios or sections the delta never mentions
+does NOT apply — this phase stops instead of writing, and routes the question through the single
+`### Blocker` this phase already declares, as a fourth listed cause, never a section of its own (see
+`~/.claude/references/phase-returns/sdd-apply/sdd-apply.md` → "Which status"). Name the capability-spec
+and exactly which scenarios or sections the fold would drop; the options are apply as-is (accepting the
+loss) vs. a corrected delta (re-run `sdd-spec`, then re-dispatch `sdd-apply`, which re-arms this step per
+the paragraph above). This stop reaches `### Blocker` and stays there — it does NOT repeat in
+`### Issues Found`, `### Status`, or `risks`.
+
 ### Step 6: Persist Progress — Consolidation/Serial Mode only
 
 <!-- matecito-ai: an isolated run never reaches this step — single-writer rule, see "Mode Branch" above.
@@ -449,6 +539,8 @@ When saving apply-progress:
 4. **`### UI Scenario Counterparts` goes in the artifact** (Step 6b below), cumulative across batches like everything else here
 <!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism: in-flow-capture.md. -->
 4b. **`### Decisions Materialized` goes in the artifact too** (Step 4b above), cumulative across batches — `sdd-verify`'s `decision-gaps` group reads THIS copy, never your return, to build its check list. Present only when at least one batch materialized a ratified proposal; absent otherwise, same as the other conditional sections here
+<!-- matecito-ai: spec-materialization-in-apply — mirrors 4b's shape for the fold this phase now owns. -->
+4c. **`### Capability-Specs Materialized` goes in the artifact too** (Step 5b above), cumulative across batches, no status filter — a partial fold that then hit the destructive stop still reports what it folded. Present only when this run's Step 5b wrote at least one durable capability-spec; absent otherwise, same as the other conditional sections here
 5. **Consolidating a parallel batch:** merge `Files Changed`, `Unmandated Forks`, `Mandated Departures`, the UI counterparts, the TDD evidence, and `### Decisions Materialized` out of every Task Run Report the batch returned — same merge rules as above, just sourced from N reports instead of your own work — and add/extend `### Integration Log` (`~/.claude/references/phase-returns/sdd-apply/parallel-batch.md`), cumulative across every parallel batch this change has run. Then apply every carried-forward `--index-entries` row **once**, deduping the root INDEX row by `domain` (see `parallel-batch.md` → "Materializing decision records") — this is the consolidation run's job alone, never an isolated run's
 
 <!-- matecito-ai: new obligation. The spec authors UI scenarios
@@ -570,6 +662,8 @@ Three things the template expects you to already know from this skill:
 - **If the spec carries a `ui-scenarios:` block, the executable counterparts are part of your deliverable** (Step 6b), in the artifact under `### UI Scenario Counterparts`, cumulative across batches. You are the only phase that knows the real routes and locators — you wrote them; the spec authors the behavioral half in domain language precisely because it cannot know them. `name` matches verbatim, targets are role+name or CSS and never `@e\d+`, and every behavioral scenario gets a counterpart: one missing is `UNTESTED`/CRITICAL at verify. Contract in **Part 2** of `~/.claude/references/ui-scenarios-schema.md`
 <!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism: in-flow-capture.md. -->
 - **If your launch prompt forwards a ratified decision proposal, materializing it is part of your deliverable** (Step 4b), in the SAME step you implement the task it governs — never a separate pass. Write the `.md` body yourself (`render-artifact.js` never writes to disk), and never open a second confirmation for it: ratification already happened at the gate. A failed materialization does not mark the task complete and is named explicitly; the code already written is not reverted. NEVER read `sdd/{change-name}/decisions` or any similar Engram key looking for it — it does not exist; the only channel is your dispatch prompt
+<!-- matecito-ai: spec-materialization-in-apply — the fold moved here from sdd-archive. -->
+- **When the final dispatch of a change leaves no `- [ ]` in the tasks artifact, folding the change's delta spec into the durable capability-specs is part of your deliverable** (Step 5b), in Consolidation/Serial Mode only, immediately after marking tasks — never before every task is complete, and never per task or per capability. A merge that would drop scenarios or sections the delta never mentions does NOT apply: stop and route the question through `### Blocker` as a fourth listed cause. Report what you folded in `### Capability-Specs Materialized`, cumulative and with no status filter — a partial fold that then hit the destructive stop still reports what it folded
 - NEVER implement tasks that weren't assigned to you
 - Skill loading is handled in Step 1 — follow any loaded skills strictly when writing code
 - If Strict TDD Mode is active (Step 3), load `strict-tdd.md` and follow its cycle INSTEAD of Step 4

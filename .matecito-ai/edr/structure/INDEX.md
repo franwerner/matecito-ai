@@ -51,6 +51,8 @@ Decisiones sobre cómo se organiza el payload del repo (dónde vive cada concept
 | [step-install-location-accessors.md](step-install-location-accessors.md) | Accepted | Vas a necesitar la ubicación canónica donde un paso de instalación deja su binario, desde fuera de internal/setup/install. |
 | [npm-bin-dir-single-resolver.md](npm-bin-dir-single-resolver.md) | Accepted | Vas a resolver dónde npm deja los ejecutables globales, en vez de volver a derivarlo con tu propio `npm config get prefix`. |
 | [check-resolver-seam.md](check-resolver-seam.md) | Accepted | Vas a agregar o tocar un check de verify que prueba la presencia de un binario que otro paso instala. |
+| [spec-fold-fires-on-the-final-dispatch.md](spec-fold-fires-on-the-final-dispatch.md) | Accepted | Vas a tocar cuándo o con qué predicado se dispara el pliegue del delta de comportamiento en sdd-apply. |
+| [spec-merge-relocation-sweep-scope.md](spec-merge-relocation-sweep-scope.md) | Accepted | Vas a reubicar un mecanismo del flujo y necesitás decidir si el barrido de prosa desactualizada alcanza un archivo del repo que nunca se despliega. |
 
 ## No aplican en este dominio
 

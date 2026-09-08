@@ -52,6 +52,8 @@ Decisiones sobre los contratos entre piezas del ecosistema: qué forma tiene lo 
 | [brief-correction-reruns-intake.md](brief-correction-reruns-intake.md) | Accepted | Vas a tocar cómo se resuelve una corrección al brief en el Brief Confirmation Gate, o quién puede reescribir un artefacto de otra fase. |
 | [gate-field-line-arity.md](gate-field-line-arity.md) | Accepted | Vas a presentar un item compuesto con más de una aridad de línea de campo posible, o a decidir cuántas partes lleva la línea de campo de un item que no es una propuesta de contrato. |
 | [store-wide-summary-slot-is-a-plain-string.md](store-wide-summary-slot-is-a-plain-string.md) | Accepted | Vas a declarar el lugar donde una sección de coherencia reporta el resultado de validar el store entero, no una fila puntual |
+| [destructive-fold-uses-the-single-blocker.md](destructive-fold-uses-the-single-blocker.md) | Accepted | Vas a agregar una nueva causa de bloqueo a una fase que ya declara una sola sección Blocker, y dudás si necesita una sección propia. |
+| [folded-specs-reported-like-decisions-materialized.md](folded-specs-reported-like-decisions-materialized.md) | Accepted | Vas a tocar cómo o dónde se reporta el pliegue del delta de comportamiento en sdd-apply, o a decidir si un mecanismo nuevo va en el retorno, en el artefacto, o en ambos. |
 
 ## No aplican en este dominio
 

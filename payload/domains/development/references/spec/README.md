@@ -19,7 +19,7 @@ Responde: *"qué debe hacer el sistema ante cada situación, y cómo se verifica
 - **No es el "por qué".** La justificación de una elección técnica —el trade-off, la alternativa descartada— es un **EDR**. El spec no argumenta; especifica.
 - **No es el "cómo".** El detalle de implementación vive en el código. El spec no nombra **identificadores internos volátiles** (clases, métodos, columnas de base de datos, errores internos, rutas de archivo). Se escribe en el **idioma del dominio** más el **contrato público** de cara al actor (endpoints públicos, códigos de error expuestos). Un identificador interno en el spec lo vuelve un calco del código que se pudre con el primer rename.
 - **No es una tarea ni un plan.** Una unidad de trabajo se ejecuta y se termina; el spec perdura y gobierna. El plan de cómo llegar al comportamiento es otra cosa.
-- **No es el delta de un cambio.** El artefacto efímero que produce la fase `sdd-spec` (en Engram, `sdd/{change}/spec`) describe lo que un cambio AGREGA/MODIFICA/QUITA; el capability-spec es el **estado acumulado y durable** resultante. El delta se materializa en el capability-spec al archivar el cambio.
+- **No es el delta de un cambio.** El artefacto efímero que produce la fase `sdd-spec` (en Engram, `sdd/{change}/spec`) describe lo que un cambio AGREGA/MODIFICA/QUITA; el capability-spec es el **estado acumulado y durable** resultante. El delta se materializa en el capability-spec al aplicar el cambio (`sdd-apply`).
 - **No es un modelo de datos.** Las entidades aparecen por su **semántica de dominio y sus invariantes de comportamiento**, no por su forma de persistencia (esa es una decisión de datos → EDR).
 - **No es una referencia de identidad a otro store.** El store de capability-specs es **cerrado**: ningún spec linkea ni nombra por título o slug un EDR, un PRD/proposal ni ningún otro artefacto fuera de `.matecito-ai/development-specs/`. La relación con el EDR (y con el código) es conceptual, no una referencia — ver «Relación con el EDR» y «Principio de store cerrado».
 
@@ -88,14 +88,14 @@ valores distintos, y el alcance de un requisito no se deriva del token de ningun
 cuándo**, nunca si la regla vale — la regla sigue siendo obligatoria igual que cualquier otro
 requisito.
 
-**Consecuencia aceptada.** Como el merge al archivar conserva el token verbatim, el capability-spec
+**Consecuencia aceptada.** Como el merge al aplicar conserva el token verbatim, el capability-spec
 durable pasa a llevar —además del comportamiento intencionado ratificado— el **estado de
 verificación** de cada escenario. Es intencional: un lector que se topa con un `deferred` o un
 `standing` dentro de un spec `Accepted` lo lee como intención declarada, no como contaminación del
 contrato.
 
 Quién lo aplica: `sdd-verify` lo lee para no contar un escenario `deferred`/`standing` como cobertura
-faltante — nunca lo exime de un resultado negativo si el escenario corrió y falló; `sdd-archive` lo
+faltante — nunca lo exime de un resultado negativo si el escenario corrió y falló; `sdd-apply` lo
 conserva verbatim al mergear el delta. Ninguna de las dos skills redefine acá su forma ni su
 semántica: citan este archivo y enuncian sólo su propia reacción a cada valor.
 
