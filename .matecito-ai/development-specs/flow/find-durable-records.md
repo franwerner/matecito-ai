@@ -92,14 +92,23 @@ En verificación, los resultados de los caminos de búsqueda DEBEN ser tratados 
 
 ### Requisito: Disponible para las fases que leen registros, sin nombrar la integración
 
-Toda fase que deba leer registros durables — hoy especificación, diseño, tareas y verificación, las cuatro que la tabla de lectura del dominio marca leyendo decisiones o capability-specs — DEBE empezar con esta capacidad ya disponible para ella, y con la integración de búsqueda entre sus tools. Sus instrucciones DEBEN nombrar la capacidad y decir cuándo recurrir a ella, y NO DEBEN nombrar la integración que la implementa: la capacidad la conoce, las fases conocen la capacidad.
+Toda fase que deba leer registros durables — hoy especificación, diseño, tareas, verificación e implementación, las cinco que la tabla de lectura del dominio marca leyendo decisiones o capability-specs — DEBE empezar con esta capacidad ya disponible para ella, y con la integración de búsqueda entre sus tools. Sus instrucciones DEBEN nombrar la capacidad y decir cuándo recurrir a ella, y NO DEBEN nombrar la integración que la implementa: la capacidad la conoce, las fases conocen la capacidad.
 
-#### Scenario: las cuatro fases empiezan cableadas
+El criterio manda y la enumeración lo sigue. Cuando la fila de lectura de una fase pasa a incluir decisiones o capability-specs, esa fase DEBE quedar cableada y la enumeración DEBE nombrarla: una enumeración que se queda atrás del criterio no reduce la obligación, sólo la esconde.
 
-- **GIVEN** las fases de especificación, diseño, tareas y verificación
+#### Scenario: las cinco fases empiezan cableadas
+
+- **GIVEN** las fases de especificación, diseño, tareas, verificación e implementación
 - **WHEN** cualquiera de ellas arranca
 - **THEN** esta capacidad está precargada y la integración de búsqueda está entre sus tools
 - **AND** ninguna de las instrucciones de la fase menciona la integración por nombre
+
+#### Scenario: la enumeración sigue al criterio
+
+- **GIVEN** una fase cuya fila de lectura pasó a incluir capability-specs sin que la enumeración la nombrara
+- **WHEN** se compara la enumeración con el criterio
+- **THEN** la enumeración la incluye y la fase está cableada
+- **AND** el criterio queda sin cambios: es la enumeración la que se corrige
 
 #### Scenario: las instrucciones nombran la capacidad, no lo que la implementa
 
