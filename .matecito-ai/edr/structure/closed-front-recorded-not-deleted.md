@@ -4,7 +4,7 @@
 - **Date:** 2026-09-08
 
 ## Contexto
-`REFACTOR.md` §2 argumentaba por adoptar qmd como buscador y tenía una pregunta abierta (“El punto a resolver antes de tocar nada”) sobre la relación de qmd con `process/index-decision-records`. Desde entonces pasaron dos cosas: qmd quedó adoptado (`process/configure-record-search` y `flow/find-durable-records`, ambos `Accepted` el 2026-09-02), y `index-decision-records` — la contraparte de esa pregunta, junto con los cuatro EDRs de `apps/api` de los que dependía — se retira con el resto del cockpit en este mismo cambio (`sdd/drop-apps-subtree`).
+`REFACTOR.md` §2 argumentaba por adoptar qmd como buscador y tenía una pregunta abierta (“El punto a resolver antes de tocar nada”) sobre la relación de qmd con `process/index-decision-records`. Desde entonces pasaron dos cosas: qmd quedó adoptado (`process/configure-record-search` y `flow/find-durable-records`, ambos `Accepted` el 2026-09-02), y `index-decision-records` — la contraparte de esa pregunta, junto con los cuatro EDRs del broker/MCP de los que dependía — se retira con el resto del cockpit en este mismo cambio (`sdd/drop-apps-subtree`).
 
 ## Decisión
 §2 se reescribe en el lugar para registrar que su punto se cerró —no que se respondió— porque su contraparte dejó de existir; el ítem asociado (§5 ítem 1) sale de “Decisiones abiertas” en vez de borrarse o volver a plantearse como pregunta nueva. La sección queda, con su historia, en vez de irse junto con el código sobre el que argumentaba.
