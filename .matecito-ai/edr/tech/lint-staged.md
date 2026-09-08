@@ -8,7 +8,7 @@
 
 ## Por qué la elegimos
 
-Corre los checks solo sobre los archivos staged, y en monorepo **rutea por la config más cercana a cada archivo**: lo staged bajo `apps/ui` usa el bloque lint-staged de la UI (eslint + prettier), los `.go` usan el bloque del `package.json` root (`gofmt -w`). Un solo hook, checks por sub-app.
+Corre los checks solo sobre los archivos staged. Con un único componente en el repo, el bloque `lint-staged` vive entero en el `package.json` root: los `.go` staged corren `gofumpt` (`go run mvdan.cc/gofumpt@v0.11.0 -w`), invocado por `.husky/pre-commit` (`pnpm exec lint-staged`). Un solo hook, un solo bloque de config.
 
 ## Alternativas descartadas
 
@@ -17,4 +17,4 @@ Corre los checks solo sobre los archivos staged, y en monorepo **rutea por la co
 
 ## Notas
 
-Usada en: `.husky/pre-commit`. Configs: `package.json` root (`*.go`) y `apps/ui/package.json` (TS/CSS/JSON/MD). Registrada acá (root) porque es transversal.
+Usada en: `.husky/pre-commit`. Config: `package.json` root (`*.go`). Registrada acá (root) porque es transversal.
