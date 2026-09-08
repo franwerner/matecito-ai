@@ -11,7 +11,7 @@ Un cambio sólo promete lo que puede cumplir. Un escenario cuya verificación de
 ## Actores
 
 - `sdd-verify` — fase de verificación que lee cada escenario y clasifica la cobertura del cambio.
-- `sdd-archive` — fase de archivado que materializa los escenarios en el capability-spec durable.
+- `sdd-apply` — fase que implementa el cambio y pliega su delta al capability-spec durable.
 - Lector del spec durable — desarrollador que consulta qué comportamiento es verificable por quién.
 
 ## Reglas de negocio
@@ -22,7 +22,7 @@ Un cambio sólo promete lo que puede cumplir. Un escenario cuya verificación de
 - Dos escenarios del mismo requisito pueden llevar valores distintos; el alcance del requisito **no** se deriva de ningún token.
 - Un token **nunca rebaja el contrato**: lo diferido es quién verifica y cuándo, no si la regla vale.
 - `sdd-verify` respeta el token: un escenario `deferred` o `standing` no se clasifica `UNTESTED`, no emite un CRITICAL por falta de cobertura, y no empuja el veredicto a FAIL por ese escenario.
-- `sdd-archive` conserva el token **verbatim** al plegar el delta al capability-spec durable: mismo texto, mismo lugar, sin agregar/reescribir/normalizar/quitar.
+- `sdd-apply` conserva el token **verbatim** al plegar el delta al capability-spec durable: mismo texto, mismo lugar, sin agregar/reescribir/normalizar/quitar.
 - El enforcement es **documental** (prosa en skills y references): sin check mecánico nuevo en `checks.yaml` ni `validate-artifact.js`.
 - Que el cambio nombrado en `deferred → <cambio>` cubra efectivamente esos escenarios queda **fuera de este alcance** (diferido).
 - Por conservarse el token, un capability-spec durable pasa a llevar **además del contrato ratificado, el estado de verificación de cada escenario**. Es intencional.
@@ -47,9 +47,18 @@ Un cambio sólo promete lo que puede cumplir. Un escenario cuya verificación de
 
 ### Scenario: las skills citan, no redefinen
 
-- **GIVEN** la prosa que este cambio agrega a `sdd-verify` y a `sdd-archive`
+- **verification:** `deferred → rebind-spec-referencias`
+- **GIVEN** la prosa que declara cómo reacciona al token cada fase que lo lee
 - **WHEN** se busca en ella la forma del token o la semántica de sus valores
-- **THEN** cada skill remite al hogar canónico por su ruta desplegada (nunca una ruta `payload/…`) y enuncia sólo su propia reacción a cada valor
+- **THEN** cada fase remite al hogar canónico por su ruta desplegada, nunca una ruta del repositorio del payload
+- **AND** enuncia sólo su propia reacción a cada valor
+
+### Scenario: la fase que ya no pliega no conserva prosa de preservación
+
+- **verification:** `deferred → rebind-spec-referencias`
+- **GIVEN** la prosa de la fase que archiva el cambio, después de este cambio
+- **WHEN** se busca en ella una obligación de conservar el token al plegar
+- **THEN** no la hay: la obligación quedó enunciada donde ocurre el pliegue
 
 ### Scenario: un `deferred` en un spec `Accepted` se lee como intención
 
@@ -116,27 +125,30 @@ Un cambio sólo promete lo que puede cumplir. Un escenario cuya verificación de
 
 ### Scenario: el token viaja al store durable
 
+- **verification:** `deferred → rebind-spec-referencias`
 - **GIVEN** un escenario con `deferred → X` en el delta del cambio
-- **WHEN** el cambio se archiva
+- **WHEN** se pliega el delta al spec durable
 - **THEN** el capability-spec durable lleva ese escenario con la misma línea, con el mismo texto y en el mismo lugar del bloque
 
-### Scenario: un escenario sin token no gana uno al archivar
+### Scenario: un escenario sin token no gana uno al plegarse
 
+- **verification:** `deferred → rebind-spec-referencias`
 - **GIVEN** un escenario del delta sin línea de token
-- **WHEN** el cambio se archiva
+- **WHEN** se pliega el delta al spec durable
 - **THEN** el escenario durable tampoco la lleva
 
 ### Scenario: en un MODIFIED manda el token del delta
 
+- **verification:** `deferred → rebind-spec-referencias`
 - **GIVEN** un escenario MODIFIED cuya copia durable llevaba `standing → Y` y cuya copia en el delta lleva `deferred → X`
-- **WHEN** el cambio se archiva
+- **WHEN** se pliega el delta al spec durable
 - **THEN** queda el del delta, sin fusión, sin normalización y sin conservar el anterior
 
 ### Scenario: el merge sigue siendo no destructivo
 
-- **verification:** `standing → sdd-archive`
+- **verification:** `standing → sdd-apply`
 - **GIVEN** un capability-spec con escenarios que el delta no menciona
-- **WHEN** el cambio se archiva
+- **WHEN** se pliega el delta al spec durable
 - **THEN** esos escenarios se preservan tal cual, con sus tokens si los tenían
 
 ### Scenario: la validación del store no cambia de resultado

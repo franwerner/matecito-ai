@@ -26,7 +26,8 @@ El comportamiento del sistema, capturado por **capacidad** y organizado por **ti
 
 ## Estado y mantenimiento
 
-- Última actualización: 2026-09-03 (archive `sdd/phase-return-contract-gaps`) — Creada `rule/store-wide-finding-summary-slot` (nuevo slot de resumen para hallazgos de alcance store); Modificada `rule/mailbox-item-summary-rationale-split` (extensión de independencia respecto de forma de renderización, desde imposición hacia anuncio)
+- Última actualización: 2026-09-08 (archive `sdd/spec-materialization-in-apply`) — Creada `process/materialize-change-delta-spec` (el pliegue del delta lo hace la fase que implementa, no la que archiva); Modificada `rule/scenario-verification-scope-token` (rebinding del actor responsable del pliegue, de sdd-archive a sdd-apply)
+- Anterior: 2026-09-03 (archive `sdd/phase-return-contract-gaps`) — Creada `rule/store-wide-finding-summary-slot` (nuevo slot de resumen para hallazgos de alcance store); Modificada `rule/mailbox-item-summary-rationale-split` (extensión de independencia respecto de forma de renderización, desde imposición hacia anuncio)
 - Anterior: 2026-09-02 (archive `sdd/fix-binary-step-detect-before-mutation`) — Creada `process/binary-install-step-idempotency` (nueva capacidad que unifica criterio de presencia en ambas superficies)
 - Anterior: 2026-09-02 (archive `sdd/second-install-run-fresh-home-idempotency`) — Modificada `process/install-mcp-from-release-tarball` (ampliada "La segunda corrida no reporta nada pendiente" de 4 a 6 escenarios: casos fresh-HOME y guarda de no-alcanzable)
 - Anterior: 2026-09-02 (archive `sdd/adopt-qmd-record-search`) — Creadas `flow/find-durable-records`, `process/install-mcp-from-release-tarball`, `process/configure-record-search`
@@ -41,6 +42,6 @@ El comportamiento del sistema, capturado por **capacidad** y organizado por **ti
 - 2026-08-13 (archive `sdd/worktree-isolation`) — Creada `process/isolate-change-workspace` (aislamiento anidado de workspace: cambio en nivel propio, tarea dentro del cambio)
 - **Definir una capacidad nueva:** usá la skill `development-spec-bootstrap` (o escribí el spec desde `~/.claude/references/spec/templates/capability.md`); creá la carpeta del tipo si no existía y sumá la fila al `INDEX.md` de ese tipo (y a este índice raíz si el tipo es nuevo en el proyecto).
 - **Actualizar comportamiento (cambio menor):** editá el spec. El historial lo lleva git.
-- **Cambio de comportamiento vía flujo SDD:** no edites el spec a mano — el delta del cambio se mergea acá al archivar (`sdd-archive`).
+- **Cambio de comportamiento vía flujo SDD:** no edites el spec a mano — el delta del cambio se mergea acá al aplicar (`sdd-apply`).
 - **Retirar una capacidad:** marcá el spec `Deprecated` con link a su reemplazo; no borres el archivo.
 - **Validar coherencia entre specs:** usá la skill `development-spec-validate`.
