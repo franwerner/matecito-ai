@@ -186,4 +186,4 @@ Bloquean el frente que nombran; el resto puede avanzar sin ellas.
 2. **§1** — la eliminación de `design`, que además resuelve solo el falso pendiente del DDR sin `.yaml`.
 3. **§3.1 y §4** — juntos, porque son el mismo eje; deciden lo que se va a ver de todo lo demás.
 4. **§3.2** — el contrato de `tech-edr`, una vez que el criterio de idioma esté fijado.
-5. **§2** — al final, y arrancando por el piloto, no por la integración.
+5. **§2** — al final; la adopción ya está cerrada, no quedan pasos pendientes que ordenar.

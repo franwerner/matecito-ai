@@ -8,8 +8,6 @@ Reglas de negocio transversales, sin flujo (scoping, políticas, invariantes).
 
 | Capacidad | Qué hace | Status | Spec |
 |---|---|---|---|
-| `event-scoping` | Asocia cada evento (de una tool MCP o de un hook) a un (proyecto, change) | Accepted | [`event-scoping.md`](event-scoping.md) |
-| `ingestion-spool` | Resiliencia transversal de la ingesta: fire-and-forget, spool local completo ante falla y reconciliación idempotente en orden | Accepted | [`ingestion-spool.md`](ingestion-spool.md) |
 | `domain-activation-shim` | Qué dominios se consideran activos: conjunto vacío = todos los del payload; conjunto explícito filtrado contra los descubiertos | Inferred | [`domain-activation-shim.md`](domain-activation-shim.md) |
 | `agent-model-resolution-precedence` | Precedencia proyecto → global → default al resolver el modelo de un agente; la ausencia no se sustituye | Inferred | [`agent-model-resolution-precedence.md`](agent-model-resolution-precedence.md) |
 | `strict-tdd-resolution-precedence` | Precedencia proyecto → global → false del guard de TDD estricto, con clave ausente distinta de false | Inferred | [`strict-tdd-resolution-precedence.md`](strict-tdd-resolution-precedence.md) |

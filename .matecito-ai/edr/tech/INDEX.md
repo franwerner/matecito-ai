@@ -1,6 +1,6 @@
 # Catálogo de tecnologías — root (transversales del monorepo)
 
-Registro vivo de las tecnologías elegidas **a nivel repo** (afectan a todos los sub-apps). Las tecnologías propias de cada sub-app viven en su catálogo: `apps/api/.matecito-ai/edr/tech/` y `apps/ui/.matecito-ai/edr/tech/`.
+Registro vivo de las tecnologías elegidas para el repo.
 
 **Para Claude:** consultá esta tabla antes de sugerir una herramienta repo-wide. Si pisa con algo ya elegido, **no la agregues sin preguntar**.
 

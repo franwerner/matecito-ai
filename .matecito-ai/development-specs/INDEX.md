@@ -2,7 +2,7 @@
 
 El comportamiento del sistema, capturado por **capacidad** y organizado por **tipo**. Cada capability-spec dice *qué hace* el sistema; el *por qué* de cada elección técnica vive en `../edr/`, y el *cómo* literal en el código.
 
-**Alcance:** el store cubre las dos mitades del producto — el **cockpit** (el broker/MCP de `apps/api` y la UI de `apps/ui`) y el **CLI** de matecito-ai (instalación, actualización, despliegue del payload en el host destino, configuración por dominio, hooks y chequeo del entorno).
+**Alcance:** el store cubre el **CLI** de matecito-ai (instalación, actualización, despliegue del payload en el host destino, configuración por dominio, hooks y chequeo del entorno).
 
 ## Cómo usar este índice
 

@@ -8,9 +8,6 @@ Comportamiento reactivo/de fondo, disparado por un evento o por el sistema (no p
 
 | Capacidad | Qué hace | Status | Spec |
 |---|---|---|---|
-| `index-decision-records` | Indexa y versiona (copy-on-write lazy) los `.md` de EDR/spec del proyecto ante file-watch, sosteniendo el pin de la versión que aplicó cada evento | Accepted | [`index-decision-records.md`](index-decision-records.md) |
-| `ingest-mechanical-events` | Ingesta automática de arranque/fin de sub-agentes (hooks del runtime) al event-log del change activo | Accepted | [`ingest-mechanical-events.md`](ingest-mechanical-events.md) |
-| `capture-code-snapshots` | Fotos del contenido de cada archivo tocado por el apply, en los bordes de batch (antes sincrónico pre-edición, después al submit), por change | Accepted | [`capture-code-snapshots.md`](capture-code-snapshots.md) |
 | `deploy-payload-to-host` | Mapea los componentes de los dominios activos y los compartidos al host destino, compone el archivo de instrucciones raíz, detecta clashes y decide backup por estado de archivo | Accepted | [`deploy-payload-to-host.md`](deploy-payload-to-host.md) |
 | `dev-install-local-build` | Ciclo de desarrollo en un solo comando: compila el binario del árbol y lo deja operativo en el entorno local sin que la instalación lo pise con la release | Accepted | [`dev-install-local-build.md`](dev-install-local-build.md) |
 | `render-durable-artifact` | Construye el cuerpo completo de un artefacto durable (EDR, capability-spec) a partir de datos y del contrato declarado del tipo, garantizando conformidad por construcción | Accepted | [`render-durable-artifact.md`](render-durable-artifact.md) |

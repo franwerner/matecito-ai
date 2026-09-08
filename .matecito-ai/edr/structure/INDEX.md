@@ -53,6 +53,10 @@ Decisiones sobre cómo se organiza el payload del repo (dónde vive cada concept
 | [check-resolver-seam.md](check-resolver-seam.md) | Accepted | Vas a agregar o tocar un check de verify que prueba la presencia de un binario que otro paso instala. |
 | [spec-fold-fires-on-the-final-dispatch.md](spec-fold-fires-on-the-final-dispatch.md) | Accepted | Vas a tocar cuándo o con qué predicado se dispara el pliegue del delta de comportamiento en sdd-apply. |
 | [spec-merge-relocation-sweep-scope.md](spec-merge-relocation-sweep-scope.md) | Accepted | Vas a reubicar un mecanismo del flujo y necesitás decidir si el barrido de prosa desactualizada alcanza un archivo del repo que nunca se despliega. |
+| [single-root-record-store-after-cockpit-removal.md](single-root-record-store-after-cockpit-removal.md) | Accepted | Vas a documentar o citar dónde viven las decisiones o el comportamiento del sistema (EDRs o capability-specs), o a decidir si un componente nuevo necesita su propio store. |
+| [closed-front-recorded-not-deleted.md](closed-front-recorded-not-deleted.md) | Accepted | Vas a cerrar (no borrar) una sección de un documento de trabajo cuya contraparte fue retirada, y necesitás decidir si el registro queda o se va con ella. |
+| [spec-deletion-over-deprecation.md](spec-deletion-over-deprecation.md) | Accepted | Vas a retirar una capability-spec sin reemplazo y necesitás decidir si se borra o se marca Deprecated. |
+| [sweep-reach-outside-the-ratified-scope.md](sweep-reach-outside-the-ratified-scope.md) | Accepted | Vas a barrer vocabulario retirado fuera del Scope original de un cambio y encontrás un sitio adicional que el cambio falsifica pero el Scope no nombra. |
 
 ## No aplican en este dominio
 
