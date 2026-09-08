@@ -57,6 +57,7 @@ Decisiones sobre cómo se organiza el payload del repo (dónde vive cada concept
 | [closed-front-recorded-not-deleted.md](closed-front-recorded-not-deleted.md) | Accepted | Vas a cerrar (no borrar) una sección de un documento de trabajo cuya contraparte fue retirada, y necesitás decidir si el registro queda o se va con ella. |
 | [spec-deletion-over-deprecation.md](spec-deletion-over-deprecation.md) | Accepted | Vas a retirar una capability-spec sin reemplazo y necesitás decidir si se borra o se marca Deprecated. |
 | [sweep-reach-outside-the-ratified-scope.md](sweep-reach-outside-the-ratified-scope.md) | Accepted | Vas a barrer vocabulario retirado fuera del Scope original de un cambio y encontrás un sitio adicional que el cambio falsifica pero el Scope no nombra. |
+| [single-conditional-skill-reached-by-read.md](single-conditional-skill-reached-by-read.md) | Accepted | Antes de dar a un agente de fase el mecanismo para alcanzar exactamente una skill condicional. |
 
 ## No aplican en este dominio
 
