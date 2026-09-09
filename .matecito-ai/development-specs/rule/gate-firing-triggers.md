@@ -32,8 +32,11 @@ Un gate sobre un retorno de fase DEBE disparar para un item **si y solo si** uno
 
 Un item que no cumple ninguno DEBE proceder sin turno de usuario. La decisión de disparo DEBE NO ser tomada de la sección donde el item aparece. Una sección cuyo valor `gates:` es `reported` o `muted` nunca dispara, sea lo que declare sus items.
 
+Este requisito fija **qué** aparece en el resumen entre-fases cuando un item no dispara —el `summary` del item con su anchor— y DEBE NO fijar la **forma** de ese reporte. La forma es de la regla de formas cerradas de la prosa del hilo, que la declara una sola vez; enunciarla también acá deja dos enunciados parciales de la misma cosa, y ninguno de los dos es el dueño.
+
 #### Scenario: Un retorno limpio se despacha silenciosamente
 
+- **verification:** `deferred → tighten-orchestrator-prose`
 - **GIVEN** un retorno de fase cuyo cada item ratificable declara `contested: none`, y que no lleva `### Contract Shapes Proposed`
 - **WHEN** el orquestador aplica el Guard de Decisiones sin Resolver
 - **THEN** no abre gate, no corre walkthrough, y la siguiente fase se despacha
@@ -41,6 +44,7 @@ Un item que no cumple ninguno DEBE proceder sin turno de usuario. La decisión d
 
 #### Scenario: Un item contested entre muchos abre el gate solo para ese
 
+- **verification:** `deferred → tighten-orchestrator-prose`
 - **GIVEN** un retorno con cuatro items ratificables, de los cuales uno declara `contested: contradicts-record`
 - **WHEN** el guard corre
 - **THEN** el índice del gate cuenta uno y el walkthrough presenta ese solo
@@ -48,6 +52,7 @@ Un item que no cumple ninguno DEBE proceder sin turno de usuario. La decisión d
 
 #### Scenario: Un contrato dispara sin importar ningún otro item
 
+- **verification:** `deferred → tighten-orchestrator-prose`
 - **GIVEN** un retorno llevando un item `### Contract Shapes Proposed` y ningún veredicto `contested` distinto de `none` en otro lado
 - **WHEN** el guard corre
 - **THEN** el gate abre para el item de contrato
@@ -55,10 +60,19 @@ Un item que no cumple ninguno DEBE proceder sin turno de usuario. La decisión d
 
 #### Scenario: Un item que no dispara no se borra silenciosamente
 
+- **verification:** `deferred → tighten-orchestrator-prose`
 - **GIVEN** un item en una sección cuyo valor es `contested`, declarando `contested: none`
 - **WHEN** se presenta el resumen entre-fases de la fase
 - **THEN** el `summary` del item aparece ahí con su anchor
 - **AND** nada aguarda en él
+
+#### Scenario: La forma del reporte no se enuncia acá
+
+- **verification:** `deferred → tighten-orchestrator-prose`
+- **GIVEN** el texto de este requisito después del cambio
+- **WHEN** se lo lee buscando cómo se ve el resumen entre-fases
+- **THEN** dice qué del item aparece ahí y remite la forma a la regla de formas cerradas de la prosa del hilo
+- **AND** no enuncia por su cuenta la forma del reporte
 
 ### Requisito: El token `contested` y su conjunto cerrado de valores
 
@@ -261,3 +275,4 @@ El spec no declara escenarios adicionales más allá de los definidos en sus die
 
 - **Conceptualmente relacionado**: `flow/ratify-gate-items.md` — define cómo un gate presenta una vez que disparó
 - **Conceptualmente relacionado**: `rule/contract-shape-proposal.md` — define el contenido del trigger (b)
+- **Conceptualmente relacionado**: [`closed-forms-for-thread-prose.md`](closed-forms-for-thread-prose.md) — dueño de la forma del reporte entre-fases; este spec sólo fija qué del item aparece ahí
