@@ -46,18 +46,17 @@ siempre, sin interruptor. Ver [05](05-auto-mine.md).
 
 ## Quién resuelve la config (no los ejecutores)
 
-Clave de diseño: **los sub-agentes ejecutores no leen `config.json`.** El **orquestador** resuelve `model` / `strictTdd` / `flagSpecMine` (por la precedencia de arriba, una vez por sesión, cacheado) **antes** de despachar cada fase, leyendo el path **por-dominio**, y le pasa el valor ya resuelto al sub-agente. Es el mismo patrón para los tres: una sola fuente de resolución, ejecutores que reciben el valor.
+Clave de diseño: **los sub-agentes ejecutores no leen `config.json`.** El **orquestador** resuelve `model` / `strictTdd` (por la precedencia de arriba, una vez por sesión, cacheado) **antes** de despachar cada fase, leyendo el path **por-dominio**, y le pasa el valor ya resuelto al sub-agente. Es el mismo patrón para los dos: una sola fuente de resolución, ejecutores que reciben el valor.
 
 - `models[<agente>]` → se lee de `domainConfig[<dominio del agente>].models[<agente>]` y se pasa como el modelo de ese sub-agente; si no hay valor, se omite y aplica el default del agente. (El dominio del agente sale de quién lo trae: `sdd-*` → `development`, `design-*` → `design`.)
 - `strictTdd` → `domainConfig.development.strictTdd`; se inyecta en el prompt de `apply`/`verify` si está activo.
-- `flagSpecMine` → `domainConfig.development.flagSpecMine`; habilita el trigger de auto-mine de specs al iniciar sesión / post-`sdd-init`.
 
 ## La TUI
 
 Sin subcomando y en terminal interactiva, `matecito-ai` abre una TUI con el estado del entorno, la instalación, y la **Configuración**, organizada en **General** + **una entrada por dominio activo**:
 
 - **General** — la **selección de dominios** (qué áreas tenés activas).
-- **Por dominio** — entrás a un dominio y ves su config, renderizada desde su contrato (`manifest.json`): en **development**, _Models per agent · Strict TDD · Auto-mine EDR_; en **design**, _Models per agent_. La config de un dominio **solo aparece si está activo**.
+- **Por dominio** — entrás a un dominio y ves su config, renderizada desde su contrato (`manifest.json`): en **development**, _Models per agent · Strict TDD_; en **design**, _Models per agent_. La config de un dominio **solo aparece si está activo**.
 
 Los toggles son scope-aware (editan el config global o el del proyecto según el scope activo).
 

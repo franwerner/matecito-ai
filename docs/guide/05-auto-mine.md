@@ -1,6 +1,6 @@
 # 05 — Captura de decisiones (siempre activa)
 
-[← 04 Decisiones y EDRs](04-decisiones-edr.md) · [Índice](README.md) · Siguiente: [06 — Auto-mine de specs →](06-auto-mine-spec.md)
+[← 04 Decisiones y EDRs](04-decisiones-edr.md) · [Índice](README.md) · Siguiente: [07 — Herramientas →](07-herramientas.md)
 
 > Esta página describe cómo cada dominio se asegura de que una decisión que el código termina
 > implementando no se quede sin capturar. No es una opción de configuración: es comportamiento por
@@ -38,9 +38,8 @@ sdd-verify       → grupo decision-gaps: corre siempre, valida estructura + que
 Mecanismo completo: [`in-flow-capture.md`](../../payload/domains/development/references/decision-capture/in-flow-capture.md)
 (ruta desplegada: `~/.claude/references/decision-capture/in-flow-capture.md`).
 
-El ejecutor `development-decisions-mine` sigue existiendo, pero solo para su **Mode A** — un scan
-brownfield que invocás vos mismo sobre un repo con código y EDRs escasos o ausentes. No hay Mode B: nada
-en el flujo de `development` arma una gap list post-verify ni lo despacha.
+`development` no tiene ejecutor de minería: nada escanea código para proponer decisiones ni specs. La
+captura corre entera in-flow, por la fase que llega a la decisión, como describe el diagrama arriba.
 
 ## Mecanismo de design: mine gate post-verify, fase por fase
 
