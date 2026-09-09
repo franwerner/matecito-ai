@@ -1,6 +1,31 @@
 [
   {
     "root": "claude",
+    "path": "agents/development-decisions-mine.md",
+    "hashes": [
+      "3dd8b972a144eee46609a55b8c84cee687d00ba512f939cb85ccec557d51a039",
+      "3e02e4b81530d1ce5d891bbb6ef26748cfbcc0ca7b85113b545c41b0931f71ea",
+      "5d4952b9cb521d093e762e96539154b3792e969529667e0b372bb40f2e444741",
+      "87a0b659c5eb4c3ca66ba1f990558cec0d3ffaff8b2eb3632cdca0f006cbd002",
+      "8aa6ce272f6d70386be5fd3801b2b6af2579e0c82d524fddc7593a47e8318122",
+      "947ac53a5b5afbcf479b383148a6419781fa757df0aa2bfe968475881a968c34",
+      "a2fadab4c68724cba40a6e8672749b1bb22cf977033bab91003bff69ce6b871a",
+      "d2d330491dcd50940ae0f895be53ba2fc632693e60ba7dc374c080227fca1fe8"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "agents/development-spec-mine.md",
+    "hashes": [
+      "503f8fbffb8ea4b306d7f47393cf2ed03e7945a2e7493bdc29b4b491a96a03de",
+      "5d84858759e974b58a83b23ba9f56baf8092b7c53bda487fe65784d84c0924e5",
+      "84a052115446c1eb13ef4859a8efaa45393414aeaca1bf3473033a3d40630b79",
+      "d8aafade0ab818e143cbc60e631f2fd9d0a0b96605933621fdc386de7959cb25",
+      "ee8cf387897a3d65d3939720aa4a578287c4f716d20e08d2fea0f18b23505657"
+    ]
+  },
+  {
+    "root": "claude",
     "path": "agents/project-decisions-mine.md",
     "hashes": [
       "714afd7dab04a84095d937dd2e66b13976ea6222f1962451ff1d4a967c0594a9"
@@ -161,6 +186,34 @@
     "hashes": [
       "793229c42159f139c0436a369f4b229b835bcbf2d6ae5d3eba1b8742a4096430",
       "83b8c12a8cf153e2fec48024152ddb1b0a2f634e0531433abe3fd5b91b355da1"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/development-decisions-mine/SKILL.md",
+    "hashes": [
+      "029550db0b458f87f15a9a7664172de5f34b7fa30ca2ca3cdce8081c8674eac3",
+      "1009f5683dd0c536fe7c2d85aef4e433ceef68ea6fc725b2d6bd97a65f0e0fb0",
+      "2877d5ee11e427e345d56b0196817bbb39cadf4d12a60d8b22e2a9bddd928226",
+      "346e84ef1b7702d612dd3dd2418a459b809842406192384ec53797de5b1b3807",
+      "426c1035aea83c40cab4c7f4ecb9d1dfdb8c2a93e309462bb778e6db6b54d5be",
+      "a9b70fe092b2ae37c6959b831e2849399719981dec0aca1f72f2e70b51bdd237",
+      "bc5fa2baf863fc1cbc28ca7a2915223124a153639255201a2f5fc863362a26db",
+      "c9e0f43fe921d6e7405035d6eec9c72743904f94178d4aa6959ec436f2304db7",
+      "cb37ceef647540cad16472376fd5686451975d4c46dbe4908439e871b279370b",
+      "f889c3607709406ac23cf95fcd3885cdf2e69ccd368c0ba230e5bedd722702c9"
+    ]
+  },
+  {
+    "root": "claude",
+    "path": "skills/development-spec-mine/SKILL.md",
+    "hashes": [
+      "6025aed37ca17bced3753c66f347da51a2c09122ac6d5dbf562261c8b3d446f1",
+      "73c9e10c9b729e4abf7083cc21dfa1994dec76048bf9803fef73ad05edf4c999",
+      "aec326e02702246de0502b3948527cdcb9fb0652aae069b1ba2c3d7715323353",
+      "c2670fb7ba46cba67ec77531ee993e1dd132f2f882cf0a7a1681bf80ac915afb",
+      "cb13f8ab4c462ed10d0bacf7cd9fcfca8858e251be4290be6d3dea79ad1196ae",
+      "fe731c1e47c69e023dc1a55a4f2f2b9856b3b30b1b7e4687aa491bb2ed461aa8"
     ]
   },
   {
