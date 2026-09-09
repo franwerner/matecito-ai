@@ -72,7 +72,6 @@ Las piezas específicas de desarrollo del ecosistema:
 | **Flujo** | Fork SDD | Fases intake → … → archive, las nueve corren siempre bajo `full`. Modelo por agente y Strict TDD configurables. |
 | **Skill** | `development-decisions-bootstrap` | Entrevista por fases que captura decisiones de ingeniería y las materializa como EDRs por dominio. |
 | **Skill** | `development-decisions-validate` | Validador consultivo: coherencia, completitud y verificabilidad de los EDRs. |
-| **Skill** | `development-decisions-mine` | Mina decisiones desde el código de un repo existente y las propone como EDRs `Inferred` (borradores) para que un humano las ratifique vía bootstrap. |
 | **Skill** | `development-spec-bootstrap` | Entrevista por capability que captura el comportamiento del sistema (qué hace) y lo materializa como capability-specs por tipo en `.matecito-ai/development-specs/`. Contraparte de decisions-bootstrap (qué-hace vs por-qué). |
 | **Skill** | `development-spec-validate` | Validador consultivo: coherencia entre capabilities, completitud, verificabilidad y referencias de los capability-specs. |
 | **Referencia** | `edr` | Definición canónica de qué es (y qué no es) un EDR + plantillas de estructura. Consultable y agnóstica de flujo. |
@@ -110,7 +109,6 @@ que las carga el agente de su fase leyendo su ruta desplegada. `sdd-onboard` es 
 git                          # formato de commits (Conventional Commits), atomicidad, atribución
 development-decisions-bootstrap  # captura interactiva de decisiones → EDRs
 development-decisions-validate   # validación consultiva de EDRs
-development-decisions-mine       # minería de decisiones desde el código → EDRs Inferred
 development-spec-bootstrap    # captura interactiva de comportamiento → capability-specs por tipo
 development-spec-validate     # validación consultiva de coherencia entre capability-specs
 sdd-intake                   # estructura el pedido crudo y produce el brief de entrada

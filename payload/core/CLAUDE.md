@@ -204,15 +204,12 @@ Pass the resolved value as the Task tool's `model` parameter. If a config file i
 
 **Unsupported-model fallback (reactive, can't be pre-checked):** valid model values are Claude Code aliases (`opus`/`sonnet`/`haiku`/`fable`); the orchestrator cannot know in advance which the running Claude supports. Forward the resolved value as-is. If the Task launch fails because the model alias is unknown/unsupported on this install (e.g. `fable` on an older Claude), retry the SAME launch with the `model` parameter OMITTED so the agent's frontmatter default applies — identical to step 3's "default" path. Degrade to the frontmatter default, never to the conversation model, and never block the phase.
 
-**`flagSpecMine` resolution (relevant for the session-start / post-init spec-mine trigger):** per-domain, same precedence — per-project `domainConfig[<active domain>].flagSpecMine` → global `domainConfig[<active domain>].flagSpecMine` → `false`. Resolve once per session, cache. The gate is INTENT (the flag), NOT capability-spec-store presence: when resolved `true`, the orchestrator evaluates the brownfield spec-mine trigger at session start / post-`sdd-init` (see the Spec-Mine Trigger note below) — a repo with mineable code but an absent/sparse `.matecito-ai/development-specs/` gets an offered Mode A mine. When resolved `false`: the trigger is silently skipped — no output, no mention, behavior identical to before this flag existed. This drives a **non-flow** hook: it is Mode A brownfield only, with NO in-flow tasks/verify hook and NO post-verify boundary dispatch.
-
 **Domain guard resolution:** the active domain may define guards (e.g. strict TDD) with their own resolution; that lives in the domain fragment and reuses the precedence above.
 
 **Pre-flight checklist (MANDATORY before every phase dispatch):**
 - [ ] Read both config files (per-project, then global).
 - [ ] Resolve `model` by the precedence above; omit the param if unresolved.
 - [ ] Resolve any domain guards declared by the active domain fragment.
-- [ ] Resolve `flagSpecMine`; cache for the session-start / post-init spec-mine trigger evaluation.
 <!-- /matecito-ai:behavior -->
 
 
@@ -376,25 +373,6 @@ The flow is the structured planning layer this ecosystem runs by default (see "L
 Before ANY flow command, check if init ran for this project. **Read the key the domain declares** — the `Init topic key` row of its vocabulary table — substitute `{project}`, and search exactly that. Do NOT derive the key from the domain id: the derived form and the declared one do not coincide, and a guard that searches a key nobody writes finds nothing and re-runs init forever. If not found → run the domain's init phase first (silently), then proceed.
 
 Every domain MUST declare that row. A fragment without it leaves this guard with nothing to read — treat that as a defect in the fragment, not as licence to fall back on a convention.
-
-<!-- matecito-ai: Spec-Mine Trigger — brownfield, flag-gated, Mode A ONLY. NOT the post-verify decision mine gate. -->
-### Spec-Mine Trigger (brownfield, flag-gated)
-
-A session-start / post-`sdd-init` hook that OFFERS to reconstruct the accumulated behavior (capability-specs) of an existing repo from its as-built code. This is **Mode A brownfield only** — there is **NO in-flow hook** on the tasks/verify phases and **no post-verify boundary dispatch**. Do NOT confuse it with the **Decision-Gap Capture (mine gate)**, which is a *different* mechanism that runs *after verify*, triggered by the verify-report itself (see below); this trigger runs *before any flow work* off `flagSpecMine`.
-
-**Gate = INTENT (the flag), NOT store presence.** Resolve `flagSpecMine` per the canonical rule in the `matecito-ai:behavior` zone.
-- `flagSpecMine = false` → **TOTAL SILENCE**: this trigger does not exist. Zero evaluation, zero mention, behavior identical to before the flag existed.
-- `flagSpecMine = true` → at session start / immediately after `sdd-init`, evaluate the repo. **Sparse** = `.matecito-ai/development-specs/` is absent, OR its specs cover only a small fraction of the repo's behavior-bearing code (many route-handlers / state machines / validation rules / event handlers have no corresponding capability-spec). **Rich** = the bulk of that behavior is already captured. **If the repo has mineable code AND the store is sparse**, the orchestrator surfaces a **single-line OFFER** to mine it — it does NOT scan yet. **If the store is already rich, or there is no mineable code → stay silent** (never nag). It is an OFFER, never an imposition — it NEVER blocks the session or any flow command (matecito-ai invariant: offer, don't impose).
-
-This trigger has **two distinct confirmation moments**, do not conflate them: (1) the **offer-to-scan** above — surfaced before any scan, cheap, declinable in one word; and (2) the **materialization gate** below — after the scan, over the actual candidates. Declining (1) means no scan happens at all.
-
-**Executor (fresh context, never writes) — dispatched only if the offer-to-scan is accepted:** dispatch the domain's spec-mining executor with `scope = repo`. It scans the as-built code (structural index ▸ grep, plus tests as a confidence oracle) and returns `candidates[]`. It is mode-agnostic — being handed a repo scope IS the instruction; it does NOT read the flag and does NOT materialize anything. See the executor/SKILL for the scan detail.
-
-**Gate (main thread) — the second confirmation (materialization):** the orchestrator walks `candidates[]` through the shared presentation in `~/.claude/references/gate-presentation.md`, ordered by confidence and indexed by spec type — one index, item by item, "confirm the rest" as the only bulk shortcut, each candidate anchored to the source it was mined from. **This gate always fires — running unattended is never licence to skip it** (same pattern as the decision mine gate).
-
-**Materialize (main thread, once):** confirmed candidates are written as capability-specs with `Status: Inferred` under `.matecito-ai/development-specs/<type>/<capability>.md`, and the store INDEX is updated **once at the end**. Specs live ONLY as `.md` files — **never recorded in Engram**. An `Inferred` spec is a non-ratified draft: `sdd-verify` ignores it (not a contract) until a human promotes it to `Accepted`.
-
-**Invariant:** the executor NEVER writes specs directly; the gate + materialize step require explicit user confirmation in the main thread. The trigger only offers — it never blocks.
 
 ### Brief Confirmation Gate (MANDATORY)
 

@@ -28,10 +28,12 @@ From the orchestrator:
 - Artifact store mode (`engram | none`) <!-- matecito-ai: openspec/hybrid removidos -->
 - Delivery strategy and resolved workload decision (`ask-on-risk | auto-chain | single-pr | exception-ok`, plus PR slice or `size:exception` when applicable)
 <!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism: in-flow-capture.md. -->
-- **Ratified decision proposals**, forwarded verbatim (never re-read from Engram or an artifact): for
-  each task that implements one, its `<domain>/<slug>` identity plus the ratified summary/rationale —
-  what you materialize as an `Accepted` EDR in the same step you implement that task (Step 4b below).
-  No ratified proposal in this batch → nothing to materialize, no mention.
+- **New decision proposals** are read straight from the design artifact (`sdd/{change-name}/design`),
+  which you already read as an ordinary upstream input — no forwarding channel, no confirmation step:
+  for each task that implements an entry under `## New Decisions`, its `<domain>/<slug>` identity,
+  `record-mode` token and rationale are what you materialize as an `Accepted` EDR in the same step you
+  implement that task (Step 4b below). No entry governs a task in this batch → nothing to materialize,
+  no mention.
 <!-- matecito-ai: parallel-batch fields — only present for the two modes that need them. -->
 - **`mode`** (only when this dispatch is part of a parallel batch): `isolated` or `consolidation`.
   Absent → you are running **serial mode**, exactly as before this field existed.
@@ -216,35 +218,22 @@ FOR EACH TASK:
 │   └── Yes, and more than one resolution was valid → apply NONE of them; the fork travels back as
 │       a question (see "Consulting an Unmandated Fork")
 ├── Write the code
-├── Materialize any ratified decision proposal this task carries (Step 4b below) — same step
+├── Materialize any decision proposal this task carries (Step 4b below) — same step
 ├── Mark task as complete [x] in the tasks artifact (Step 5)
 └── Note any issues or deviations (recording is not authorization — see Rules)
 ```
 
-#### Step 4b: Materialize Ratified Decision Proposals (same step as the implementing task)
+#### Step 4b: Materialize Decision Proposals (same step as the implementing task)
 
-<!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism, the ratification
-     gate, the INDEX-writer split, and `sdd-verify`'s two checks:
+<!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism, the
+     INDEX-writer split, and `sdd-verify`'s two checks:
      `~/.claude/references/decision-capture/in-flow-capture.md` — this step only fixes what YOU do. -->
 
-<!-- matecito-ai: content-conflict guard, in the step where the decision is materialized — not a
-     preamble, not only in `## Rules`. Same guard-corto-that-points pattern as Parallel-Mark Validation
-     and Uncommitted-Work Gate. Full contract, including why the resolution has no `resolution:` token
-     and lives here instead: `~/.claude/matecito-ai/domains/development.md` → "Forwarding a proposal's
-     resolution to `sdd-apply`" — read for the rest, do not re-derive it. -->
-**Content-conflict guard — run before implementing the task a proposal governs.** If a proposal
-forwarded in your launch prompt as **rejected** proposed an implementation different from what the
-design's approach describes for the same point, return `status: blocked` showing **both versions**
-(the design's approach and the rejected proposal) plus the concrete options — choose neither, don't
-stretch either by analogy, and this is never an `### Unmandated Forks` item (that mailbox is for a
-point NO artifact fixes; here the design fixes it twice, incompatibly). When the two versions
-coincide, there is no conflict: proceed with what the design describes. Whichever way this guard
-resolves, emit one `### Rejected Proposals Checked` item (`design-conflict: none | conflicts`) for
-that proposal before its governed task counts as implemented — the verdict is part of running this
-guard, not an afterthought reported once the task is already done.
-
-For each ratified proposal forwarded in your launch prompt that this task implements, branch on its
-`record-mode` token.
+For each entry under `## New Decisions` in the design artifact (`sdd/{change-name}/design`) whose
+governing task this is, branch on its `record-mode` token. Under a fan-out, only the single dispatch
+role the domain fragment names as the writer materializes: an isolated run carries the unapplied INDEX
+rows in its Task Run Report's `### Decisions Materialized`, and the consolidation run applies them
+once, deduping the root row by `domain` (see `parallel-batch.md`).
 
 **`record-mode: create`** — the four steps as before this change:
 
@@ -278,7 +267,7 @@ every section this change does not touch.
 1. Open `.matecito-ai/edr/<domain>/<slug>.md`. A `modify` naming a file that does not exist is a
    failure, not a first materialization — `modify` cannot bootstrap an absent store (see "Declaration
    versus reality" below).
-2. Edit **only** the clauses the ratified proposal names, leaving every other byte identical. Rewrite
+2. Edit **only** the clauses the design's entry names, leaving every other byte identical. Rewrite
    the record's INDEX row (its trigger cell) **only when the proposal states the record's trigger
    changed**; otherwise leave that row alone. No `--index-entries` call runs, and no new INDEX row is
    added — the record already has its one row.
@@ -306,8 +295,8 @@ group is built to find.
 Full mechanism, including the reason each branch exists and the exact wording for `sdd-verify`'s
 `decision-gaps` handling of a `modified` row: `~/.claude/references/decision-capture/in-flow-capture.md`.
 
-No ratified proposal in your launch prompt, or none of them map to a task in this batch → skip this
-step entirely, no mention, no `### Decisions Materialized` section.
+No entry under `## New Decisions` in the design artifact, or none of them govern a task in this batch →
+skip this step entirely, no mention, no `### Decisions Materialized` section.
 
 #### Consulting an Unmandated Fork
 
@@ -538,7 +527,7 @@ When saving apply-progress:
 3. **`### Unmandated Forks` and `### Mandated Departures` go in the artifact too**, with their `mandate:` and `verify-checks:` tokens, merged across batches — `sdd-verify` reads those copies, never your return. Putting them only in the return means verify never sees them and every deviation defaults to CRITICAL
 4. **`### UI Scenario Counterparts` goes in the artifact** (Step 6b below), cumulative across batches like everything else here
 <!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism: in-flow-capture.md. -->
-4b. **`### Decisions Materialized` goes in the artifact too** (Step 4b above), cumulative across batches — `sdd-verify`'s `decision-gaps` group reads THIS copy, never your return, to build its check list. Present only when at least one batch materialized a ratified proposal; absent otherwise, same as the other conditional sections here
+4b. **`### Decisions Materialized` goes in the artifact too** (Step 4b above), cumulative across batches — `sdd-verify`'s `decision-gaps` group reads THIS copy, never your return, to build its check list. Present only when at least one batch materialized a decision proposal; absent otherwise, same as the other conditional sections here
 <!-- matecito-ai: spec-materialization-in-apply — mirrors 4b's shape for the fold this phase now owns. -->
 4c. **`### Capability-Specs Materialized` goes in the artifact too** (Step 5b above), cumulative across batches, no status filter — a partial fold that then hit the destructive stop still reports what it folded. Present only when this run's Step 5b wrote at least one durable capability-spec; absent otherwise, same as the other conditional sections here
 5. **Consolidating a parallel batch:** merge `Files Changed`, `Unmandated Forks`, `Mandated Departures`, the UI counterparts, the TDD evidence, and `### Decisions Materialized` out of every Task Run Report the batch returned — same merge rules as above, just sourced from N reports instead of your own work — and add/extend `### Integration Log` (`~/.claude/references/phase-returns/sdd-apply/parallel-batch.md`), cumulative across every parallel batch this change has run. Then apply every carried-forward `--index-entries` row **once**, deduping the root INDEX row by `domain` (see `parallel-batch.md` → "Materializing decision records") — this is the consolidation run's job alone, never an isolated run's
@@ -622,7 +611,7 @@ Three things the template expects you to already know from this skill:
   as a mismatch. You are the only one who can tell; the orchestrator cannot.
 - `### Issues Found` is for problems you did NOT stop on. The blocker never goes there — it goes in
   `### Blocker`, and only there (see "Stopping Mid-Batch").
-- Every item under `### Rejected Proposals Checked`, `### Unmandated Forks` and `### Mandated
+- Every item under `### Unmandated Forks` and `### Mandated
   Departures` also carries its own `anchor` — the concrete source it traces to (the code you wrote or
   read, the design line it departs from). Free-form, per the anchor criterion in
   `~/.claude/skills/_shared/sdd-phase-common.md`, Section D.3: `<repo-path>[:line]` or `<engram-key>`,
@@ -661,7 +650,7 @@ Three things the template expects you to already know from this skill:
      verify — which is exactly the failure shape this ecosystem keeps paying for. -->
 - **If the spec carries a `ui-scenarios:` block, the executable counterparts are part of your deliverable** (Step 6b), in the artifact under `### UI Scenario Counterparts`, cumulative across batches. You are the only phase that knows the real routes and locators — you wrote them; the spec authors the behavioral half in domain language precisely because it cannot know them. `name` matches verbatim, targets are role+name or CSS and never `@e\d+`, and every behavioral scenario gets a counterpart: one missing is `UNTESTED`/CRITICAL at verify. Contract in **Part 2** of `~/.claude/references/ui-scenarios-schema.md`
 <!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism: in-flow-capture.md. -->
-- **If your launch prompt forwards a ratified decision proposal, materializing it is part of your deliverable** (Step 4b), in the SAME step you implement the task it governs — never a separate pass. Write the `.md` body yourself (`render-artifact.js` never writes to disk), and never open a second confirmation for it: ratification already happened at the gate. A failed materialization does not mark the task complete and is named explicitly; the code already written is not reverted. NEVER read `sdd/{change-name}/decisions` or any similar Engram key looking for it — it does not exist; the only channel is your dispatch prompt
+- **If the design artifact's `## New Decisions` carries an entry your task governs, materializing it is part of your deliverable** (Step 4b), in the SAME step you implement the task it governs — never a separate pass. Write the `.md` body yourself (`render-artifact.js` never writes to disk), and never open a confirmation for it: there is no ratification gate on this path. A failed materialization does not mark the task complete and is named explicitly; the code already written is not reverted. The design artifact is the only channel — NEVER read `sdd/{change-name}/decisions`, `sdd/{change-name}/ratified-decisions` or any similar Engram key looking for it; it does not exist
 <!-- matecito-ai: spec-materialization-in-apply — the fold moved here from sdd-archive. -->
 - **When the final dispatch of a change leaves no `- [ ]` in the tasks artifact, folding the change's delta spec into the durable capability-specs is part of your deliverable** (Step 5b), in Consolidation/Serial Mode only, immediately after marking tasks — never before every task is complete, and never per task or per capability. A merge that would drop scenarios or sections the delta never mentions does NOT apply: stop and route the question through `### Blocker` as a fourth listed cause. Report what you folded in `### Capability-Specs Materialized`, cumulative and with no status filter — a partial fold that then hit the destructive stop still reports what it folded
 - NEVER implement tasks that weren't assigned to you

@@ -2,9 +2,8 @@
 
 Plantillas canónicas de la **estructura** de los artefactos de capability-spec en
 `.matecito-ai/development-specs/`. Referencia consultable y **agnóstica de flujo**: cualquier
-productor de capability-specs (la entrevista de `development-spec-bootstrap`, o la minería desde
-código de `development-spec-mine`) las lee desde acá antes de materializar; el validador puede
-compararlas contra la salida real para detectar drift.
+productor de capability-specs (la entrevista de `development-spec-bootstrap`) las lee desde acá antes
+de materializar; el validador puede compararlas contra la salida real para detectar drift.
 
 Separadas en archivos individuales (uno por plantilla) para que sean auditables y consultables de
 forma aislada.

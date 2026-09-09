@@ -30,9 +30,8 @@ batch; this file does not repeat its content.
 | --- | --- | --- |
 | `### Completed Tasks` | always | the orchestrator, as context |
 | `### Files Changed` | always | the orchestrator, as context — and `sdd-verify` reads it from the artifact (Strict TDD coverage, and the "backing" check of `decision-gaps`, which joins by the row's `Task` column) |
-| `### Decisions Materialized` | only when this run materialized ≥1 ratified proposal | the orchestrator, as context; `sdd-verify`'s `decision-gaps` group reads it from the artifact — see `~/.claude/references/decision-capture/in-flow-capture.md` |
+| `### Decisions Materialized` | only when this run materialized ≥1 decision proposal | the orchestrator, as context; `sdd-verify`'s `decision-gaps` group reads it from the artifact — see `~/.claude/references/decision-capture/in-flow-capture.md` |
 | `### Capability-Specs Materialized` | only when this run's Step 5b folded ≥1 durable capability-spec | the orchestrator, as context — what the durable behavior store now says |
-| `### Rejected Proposals Checked` | only when the dispatch prompt forwarded ≥1 rejected proposal | Unresolved Decisions Guard — classifies each `design-conflict` verdict; a `conflicts` verdict requires `status: blocked` — see `~/.claude/matecito-ai/domains/development.md` → "Forwarding a proposal's resolution to `sdd-apply`" |
 | `### TDD Cycle Evidence` | only in **Strict TDD Mode** | the orchestrator, as context; `sdd-verify` reads it from the artifact |
 | `### Test Summary` | only in **Strict TDD Mode** | the orchestrator, as context |
 | `### Unmandated Forks` | always | Unresolved Decisions Guard — `gates: contested` (Section D.3), single legal `contested` value |
@@ -59,36 +58,18 @@ line is part of the header: `Strict TDD` means both sections must be there, `Sta
 are legitimately absent. That is the only condition — a batch cut short still ships the evidence
 table (see `~/.claude/skills/sdd-apply/strict-tdd.md`).
 
-**`### Rejected Proposals Checked` — one item per forwarded rejection whose governed task this run
-reached.** The gate field `has_forwarded_rejections` is a fact about the dispatch prompt, not the
-list: a prompt that forwarded a rejection but reached no item to report renders the gate `true` with
-an empty list, which the renderer shows as `None.` — that IS the declaration, not an omission. Each
-item names the point the rejected proposal governs, its `record:` token, and a `design-conflict:`
-verdict — `none` when the design's approach and the rejected proposal describe the same
-implementation, `conflicts` when they describe different ones for the same point. A `conflicts` item
-is never reported alongside `status: done` or `status: partial` with the governed task marked
-complete: it means the task could not be implemented without picking a version nobody ratified, so
-the return MUST be `blocked`, with `### Blocker` pointing at the conflicting item rather than
-restating it (see "One blocker, one place" below). Both `none` and `conflicts` are `passing` values
-for the `design-conflict` token — unlike `mandate`/`verify-checks` below, there is no non-passing
-value here, because a value the renderer refuses to render would make an honest conflict
-unreportable.
-
-**Split into summary/rationale.** `### Unmandated Forks`, `### Mandated Departures`, and
-`### Rejected Proposals Checked` all declare it. Each item carries two parts, `summary` and
-`rationale`, in the `unmandated_forks` / `mandated_departures` / `rejected_proposals` JSON: `summary`
-is what the gate prints, `rationale` is the full reasoning — always emitted into this block, never
-printed by default. Both are non-empty, single-line strings; a missing one, or one with an embedded
-newline, fails the render naming the item and the part, and nothing reaches stdout. `summary` also
-carries a **250-character cap**, enforced by `render-return.js`. Each item also carries its declared
-tokens, each on its own `· ` line, in fixed order, with `· rationale:` always last — every one of the
-three sections leads with `· anchor:` (free-form, per Section D.3 of `sdd-phase-common.md`), then:
-for `### Unmandated Forks` / `### Mandated Departures`, `mandate: covered|forced|chosen`, then
-`verify-checks: yes|no`, then `contested:` (`unverified-assumption` only, in `### Unmandated Forks`;
-the full four-value set in `### Mandated Departures`); for `### Rejected Proposals Checked`,
-`record: <domain>/<slug>`, then `design-conflict: none|conflicts` (this section declares no
-`contested` token — its firing is decided by `design-conflict` alone). `summary`'s register is fixed
-once in Section D.3 of `sdd-phase-common.md` — not restated here.
+**Split into summary/rationale.** `### Unmandated Forks` and `### Mandated Departures` both declare
+it. Each item carries two parts, `summary` and `rationale`, in the `unmandated_forks` /
+`mandated_departures` JSON: `summary` is what the gate prints, `rationale` is the full reasoning —
+always emitted into this block, never printed by default. Both are non-empty, single-line strings; a
+missing one, or one with an embedded newline, fails the render naming the item and the part, and
+nothing reaches stdout. `summary` also carries a **250-character cap**, enforced by `render-return.js`.
+Each item also carries its declared tokens, each on its own `· ` line, in fixed order, with
+`· rationale:` always last — both sections lead with `· anchor:` (free-form, per Section D.3 of
+`sdd-phase-common.md`), then `mandate: covered|forced|chosen`, then `verify-checks: yes|no`, then
+`contested:` (`unverified-assumption` only, in `### Unmandated Forks`; the full four-value set in
+`### Mandated Departures`). `summary`'s register is fixed once in Section D.3 of `sdd-phase-common.md`
+— not restated here.
 
 **`### Contract Shapes Proposed`** is the dedicated home for an unpinned contract or definition — the
 shape "Contract & definition shapes — never inferred" (`~/.claude/matecito-ai/domains/development.md`)
@@ -123,11 +104,10 @@ missing contract, exactly as "Consulting an Unmandated Fork" governs any other p
 Resolve in this order, top down, and stop at the first that fits:
 
 1. **`blocked`** — you cannot continue without a resolution that is not yours to make. Emit `### Blocker`.
-   Four causes can land here: an unpinned contract (`### Contract Shapes Proposed`), a
-   `design-conflict: conflicts` verdict, a fork or failure that stops the rest of the batch, or a
-   destructive delta-spec fold (Step 5b) that would drop scenarios or sections the delta never
-   mentions — listed last because it is the only one that can arise *after every task is already
-   complete*.
+   Three causes can land here: an unpinned contract (`### Contract Shapes Proposed`), a fork or failure
+   that stops the rest of the batch, or a destructive delta-spec fold (Step 5b) that would drop
+   scenarios or sections the delta never mentions — listed last because it is the only one that can
+   arise *after every task is already complete*.
 2. **`partial`** — the phase is not finished: tasks of this change remain. This is the normal
    continuation batch as much as it is the stop-with-a-blocker case; `partial` does NOT claim
    anything about blockers either way, and `### Blocker` is emitted only if one actually stopped you.
@@ -158,7 +138,7 @@ There is no exit path from this phase that skips them.
 | `path/to/file.ext` | {task id} | Created | {brief description} |
 | `path/to/other.ext` | {task id} | Modified | {brief description} |
 
-{CONDITIONAL — only when this run materialized at least one ratified decision proposal; omit the
+{CONDITIONAL — only when this run materialized at least one decision proposal; omit the
 whole section otherwise, do not even print "None." Full mechanism:
 `~/.claude/references/decision-capture/in-flow-capture.md`.}
 
@@ -352,18 +332,6 @@ happened".
 ### Mandated Departures
 {As above.}
 
-{CONDITIONAL — only when the dispatch prompt forwarded ≥1 rejected proposal; omit the whole section
-otherwise, do not even print "None." Full mechanism:
-`~/.claude/matecito-ai/domains/development.md` → "Forwarding a proposal's resolution to
-`sdd-apply`". This is the shape a `conflicts` verdict takes — the reason this batch is `blocked`:}
-
-### Rejected Proposals Checked
-- {the point the rejected proposal governs, and the verdict, in one line}
-  · anchor: {the concrete source this item is about — a `<repo-path>[:line]` or `<engram-key>`}
-  · record: <domain>/<slug>
-  · design-conflict: conflicts
-  · rationale: {the design's approach vs. what the rejected proposal proposed, one line}
-
 {CONDITIONAL — only when `has_contract_proposals` is true; omit the whole section otherwise, do not
 even print "None." This is the shape a stop over an unspecified contract takes — the reason this batch
 is `blocked`:}
@@ -512,9 +480,9 @@ THIS copy and marks CRITICAL when it is missing while Strict TDD was on — see
      this is the copy `sdd-verify` reads — it is ALSO emitted in the return, conditionally, unlike
      UI Scenario Counterparts which lives only here. Full mechanism: in-flow-capture.md. -->
 ### Decisions Materialized
-{CONDITIONAL — only when at least one batch of this change materialized a ratified decision proposal;
-absent otherwise, and that absence is legitimate (a change that opened no decision materializes
-nothing). Cumulative across every batch, same `record | task | result` shape as the return:
+{CONDITIONAL — only when at least one batch of this change materialized a decision proposal; absent
+otherwise, and that absence is legitimate (a change that opened no decision materializes nothing).
+Cumulative across every batch, same `record | task | result` shape as the return:
 
 | Record | Task | Result |
 |--------|------|--------|
@@ -545,10 +513,3 @@ the return, because the Unresolved Decisions Guard reads them there — `gates: 
 `gates: muted` respectively; in the artifact, because `sdd-verify` reads both there to find every
 declared deviation and apply the `verify-checks` classification. Same reason the TDD evidence lives
 in both. Dropping either copy breaks a different consumer, and neither failure is loud.
-
-**`### Rejected Proposals Checked` is return-only — it does NOT go in the artifact.** Its one
-consumer is the orchestrator's Unresolved Decisions Guard, at the moment this batch's return is
-gated: a `conflicts` verdict blocks the governing task, so that task never reaches `[x]` and is never
-part of the cumulative task list the artifact carries. There is nothing durable this section would
-add to `apply-progress` that the artifact's own `### Tasks` state does not already say by the
-governed task staying `[ ]`.

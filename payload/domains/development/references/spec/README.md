@@ -62,7 +62,7 @@ Esta regla la aplican por igual `development-spec-bootstrap` (al clasificar) y `
 
 Un capability-spec tiene ciclo de vida ligero:
 
-- **Inferred** — borrador no-confiable derivado del código as-built por `development-spec-mine`; candidato pendiente de ratificación humana, todavía no es fuente de verdad. Ver la salvaguarda abajo.
+- **Inferred** — borrador no-confiable derivado del código as-built; candidato pendiente de ratificación humana, todavía no es fuente de verdad. Ver la salvaguarda abajo.
 - **Draft** — se está escribiendo o le faltan escenarios; todavía no es fuente de verdad.
 - **Accepted** — ratificado por una persona; el comportamiento descrito es el intencionado y el código se valida contra él.
 - **Deprecated** — la capacidad se retiró o se reemplazó; se conserva por trazabilidad (el reemplazo se linkea).

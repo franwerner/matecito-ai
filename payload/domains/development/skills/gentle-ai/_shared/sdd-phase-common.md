@@ -4,24 +4,6 @@ Boilerplate identical across all SDD phase skills. Sub-agents MUST load this alo
 
 Executor boundary: every SDD phase agent is an EXECUTOR, not an orchestrator. Do the phase work yourself. Do NOT launch sub-agents, do NOT call `delegate`/`task`, and do NOT bounce work back unless the phase skill explicitly says to stop and report a blocker.
 
-<!-- matecito-ai: the two mining executors load this file like any phase, and inherited three things they
-     are forbidden or unable to honor: Section C ORDERS them to persist their artifact, when the kernel's
-     invariant is that a mining executor NEVER writes (the gate and the materialization happen in the main
-     thread, under explicit user confirmation); Section D.2 assigns them a `detailed_report` block that
-     does not exist, since the table enumerates the ten flow phases and no `*-mine` is among them, so a
-     literal reader goes looking for a template in `~/.claude/references/phase-returns/` that was never
-     written; and the D.1 status enum describes flow states (`partial`, `needs-decision`, routing via
-     `next_recommended`) that a scope → `candidates[]` executor has no use for. The scoping note lives
-     here rather than as a patch in each agent: this is the file all ten executors read, and a note here
-     cannot drift out of sync with copies that do not exist. -->
-**Scope — mining executors load Sections A and B only.** If you are `development-decisions-mine` or
-`development-spec-mine`, Sections **C** and **D** do NOT apply to you. You write nothing: you return
-`candidates[]` and the main thread decides, at a user-confirmed gate, what gets materialized — so
-there is no artifact for Section C to persist, and no `detailed_report` block for Section D to shape.
-The form of your return lives in your own skill. Section A (skill loading, including the domain
-fragment) and Section B (artifact retrieval) bind you exactly as they bind a phase, and so does the
-no-self-invented-defaults rule below.
-
 No self-invented defaults (absolute): if you hit a genuine decision or an open question that your inputs (brief / spec / design / tasks / confirmed scope + this phase's skill) do NOT resolve, do NOT pick a "most likely" default to keep going. Return `status: blocked` with the exact question so the orchestrator can put it to the user (or `needs-input`, when your phase skill designates that status for this situation — see Section D). A missing or unanswered question is NOT permission and NOT a default. This holds always. (Executor-side of the kernel's "Open question = blocked, not permission" rule.)
 
 ## A. Skill Loading
@@ -172,7 +154,7 @@ Guards`); this table only fixes which section belongs to which phase and which v
 | --- | --- | --- | --- |
 | `sdd-propose` | `### Scope and approach (unconfirmed)` | contested | always |
 | `sdd-spec` | `### Derived capabilities (unconfirmed)` | contested | always |
-| `sdd-design` | `### New Decisions` — or `### New Decisions (not yet in EDRs)` when the decision store is active; **both titles are valid and the orchestrator accepts either** | contested | always |
+| `sdd-design` | `### New Decisions` — or `### New Decisions (not yet in EDRs)` when the decision store is active; **both titles are valid and the orchestrator accepts either** | reported | always |
 | `sdd-design` | `### Open Questions` | muted | always |
 | `sdd-tasks` | `### Tasks not traceable to spec/design` | contested | always |
 | `sdd-tasks` | `### Parallelization Verdict` | reported | always |
@@ -211,18 +193,17 @@ such mechanism (e.g. `design`) may still feed a post-verify mine gate under its 
 lives in the domain fragment (`~/.claude/matecito-ai/domains/development.md`, `## Guards`) — it reads
 this table and keeps no parallel copy of it.
 
-**Sixteen of these mailboxes split each item into `summary`/`rationale`**: `sdd-propose`'s `Scope and
+**Fifteen of these mailboxes split each item into `summary`/`rationale`**: `sdd-propose`'s `Scope and
 approach`, `sdd-spec`'s `Derived capabilities`, both `sdd-design`
 rows (`New Decisions` and `Open Questions`), both `sdd-tasks` rows (`Tasks not traceable to
-spec/design` and `Parallelization Verdict` — `sdd-tasks` goes from one declaring section to two), all
-three `sdd-apply` rows (`Unmandated Forks`, `Mandated Departures` and the conditional `Rejected
-Proposals Checked`), all three `sdd-verify` sections (`## Decision Gaps`, `## UI Verdict` and `###
-Issues Found`), and the conditional `### Contract Shapes Proposed` in each of `sdd-propose`,
-`sdd-spec`, `sdd-design` and `sdd-apply` — sixteen sections in total (apply 4, design 3, propose 2,
-spec 2, tasks 2, verify 3), each contract-shape section counted once, inside its own phase's figure,
-never again as a separate group — over **six** contract pairs (`.yaml` + `.md`;
-`sdd-verify` is one pair covering its three sections, not three; `### Contract Shapes Proposed` adds no
-new pair, it lands inside the four pairs already counted). The split is declared **per section**, never by which
+spec/design` and `Parallelization Verdict` — `sdd-tasks` goes from one declaring section to two), both
+`sdd-apply` rows (`Unmandated Forks` and `Mandated Departures`), all three `sdd-verify` sections
+(`## Decision Gaps`, `## UI Verdict` and `### Issues Found`), and the conditional `### Contract Shapes
+Proposed` in each of `sdd-propose`, `sdd-spec`, `sdd-design` and `sdd-apply` — fifteen sections in
+total (apply 3, design 3, propose 2, spec 2, tasks 2, verify 3), each contract-shape section counted
+once, inside its own phase's figure, never again as a separate group — over **six** contract pairs
+(`.yaml` + `.md`; `sdd-verify` is one pair covering its three sections, not three; `### Contract Shapes
+Proposed` adds no new pair, it lands inside the four pairs already counted). The split is declared **per section**, never by which
 renderer draws it (`table`, `labeled-lists` or the `items` render form) — a table-rendered section
 declares `items.rationale` exactly like a labeled-lists one, per its own `.yaml`. Emission stays total:
 both parts always land in `detailed_report`. Printing only the `summary` at the gate is that

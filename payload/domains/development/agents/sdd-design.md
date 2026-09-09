@@ -82,15 +82,16 @@ Execute all steps from the skill directly in this context window:
 4b-ter. Every item under `### New Decisions` also carries a second token, directly beneath `· blocking-test:` — `· record: <domain>/<slug>` — the EDR identity the proposal would occupy if ratified. Free-form (no closed value set), but still required: an item missing it fails `TOKEN-MISSING`, same strict reading as an omitted `blocking-test`. `sdd-apply` reads it verbatim, from the dispatch prompt, to materialize the record in the same step that implements the code it governs. Full mechanism: `~/.claude/references/decision-capture/in-flow-capture.md`.
 <!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism: in-flow-capture.md. -->
 4b-ter-bis. Every item under `### New Decisions` also carries a third token, directly beneath `· record:` — `· record-mode: create | modify`. Closed value set, no `passing:` key — every declared value is legal; only an absent token fails `TOKEN-MISSING`, same strict reading as `· record:`. Declares whether ratifying this item creates a new record, or edits an existing one **in place**. It is a routing token read verbatim by `sdd-apply`, not a verdict you or the orchestrator classify. Full mechanism: `~/.claude/references/decision-capture/in-flow-capture.md`.
-<!-- matecito-ai: narrow-gating-triggers. Both `### New Decisions` and `### Open Questions` declare
-     `gates: contested` / `gates: muted` (Section D.3) — this token is what an item fires or surfaces on. -->
-4b-quater. Every item under `### New Decisions` AND under `### Open Questions` also carries a
+<!-- matecito-ai: narrow-gating-triggers. `### Open Questions` declares `gates: muted` (Section D.3) —
+     this token is what an item surfaces on. `### New Decisions` declares `gates: reported` and does
+     NOT carry this token: it is read straight from the artifact by `sdd-apply`, never gated. -->
+4b-quater. Every item under `### Open Questions` also carries a
 `· contested:` token, declared last — `· contested: none | contradicts-statement |
 contradicts-record | unverified-assumption`. It asserts whether the item names a concrete
 counterparty (an explicit user or orchestrator statement, an Accepted decision record, an assumption
 you could not verify) it could not clear. `none` is the honest default only when you actually checked
-against one; an absent or hedged verdict fires, same strict reading as the other tokens. In
-`### Open Questions` (`gates: muted`) the stakes are higher: a `none` verdict there means the item
+against one; an absent or hedged verdict fires, same strict reading as the other tokens. Because
+`### Open Questions` is `gates: muted`, the stakes are higher: a `none` verdict there means the item
 reaches the user nowhere at all if it turns out to be wrong — there is no between-phase fallback line
 for a `muted` section. Shape and legal values: `sdd-design.yaml` (run `--schema` on demand).
 <!-- matecito-ai: diagram inference test — single source of truth in matecito-ai:behavior (Ecosystem). Diagrams are EPHEMERAL: this headless phase does NOT generate or export any diagram file. -->
@@ -147,8 +148,10 @@ Phase-specific refinements on top of Section D:
 - Every item under `### New Decisions` and `### Open Questions` carries its own `anchor`, required per
   D.3 — free-form (`<repo-path>[:line]` or `<engram-key>`), start line only; the renderer (step 6)
   rejects a data file that omits it
-- Every item under `### New Decisions` and `### Open Questions` also carries its own `contested`
-  verdict, per step 4b-quater above — an absent or hedged one is read as firing
+- Every item under `### Open Questions` also carries its own `contested`
+  verdict, per step 4b-quater above — an absent or hedged one is read as firing. `### New Decisions`
+  carries no `contested` token: it declares `gates: reported` and is read straight from the artifact
+  by `sdd-apply`, never gated
 - `### Contract Shapes Proposed` is emitted conditionally — `has_contract_proposals: true` on a
   `status: blocked` return, when the stop is over an unspecified contract — per the SKILL.md wiring
 - `skill_resolution`: per D.4 — `phase-skill` when you loaded this phase's own SKILL.md <!-- matecito-ai: sin inyección -->

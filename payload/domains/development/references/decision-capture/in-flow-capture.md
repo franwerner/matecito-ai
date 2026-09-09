@@ -7,17 +7,23 @@
      THIS file for the mechanism's rules — they cite it, they do not restate it. -->
 
 An architecture decision that surfaces while a `development` change is in flight is **proposed** by
-the phase that finds it, **ratified once** at `sdd-design`'s gate, and **materialized** as an `Accepted`
-EDR in the same `sdd-apply` step that implements the code the decision governs. **"Ratified" covers two
-paths, not one**: the user confirmed the proposal at the gate, OR the gate never fired for it because
-its `contested` verdict was `none` — a proposal the gate did not contest is ratified exactly as one it
-confirmed. There is no post-verify mining pass for `development` — the kernel's generic mine gate never
+`sdd-design` under its `### New Decisions` mailbox and **materialized** as an `Accepted` EDR by
+`sdd-apply`, straight from the design artifact, in the same step that implements the code the decision
+governs. The mailbox declares `gates: reported`: it never opens a confirmation gate, and there is no
+forwarding channel, no ratification step, and no per-change ledger between propose and materialize.
+There is no post-verify mining pass for `development` either — the kernel's generic mine gate never
 fires here (see the override clause it carries).
+
+With the ratification gate gone, nothing along this path stops to ask whether a given proposal is
+actually a decision record rather than an implementation detail. The canonical concept definition in
+`~/.claude/references/edr/README.md` — what IS and what is NOT a decision record — is the only filter
+left: `sdd-design` applies it when it decides whether an item belongs under `### New Decisions` at
+all, and it is what any reader of this mechanism checks a proposal against, not a rejection verdict
+this path no longer carries.
 
 ## The proposal — one mailbox item, three tokens
 
-A proposal is a single item under `sdd-design`'s `### New Decisions` return mailbox (see "The
-ratification gate" below). It travels in two
+A proposal is a single item under `sdd-design`'s `### New Decisions` return mailbox. It travels in two
 halves, per the phase-return contract (`items.rationale` + `items.tokens`, rendered by the existing
 engine — `render-return.js`/`validate-return.js`, unmodified in shape beyond the free-form-token fix
 below):
@@ -37,7 +43,7 @@ items:
   reasoning; the gate prints `summary`, `rationale` ships in the block for whoever asks).
 - **`· blocking-test:`** — unchanged from before this change; see `sdd-design.md`, "The blocking-test
   token".
-- **`· record: <domain>/<slug>`** — the identity the EDR would occupy if ratified. Free-form: the
+- **`· record: <domain>/<slug>`** — the identity the EDR occupies once materialized. Free-form: the
   engine accepts any present, non-null value for a token declared without `values` (see "The
   free-form-token fix" below). It is still **required** — an item with the token line missing fails
   `TOKEN-MISSING` at the Return Contract Check, same strict reading as any other omitted token.
@@ -46,10 +52,9 @@ items:
   value in the set is legal (`validate-return.js:240` resolves `passing = t.passing || legal`, so an
   absent `passing:` defaults to the full `values` list), so this is not a verdict with a failing
   outcome — only an absent token fails, `TOKEN-MISSING`, same strict reading as `record`. **It is a
-  routing token, read verbatim by `sdd-apply` from the dispatch prompt — not a verdict the orchestrator
-  classifies.** It follows `record:`'s precedent, not
-  `structure/verdict-classified-by-the-orchestrator.md`'s: that record governs tokens the orchestrator
-  classifies to decide whether the flow stops (`blocking-test`, `design-conflict`); `record-mode`
+  routing token, read verbatim by `sdd-apply` straight from the design artifact — not a verdict the
+  orchestrator classifies.** It follows `record:`'s precedent, not the precedent of a token like
+  `blocking-test`, which the orchestrator classifies to decide whether the flow stops; `record-mode`
   decides nothing about the flow — `sdd-apply` reads it to pick which of the two Materialization
   branches below to run, exactly as it already reads `record:` to pick the file. Stated explicitly so
   nobody reaches for the wrong precedent and builds an orchestrator classification table for it.
@@ -73,41 +78,16 @@ bug. The fix: a token with no `values` is free-form (any present, non-null value
 still applies when the token is absent). A token that DOES declare `values` is byte-for-byte unchanged.
 Covered by `payload/domains/development/dev-tests/validate-return-tokens.test.js`.
 
-## The ratification gate — exactly once
-
-`sdd-design` always runs, and its `### New Decisions` mailbox is the single ratification gate for
-every architecture decision the change surfaces. For `direct` work, no flow phase runs at all, so
-there is no proposal and no record — the mechanism has nothing to gate.
-
-No later phase re-asks a proposal the gate already ratified, and `sdd-apply` never opens a second
-confirmation for it — the ratified text reaches it verbatim through the orchestrator's dispatch prompt
-(the same channel already used for `delivery_strategy`, strict-TDD, and the apply-progress continuity
-note). An adjustment the user makes AT the gate wins for free: what is in the dispatch prompt IS what
-was ratified. This gate always fires — running unattended is never licence to skip it, same as every
-other gating mailbox.
-
-A proposal declaring `contested: none` follows the **other** ratified path: the gate never opens for
-it — no user turn, no walkthrough — and it is still forwarded to `sdd-apply` marked ratified, verbatim
-as authored. The dispatch prompt is byte-identical to the confirmed-at-the-gate case; `sdd-apply` does
-not know, and does not need to know, which path produced it.
-
-**Every item that reached the gate travels with its resolution — ratified or rejected — never left for
-`sdd-apply` to infer from the design's `## New Decisions` prose alone**, and a content conflict between
-a rejected proposal and the design's own approach blocks rather than lets either version win silently.
-The full per-item forwarding contract — what each resolution carries, the executor's response to a
-missing one, and the conflict path — lives in the domain fragment's Unresolved Decisions Guard
-(`~/.claude/matecito-ai/domains/development.md` → "Forwarding a proposal's resolution to `sdd-apply`"),
-cited here rather than restated. That guard checking a rejection is not left to trust either: `sdd-apply`
-declares a `design-conflict: none | conflicts` verdict per checked rejection in its own conditional
-return section, which the orchestrator classifies — shape and classification both live in
-`~/.claude/references/phase-returns/sdd-apply/sdd-apply.md` (`### Rejected Proposals Checked`) and the
-same domain-fragment guard, cited here rather than restated too.
-
 ## Materialization — `sdd-apply` Step 4b, same step as the implementing task
 
-For each ratified proposal forwarded in the dispatch prompt, `sdd-apply` materializes it in the **same
-work-unit step** that implements the code the decision governs — never a separate pass before or after.
-The steps branch on the proposal's `record-mode` token.
+For each entry under `## New Decisions` in the design artifact (`sdd/{change-name}/design`) whose
+governing task this is, `sdd-apply` reads it straight from the artifact — the same one it already
+reads as an ordinary upstream input — and materializes it in the **same work-unit step** that
+implements the code the decision governs, never a separate pass before or after and never gated by a
+confirmation step. Under a fan-out, only the single dispatch role the domain fragment names as the
+writer materializes; an isolated run carries the unapplied INDEX rows in its Task Run Report, and the
+consolidation run applies them once (see "The INDEX writer" below). The steps branch on the entry's
+`record-mode` token.
 
 ### `record-mode: create`
 
@@ -145,7 +125,7 @@ D) was rejected for.
 1. Open `.matecito-ai/edr/<domain>/<slug>.md`. A `modify` naming a file that does not exist is a
    failure, not a first materialization — see "Declaration versus reality" below. **`modify` cannot
    bootstrap an absent store** — see "Bootstrapping" below.
-2. Edit **only** the clauses the ratified proposal names, leaving every other byte identical. Rewrite
+2. Edit **only** the clauses the design's entry names, leaving every other byte identical. Rewrite
    the record's INDEX row (its "Consultá cuando…" / trigger cell) **only when the proposal states the
    record's trigger changed**; otherwise leave that row alone. No `render-artifact.js --index-entries`
    call runs, and no new INDEX row is added — the record already has its one row
@@ -280,9 +260,6 @@ reported finding, never to a run it cannot complete.
 
 ## Standalone paths are unaffected
 
-`development-decisions-mine` keeps its Mode A brownfield scan, invoked directly by the user — unrelated
-to this mechanism, and unchanged. Its Mode B (in-flow, driven by the kernel's post-verify mine gate)
-has no `development` caller anymore: nothing in this domain's flow dispatches it. `development-decisions-
-bootstrap` keeps its standalone role, callable any time a human wants to capture or update a decision
-outside the flow; when both this mechanism and bootstrap could produce the same record, the one this
-flow materializes is the one in effect.
+`development-decisions-bootstrap` keeps its standalone role, callable any time a human wants to capture
+or update a decision outside the flow; when both this mechanism and bootstrap could produce the same
+record, the one this flow materializes is the one in effect.

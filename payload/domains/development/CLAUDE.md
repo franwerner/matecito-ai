@@ -17,8 +17,7 @@
 | Decision record | `EDR`, stored in `.matecito-ai/edr/` |
 | Decision-record concept reference | `~/.claude/references/edr/README.md` |
 | Canonical catalog | `design-patterns` at `~/.claude/references/design-patterns/` (`Applied pattern: X` → `patterns/<x>.md`) |
-| Decision-capture mechanism | in-flow — propose (`sdd-design`'s `### New Decisions`, the single ratification gate) → ratify (Unresolved Decisions Guard, only when an item fires) → materialize (`sdd-apply`); no flag, no post-verify mine gate — `~/.claude/references/decision-capture/in-flow-capture.md` |
-| Decision-mining executor | `development-decisions-mine` — standalone brownfield scan (Mode A) only; its in-flow Mode B has no `development` caller |
+| Decision-capture mechanism | in-flow — propose (`sdd-design`'s `### New Decisions`, `gates: reported`, never a confirmation gate) → materialize straight-through (`sdd-apply` reads `## New Decisions` from the design artifact and writes each entry as an `Accepted` EDR in the same step that implements the governing code); no flag, no ratification gate, no post-verify mine gate — `~/.claude/references/decision-capture/in-flow-capture.md` |
 | Decision-capture skill | `development-decisions-bootstrap` — standalone use only, no flow hook |
 | Exploration index | CodeGraph (`mcp__codegraph__*`), active when `.codegraph/` exists |
 | Library docs resolution (version, config, API, migration, debugging) | `resolve-library-docs` skill, backed by the `context7` MCP — the sole choke point before any version is fixed into an EDR (bootstrap's "Versión" question, mine's close-of-scan second pass) |
@@ -143,7 +142,7 @@ out, and this section is not an invitation to add a third without its own change
 | `sdd-spec` | proposal (required) + **intake brief (always, for the `ui-test` flag)** + **durable capability-spec** (for Modified Capabilities) | `spec` (incl. the **behavioral** `ui-scenarios` when `ui-test: needed` — domain language, no routes or locators) |
 | `sdd-design` | proposal + **intake brief (always, for the `diagram` flag)** + **EDRs** + **durable capability-specs** (required) | `design` |
 | `sdd-tasks` | spec + design + **durable capability-specs touched** (required) | `tasks` |
-| `sdd-apply` | tasks + spec (incl. the behavioral `ui-scenarios`) + design + apply-progress + **ratified decision proposals, forwarded verbatim in the dispatch prompt** (never re-read from Engram or an artifact — see `in-flow-capture.md`) + **durable capability-specs it folds into** (presence-gated, read at the fold's Step 5b) | `apply-progress` (incl. `### UI Scenario Counterparts` — the **executable** half, with the real routes and locators it built — `### Decisions Materialized`, when it materialized at least one ratified proposal — and `### Capability-Specs Materialized`, when its Step 5b folded the change's delta into the durable store) + **durable capability-specs (fold)** |
+| `sdd-apply` | tasks + spec (incl. the behavioral `ui-scenarios`) + design + apply-progress + **`## New Decisions`, read straight from the design artifact it already reads** (no confirmation step, no forwarding channel, no per-change ledger — see `in-flow-capture.md`) + **durable capability-specs it folds into** (presence-gated, read at the fold's Step 5b) | `apply-progress` (incl. `### UI Scenario Counterparts` — the **executable** half, with the real routes and locators it built — `### Decisions Materialized`, when it materialized at least one ratified proposal — and `### Capability-Specs Materialized`, when its Step 5b folded the change's delta into the durable store) + **durable capability-specs (fold)** |
 <!-- matecito-ai: parallel-batch note — the row above is the full-lane, single-dispatch ideal; a batch
      with independence-marked tasks splits it across the two fan-out roles instead of changing the row. -->
 | ↳ isolated run (parallel batch) | tasks (its one task) + spec + design — never `apply-progress` | nothing (single-writer rule — returns a Task Run Report, see `parallel-batch.md`) |
@@ -387,134 +386,38 @@ reading the decision and re-running the test yourself:
 
 | Token | What it asserts | What you do |
 | --- | --- | --- |
-| `none` | the test ran and came back negative | present it with the rest of the gating batch, subject to its own `contested` token above |
+| `none` | the test ran and came back negative | reported with the rest of the section — `### New Decisions` declares `gates: reported` and never opens a confirmation gate |
 | an axis named (`infra` / `contract` / `data-model`) | the item is in the wrong mailbox: a differing axis makes the decision `blocked`, not a gating note | stop and surface it as you would a `blocked` return, quoting the token |
 | absent, or hedged | the test did not run, or the answer is being withheld | fires under the strict reading — same default an undeclared deviation gets in `sdd-verify` |
 
 The token is the only evidence the test ran at all. Do not accept a decision's prose as a substitute
 for it, and do not fill one in on the phase's behalf.
 
-<!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism, the ratification
-     gate, the materialization contract: in-flow-capture.md. This is the orchestrator-side
-     half — WHO forwards the resolution and WHEN — that neither sdd-design (who proposes) nor
-     sdd-apply (who materializes) can instruct on their own, since it is the launch-prompt construction
-     step between them. Written for its two readers: the orchestrator, who builds the prompt (first two
-     paragraphs), and the `sdd-apply` executor, who reads this fragment as part of its mandatory load
-     protocol (`_shared/sdd-phase-common.md`, Section A) and acts on the last two paragraphs. -->
-**Forwarding a proposal's resolution to `sdd-apply`.** Every item that reached this gate under
-`sdd-design`'s `### New Decisions` carries a `record: <domain>/<slug>`
-token and a `record-mode: create | modify` token, and stays in the design's own `## New Decisions` prose whatever the gate decided: the item's
-mere presence there is NOT evidence of ratification or rejection, and `sdd-apply` MUST NOT read it as
-either. Forward each item's resolution explicitly, in the launch prompt of the `sdd-apply` dispatch
-that implements the task governing it — never re-written into an Engram key, never left for `sdd-apply`
-to re-derive:
-
-- **Ratified** (confirmed or adjusted at this gate) — its ratified text (the adjusted summary/rationale
-  if the user corrected it at this gate, not the originally-proposed one) verbatim, plus its `record:`
-  and `record-mode:` tokens, marked ratified.
-- **Rejected** — its `record:` token and `summary` alone, marked rejected. The full text already
-  travels in the design's `## New Decisions`; the token and summary are enough for `sdd-apply` to know
-  which item and what it was about.
-- **Auto-ratified** (the gate never fired because the item declared `contested: none`) — forwarded
-  exactly as the ratified case above: its authored text verbatim, plus its `record:` and `record-mode:`
-  tokens, marked ratified. The dispatch prompt is **byte-identical** whether ratification came from a user turn at the
-  gate or from the gate never firing — `sdd-apply` cannot tell which path produced it, and does not need
-  to: its materialization step (Step 4b) and its "a missing resolution returns `blocked`" rule are
-  unchanged either way.
-
-The resolution never travels as a token on the mailbox item itself, and none should be added: `New
-Decisions` has no `resolution:` field, because `sdd-design` writes the item at propose time,
-before the gate has run — the phase authoring the item cannot fill a field for an outcome that does not
-exist yet. The gate happens after the item is written, and the orchestrator, at the moment it forwards,
-is the only participant who ever learns that outcome. That is why this instruction lives here, in the
-guard the orchestrator reads to build the dispatch prompt, and not as a field on an item a different,
-earlier phase already authored.
-
-No proposal reached the gate this change → nothing to forward, and the prompt makes no mention of this
-mechanism. Every proposal that did reach the gate travels with a named resolution — if `sdd-apply`
-reaches a task governed by an item the prompt does not mention, it MUST NOT treat it as ratified or
-rejected on its own guess; it returns `status: blocked` naming the item and the missing resolution.
-
-Naming a rejection is only how `sdd-apply` learns the resolution — never an instruction to record it.
-A rejected item MUST NOT produce an EDR, an INDEX row, or a `### Decisions Materialized` row, and
-`sdd-verify`'s `decision-gaps` group MUST NOT check it; `sdd-apply` implements the governed task per
-what the design's approach describes. When that approach matches what the rejected proposal proposed,
-there is nothing further to do. When they describe **different** implementations for the same point,
-the design is internally inconsistent, and `sdd-apply` applies the domain's existing rule for exactly
-that case — **"Contract & definition shapes — never inferred"**, above, the "artifact that pins the
-shape is internally inconsistent" clause and its close ("return `blocked` with the conflict stated and
-the concrete options") — showing both versions (the design's approach, the rejected proposal) rather
-than choosing one or stretching either by analogy. This is not an `### Unmandated Forks` item: that
-mailbox is for a point NO artifact fixes, and here the design fixes it twice, incompatibly.
-
-This is the one and only channel `sdd-apply` reads a proposal's resolution from — see
-`~/.claude/references/decision-capture/in-flow-capture.md`.
-
-**Ratification ledger (re-emergence support).** At gate close — in the same step that builds the
-`sdd-apply` dispatch prompt — the orchestrator writes one row per ratified item to
-`sdd/{change-name}/ratified-decisions`: `record` (the item's `<domain>/<slug>` token), `ratified_summary`
-(the adjusted text when the user corrected it at this gate, the offered text otherwise), `anchor` (per
-`~/.claude/references/gate-presentation.md`'s anchor rule), and `gate` (which gate ratified it — an item
-auto-ratified because its verdict was `none` gets `gate: auto` here instead of a gate name; the field's
-value space widens to include the absence of a gate, the field itself is unchanged). Only a
-LATER gate of the same change reads this key — to recognize a decision that re-emerges (matched on
-`record`, exact string — see `~/.claude/references/gate-presentation.md` → "Re-emergence") and offer its
-short form instead of walking it again. **`sdd-apply` MUST NOT read `sdd/{change-name}/ratified-decisions`**:
-its one and only channel for a proposal's resolution stays the dispatch prompt, per the paragraph
-above — a second, independently-read channel is exactly the drift `in-flow-capture.md`'s single-channel
-rule exists to prevent. Not pruned: the per-change key is its own cleanup, same as `apply-progress`.
-
-<!-- matecito-ai: return-side half of the forwarding paragraph above. The send-side half says WHAT gets
-     forwarded and WHEN; this half says how the orchestrator reads what came back — the mandatory
-     `design-conflict` verdict `sdd-apply` now declares for each rejection it checked
-     (`~/.claude/references/phase-returns/sdd-apply/sdd-apply.md`, `### Rejected Proposals Checked`).
-     Same pattern as "Reading the `blocking-test` token" below: classify on the token alone, never by
-     re-deriving the verdict yourself. -->
-**Reading the `design-conflict` token.** Every item under `sdd-apply`'s conditional
-`### Rejected Proposals Checked` — present whenever the dispatch prompt forwarded ≥1 rejected proposal
-whose task this run reached — carries a `· record: <domain>/<slug>` line and a `· design-conflict:
-none | conflicts` line. Classify on the token **alone**, mirroring "Reading the `blocking-test` token"
-below:
-
-| Token | Asserts | Orchestrator |
-|---|---|---|
-| `none` | the design's approach and the rejected proposal describe the same implementation for that point | nothing — proceed, no gate, no mention |
-| `conflicts` | the design fixes the point twice, incompatibly | the return MUST be `blocked`; present both versions (the design's approach, the rejected proposal) and the options. A `conflicts` item on a non-`blocked` return is a contract violation — stop and surface it, do not route it through the ordinary Unresolved Decisions Guard flow |
-| no item for a `record:` this run forwarded as rejected, whose governed task the run reached (not left untouched in `### Remaining Tasks`) | no pronouncement | stop; name the record left without one; the return is not treated as correct |
-
-**The expected set is yours, not the return's.** You are the one who forwarded each rejection in the
-dispatch prompt, so you hold the expected set of `record:` identities that owe a verdict — nothing in
-the return declares it, and nothing needs to: compare it, literally, against the `· record:` lines the
-run actually returned. A forwarded rejection with no matching item is the third row above, not silence
-to read as `none`. This check stays entirely on your side — `validate-return.js` and `render-return.js`
-are unchanged by this mechanism; they only prove that whatever item IS present carries both tokens
-legally, never that every rejection you forwarded got one.
-
-<!-- matecito-ai: same shape as "Forwarding a proposal's resolution to `sdd-apply`" above, for a
-     different kind of item — a contract's shape rather than a decision. Kept as its own paragraph
-     instead of folded into that one because the readers differ: that rule names `sdd-apply` as the one
-     and only recipient (decision proposals are `sdd-design`'s mailbox, materialized downstream by
-     `sdd-apply` alone); this one reaches all four phases that can stop over an unspecified contract,
-     because any of the four can propose one. -->
+<!-- matecito-ai: decision proposals no longer travel through a forwarding channel — `sdd-apply` reads
+     `## New Decisions` straight from the design artifact (see the Decision-capture mechanism row and
+     "In-Flow Decision Capture" above). A contract shape is a different kind of item, still gated and
+     still forwarded explicitly, because the phase that proposed it is the only one that can write the
+     ratified shape into its own artifact or code — this paragraph is its whole forwarding contract. -->
 **Forwarding a ratified contract shape to the proposing phase.** `### Contract Shapes Proposed`
 (`~/.claude/references/gate-presentation.md`, "The fourth form") is ratified at its own gate, which runs
 after the phase that proposed it has already returned. The orchestrator forwards the ratified — or
 user-adjusted — field list back to that same phase in the **instructions of its re-dispatch**, identified
-by the item's own `anchor` and `summary` exactly as authored, per the same discipline as the paragraph
-above: never re-written into an Engram key, never left for the phase to re-derive. This reaches all four
+by the item's own `anchor` and `summary` exactly as authored: never re-written into an Engram key, never
+left for the phase to re-derive. This reaches all four
 proposing phases identically — `sdd-propose`, `sdd-spec`, `sdd-design`, `sdd-apply` — and only the
 destination afterwards differs: `sdd-spec` and `sdd-design` write the ratified shape into their own
 artifact, which downstream phases already read; `sdd-apply` writes it into the **code**, which is where
 this domain's rule already says a contract's shape lives (see "Where the answer lives", above) — no new
 store is invented for either case. A phase re-dispatched to the point a contract shape governs, whose
 instructions carry no shape for it, MUST NOT guess one and MUST NOT read `apply-progress` or any other
-artifact looking for it — it returns `blocked` naming the missing contract, exactly as `sdd-apply` does
-when a proposal's resolution is missing from its dispatch prompt (the closing paragraph, above).
+artifact looking for it — it returns `blocked` naming the missing contract.
 
 <!-- matecito-ai: `New Decisions` y `Open Questions` se solapaban — las dos recibían decisiones
      pendientes, el ejecutor terminaba duplicando contenido y el usuario confirmaba lo mismo dos
-     veces (fatiga de confirmación, el fallo que este guard existe para evitar). Desde ahora el
-     único buzón que dispara de `sdd-design` es `New Decisions`. -->
+     veces (fatiga de confirmación, el fallo que este guard existe para evitar). Desde ahora
+     `Open Questions` no es buzón de decisiones en absoluto: lo que fija una decisión va a
+     `New Decisions`, que a su vez ya no gatea (`gates: reported`) — `sdd-apply` lo lee directo del
+     artefacto de diseño. -->
 **A non-firing item still has somewhere to go — decided by its section's `gates:` value.** The
 sections marked `contested` or `reported` in that same canonical table (`_shared/sdd-phase-common.md`,
 **Section D.3**) surface a non-firing item in the between-phase summary; a `muted` section reaches the
@@ -523,7 +426,8 @@ of D.3's table either: enumerating the firing criterion by reference and the sur
 the same duplication, one level later. Plus `risks`, which is an envelope field (D.4) and therefore not
 in that table, and always surfaces the same way a `contested`/`reported` section's non-firing item does.
 `Open Questions` (`muted`) is **informative**: it carries what does NOT fix a decision — anything that
-does fix one belongs in `New Decisions`, the single gating mailbox of that phase — and an untriggered
+does fix one belongs in `New Decisions`, the decision mailbox of that phase (`gates: reported`, so
+nothing there ever gates either) — and an untriggered
 `Open Questions` item reaches the user nowhere, per the `muted` row's cost. Show a surfaced item
 verbatim in the between-phase summary — never compress it to "no news" — and call out a deviation
 explicitly when it touches something `sdd-verify` will check against the design, because the design
@@ -616,24 +520,21 @@ about. Neither skill states an index or bulk-action wording of its own.
 
 <!-- matecito-ai: development declares its OWN decision-capture mechanism, per the kernel's override
      clause (`~/.claude/matecito-ai.md` → "Decision-Gap Capture (mine gate)"). This is why: propose ·
-     ratify once · materialize in apply, instead of the kernel's generic post-verify mine. Full
-     mechanism — the proposal shape, the ratification gate per lane, the materialization contract, the
-     INDEX writer, and `sdd-verify`'s two checks — lives once in the reference below; this guard only
-     states that it is MANDATORY and points at it. `design`, which declares its own post-verify
+     materialize straight-through in apply, instead of the kernel's generic post-verify mine or an
+     in-flow ratification gate. Full mechanism — the proposal shape, the straight-through write path,
+     the INDEX writer, and `sdd-verify`'s two checks — lives once in the reference below; this guard
+     only states that it is MANDATORY and points at it. `design`, which declares its own post-verify
      mechanism, is unaffected. -->
 ### In-Flow Decision Capture (MANDATORY)
 `development` does NOT use the kernel's generic Decision-Gap Capture (mine gate) — this domain declares
 its own mechanism instead (see the kernel's override clause). Every phase that reaches an architecture
-decision proposes it in its own return, the lane's gate ratifies it exactly once, and `sdd-apply`
+decision proposes it in its own return; `sdd-design`'s `### New Decisions` declares `gates: reported`
+and never opens a confirmation gate, and `sdd-apply` reads it straight from the design artifact and
 materializes it as an `Accepted` EDR in the same step that implements the governing code — no
-post-verify mining pass. Full mechanism: `~/.claude/references/decision-capture/in-flow-capture.md`.
-Read it before touching any of: `sdd-spec`'s or `sdd-design`'s `### New Decisions` mailbox,
-`sdd-apply`'s materialization step, or `sdd-verify`'s `decision-gaps` group.
-
-## Spec-Mine — development specifics
-The kernel owns the generic Spec-Mine Trigger (brownfield, `flagSpecMine`-gated, Mode A only). In development the spec-mining executor is `development-spec-mine`; confirmed candidates are materialized as capability-specs with `Status: Inferred` under `.matecito-ai/development-specs/<type>/<capability>.md` (type ∈ `flow` | `rule` | `lifecycle` | `process`) and the `.matecito-ai/development-specs/INDEX.md` is updated **once at the end**; the specs live ONLY as `.md`, never recorded in Engram — same as EDRs and capability-specs generally.
-
-**Asymmetry vs decision-mine (important):** an `Inferred` EDR is still enforced by `sdd-verify` (its EDR-compliance step does not filter by Status), but an `Inferred` capability-spec is **NOT** verified — `sdd-verify`'s durable-capability-spec check is scoped to `Status: Accepted`, so `Inferred` (like `Draft`) is skipped and is never a contract until a human ratifies it to `Accepted` (via `development-spec-bootstrap` update mode). This guardrail is what makes it safe to keep as-built-derived `Inferred` specs in the store: they are pending-ratification drafts, not the ratified intention.
+post-verify mining pass, no ratification gate, no forwarding channel. Full mechanism:
+`~/.claude/references/decision-capture/in-flow-capture.md`. Read it before touching any of:
+`sdd-spec`'s or `sdd-design`'s `### New Decisions` mailbox, `sdd-apply`'s materialization step, or
+`sdd-verify`'s `decision-gaps` group.
 
 ## Components axis (repo-level)
 A **component** is a surface the product's consumer recognizes (`api`, `cli`, `ui`) — not every package or internal folder. The set is declared **per-project only**, in `.matecito-ai/config.json`'s top-level `repo.components` (never inherited from a global config, never folded into `domainConfig`). **Gate:** no `repo.components` declared → the axis does not exist for any consumer — no header line anywhere, no validation finding. Concept, declaration shape, and gate: `~/.claude/references/repo-components/README.md`.

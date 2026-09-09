@@ -68,34 +68,36 @@ Execute all steps from the skill directly in this context window:
 3b. Read previous apply-progress (if exists — Consolidation/Serial Mode only, Isolated Run Mode never reaches this): `mem_search("sdd/{change-name}/apply-progress")` → if found, `mem_get_observation` → read and merge (skip completed tasks, merge when saving)
 4. Detect TDD mode from config or existing test patterns
 5. Implement assigned tasks: in TDD mode follow RED → GREEN → REFACTOR; in standard mode write code then verify
-<!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism: in-flow-capture.md. -->
-<!-- matecito-ai: content-conflict guard, in the step where the decision is materialized — not a
-     preamble, not only in the Instructions header. Same guard-corto-that-points pattern as
-     Parallel-Mark Validation and Uncommitted-Work Gate. Full contract:
-     `~/.claude/matecito-ai/domains/development.md` → "Forwarding a proposal's resolution to
-     `sdd-apply`" — read for the rest, do not re-derive it. -->
-5b. **Content-conflict guard — before implementing the task a proposal governs.** If that proposal was
-   forwarded as **rejected** and its proposed implementation differs from what the design's approach
-   describes for the same point, return `status: blocked` showing both versions and the concrete
-   options — choose neither, never an `### Unmandated Forks` item. Versions coincide → no conflict,
-   proceed with what the design describes. Either way, emit one `### Rejected Proposals Checked` item
-   (`design-conflict: none | conflicts`) for that proposal before its governed task counts as
-   implemented. Full contract: `~/.claude/matecito-ai/domains/development.md` → "Forwarding a
-   proposal's resolution to `sdd-apply`".
+<!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism, the INDEX-writer
+     split, and `sdd-verify`'s two checks: `~/.claude/references/decision-capture/in-flow-capture.md`.
+     This step reads the design artifact straight-through — no forwarding channel, no ratification
+     gate on this path. -->
+5b. **Materialize decision proposals — same step as the implementing task.** For each entry under
+   `## New Decisions` in the design artifact (`sdd/{change-name}/design`) whose governing task this is,
+   branch on its `record-mode` token. Under a fan-out, only the single dispatch role the domain
+   fragment names as the writer materializes: an isolated run carries the unapplied INDEX rows in its
+   Task Run Report's `### Decisions Materialized`, and the consolidation run applies them once, deduping
+   the root row by `domain` (see `parallel-batch.md`).
 
-   If a task you just implemented carries a ratified decision proposal (forwarded verbatim in your
-   launch prompt, never re-read from Engram or an artifact), materialize it in this SAME step: build
-   each `Reglas verificables` item as `{ mechanism: auto|manual, rule }` — never a bare string, and
-   `mechanism` reflects whether the task actually established a test/lint/schema/CI check for it —
-   render the EDR body (`render-artifact.js --type edr --data`) and write it yourself to
-   `.matecito-ai/edr/<domain>/<slug>.md` — the script never writes to disk — then render the
-   `--index-entries` JSON (second, separate invocation, also no write). Serial mode applies those rows
-   to both INDEX files immediately; Isolated Run Mode carries them, unapplied, in its Task Run Report
-   (single-writer split — see `parallel-batch.md`). Record the outcome in `### Decisions Materialized`
-   (`record | task | result`). A failed materialization does NOT mark this task `[x]` and is named
-   explicitly in your return — the code you already wrote is not reverted. Full mechanism:
-   `~/.claude/references/decision-capture/in-flow-capture.md`. No ratified proposal for this task →
-   skip silently.
+   `record-mode: create` — build each `Reglas verificables` item as `{ mechanism: auto|manual, rule }`
+   — never a bare string, and `mechanism` reflects whether the task actually established a
+   test/lint/schema/CI check for it — render the EDR body (`render-artifact.js --type edr --data`) and
+   write it yourself to `.matecito-ai/edr/<domain>/<slug>.md` — the script never writes to disk — then
+   render the `--index-entries` JSON (second, separate invocation, also no write). Serial mode applies
+   those rows to both INDEX files immediately; Isolated Run Mode carries them, unapplied, in its Task
+   Run Report (single-writer split — see `parallel-batch.md`).
+
+   `record-mode: modify` — edit only the clauses the design's entry names, leaving every other byte
+   identical; no `render-artifact.js` call, no new INDEX row.
+
+   A declaration that does not match what is on disk (`create` naming a file that exists, `modify`
+   naming one that does not) is a failure, never a silent switch to the other path.
+
+   Record the outcome in `### Decisions Materialized` (`record | task | result`). A failed
+   materialization does NOT mark this task `[x]` and is named explicitly in your return — the code you
+   already wrote is not reverted. Full mechanism: `~/.claude/references/decision-capture/in-flow-capture.md`.
+   No entry under `## New Decisions` governs a task in this batch → skip this step entirely, no
+   mention, no `### Decisions Materialized` section.
 6. Match existing code patterns and conventions
 7. Mark each task `[x]` complete as you finish it (Consolidation/Serial Mode only)
 <!-- matecito-ai: the spec authors UI scenarios in domain language — it cannot name a route or an accessible
@@ -151,7 +153,7 @@ Phase-specific refinements on top of Section D:
 <!-- matecito-ai: "blocked tasks" acá era el tercer destino del mismo blocker (los otros dos: `### Issues
      Found` y `### Status`), y ninguno de los tres lo consumía nadie. Un blocker, un lugar. -->
 - `risks`: unexpected complexity, or an assumption that needs validating. A blocker goes in `### Blocker` — never here, never in `### Issues Found` (that section is for problems you did NOT stop on). Deviations belong in the D.3 mailboxes; and a gap that affects what you are about to write is not a risk, it is a `blocked` or `partial` stop with the fork returned as a question (see the skill's Rules)
-- Every item under `### Rejected Proposals Checked`, `### Unmandated Forks` and `### Mandated
+- Every item under `### Unmandated Forks` and `### Mandated
   Departures` carries its own `anchor`, required per D.3 — free-form (`<repo-path>[:line]` or
   `<engram-key>`), start line only, and never derived by any tool
 - Every item under `### Unmandated Forks` and `### Mandated Departures` also carries its own

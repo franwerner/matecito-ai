@@ -181,53 +181,11 @@ gate — never enters the index and never blocks anything. It keeps appearing in
 summary exactly as it does today, and it still carries its anchor like any other item: staying out of
 the walkthrough is about not gating on it, not about withholding where it comes from.
 
-## Re-emergence
-
-A gate may find that an item it is about to present already has a ratified row waiting for it in
-`sdd/{change-name}/ratified-decisions` (the domain fragment's ratification ledger, written at a prior
-gate's close) — the same decision, proposed again later in the same change. This section is what the
-gate does then.
-
-### Matching — exact string on `record`, nothing else
-
-A candidate item re-emerges when its `record` token matches a ledger row's `record` field, **exact
-string**, character for character. No fallback: not a matching slug plus a similar anchor, not summary
-similarity, not any other heuristic. A hint that does not decide the match by itself (the anchor, the
-summary) is not what this rule reaches for — it either settles the match on its own, making it a second,
-undeclared matching rule, or it decides nothing, and either way this rule stays on the one field it
-names: `record`, matched exactly, or no match at all.
-
-### The re-emergence short form
-
-A matched item skips the ordinary walkthrough and is shown as one yes/no instead: the ledger's
-`ratified_summary` and its `anchor`, plus the **incoming** summary — but only when it differs from the
-ledgered one. Printing only the ledgered text would hide a shifted premise; printing the incoming
-summary when it is identical to what was already ratified is noise with nothing to compare against.
-
-Unchanged premise:
-
-```
-Already ratified — structure/event-vocabulary-home
-File: apps/api/.matecito-ai/edr/structure/event-vocabulary-home.md
-What was decided: the event vocabulary lives in the feature, not in shared/
-Still applies? (yes / no / see detail)
-```
-
-Changed premise:
-
-```
-Already ratified — structure/event-vocabulary-home
-File: apps/api/.matecito-ai/edr/structure/event-vocabulary-home.md
-What was decided (then): the event vocabulary lives in the feature, not in shared/
-What's proposed now: the event vocabulary lives in shared/, scoped per feature
-Still applies? (yes / no / see detail)
-```
-
 ## Where this governs
 
 This walkthrough and this template govern the same mechanism wherever it applies — the count decides
-the form (see above), never a hardcoded list of gates. Nine moments cite this file today; a tenth
-would cite it the same way, without this section growing to keep up. **Nine is not the whole inventory
+the form (see above), never a hardcoded list of gates. Eight moments cite this file today; a ninth
+would cite it the same way, without this section growing to keep up. **Eight is not the whole inventory
 of interruption points** — it is only the count of moments that cite this walkthrough. The Change
 Workspace's merge-conflict report and the commit-atomicity STOP (`~/.claude/skills/git/SKILL.md`) both
 stop the flow too, outside this file: no trigger this walkthrough governs reaches either one, and
@@ -237,11 +195,11 @@ neither is modified by anything here.
 
 - **The pending-decisions gate** — the domain's guard that ratifies a phase's pending decisions before
   the next phase dispatches (in `development`, the Unresolved Decisions Guard's gating mailboxes).
-- **Both mining confirmation gates** — the gate that precedes materializing decision-mine candidates,
-  and the gate that precedes materializing spec-mine candidates. Candidates are indexed and walked like
-  any other item, anchored to the source they were mined from.
+- **The decision-mine confirmation gate** — the gate that precedes materializing decision-mine
+  candidates. Candidates are indexed and walked like any other item, anchored to the source they were
+  mined from.
 
-**Seven more moments cite this same walkthrough**, each anchored per this table:
+**Six more moments cite this same walkthrough**, each anchored per this table:
 
 | Moment | Anchor source |
 | --- | --- |
@@ -250,8 +208,7 @@ neither is modified by anything here.
 | Uncommitted-Work Gate | the dirty paths `git status --porcelain` already printed |
 | Review Workload Guard | `sdd/{change-name}/tasks` |
 | A phase's `blocked` return | what that phase's blocker names (e.g. `sdd-apply`'s `### Blocker`) |
-| A validator's findings | the phase's own artifact key (the EDR or capability-spec file the finding is about) |
-| `risks` | the file or artifact the risk's own prose names |
+| A validator's findings, or `risks` — one moment, two anchor sources | for a validator's findings, the phase's own artifact key (the EDR or capability-spec file the finding is about); for `risks`, the file or artifact the risk's own prose names |
 
 A gate outside this list states its own presentation as it always has; this file does not reach for
 one it was not asked to govern.

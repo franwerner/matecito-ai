@@ -13,7 +13,7 @@ Cada chequeo tiene: **severidad** (CRITICAL / WARNING / SUGGESTION), una **condi
 ## Completitud
 
 - **[NOTA — Draft]** Specs con `Status: Draft` NO cierran el comportamiento: no reportes secciones esqueleto ni escenarios faltantes como defecto (esperados en Draft). Sí aplican los chequeos de coherencia contra los `Accepted`.
-- **[NOTA — Inferred]** Specs con `Status: Inferred` se tratan como `Draft` para completitud: no reportes secciones esqueleto ni escenarios faltantes como defecto (es un borrador no-confiable minado del código as-built por `development-spec-mine`, se espera que le falten hasta la ratificación humana). Sí aplican los chequeos de coherencia contra los `Accepted`, pero con severidad capada — ver "Coherencia entre capabilities".
+- **[NOTA — Inferred]** Specs con `Status: Inferred` se tratan como `Draft` para completitud: no reportes secciones esqueleto ni escenarios faltantes como defecto (es un borrador no-confiable derivado del código as-built, se espera que le falten hasta la ratificación humana). Sí aplican los chequeos de coherencia contra los `Accepted`, pero con severidad capada — ver "Coherencia entre capabilities".
 
 ## Verificabilidad
 

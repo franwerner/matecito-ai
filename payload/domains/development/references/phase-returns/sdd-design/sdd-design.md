@@ -20,7 +20,7 @@ casing or heading level is a section it will not find.
 | `### Summary` | always | the orchestrator, as context |
 | `### Contract Shapes Proposed` | conditional — only when `has_contract_proposals` is true and status is `blocked` | Unresolved Decisions Guard — `gates: always` (Section D.3) |
 | `### Blocker` | only on `status: blocked` | the orchestrator: it puts the question to the user |
-| `### New Decisions` | always | Unresolved Decisions Guard — `gates: contested` (Section D.3) |
+| `### New Decisions` | always | reported to the orchestrator, then read straight from the design artifact by `sdd-apply` — `gates: reported` (Section D.3), never a confirmation gate |
 | `### Open Questions` | always | Unresolved Decisions Guard — `gates: muted` (Section D.3), informative |
 | `### Next Step` | always | the orchestrator, to route |
 
@@ -33,10 +33,10 @@ item carries two parts, `summary` and `rationale`, in the `new_decisions` / `ope
 block, never printed by default. Both are non-empty, single-line strings; a missing one, or one with
 an embedded newline, fails the render naming the item and the part, and nothing reaches stdout.
 `summary` also carries a **250-character cap**, enforced by `render-return.js`. In `### New
-Decisions`, the `· rationale:` line sits directly below the item's five tokens (`· anchor:`, then
-`· blocking-test:`, then `· record:`, then `· record-mode:`, then `· contested:`) — same item, same
-section, no separate channel. `summary`'s register is fixed once in Section D.3 of
-`sdd-phase-common.md` — not restated here.
+Decisions`, the `· rationale:` line sits directly below the item's four tokens (`· anchor:`, then
+`· blocking-test:`, then `· record:`, then `· record-mode:`) — same item, same section, no separate
+channel. `summary`'s register is fixed once in Section D.3 of `sdd-phase-common.md` — not restated
+here.
 
 **`### Contract Shapes Proposed`** is the dedicated home for an unpinned contract or definition — the
 shape "Contract & definition shapes — never inferred" (`~/.claude/matecito-ai/domains/development.md`)
@@ -66,11 +66,11 @@ nothing in its prompt MUST stop and name the missing contract.
 <!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism:
      ~/.claude/references/decision-capture/in-flow-capture.md — this note only fixes the token itself. -->
 **The `· record:` token.** Every item under `### New Decisions` also carries `· record:
-<domain>/<slug>` — the EDR identity the proposal would occupy if ratified. It is **free-form**: the
-engine accepts any present, non-null value (a token declared without a closed `values` set), but it is
-still **required** — an item missing the line fails `TOKEN-MISSING` at the Return Contract Check, the
-same strict reading as any other omitted token. This is what `sdd-apply` reads, verbatim from the
-ratified proposal forwarded in its dispatch prompt, to materialize the record in the same step that
+<domain>/<slug>` — the EDR identity the proposal occupies. It is **free-form**: the engine accepts any
+present, non-null value (a token declared without a closed `values` set), but it is still **required**
+— an item missing the line fails `TOKEN-MISSING` at the Return Contract Check, the same strict reading
+as any other omitted token. This is what `sdd-apply` reads straight from this design artifact — no
+dispatch-prompt forwarding, no confirmation step — to materialize the record in the same step that
 implements the code it governs.
 
 **The `· record-mode:` token.** Every item under `### New Decisions` also carries `· record-mode:
@@ -88,13 +88,14 @@ it, declared first so it prints directly under the summary. Free-form, same as `
 legitimate forms and the not-yet-written-target rule are fixed once in Section D.3 of
 `sdd-phase-common.md`, not restated here.
 
-**The `· contested:` token.** Every item under both `### New Decisions` and `### Open Questions` also
-carries it, declared last (`sdd-design.yaml` is the authority on its legal values — run `--schema` on
-demand). It asserts whether this item names a concrete counterparty it could not clear; the
-Unresolved Decisions Guard in `~/.claude/matecito-ai/domains/development.md` classifies it, and this
-file does not restate that rule. `### Open Questions` declares `gates: muted` (Section D.3) — an item
-there declaring `contested: none` reaches the user nowhere; one declaring a named value surfaces,
-without blocking.
+**The `· contested:` token.** Every item under `### Open Questions` carries it, declared last
+(`sdd-design.yaml` is the authority on its legal values — run `--schema` on demand). It asserts
+whether this item names a concrete counterparty it could not clear; the Unresolved Decisions Guard in
+`~/.claude/matecito-ai/domains/development.md` classifies it, and this file does not restate that
+rule. `### Open Questions` declares `gates: muted` (Section D.3) — an item there declaring
+`contested: none` reaches the user nowhere; one declaring a named value surfaces, without blocking.
+`### New Decisions` carries no `contested` token: it declares `gates: reported` and never opens a
+confirmation gate — `sdd-apply` reads every item straight from this design artifact, whatever it says.
 
 ## `status: done` — the design was produced
 
@@ -124,7 +125,6 @@ If there are genuinely none: "None."}
   · blocking-test: none
   · record: {domain}/{slug}
   · record-mode: {create | modify}
-  · contested: {none | contradicts-statement | contradicts-record | unverified-assumption}
   · rationale: {one line: the full reasoning — why this choice, restated for the record even though the gate only prints the line above}
 
 ### Open Questions
@@ -226,7 +226,7 @@ The orchestrator reads it mechanically, without reopening the decision:
 
 | Token | What it asserts | What the orchestrator does |
 | --- | --- | --- |
-| `none` | the test ran and came back negative | present it with the rest of the gating batch, subject to its own `contested` token |
+| `none` | the test ran and came back negative | reported with the rest of the section — `### New Decisions` declares `gates: reported` and never opens a confirmation gate |
 | an axis named | the item is in the wrong mailbox | stop and surface, as it would for a `blocked` |
 | absent, or hedged | the test did not run, or the answer is being withheld | fires under the strict reading — same default as an undeclared deviation |
 

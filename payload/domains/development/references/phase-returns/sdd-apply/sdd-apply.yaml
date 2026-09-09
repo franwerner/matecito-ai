@@ -24,7 +24,7 @@ sections:
       - { key: task, label: Task }
       - { key: action, label: Action }
   # In-flow decision capture (development-specifics; see ../../decision-capture/in-flow-capture.md).
-  # Emitted only when this run materialized at least one ratified proposal — a run that materialized
+  # Emitted only when this run materialized at least one decision proposal — a run that materialized
   # nothing carries no section at all, not even the sentinel (same shape as the two TDD sections below).
   - title: "### Decisions Materialized"
     emitted: conditional
@@ -48,26 +48,6 @@ sections:
       - { key: spec, label: Capability-spec }
       - { key: action, label: Action }
       - { key: scenarios, label: Scenarios }
-  # In-flow decision capture, rejection half (see ../../decision-capture/in-flow-capture.md and
-  # ../../../CLAUDE.md's "Forwarding a proposal's resolution to `sdd-apply`"). `has_forwarded_rejections`
-  # is a fact about the PROMPT, never derived from the list: `true` + an empty list is the omission case
-  # (every forwarded rejection was checked and none conflicted), `false` is "nothing forwarded" — the
-  # renderer refuses to guess it, so this run answers the question on every batch that reaches a task a
-  # rejection governs. Both `design-conflict` values are `passing`: a non-passing value would make the
-  # render fail exactly when the run is trying to report an honest conflict.
-  - title: "### Rejected Proposals Checked"
-    emitted: conditional
-    when: has_forwarded_rejections
-    render: items
-    field: rejected_proposals
-    items:
-      text: summary
-      rationale: rationale
-      summary_max: 250
-      tokens:
-        - { name: anchor, field: anchor }
-        - { name: record, field: record }
-        - { name: design-conflict, field: design_conflict, values: [none, conflicts], passing: [none, conflicts] }
   # Gated on Strict TDD, which the `Mode` header states. Absent outside it, and that is legitimate.
   - title: "### TDD Cycle Evidence"
     emitted: conditional

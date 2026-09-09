@@ -33,7 +33,7 @@ arrancar:
 ```yaml
 tools: Read, Grep, Glob
 skills:
-  - development-spec-mine
+  - find-records
 ```
 
 En el cuerpo alcanza con "tu skill `X` viene precargada — seguila exactamente".
@@ -49,7 +49,7 @@ a `tools:` y nombralas en la prosa; no hace falta ruta.
 `_shared/sdd-phase-common.md` no son skills, así que se referencian por su ruta
 bajo `~/.claude/…`, que es portable.
 
-**Agentes — por nombre.** Un agente se nombra (`development-spec-mine`), nunca
+**Agentes — por nombre.** Un agente se nombra (`sdd-apply`), nunca
 por archivo.
 
 ## La excepción legítima

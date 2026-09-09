@@ -83,12 +83,12 @@ If `.matecito-ai/edr/` does NOT exist, proceed normally (note that the project h
 
 Recognizing that something IS an architectural decision **the user owns** does NOT depend on the EDR
 activation gate. Whatever the store's state, emit it in BOTH places — `## New Decisions` in the
-artifact AND `### New Decisions` in your return to the orchestrator (the guard only ever reads the
-return; an artifact-only section is invisible to it) — with the architectural choices
+artifact AND `### New Decisions` in your return to the orchestrator — with the architectural choices
 this change requires — approach, contracts, dependencies, boundaries between components, where a
-responsibility lives. That section declares **`gates: contested`** for the orchestrator's Unresolved
-Decisions Guard: the user has not agreed to those choices yet, and each item's `contested` verdict
-decides whether it stops the flow.
+responsibility lives. That section declares **`gates: reported`**: it never opens a confirmation gate.
+`sdd-apply` reads `## New Decisions` straight from this design artifact and materializes each entry as
+an `Accepted` EDR in the same step that implements the governing code — no forwarding channel, no
+ratification step.
 
 <!-- matecito-ai: sin este puntero, un ejecutor que lee este step y no llega a ## Rules archiva acá
      una decisión que tenía que bloquear. El criterio NO se duplica: vive una sola vez en ## Rules. -->
@@ -102,7 +102,7 @@ What the activation gate turns off is only what **names** EDRs:
 - **Store absent or empty** → title it plainly `## New Decisions`, and do not mention EDRs, capture,
   or bootstrap at all.
 
-Same detection, same `gates: contested`, zero mention. matecito-ai never requires an EDR — but it
+Same detection, same `gates: reported`, zero mention. matecito-ai never requires an EDR — but it
 never lets an architectural decision pass as if it were execution detail either.
 <!-- matecito-ai: read project EDRs before designing — END -->
 
@@ -190,8 +190,8 @@ The architectural choices this change requires AND that pass the blocking test i
 they return `blocked`). Store active: those no existing EDR covers,
 each with the domain it would belong to + a note to capture it via development-decisions-bootstrap.
 Store inactive: the choices themselves, with no mention of EDRs.
-Emitted in BOTH cases — the return's `### New Decisions` twin declares `gates: contested` for the
-orchestrator's Unresolved Decisions Guard (this artifact section carries no gating token itself).
+Emitted in BOTH cases — the return's `### New Decisions` twin declares `gates: reported` and never
+opens a confirmation gate; `sdd-apply` reads this artifact section straight, whatever it says.
 Every item carries its `· blocking-test:` token, per `## Rules`.
 If there are genuinely none, state "None."}
 
@@ -311,28 +311,30 @@ authority on meaning; the `.yaml` next to it is the authority on shape.
 
 Three things that file makes explicit and that this phase gets wrong most often:
 
-- `### New Decisions` is this phase's **only `gates: contested` mailbox**, and it is emitted
-  **always** — with a `None.` sentinel when there is nothing. It carries only the choices that PASS
-  the blocking test in `## Rules`; the ones the test catches make you return `blocked` instead, into
-  `### Blocker`. Every item carries its `· blocking-test:` token: the orchestrator reads it
-  mechanically, and an omission buys the strict reading, not the benefit of the doubt.
+- `### New Decisions` is emitted **always** — with a `None.` sentinel when there is nothing. It
+  declares `gates: reported`: it never opens a confirmation gate, and `sdd-apply` reads it straight
+  from this design artifact. It carries only the choices that PASS the blocking test in `## Rules`;
+  the ones the test catches make you return `blocked` instead, into `### Blocker`. Every item carries
+  its `· blocking-test:` token: the orchestrator reads it mechanically, and an omission buys the
+  strict reading, not the benefit of the doubt.
 - `### Open Questions` is **not** a decision mailbox: it carries what fixes nothing. Anything that
   pins the approach, a contract, a dependency, a boundary or where a responsibility lives belongs in
-  `### New Decisions` or in `blocked`. It declares `gates: muted` — different from `### New
-  Decisions`'s `gates: contested` — so a clean item there reaches the user nowhere at all.
+  `### New Decisions` or in `blocked`. It declares `gates: muted` — a clean item there reaches the
+  user nowhere at all. It is this phase's **only `gates: muted` mailbox**, and its own `contested`
+  verdict is what decides whether it fires.
 - On `blocked`, the question and the options go in `### Blocker` — never in `risks`, which Section D.4
   forbids for decisions the user owns.
 - Every item under `### New Decisions` and `### Open Questions` carries its own `anchor` — the
   concrete source it traces to. Free-form, per the anchor criterion in
   `~/.claude/skills/_shared/sdd-phase-common.md`, Section D.3: `<repo-path>[:line]` or `<engram-key>`,
   start line only (say the range in words); a `### New Decisions` item anchors to what surfaced the
-  need, never to the EDR file that would only exist once the decision is ratified. The renderer (Step
+  need, never to the EDR file that would only exist once the decision is written. The renderer (Step
   5) requires it — an item missing it fails at render, not at review.
-- Every item under both mailboxes also carries its own `· contested:` verdict, declared last —
+- Every item under `### Open Questions` also carries its own `· contested:` verdict, declared last —
   `none | contradicts-statement | contradicts-record | unverified-assumption` (`sdd-design.yaml` is
   the authority on the exact values; run `--schema` on demand). An absent or hedged verdict is read as
-  firing: do not omit it, and in `### Open Questions` do not write `none` casually — a wrongly-clean
-  item there is invisible, not merely unblocking.
+  firing: do not omit it, and do not write `none` casually — a wrongly-clean item there is invisible,
+  not merely unblocking. `### New Decisions` carries no `contested` token: it never gates.
 
 ## Rules
 
@@ -364,7 +366,7 @@ Three things that file makes explicit and that this phase gets wrong most often:
   3. **Data model** — they imply different entities, a different persisted schema, or a migration one of them does not need.
 
   - **They differ in at least one** → return `blocked` with the question and the options you weighed — **even if you have a founded preference, and even if one option looks obvious**. State explicitly WHICH of the three they differ in and HOW (e.g. "async job needs a queue + worker that do not exist today (1) and turns the export from a download into a notification (2)"). Do not pick one to keep moving; a preference is not a mandate.
-  - **They differ in none of the three** → propose the founded choice, file it under `## New Decisions` / `### New Decisions` and keep designing. The guard raises it through the section's `gates: contested` classification, and the user confirms or corrects. This is the normal case.
+  - **They differ in none of the three** → propose the founded choice, file it under `## New Decisions` / `### New Decisions` and keep designing. The section declares `gates: reported`: `sdd-apply` reads it straight from this design artifact, with no confirmation step. This is the normal case.
 
   The test is auditable from outside: a reader who sees only the alternatives must be able to reach the same verdict without reconstructing your reasoning. If you cannot name which of the three differs, you do not have a blocker — you have a preference, and it goes to `## New Decisions`.
 
@@ -382,13 +384,13 @@ Three things that file makes explicit and that this phase gets wrong most often:
   · blocking-test: none | infra | contract | data-model
   ```
 
-  `none` means "I put the alternatives side by side and they differ in NONE of the three axes; that is why this item is here and not in `blocked`" — the only value consistent with the item's location, and therefore the normal one. Naming an axis instead contradicts the item's own destination: an axis that differs makes the decision `blocked`. The orchestrator reads the token mechanically and never reopens your reasoning: `none` → present it with the rest of the gating batch, subject to its own `contested` token; an axis named → it stops, because the item is in the wrong mailbox; absent or hedged → fires under the strict reading, the same default an undeclared deviation gets in `sdd-apply`. Do not hedge it, do not omit it, and do not write `none` for a decision you did not actually put side by side — one line per decision, and the token IS the audit trail the paragraph above asks for. Shape and the reader's table: `~/.claude/references/phase-returns/sdd-design/sdd-design.md`, section "The blocking-test token".
+  `none` means "I put the alternatives side by side and they differ in NONE of the three axes; that is why this item is here and not in `blocked`" — the only value consistent with the item's location, and therefore the normal one. Naming an axis instead contradicts the item's own destination: an axis that differs makes the decision `blocked`. The orchestrator reads the token mechanically and never reopens your reasoning: `none` → reported with the rest of the section — `### New Decisions` never gates; an axis named → it stops, because the item is in the wrong mailbox; absent or hedged → fires under the strict reading, the same default an undeclared deviation gets in `sdd-apply`. Do not hedge it, do not omit it, and do not write `none` for a decision you did not actually put side by side — one line per decision, and the token IS the audit trail the paragraph above asks for. Shape and the reader's table: `~/.claude/references/phase-returns/sdd-design/sdd-design.md`, section "The blocking-test token".
 <!-- matecito-ai: in-flow decision capture (development-specifics). Full mechanism: in-flow-capture.md. -->
-- **Every item under `## New Decisions` / `### New Decisions` ALSO carries `· record: <domain>/<slug>`** — free-form (no closed value set), still required (an omission fails `TOKEN-MISSING`). It is the EDR identity the proposal would occupy if ratified; `sdd-apply` reads it verbatim from the dispatch prompt to materialize the record in the same step it implements the governing code. Full mechanism: `~/.claude/references/decision-capture/in-flow-capture.md`.
-- **Every item ALSO carries `· record-mode: create | modify`, directly beneath `· record:`** — closed value set, but no `passing:` key: every declared value is legal, only an absent token fails `TOKEN-MISSING`. It declares whether ratifying this item creates a new record, or edits an existing one **in place**. It is a **routing token**, read verbatim by `sdd-apply` — not a verdict you or the orchestrator classify (that precedent belongs to `· blocking-test:` and `· contested:`, not this token). Full mechanism: `~/.claude/references/decision-capture/in-flow-capture.md`.
+- **Every item under `## New Decisions` / `### New Decisions` ALSO carries `· record: <domain>/<slug>`** — free-form (no closed value set), still required (an omission fails `TOKEN-MISSING`). It is the EDR identity the proposal occupies; `sdd-apply` reads it straight from this design artifact — no dispatch-prompt forwarding, no confirmation step — to materialize the record in the same step it implements the governing code. Full mechanism: `~/.claude/references/decision-capture/in-flow-capture.md`.
+- **Every item ALSO carries `· record-mode: create | modify`, directly beneath `· record:`** — closed value set, but no `passing:` key: every declared value is legal, only an absent token fails `TOKEN-MISSING`. It declares whether materializing this item creates a new record, or edits an existing one **in place**. It is a **routing token**, read verbatim by `sdd-apply` — not a verdict you or the orchestrator classify (that precedent belongs to `· blocking-test:` and `### Open Questions`'s `· contested:`, not this token). Full mechanism: `~/.claude/references/decision-capture/in-flow-capture.md`.
 <!-- matecito-ai: narrow-gating-triggers. The firing decision moved from the section's identity to a
-     per-item token — every item now declares one, in both mailboxes. -->
-- **Every item under `### New Decisions` and `### Open Questions` ALSO carries `· contested: none | contradicts-statement | contradicts-record | unverified-assumption`**, declared last — `sdd-design.yaml` is the authority on the exact values (run `--schema` on demand). An absent or hedged verdict is read as firing, same strict reading as the other tokens.
+     per-item token — `### New Decisions` no longer carries one; `### Open Questions` still does. -->
+- **Every item under `### Open Questions` ALSO carries `· contested: none | contradicts-statement | contradicts-record | unverified-assumption`**, declared last — `sdd-design.yaml` is the authority on the exact values (run `--schema` on demand). An absent or hedged verdict is read as firing, same strict reading as the other tokens. `### New Decisions` declares no such token: it is `gates: reported`, so there is nothing for it to classify.
 <!-- matecito-ai: Open Questions dejó de ser buzón de decisiones (se solapaba con New Decisions y el
      ejecutor duplicaba: razonamiento en una, pregunta en la otra => fatiga de confirmación). -->
 - `## Open Questions` is NOT a decision mailbox. A question that pins a decision belongs to `## New Decisions` / `### New Decisions`, or makes you return `blocked` per the test above — never here. What stays here is what fixes nothing: implementation doubts and things to validate during apply. And a question you write there and answer yourself in the same delivery is not an open question — it is a decision you took without asking. Whatever remains genuinely open at the end MUST still appear under `### Open Questions` **in your return** (not only in the artifact), so the orchestrator can carry it forward — it declares `gates: muted`, so a clean item there (`contested: none`) reaches the user nowhere, and only a triggered one surfaces

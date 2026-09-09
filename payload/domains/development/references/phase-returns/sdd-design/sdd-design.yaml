@@ -73,7 +73,7 @@ sections:
     variant:
       title: "### New Decisions (not yet in EDRs)"
       when: decision_store_active
-    gates: contested
+    gates: reported
     sentinel: true
     render: items
     field: new_decisions
@@ -87,13 +87,14 @@ sections:
       # closed values but no `passing:`, so every declared value is legal; read verbatim by `sdd-apply`,
       # not classified by the orchestrator (follows `record:`'s precedent, not
       # `structure/verdict-classified-by-the-orchestrator.md`'s). `blocking-test` is unchanged. `anchor`
-      # is free-form too, declared first so it prints adjacent to the summary.
+      # is free-form too, declared first so it prints adjacent to the summary. This section never
+      # gates — `sdd-apply` reads it straight from the design artifact, so it carries no `contested`
+      # token.
       tokens:
         - { name: anchor, field: anchor }
         - { name: blocking-test, field: blocking_test, values: [none, infra, contract, data-model], passing: [none] }
         - { name: record, field: record }
         - { name: record-mode, field: record_mode, values: [create, modify] }
-        - { name: contested, field: contested, values: [none, contradicts-statement, contradicts-record, unverified-assumption] }
 
   - title: "### Open Questions"
     emitted: always
