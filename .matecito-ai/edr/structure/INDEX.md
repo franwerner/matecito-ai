@@ -17,7 +17,6 @@ Decisiones sobre cómo se organiza el payload del repo (dónde vive cada concept
 | [change-level-worktree-isolation.md](change-level-worktree-isolation.md) | Accepted | Vas a tocar cómo se aísla un cambio completo del resto del repo, o cuándo se abre y se integra ese aislamiento. |
 | [phase-fanout-two-cases.md](phase-fanout-two-cases.md) | Accepted | Vas a tocar la prosa de fan-out del pipeline o a agregar un tercer caso de despacho concurrente. |
 | [prose-register-single-home.md](prose-register-single-home.md) | Accepted | Vas a agregar o editar una instrucción de registro de prosa gate-facing y te tienta copiarla en más de un contrato de retorno. |
-| [verdict-classified-by-the-orchestrator.md](verdict-classified-by-the-orchestrator.md) | Accepted | Vas a tocar quién clasifica un token declarado por una fase, o a agregar un tercer token del mecanismo de captura in-flow. |
 | [pr-base-branch-rule-reach.md](pr-base-branch-rule-reach.md) | Accepted | Vas a tocar la descripción de una estrategia de cadena de PRs (stacked-to-main, feature-branch-chain) o a agregar una nueva. |
 | [pr-base-explicit-argument-form.md](pr-base-explicit-argument-form.md) | Accepted | Vas a documentar o revisar cómo se abre un PR (por el flujo o a mano) y te tienta enunciarlo como norma en vez de argumento obligatorio. |
 | [change-isolation-activation-flag.md](change-isolation-activation-flag.md) | Accepted | Vas a tocar cómo se activa el aislamiento por cambio, o cómo se decide y se reporta esa elección. |
@@ -58,6 +57,10 @@ Decisiones sobre cómo se organiza el payload del repo (dónde vive cada concept
 | [spec-deletion-over-deprecation.md](spec-deletion-over-deprecation.md) | Accepted | Vas a retirar una capability-spec sin reemplazo y necesitás decidir si se borra o se marca Deprecated. |
 | [sweep-reach-outside-the-ratified-scope.md](sweep-reach-outside-the-ratified-scope.md) | Accepted | Vas a barrer vocabulario retirado fuera del Scope original de un cambio y encontrás un sitio adicional que el cambio falsifica pero el Scope no nombra. |
 | [single-conditional-skill-reached-by-read.md](single-conditional-skill-reached-by-read.md) | Accepted | Antes de dar a un agente de fase el mecanismo para alcanzar exactamente una skill condicional. |
+| [moment-count-counts-gates-not-bullets.md](moment-count-counts-gates-not-bullets.md) | Accepted | Vas a agregar o quitar un momento que cita el walkthrough compartido de gate-presentation.md, o a tocar cómo se cuenta. |
+| [retire-by-deletion-when-the-premise-is-gone.md](retire-by-deletion-when-the-premise-is-gone.md) | Accepted | Vas a retirar un record sin reemplazo y necesitás decidir si se borra o se marca Deprecated — en cualquier cambio, no solo en el que originó el precedente. |
+| [spec-store-scope-excludes-domain-agent-behavior.md](spec-store-scope-excludes-domain-agent-behavior.md) | Accepted | Vas a proponer una capability-spec en .matecito-ai/development-specs/ cuyo actor es un dominio distinto de la superficie CLI de development. |
+| [mirror-sites-join-the-prune-sweep.md](mirror-sites-join-the-prune-sweep.md) | Accepted | Antes de tocar un archivo que instruye/enlaza algo que un cambio retira |
 
 ## No aplican en este dominio
 

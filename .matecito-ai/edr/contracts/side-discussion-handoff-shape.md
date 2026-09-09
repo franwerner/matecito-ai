@@ -20,5 +20,4 @@ Prosa libre — descartada en intake. Las cuatro secciones del brief, sin `## Re
 La sesión lateral siempre sabe adónde escribir su conclusión, sin ambigüedad. El tipo queda registrado de forma durable en el propio traspaso, así que una sesión retomada o compactada lo recupera sin tener que preguntarle de nuevo al usuario.
 
 ## Relacionados
-- `relacionado-con` → [ratification-ledger-row.md](ratification-ledger-row.md) — mismo criterio — campos fijos en vez de prosa libre, porque un lector posterior tiene que poder encontrar cada parte sin interpretar.
 - `relacionado-con` → [side-discussion-conclusion-shape.md](side-discussion-conclusion-shape.md) — la otra mitad del intercambio, con el mismo criterio de secciones fijas.

@@ -16,17 +16,10 @@ Decisiones sobre los contratos entre piezas del ecosistema: qué forma tiene lo 
 | [closing-line-only-for-a-pending-decision.md](closing-line-only-for-a-pending-decision.md) | Accepted | Te tienta cerrar una respuesta ofreciendo ayuda, o vas a decidir si una pregunta de cierre está permitida. |
 | [plain-register-over-technical-neutral.md](plain-register-over-technical-neutral.md) | Accepted | Vas a describir el registro de una zona de tono y te tienta usar una etiqueta técnica interna en vez de una instrucción positiva. |
 | [emit-in-english-present-translated.md](emit-in-english-present-translated.md) | Accepted | Vas a decidir si un aviso interno de una línea se traduce igual que el material gate-facing. |
-| [rejected-proposal-verdict-token.md](rejected-proposal-verdict-token.md) | Accepted | Vas a agregar un token a un mailbox de retorno y te tienta usar un valor no-passing para un caso que el ejecutor necesita poder reportar honestamente. |
-| [verdict-in-its-own-conditional-section.md](verdict-in-its-own-conditional-section.md) | Accepted | Vas a decidir dónde vive un veredicto que no encaja en ningún mailbox existente de sdd-apply. |
-| [verdict-survives-the-fan-out.md](verdict-survives-the-fan-out.md) | Accepted | Vas a tocar cómo un veredicto declarado por una corrida aislada llega al retorno consolidado de un batch paralelo. |
-| [expected-set-outside-the-validator.md](expected-set-outside-the-validator.md) | Accepted | Te tienta agregar un flag de completitud a un validador de forma de retorno. |
 | [uncommitted-gate-follows-the-container.md](uncommitted-gate-follows-the-container.md) | Accepted | Vas a tocar qué árbol inspecciona un chequeo cuando el aislamiento anidado puede desplazar cuál es el contenedor relevante. |
 | [workspace-forwarded-in-dispatch.md](workspace-forwarded-in-dispatch.md) | Accepted | Vas a tocar cómo una fase se entera de dónde está el espacio de trabajo en el que tiene que operar. |
 | [gate-summary-cap-in-characters.md](gate-summary-cap-in-characters.md) | Accepted | Vas a tocar el límite de longitud de un resumen de ítem en un gate, o en qué momento del ciclo de vida del retorno se aplica ese chequeo. |
 | [anchor-token-free-form.md](anchor-token-free-form.md) | Accepted | Vas a validar (o te tienta validar) la forma del token de ancla de un ítem de gate. |
-| [ratification-ledger-row.md](ratification-ledger-row.md) | Accepted | Vas a tocar los campos que lleva una fila del registro de ratificación de un cambio. |
-| [re-emergence-match-on-record.md](re-emergence-match-on-record.md) | Accepted | Vas a tocar cómo se detecta que un ítem de gate ya fue ratificado antes en el mismo cambio. |
-| [re-emergence-short-form.md](re-emergence-short-form.md) | Accepted | Vas a tocar cómo se presenta un ítem de gate que ya reapareció y fue ratificado antes. |
 | [subverifier-item-shape-single-declaration.md](subverifier-item-shape-single-declaration.md) | Accepted | Vas a tocar la forma de un hallazgo de sub-verificador, o el prompt de despacho de uno de los siete. |
 | [contract-proposal-has-no-persistence-slot.md](contract-proposal-has-no-persistence-slot.md) | Accepted | Te tienta agregar a una propuesta de contrato un campo que diga dónde va a persistir. |
 | [per-field-description-cap.md](per-field-description-cap.md) | Accepted | Vas a tocar el límite de longitud de la descripción de un campo dentro de un contrato propuesto. |

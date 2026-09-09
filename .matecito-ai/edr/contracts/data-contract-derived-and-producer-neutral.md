@@ -5,7 +5,7 @@
 
 ## Contexto
 
-El mismo artefacto durable lo puede producir una fase del flujo, una minería sobre material existente, o una persona escribiendo a mano. Los tres tienen contexto distinto y ninguno es más legítimo que los otros. Si cada uno alimenta al renderizador con una forma propia, el artefacto deja de tener un contrato y pasa a tener tres.
+El mismo artefacto durable lo puede producir una fase del flujo o una persona escribiendo a mano. Los dos tienen contexto distinto y ninguno es más legítimo que el otro. Si cada uno alimenta al renderizador con una forma propia, el artefacto deja de tener un contrato y pasa a tener dos.
 
 Hay además una clase de dato que el renderizador puede calcular a partir del resto — la ubicación de un artefacto a partir de sus coordenadas, la fila que le corresponde en un índice. Permitir que el productor lo suministre abre la posibilidad de que dos fuentes de verdad se contradigan, y de que la contradicción se materialice sin que nada la note.
 
@@ -17,7 +17,7 @@ La entrada del renderizador es **una sola, agnóstica de quién la produce**, y 
 
 - **[auto]** El esquema de entrada declara explícitamente qué campos son derivados y no deben suministrarse.
 - **[auto]** El renderizador aborta ante un campo que no sabe manejar, en vez de descartarlo; un dato que llega y no aparece en la salida es un error, nunca un silencio.
-- **[manual]** No existe una forma de entrada por productor: el flujo, la minería y la escritura manual usan el mismo contrato.
+- **[manual]** No existe una forma de entrada por productor: el flujo y la escritura manual usan el mismo contrato.
 - **[auto]** El esquema publicado enumera todos los campos que alguna invocación exige, incluidos los que sólo consume una salida secundaria.
 
 ## Alternativas consideradas
