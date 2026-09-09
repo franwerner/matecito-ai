@@ -47,6 +47,19 @@ Decisiones sobre los contratos entre piezas del ecosistema: qué forma tiene lo 
 | [store-wide-summary-slot-is-a-plain-string.md](store-wide-summary-slot-is-a-plain-string.md) | Accepted | Vas a declarar el lugar donde una sección de coherencia reporta el resultado de validar el store entero, no una fila puntual |
 | [destructive-fold-uses-the-single-blocker.md](destructive-fold-uses-the-single-blocker.md) | Accepted | Vas a agregar una nueva causa de bloqueo a una fase que ya declara una sola sección Blocker, y dudás si necesita una sección propia. |
 | [folded-specs-reported-like-decisions-materialized.md](folded-specs-reported-like-decisions-materialized.md) | Accepted | Vas a tocar cómo o dónde se reporta el pliegue del delta de comportamiento en sdd-apply, o a decidir si un mecanismo nuevo va en el retorno, en el artefacto, o en ambos. |
+| [between-phase-report-act-form.md](between-phase-report-act-form.md) | Accepted | Vas a tocar la forma del reporte que el orquestador emite entre una fase y la siguiente. |
+| [blocking-test-token-is-self-declared.md](blocking-test-token-is-self-declared.md) | Accepted | Vas a tocar cómo el guard clasifica el token `blocking-test` de una decisión de sdd-design. |
+| [check-four-is-mechanical-and-precedes-the-guard.md](check-four-is-mechanical-and-precedes-the-guard.md) | Accepted | Vas a tocar el chequeo 4 del Return Contract Check, o a decidir si compara el Summary contra el cuerpo de una sección. |
+| [emission-exemption-named-scope.md](emission-exemption-named-scope.md) | Accepted | Vas a tocar el alcance de la excepción de emisión, o te tienta redactarla en términos posicionales. |
+| [empty-sentinel-does-not-open-a-gate.md](empty-sentinel-does-not-open-a-gate.md) | Accepted | Vas a decidir si una sección con sólo el sentinel `None` cuenta como contenido gateable. |
+| [gap-list-excludes-alcance-hint.md](gap-list-excludes-alcance-hint.md) | Accepted | Vas a tocar qué se pasa como scope al ejecutor de minería del mine gate. |
+| [mandate-requires-a-named-source.md](mandate-requires-a-named-source.md) | Accepted | Vas a tocar el test de mandato del hard-stop por desviación, o a decidir si un pedido crudo alcanza para actuar. |
+| [omitted-check-keys-off-emitted-column.md](omitted-check-keys-off-emitted-column.md) | Accepted | Vas a tocar el chequeo de sección omitida del guard, o a agregar una fila condicional a la Sección D.3. |
+| [omitted-section-broken-only-if-unconditional.md](omitted-section-broken-only-if-unconditional.md) | Accepted | Vas a decidir si una sección ausente en un retorno de fase es un retorno roto. |
+| [return-contract-check-is-mechanical.md](return-contract-check-is-mechanical.md) | Accepted | Vas a tocar el Return Contract Check, o te tienta comparar un retorno contra su template a ojo. |
+| [shortcuts-named-by-shape.md](shortcuts-named-by-shape.md) | Accepted | Vas a tocar la sección `Open question = blocked`, o a documentar un atajo nuevo que la rodea. |
+| [contract-shape-forwarding-is-not-decision-forwarding.md](contract-shape-forwarding-is-not-decision-forwarding.md) | Accepted | Vas a tocar el forwarding de una decisión o de una forma de contrato ratificada de vuelta a la fase que la propuso. |
+| [omitted-section-examples-are-return-sections.md](omitted-section-examples-are-return-sections.md) | Accepted | Vas a agregar o revisar un ejemplo de sección condicional legítimamente ausente en el Unresolved Decisions Guard. |
 
 ## No aplican en este dominio
 

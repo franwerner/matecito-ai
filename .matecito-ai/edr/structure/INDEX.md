@@ -61,6 +61,25 @@ Decisiones sobre cómo se organiza el payload del repo (dónde vive cada concept
 | [retire-by-deletion-when-the-premise-is-gone.md](retire-by-deletion-when-the-premise-is-gone.md) | Accepted | Vas a retirar un record sin reemplazo y necesitás decidir si se borra o se marca Deprecated — en cualquier cambio, no solo en el que originó el precedente. |
 | [spec-store-scope-excludes-domain-agent-behavior.md](spec-store-scope-excludes-domain-agent-behavior.md) | Accepted | Vas a proponer una capability-spec en .matecito-ai/development-specs/ cuyo actor es un dominio distinto de la superficie CLI de development. |
 | [mirror-sites-join-the-prune-sweep.md](mirror-sites-join-the-prune-sweep.md) | Accepted | Antes de tocar un archivo que instruye/enlaza algo que un cambio retira |
+| [apply-progress-continuity-binds-the-writer-role.md](apply-progress-continuity-binds-the-writer-role.md) | Accepted | Vas a tocar la continuidad de apply-progress cuando el fragmento de dominio declara más de un rol de despacho para la misma fase. |
+| [brief-flags-declared-where-orchestrator-reads.md](brief-flags-declared-where-orchestrator-reads.md) | Accepted | Vas a tocar dónde se declara la tabla de flags de decisión del brief, o quién tiene que reportarlos. |
+| [decision-record-statuses-checked-on-return.md](decision-record-statuses-checked-on-return.md) | Accepted | Vas a tocar dónde se chequean los status `blocked`/`needs-decision` que dependen de los decision records. |
+| [discovery-runs-after-code-is-read.md](discovery-runs-after-code-is-read.md) | Accepted | Vas a tocar en qué fase corre el Discovery Gate, o cuándo se formula el formulario de discovery. |
+| [domain-fragment-trigger-is-an-act.md](domain-fragment-trigger-is-an-act.md) | Accepted | Vas a tocar cuándo se carga el fragmento de dominio, o a decidir si un lane queda exento de cargarlo. |
+| [guard-references-canonical-mailbox-list.md](guard-references-canonical-mailbox-list.md) | Accepted | Vas a tocar la lista de secciones gateables del Unresolved Decisions Guard, o te tienta agregarle una copia propia. |
+| [guard-turns-mailboxes-into-a-trigger.md](guard-turns-mailboxes-into-a-trigger.md) | Accepted | Vas a tocar el propósito o el disparo del Unresolved Decisions Guard. |
+| [init-guard-key-is-declared-not-derived.md](init-guard-key-is-declared-not-derived.md) | Accepted | Vas a tocar cómo el Init Guard construye la clave de búsqueda, o a agregar un dominio nuevo al flujo. |
+| [kernel-does-not-enumerate-domain-shared-files.md](kernel-does-not-enumerate-domain-shared-files.md) | Accepted | Vas a agregar o sacar un archivo compartido de un dominio y te tienta nombrarlo en el kernel. |
+| [kernel-fanout-pointer-not-a-pattern.md](kernel-fanout-pointer-not-a-pattern.md) | Accepted | Vas a tocar la mención de sdd-verify como excepción de despacho, o te tienta ofrecer fan-out a otra fase. |
+| [kernel-states-discovery-invariant-not-mechanism.md](kernel-states-discovery-invariant-not-mechanism.md) | Accepted | Vas a tocar el invariante de discovery del kernel, o a decidir si nombra un mecanismo concreto. |
+| [mine-gate-override-by-presence.md](mine-gate-override-by-presence.md) | Accepted | Vas a tocar el mine gate del kernel, o a decidir si un dominio con mecanismo propio de captura queda exento. |
+| [no-slash-commands-for-phases.md](no-slash-commands-for-phases.md) | Accepted | Vas a documentar cómo se invoca una fase del flujo. |
+| [open-questions-is-not-a-decision-mailbox.md](open-questions-is-not-a-decision-mailbox.md) | Accepted | Vas a decidir si un item pendiente va a `Open Questions` o a `New Decisions`. |
+| [parallel-batch-role-not-a-table-row.md](parallel-batch-role-not-a-table-row.md) | Accepted | Vas a tocar la tabla `SDD Phase Read/Write` para el caso de batch paralelo de sdd-apply. |
+| [reasoning-record-granularity-per-decision.md](reasoning-record-granularity-per-decision.md) | Accepted | Vas a reubicar un comentario de razonamiento del payload y necesitás decidir la granularidad del record. |
+| [short-guard-points-to-single-mechanism-file.md](short-guard-points-to-single-mechanism-file.md) | Accepted | Vas a tocar Parallel-Mark Validation o Uncommitted-Work Gate, o te tienta duplicar su mecanismo en el fragmento. |
+| [spec-always-reads-intake-for-ui-test.md](spec-always-reads-intake-for-ui-test.md) | Accepted | Vas a tocar si sdd-spec lee el intake brief siempre o sólo como fallback. |
+| [change-scoped-requirements-excluded-from-the-fold.md](change-scoped-requirements-excluded-from-the-fold.md) | Accepted | Vas a tocar cómo el paso que cierra un cambio decide qué requisitos del spec se pliegan en un capability-spec durable. |
 
 ## No aplican en este dominio
 
