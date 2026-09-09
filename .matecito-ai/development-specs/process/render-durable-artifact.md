@@ -10,7 +10,7 @@ Construir de manera determinista el cuerpo completo de un artefacto durable (EDR
 
 ## Actores
 
-- El paso de materialización post-gate de los executors de minería (development-decisions-mine, development-spec-mine)
+- La ruta de escritura directa de `sdd-apply` para records de decisión durables (Step 4b), en el mismo paso que implementa el trabajo que el record rige
 - Bootstrap del árbol de specs (fuera de alcance en este ciclo)
 
 ## Precondiciones

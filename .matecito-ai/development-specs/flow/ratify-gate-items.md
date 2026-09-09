@@ -108,22 +108,22 @@ El conjunto de items ratificables en un retorno se decide **por item**, por los 
 
 ### Requisito: Qué gates ratifican
 
-El gate de decisiones pendientes deja de ratificar items de `### New Decisions` por default: tal item está ratificado por el gate **no controlándolo**. Los gates que ratifican cada vez que abren se estrechan a uno — mined-confirmation. El gate de decisiones pendientes sigue ratificando, a través de este mismo walkthrough, los items que sí disparan.
-(Previamente: el gate de decisiones pendientes ratificaba cada item de cada buzón Tier-1 sin condiciones, así `### New Decisions` era por sí mismo un gate ratificante.)
+El gate de decisiones pendientes deja de ratificar items de `### New Decisions` en absoluto: en `development` esa sección declara `gates: reported`, así que ningún item suyo alcanza jamás el gate. Los gates que ratifican cada vez que abren se estrechan de dos a uno — el gate de confirmación-minada de decisiones; el gate de confirmación-minada de specs deja de existir junto con su ejecutor. El gate de decisiones pendientes sigue ratificando, a través de este mismo walkthrough, los items que sí disparan desde sus otros buzones.
+(Previamente: el gate de decisiones pendientes dejaba de ratificar items de `### New Decisions` por default: tal item estaba ratificado por el gate **no controlándolo**. Los gates que ratificaban cada vez que abrían se estrechaban a uno — mined-confirmation.)
 
 #### Scenario: Tres gates ratifican por este walkthrough
 
-- **GIVEN** el gate de decisiones pendientes, el gate de scope-confirmation, y ambos gates de confirmación-minada
+- **GIVEN** el gate de decisiones pendientes, el gate de scope-confirmation, y el gate de confirmación-minada de decisiones
 - **WHEN** cada uno abre
 - **THEN** todos presentan items a través del mismo template compartido, con un índice único y un walkthrough uno-a-uno
 - **AND** el gate de decisiones pendientes abre solo cuando al menos un item dispara, mientras los otros abren toda vez que su momento ocurre
 
-#### Scenario: Una proposal se ratifica sin que un gate jamás abra para ella
+#### Scenario: Una proposal de decisión no alcanza ningún gate
 
-- **GIVEN** un retorno cuya única proposal de decisión declara `contested: none`
-- **WHEN** el momento de decisiones pendientes pasa
-- **THEN** no abre gate y la proposal se trata como ratificada
-- **AND** ratificación significa que el gate no la controló
+- **GIVEN** un retorno de `sdd-design` cuya `### New Decisions` lleva dos entradas
+- **WHEN** pasa el momento de decisiones pendientes
+- **THEN** ningún gate abre para ninguna de las dos entradas, porque la sección es `reported`
+- **AND** ambas aparecen en el resumen entre-fases con sus anchors
 
 ## Escenarios
 
@@ -204,7 +204,7 @@ El gate de decisiones pendientes deja de ratificar items de `### New Decisions` 
 
 ### Scenario: Tres gates ratifican por este walkthrough
 
-- **GIVEN** el gate de decisiones pendientes, el gate de scope-confirmation, y ambos gates de confirmación minada
+- **GIVEN** el gate de decisiones pendientes, el gate de scope-confirmation, y el gate de confirmación-minada de decisiones
 - **WHEN** cada uno abre
 - **THEN** todos presentan items través del mismo template compartido con índice único y walkthrough uno-a-uno
 
@@ -301,6 +301,6 @@ El gate de decisiones pendientes deja de ratificar items de `### New Decisions` 
 
 ## Referencias
 
-- **Contrato compartido** → [`../../../payload/shared/references/gate-presentation.md`](../../../payload/shared/references/gate-presentation.md) — El walkthrough (índice → uno a uno → confirmar-el-resto), el template fijo de slots (summary, anchor, acciones, sin narrativa), los nueve momentos (dos gates de fase + siete momentos de orquestador), la regla de conteo (0/1/≥2)
+- **Contrato compartido** → [`../../../payload/shared/references/gate-presentation.md`](../../../payload/shared/references/gate-presentation.md) — El walkthrough (índice → uno a uno → confirmar-el-resto), el template fijo de slots (summary, anchor, acciones, sin narrativa), los ocho momentos (dos gates de fase + seis momentos de orquestador), la regla de conteo (0/1/≥2)
 - **Guard de orquestador** → [`../../../payload/domains/development/CLAUDE.md`](../../../payload/domains/development/CLAUDE.md) — Los seis momentos de orquestador (Discovery Gate, Uncommitted-Work Gate, Review Workload Guard, `blocked` returns, findings de validadores, risks) citan el archivo compartido
 - **Anchoring criterion** → [`../../../payload/domains/development/skills/gentle-ai/_shared/sdd-phase-common.md`](../../../payload/domains/development/skills/gentle-ai/_shared/sdd-phase-common.md) Section D.3 — Formas legales de anchor (`<repo-path>[:line]` | `<engram-key>`), start-line-only, regla target-not-yet-written; toda pregunta de discovery ancla bajo el criterio ordinario

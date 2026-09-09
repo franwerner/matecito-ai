@@ -15,8 +15,8 @@ El vocabulario fijado por este spec. Léase como una escalera, más fuerte a má
 | Valor | Un item que declara un trigger | Un item que declara ninguno | Secciones que lo toman |
 |---|---|---|---|
 | `always` | detiene | n/a — todo item detiene por definición | `### Contract Shapes Proposed` (en cada uno de `sdd-propose`, `sdd-spec`, `sdd-design`, `sdd-apply`) |
-| `contested` | detiene | aparece en el resumen entre-fases | `### Scope and approach (unconfirmed)`, `### Derived capabilities (unconfirmed)`, ambas `### New Decisions`, `### Tasks not traceable to spec/design`, `### Unmandated Forks` |
-| `reported` | aparece | aparece | `sdd-verify`'s `## Decision Gaps` y `## UI Verdict` — las filas que D.3 marcó `—`, que nunca detuvieron y siempre reportaron |
+| `contested` | detiene | aparece en el resumen entre-fases | `### Scope and approach (unconfirmed)`, `### Derived capabilities (unconfirmed)`, `### Tasks not traceable to spec/design`, `### Unmandated Forks` |
+| `reported` | aparece | aparece | `sdd-verify`'s `## Decision Gaps` y `## UI Verdict` — las filas que D.3 marcó `—`, que nunca detuvieron y siempre reportaron —, ambas `### New Decisions` |
 | `muted` | aparece | **nada llega al usuario** | `### Open Questions`, `### Mandated Departures` |
 
 `contested` y `always` mantienen los significados que la proposal fijó. Lo que la proposal llamaba `never` se divide en `reported` (nunca detiene, siempre reporta) y `muted` (nunca detiene, reporta solo un item disparado). Ninguna sección toma más de un valor, y toda sección en la tabla D.3 toma exactamente uno.
@@ -112,7 +112,7 @@ Un veredicto `contested` ausente u hedgeado DEBE leerse como disparando. El sile
 
 ### Requisito: El orquestador clasifica en el token solo
 
-El orquestador DEBE clasificar cada item en su token `contested` y DEBE NO re-derivar el veredicto leyendo la prosa del item. La clasificación DEBE estar enunciada como una tabla en el Guard de Decisiones sin Resolver, en la misma forma que las tablas `blocking-test` y `design-conflict` existentes.
+El orquestador DEBE clasificar cada item en su token `contested` y DEBE NO re-derivar el veredicto leyendo la prosa del item. La clasificación DEBE estar enunciada como una tabla en el Guard de Decisiones sin Resolver, en la misma forma que la tabla `blocking-test` existente.
 
 #### Scenario: Prosa que se lee como una contradicción no anula el token
 
@@ -121,11 +121,12 @@ El orquestador DEBE clasificar cada item en su token `contested` y DEBE NO re-de
 - **THEN** el item no dispara
 - **AND** el orquestador no re-lee la prosa para cuestionarse el veredicto
 
-#### Scenario: La tabla coincide con la forma de las otras dos
+#### Scenario: La tabla coincide con la forma del único par sobreviviente
 
 - **GIVEN** la nueva tabla "Reading the `contested` token"
-- **WHEN** se compara con las tablas `blocking-test` y `design-conflict` en el mismo archivo
+- **WHEN** se compara con la tabla `blocking-test` en el mismo archivo
 - **THEN** tiene las mismas tres columnas y la misma fila ausente-o-hedgeada
+- **AND** ninguna comparación nombra una tabla `design-conflict`, porque ninguna existe
 
 ### Requisito: El costo de la auto-reporte se enuncia llano y nunca presentado como mitigado
 
@@ -204,130 +205,59 @@ Sección D.3 de `_shared/sdd-phase-common.md` DEBE ser la declaración única de
 - **WHEN** se buscan en los scripts
 - **THEN** ningún script lo lee, exactamente como ninguno leía `tier`
 
-### Requisito: "Ratificado" significa que el gate no lo controló
-
-Una proposal DEBE contar como ratificada cuando sea el usuario la confirmó en un gate, o el gate nunca disparó para ella. Un item declarando `contested: none` DEBE ser reenviado a `sdd-apply` marcado **ratificado**, verbatim como fue redactado, sin turno de usuario. El prompt de despacho DEBE ser byte-idéntico en ambos caminos, así el paso de materialización de `sdd-apply` y su regla "una resolución faltante retorna `blocked`" no cambian.
-
-#### Scenario: Una proposal no contestada se materializa sin turno de usuario
-
-- **GIVEN** un item `### New Decisions` declarando `contested: none`
-- **WHEN** el guard corre
-- **THEN** no abre gate, y el item se reenvía a `sdd-apply` marcado ratificado, verbatim
-- **AND** `sdd-apply` lo materializa como un record `Accepted` en el mismo paso que implementa el trabajo que lo rige
-
-#### Scenario: Los dos caminos son indistinguibles downstream
-
-- **GIVEN** un item ratificado-por-usuario y uno ratificado-automáticamente
-- **WHEN** se comparan sus prompts de despacho
-- **THEN** la forma de reenvío es idéntica, y nada le dice a `sdd-apply` cuál camino la produjo
-
-#### Scenario: Una resolución faltante sigue bloqueando
-
-- **GIVEN** `sdd-apply` alcanzando una tarea gobernada por un item su prompt de despacho no menciona
-- **WHEN** evalúa el item
-- **THEN** retorna `blocked` nombrando el item y la resolución faltante, sin cambio por este cambio
-
-#### Scenario: Lo que `Accepted` ahora garantiza es más angosto
-
-- **GIVEN** una decisión auto-ratificada escrita a disco como `Accepted`
-- **WHEN** un lector downstream la consulta
-- **THEN** fue vista por el usuario solo como una línea en un resumen entre-fases
-- **AND** todo lector que trata `Accepted` como intención ratificada sigue haciéndolo
-
-### Requisito: El ledger de ratificación registra la ruta auto
-
-El ledger `sdd/{change-name}/ratified-decisions` DEBE ganar una fila por item auto-ratificado, llevando `gate: auto` en lugar de un nombre de gate. El matching de re-emergence (string exacto en `record`) DEBE funcionar sobre esas filas.
-
-#### Scenario: Un item auto-ratificado se registra
-
-- **GIVEN** un item auto-ratificado porque su veredicto fue `none`
-- **WHEN** el paso del gate cierra
-- **THEN** existe una fila del ledger para él con `gate: auto` y su texto ratificado
-
-#### Scenario: Un item re-emergente que sigue limpio se silencia
-
-- **GIVEN** un item posterior coincidiendo una fila del ledger cuyo `gate` es `auto`, y cuyo propio veredicto es `none`
-- **WHEN** el paso del gate posterior corre
-- **THEN** se auto-ratifica de nuevo, silenciosamente, sin pregunta hecha
-
-#### Scenario: Un item re-emergente que ahora es contested camina la forma completa
-
-- **GIVEN** un item posterior coincidiendo esa misma fila `auto`, declarando un veredicto distinto de `none`
-- **WHEN** el gate abre
-- **THEN** se camina en forma completa, no a través de la forma corta de re-emergence
-- **AND** la razón es que la forma corta pregunta si una decisión de usuario anterior sigue aplicando, y no hubo una
-
-### Requisito: La ruta de rechazo mantiene su forma exacta
-
-`### Rejected Proposals Checked`, el token `design-conflict: none | conflicts`, la regla que `conflicts` fuerza `status: blocked`, y el conjunto esperado sostenido por el orquestador de rechazos reenviados DEBEN ser sin cambios. Los rechazos se hacen más raros — uno puede ahora originarse solo en un gate que disparó — pero el chequeo sobrevive intacto.
-
-#### Scenario: Un rechazo sigue debiendo un veredicto
-
-- **GIVEN** una proposal rechazada reenviada en un prompt de despacho cuya tarea gobernada el run alcanzó
-- **WHEN** `sdd-apply` retorna
-- **THEN** el retorno lleva un item para ese `record:` con un veredicto `design-conflict`
-- **AND** un rechazo reenviado sin item coincidente es un retorno incorrecto
-
-#### Scenario: `conflicts` sigue forzando un stop
-
-- **GIVEN** un item declarando `design-conflict: conflicts`
-- **WHEN** el orquestador lo lee
-- **THEN** el retorno debe ser `blocked`, y ambas versiones se presentan
-
-#### Scenario: Nada fue reenviado como rechazado
-
-- **GIVEN** un cambio donde ninguna proposal alcanzó un gate
-- **WHEN** `sdd-apply` retorna
-- **THEN** la sección es legítimamente ausente, per la regla de emisión condicional sin cambios
-
 ### Requisito: La escalación `blocking-test` no se toca
 
 Los valores de `blocking-test`, su tabla de clasificación y su escalada nombrada por eje DEBEN permanecer byte-idénticos. Un eje nombrado es una escalada **pasado** el walkthrough, no un caso de él, así que estrechar cuáles items entran al walkthrough no lo alcanza.
 
-#### Scenario: Un eje nombrado sigue escalando sobre un veredicto limpio
+### Requisito: Los momentos que citan el walkthrough compartido son ocho
 
-- **GIVEN** un item `### New Decisions` declarando `blocking-test: data-model` y `contested: none`
-- **WHEN** el guard lo clasifica
-- **THEN** se surfacea como un stop de estilo `blocked`, citando el token
-- **AND** el veredicto `contested` no lo degrada
+La aritmética, explícita, para que nadie la componga sobre la línea equivocada: **antes de este cambio eran nueve; este cambio los lleva a ocho**.
 
-### Requisito: Los momentos que citan el walkthrough compartido son nueve, y nueve no es el inventario completo
+Los ocho son: el gate de decisiones pendientes · el gate de confirmación del brief · el Discovery Gate · el gate de decisión-minada · el Uncommitted-Work Gate · el Review Workload Guard · un retorno `blocked` de fase · `risks` / Hallazgos del Validador (una fila, dos fuentes de anchor). El que este cambio remueve es el gate de spec-minada, que deja de existir junto con su ejecutor; el subgrupo que lo pierde es el de gates ratificantes. Toda declaración del conteo en el repo DEBE leer **ocho**, y donde una declaración parte el total en subgrupos, el subgrupo que pierde miembro por este cambio es el de gates ratificantes, no el de momentos de orquestador. Ninguno de los ocho sobrevivientes cambia por este cambio: no cambian sus disparadores y ninguno adquiere un token `contested`. El texto de gobernanza DEBE NO reclamar que los ocho son el inventario completo de puntos de interrupción.
 
-La aritmética, explícita, para que nadie la componga sobre la línea equivocada: **hoy son ocho; este cambio los lleva a nueve**. Las apariciones de «nueve» que este archivo ya lleva en su título de requisito y en un título de escenario son **residuo** del barrido de remoción del INTAKE GATE, no una línea base a la que sumarle uno.
+#### Scenario: Toda declaración del conteo lee ocho
 
-Los ocho de hoy son: el gate de decisiones pendientes · el Discovery Gate · el gate de decisión-minada · el gate de spec-minada · el Uncommitted-Work Gate · el Review Workload Guard · un retorno `blocked` de fase · `risks` / Hallazgos del Validador. El noveno es el gate de confirmación del brief, que este cambio agrega. Toda declaración del conteo en el repo DEBE leer **nueve**, y donde una declaración parte el total en subgrupos, el subgrupo que gana este gate es el de momentos de orquestador. Ninguno de los ocho anteriores cambia por este cambio: no cambian sus disparadores y ninguno adquiere un token `contested`. El texto de gobernanza DEBE NO reclamar que los nueve son el inventario completo de puntos de interrupción.
+- **GIVEN** el repo después del cambio
+- **WHEN** se recolecta cada declaración de cuántos momentos citan el walkthrough compartido
+- **THEN** cada una lee ocho
+- **AND** ninguna declaración lee nueve
 
-#### Scenario: Los ocho quedan solos
+#### Scenario: El momento removido es el gate de spec-minada y solo él
 
-- **GIVEN** el diff del cambio
-- **WHEN** se inspeccionan las definiciones de los ocho momentos que ya citaban el walkthrough
-- **THEN** ninguno de sus disparadores cambió
-- **AND** ninguno de ellos adquirió un token `contested`
+- **GIVEN** la enumeración después del cambio
+- **WHEN** se compara item por item contra los nueve previos al cambio
+- **THEN** exactamente una entrada está ausente, el gate de confirmación de spec-minada
+- **AND** los siete restantes, más el gate de decisión-minada, están presentes con disparadores sin cambios
 
-#### Scenario: Dos puntos de interrupción fuera de los nueve se nombran, no se absorben
+#### Scenario: Un split de sub-conteo nombra qué subgrupo se achicó
+
+- **GIVEN** una declaración que parte el total en subgrupos
+- **WHEN** se lee después del cambio
+- **THEN** el subgrupo de gates ratificantes es el que perdió un miembro
+- **AND** el subgrupo de momentos de orquestador queda sin cambios
+
+#### Scenario: Dos puntos de interrupción fuera de los ocho se nombran, no se absorben
 
 - **GIVEN** el reclamo calificado en el contrato compartido de presentación
 - **WHEN** se lee
-- **THEN** nombra el reporte de merge-conflict del Change Workspace y el STOP de atomicidad de commit como puntos de interrupción fuera de los nueve
+- **THEN** nombra el reporte de merge-conflict del Change Workspace y el STOP de atomicidad de commit como puntos de interrupción fuera de los ocho
 - **AND** enuncia que ninguno de los triggers lo alcanza, y ninguno se modifica
 
 ### Requisito: Ninguna declaración del conteo queda desalineada
 
-Cada archivo que declara el conteo de momentos que citan el walkthrough compartido DEBE leer nueve después del cambio, y ninguna declaración DEBE quedar en ocho. Las declaraciones son tres: el contrato compartido de presentación (dos oraciones más el encabezado de su tabla de momentos), este requisito (cuerpo y ambos títulos de escenario), y la fila de Referencias de `flow/ratify-gate-items`.
+Cada archivo que declara el conteo de momentos que citan el walkthrough compartido DEBE leer ocho después del cambio, y ninguna declaración DEBE quedar en nueve. Las declaraciones son tres: el contrato compartido de presentación (dos oraciones más el encabezado de su tabla de momentos), este requisito (cuerpo y ambos títulos de escenario), y la fila de Referencias de `flow/ratify-gate-items`.
 
 #### Scenario: El barrido del conteo no deja un archivo atrás
 
 - **GIVEN** el repo después del cambio
 - **WHEN** se busca cada declaración del conteo de momentos que citan el walkthrough
-- **THEN** las tres leen nueve, y ninguna lee ocho
-- **AND** la fila agregada a la tabla de momentos nombra el gate de confirmación del brief con la clave del brief como su fuente de anchor
+- **THEN** las tres leen ocho, y ninguna lee nueve
 
 ## Escenarios
 
-El spec no declara escenarios adicionales más allá de los definidos en sus doce requisitos anteriormente.
+El spec no declara escenarios adicionales más allá de los definidos en sus diez requisitos anteriormente.
 
 ## Referencias
 
 - **Conceptualmente relacionado**: `flow/ratify-gate-items.md` — define cómo un gate presenta una vez que disparó
 - **Conceptualmente relacionado**: `rule/contract-shape-proposal.md` — define el contenido del trigger (b)
-- **Conceptualmente relacionado**: `rule/decision-re-emergence-reconfirmation.md` — describe el comportamiento de re-emergence adyacente; tras archive ambas coexisten sin fusión

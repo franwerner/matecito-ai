@@ -70,7 +70,7 @@ Permitir que items en secciones buzón (12 secciones de fase-returns que imprime
 
 ## Entidades y estados
 
-- **Sección buzón** — sección de gate cuya salida puede ser una lista de items, una tabla tipada, o labeled-lists. Puede declarar split o no, independientemente de su forma. Puede opcionalmente declarar `fields` (lista tipada de sub-campos bajo el summary de cada item). Declarante de split (con split): dieciséis secciones (apply 4, design 3, propose 2, spec 2, tasks 2, verify 3). Todas llevan `items.summary_max: 250` y token `anchor` si declaran split. Las cuatro declarantes de fields también llevan `items.fields: {key, parts: [...], separator, field_max}`.
+- **Sección buzón** — sección de gate cuya salida puede ser una lista de items, una tabla tipada, o labeled-lists. Puede declarar split o no, independientemente de su forma. Puede opcionalmente declarar `fields` (lista tipada de sub-campos bajo el summary de cada item). Declarante de split (con split): quince secciones (apply 3, design 3, propose 2, spec 2, tasks 2, verify 3). Todas llevan `items.summary_max: 250` y token `anchor` si declaran split. Las cuatro declarantes de fields también llevan `items.fields: {key, parts: [...], separator, field_max}`.
 - **Item/Fila/Entrada** — unidad de información en una sección. Pre-split: un solo campo `text` (en listas) o datos tipados (en tablas/labeled-lists). Post-split: tres partes adicionales (`summary` ≤ límite, `anchor` libre-form, `rationale`) que se emiten en todas las formas de renderización. Si la sección declara `fields`, el item también emite líneas `· field: {name} — {type} — {description}` (cada field capped a `field_max`).
 
 ## Errores de cara al actor
@@ -298,13 +298,13 @@ La prosa DEBE presentarse como reenunciado de la regla que la renderización imp
 - **AND** además emite las partes del split (summary capped, anchor, rationale) para cada fila/entry
 - **AND** las emisiones son totales — las tres partes + columnas siempre viajan en el bloque persistido
 
-### Scenario: Dieciséis secciones declaran el split ahora
+### Scenario: Quince secciones declaran el split ahora
 
 - **GIVEN** la definición canónica de cuántas secciones buzón declaran el split después de este cambio
 - **WHEN** se lee
-- **THEN** enumera dieciséis secciones: apply 4 (tres buzón ordinarias + una contrato-shape), design 3 (dos buzón + una contrato-shape), propose 2 (una buzón + una contrato-shape), spec 2 (una buzón + una contrato-shape), tasks 2 (una buzón ordinaria + la nueva `### Parallelization Verdict`), verify 3 (Decision Gaps, UI Verdict, Issues Found)
+- **THEN** enumera quince secciones: apply 3 (dos buzón ordinarias + una contrato-shape), design 3 (dos buzón + una contrato-shape), propose 2 (una buzón + una contrato-shape), spec 2 (una buzón + una contrato-shape), tasks 2 (una buzón ordinaria + la nueva `### Parallelization Verdict`), verify 3 (Decision Gaps, UI Verdict, Issues Found)
 - **AND** la nueva sección aterriza dentro del par de contrato-template de `sdd-tasks` existente — seis pares en total (cinco de fases ordinarias, uno de verify)
-- **AND** la sumatoria de las partes por fase coincide con el total: 4+3+2+2+2+3 = 16
+- **AND** la sumatoria de las partes por fase coincide con el total: 3+3+2+2+2+3 = 15
 
 ### Scenario: Una sección declarante renderiza un item con fields
 

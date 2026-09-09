@@ -14,7 +14,7 @@ Permitir que un repositorio con múltiples superficies (e.g., CLI, API, UI) decl
 - El bloque `repo` contiene una lista `components`; cada componente declara `name` (la superficie que el consumidor reconoce) y `paths` (uno o más directorios donde vive). El parser de configuración carga esta lista y resuelve el set de componentes del proyecto.
 - Los nombres de componentes **dentro del set deben ser únicos** — no hay dos componentes con el mismo `name`. Si se declaran duplicados, el sistema rechaza el config y reporta qué nombres se repiten.
 - El set se escribe **una sola vez** y se ratifica explícitamente por el usuario; no se aplica automáticamente.
-- **Gate presence-based:** sin `repo.components` declarado, el eje no existe en ningún lado del sistema — sin líneas en headers, sin findings en validación, sin propuestas en minería.
+- **Gate presence-based:** sin `repo.components` declarado, el eje no existe en ningún lado del sistema — sin líneas en headers, sin findings en validación.
 
 ## Entidades y estados
 

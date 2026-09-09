@@ -6,7 +6,7 @@
 
 ## Propósito
 
-Definir cómo se guardan y se leen los flags de comportamiento que un dominio declara (por ejemplo, los que habilitan la minería automática de decisiones o de comportamiento), de modo que "no lo decidí" siga siendo distinguible de "lo decidí en false" y la decisión de un dominio no se filtre a otro.
+Definir cómo se guardan y se leen los flags de comportamiento que un dominio declara (por ejemplo, el que habilita el modo TDD estricto), de modo que "no lo decidí" siga siendo distinguible de "lo decidí en false" y la decisión de un dominio no se filtre a otro.
 
 ## Reglas de negocio
 

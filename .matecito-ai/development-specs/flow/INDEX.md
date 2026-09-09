@@ -9,7 +9,6 @@ Operaciones de cara a un actor, con pasos, ramas y casos borde.
 | Capacidad | Qué hace | Status | Spec |
 |---|---|---|---|
 | `ratify-gate-items` | Un gate abre con un índice único de items ratificables, luego presenta cada item uno a uno, y cada item nombra su fuente anclada | Accepted | [`ratify-gate-items.md`](ratify-gate-items.md) |
-| `materialize-mined-artifacts` | Post-gate de confirmación de minería, materializa candidatos confirmados a archivos; obtiene cuerpo e INDEX entries del renderer, nunca a mano | Accepted | [`materialize-mined-artifacts.md`](materialize-mined-artifacts.md) |
 | `install-ecosystem` | Instala/actualiza en un comando lo que falte del ecosistema: plan combinado, dry-run, confirmación y ejecución continue-on-error | Accepted | [`install-ecosystem.md`](install-ecosystem.md) |
 | `update-ecosystem` | Reconcilia binarios, payload y configuración del host; termina en error si algún componente falló | Accepted | [`update-ecosystem.md`](update-ecosystem.md) |
 | `resume-self-replace-run` | La corrida relanzada tras el auto-reemplazo del ejecutable: excluye la acción propia, no pregunta, no imprime plan y sigue mostrando progreso | Inferred | [`resume-self-replace-run.md`](resume-self-replace-run.md) |
@@ -19,3 +18,4 @@ Operaciones de cara a un actor, con pasos, ramas y casos borde.
 | `two-fixed-lanes` | Dos lanes fijos: `full` siempre por defecto, `direct` solo si el usuario lo pide explícitamente; sin fork, sin recomendación, sin confirmación | Accepted | [`two-fixed-lanes.md`](two-fixed-lanes.md) |
 | `confirm-brief-before-dispatch` | Después que intake retorna el brief, un gate obligatorio lo ofrece para aceptar o corregir; nada se despacha hasta que el usuario responde | Accepted | [`confirm-brief-before-dispatch.md`](confirm-brief-before-dispatch.md) |
 | `find-durable-records` | Localiza los registros duraderos —decisiones y comportamiento— que gobiernan un trabajo antes de escribir código, proponer un diseño o verificar contra ellos, a través de tres caminos acumulativos (índice, búsqueda literal, búsqueda semántica) con degradación por presencia | Accepted | [`find-durable-records.md`](find-durable-records.md) |
+| `materialize-records-straight-through` | `sdd-apply` lee `## New Decisions` del artefacto de diseño y escribe el record `Accepted` directo, sin canal de forwarding, sin ledger por-cambio y sin gate de confirmación intermedio | Accepted | [`materialize-records-straight-through.md`](materialize-records-straight-through.md) |
