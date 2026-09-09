@@ -79,15 +79,13 @@ func (m DomainConfigModel) activate() (nav.ChildModel, tea.Cmd) {
 	return m, nil
 }
 
-// typedBool returns the persisted pointer for a typed bool field (strictTdd /
-// flagSpecMine) and whether the key is a typed one. Non-typed bools live in
-// the generic Settings map instead.
+// typedBool returns the persisted pointer for a typed bool field (strictTdd)
+// and whether the key is a typed one. Non-typed bools live in the generic
+// Settings map instead.
 func (m DomainConfigModel) typedBool(key string) (*bool, bool) {
 	switch key {
 	case "strictTdd":
 		return m.cfg.DomainStrictTdd(m.domain), true
-	case "flagSpecMine":
-		return m.cfg.DomainFlagSpecMine(m.domain), true
 	}
 	return nil, false
 }
@@ -96,9 +94,6 @@ func (m *DomainConfigModel) setTypedBool(key string, v bool) bool {
 	switch key {
 	case "strictTdd":
 		m.cfg.SetDomainStrictTdd(m.domain, &v)
-		return true
-	case "flagSpecMine":
-		m.cfg.SetDomainFlagSpecMine(m.domain, &v)
 		return true
 	}
 	return false

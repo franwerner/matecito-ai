@@ -112,58 +112,6 @@ func TestLoad_Migration(t *testing.T) {
 	}
 }
 
-func TestNormalize_FlagSpecMineMigrates(t *testing.T) {
-	// a legacy flat top-level flagSpecMine folds into development on load
-	dir := t.TempDir()
-	path := filepath.Join(dir, "config.json")
-	writeJSON(t, path, map[string]interface{}{"flagSpecMine": true})
-
-	cfg, err := agentmodel.Load(path)
-	if err != nil {
-		t.Fatalf("Load: %v", err)
-	}
-	if p := cfg.DomainFlagSpecMine(agentmodel.DefaultDomain); p == nil || !*p {
-		t.Errorf("legacy flagSpecMine should migrate to development; got %v", p)
-	}
-	if cfg.FlagSpecMine != nil {
-		t.Error("legacy top-level flagSpecMine should be cleared after normalize")
-	}
-}
-
-func TestDomainFlagSpecMine_NilFalseTrue(t *testing.T) {
-	// nil/false/true precedence, isolated per domain
-	cfg := &agentmodel.Config{}
-	if p := cfg.DomainFlagSpecMine(agentmodel.DefaultDomain); p != nil {
-		t.Errorf("expected nil for unset flagSpecMine, got %v", p)
-	}
-
-	fals := false
-	cfg.SetDomainFlagSpecMine(agentmodel.DefaultDomain, &fals)
-	if p := cfg.DomainFlagSpecMine(agentmodel.DefaultDomain); p == nil || *p {
-		t.Errorf("expected explicit false, got %v", p)
-	}
-
-	tru := true
-	cfg.SetDomainFlagSpecMine(agentmodel.DefaultDomain, &tru)
-	if p := cfg.DomainFlagSpecMine(agentmodel.DefaultDomain); p == nil || !*p {
-		t.Errorf("expected explicit true, got %v", p)
-	}
-}
-
-func TestDomainFlagSpecMine_PerProjectVsGlobal(t *testing.T) {
-	// per-domain isolation: setting flagSpecMine on one domain must not leak into another
-	cfg := &agentmodel.Config{}
-	tru := true
-	cfg.SetDomainFlagSpecMine("development", &tru)
-
-	if p := cfg.DomainFlagSpecMine("development"); p == nil || !*p {
-		t.Errorf("expected true for development, got %v", p)
-	}
-	if p := cfg.DomainFlagSpecMine("design"); p != nil {
-		t.Errorf("expected nil for unrelated domain design, got %v", p)
-	}
-}
-
 // --- Repo / components ---
 
 func TestNormalize_RepoNotFolded(t *testing.T) {
@@ -172,7 +120,7 @@ func TestNormalize_RepoNotFolded(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "config.json")
 	writeJSON(t, path, map[string]interface{}{
-		"flagSpecMine": true,
+		"strictTdd": true,
 		"repo": map[string]interface{}{
 			"components": []map[string]interface{}{
 				{"name": "cli", "paths": []string{"cmd", "internal"}},
@@ -184,8 +132,8 @@ func TestNormalize_RepoNotFolded(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
-	if p := cfg.DomainFlagSpecMine(agentmodel.DefaultDomain); p == nil || !*p {
-		t.Errorf("legacy flagSpecMine should migrate to development; got %v", p)
+	if p := cfg.DomainStrictTdd(agentmodel.DefaultDomain); p == nil || !*p {
+		t.Errorf("legacy strictTdd should migrate to development; got %v", p)
 	}
 	if cfg.Repo == nil || len(cfg.Repo.Components) != 1 || cfg.Repo.Components[0].Name != "cli" {
 		t.Errorf("repo should survive normalize() untouched, got %+v", cfg.Repo)
