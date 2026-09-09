@@ -15,6 +15,11 @@ Si tu cambio agrega o mueve **archivos** dentro del payload → empezá por *Arm
 un dominio*. Si agrega o cambia **texto que otro agente va a leer y seguir** →
 empezá por *Referenciar rutas desplegadas*. Muchos cambios tocan las dos.
 
+Si tu cambio **reformula una regla del payload ya existente** (no agrega
+comportamiento nuevo, reescribe cómo está dicho uno vigente) → empezá por
+`.matecito-ai/edr/INDEX.md`: leé si ya hay una decisión que gobierna esa regla
+antes de tocar el texto.
+
 ## Por qué existen
 
 Ninguna de las dos reglas se deduce leyendo el código: el deploy aplana
