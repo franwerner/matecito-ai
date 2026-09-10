@@ -10,12 +10,11 @@ sections:
     emitted: always
     render: line
     field: request_structured
-  # The four downstream flags live here and nowhere else. `sdd-design` reads `Diagram`,
-  # `sdd-spec`/`sdd-verify` read `UI test`, the orchestrator reads `Worktree isolation`, and each treats
-  # an absent flag as not-needed/inactive, silently. `Components` has no phase reader (metadata,
-  # decided and reported, never ratified) and is gated by `components_axis_active`: presence-based on
-  # `repo.components`, never inherited from global config. Resolved false, the bullet is legitimately
-  # absent; omitted, the render fails.
+  # The three downstream flags live here and nowhere else. `sdd-design` reads `Diagram` and
+  # `sdd-spec`/`sdd-verify` read `UI test`; each treats an absent flag as not-needed, silently.
+  # `Components` has no phase reader (metadata, decided and reported, never ratified) and is gated by
+  # `components_axis_active`: presence-based on `repo.components`, never inherited from global config.
+  # Resolved false, the bullet is legitimately absent; omitted, the render fails.
   - title: "### Classification"
     emitted: always
     render: labeled-bullets
@@ -24,7 +23,6 @@ sections:
       - { label: Domains touched, field: classification.domains }
       - { label: Diagram, field: classification.diagram }
       - { label: UI test, field: classification.ui_test }
-      - { label: Worktree isolation, field: classification.worktree_isolation }
       - { label: Components, field: classification.components, emitted: conditional, when: components_axis_active }
   # Conditional on the STORE: absent or empty means decision records are not mentioned anywhere.
   - title: "### Early guard (EDRs)"

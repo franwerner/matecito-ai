@@ -59,7 +59,7 @@ From the raw request, classify:
      them and two downstream phases read them from the brief: drop them from the classification and they
      drop from the brief, and their readers find absence — which both gates read as "does not apply",
      silently. -->
-Plus the three **downstream flags** this phase is the only one to decide. They are part of the
+Plus the two **downstream flags** this phase is the only one to decide. They are part of the
 classification and they travel in the brief (`### Classification`). None is executed here — this
 phase decides, others act:
 
@@ -73,15 +73,9 @@ phase decides, others act:
   keyword inference; no hit and no override → `not-needed`. Read by `sdd-spec` (it authors the
   `ui-scenarios` block only when this says `needed`) and by `sdd-verify` (its UI gate). You never run
   proofshot.
-- **`worktree-isolation`:** `active` | `inactive`, with a one-line reason, per
-  `structure/change-isolation-activation-flag.md`. `active` only when the request explicitly asks for
-  isolated work; otherwise `inactive`. Do not derive it from anything else about the request — size,
-  complexity, or concurrency are not signals for this flag; an explicit ask is the only one. Read by
-  the orchestrator (kernel's `### Change Workspace (opt-in)`), never by a later phase agent — you
-  never open a workspace yourself.
 
-Absence is not neutral: all three downstream readers read a missing flag as "does not apply" /
-inactive and close **silently**, so a flag you drop is a check nobody notices was skipped.
+Absence is not neutral: both downstream readers read a missing flag as "does not apply" and close
+**silently**, so a flag you drop is a check nobody notices was skipped.
 
 <!-- matecito-ai: a THIRD classification value, but not a third "downstream flag" — it has no phase
      reader. Presence-based on `repo.components`, same gate family as EDRs and capability-specs. -->
@@ -137,8 +131,8 @@ titles literally — a section you drop, rename or re-level is a gate that never
 reconstruct the format from memory or from another phase's return.
 
 - **Request (structured)** — 1-2 sentences: what the user wants, restated clearly.
-- **Classification** — Step 2's output: type, domains touched, plus the three downstream flags
-  `diagram`, `ui-test` and `worktree-isolation`, each with its one-line reason. The flags are not optional
+- **Classification** — Step 2's output: type, domains touched, plus the two downstream flags
+  `diagram` and `ui-test`, each with its one-line reason. The flags are not optional
   extras: they exist nowhere else, and the readers that act on them close silently when they are
   absent. Plus **`Components`**, multivalued and reader-less (Step 2) — emit it only when
   `repo.components` is declared for this project; when you render the return block (Step 5's tool), supply the boolean
@@ -158,9 +152,8 @@ doesn't start from a vague one-liner without ever getting a closer look.
 <!-- matecito-ai: el brief se confirma entero en el Brief Confirmation Gate (kernel) antes de despachar
      la fase siguiente — ver `~/.claude/matecito-ai.md`. -->
 The next phase is dispatched only once the Brief Confirmation Gate confirms this brief — the
-orchestrator puts it to the user as one question before anything downstream runs or any change
-workspace opens. The orchestrator folds the four decided flags into that same question; nothing waits
-on any one flag individually.
+orchestrator puts it to the user as one question before anything downstream runs. The orchestrator
+folds the three decided flags into that same question; nothing waits on any one flag individually.
 
 ## Rules
 
@@ -174,7 +167,7 @@ on any one flag individually.
 - If the request conflicts with an Accepted EDR → `blocked`, don't route to the flow.
 - If the request needs an undecided architectural choice → `needs-decision`, route to bootstrap first.
 <!-- matecito-ai: explicit rule — the flags used to drop out of the brief with nothing complaining. -->
-- ALWAYS emit all three downstream flags (`diagram`, `ui-test`, `worktree-isolation`) under `### Classification`, whatever their value (Step 2). This phase is their only producer; `sdd-design`, `sdd-spec`/`sdd-verify`, and the orchestrator are their only readers, and each treats an absent flag as `not-needed`/inactive **silently**. Decide them — never generate a diagram, never run proofshot, never open a workspace. `worktree-isolation` is decided by an explicit ask alone, nothing else, per Step 2.
+- ALWAYS emit both downstream flags (`diagram`, `ui-test`) under `### Classification`, whatever their value (Step 2). This phase is their only producer; `sdd-design` and `sdd-spec`/`sdd-verify` are their only readers, and each treats an absent flag as `not-needed` **silently**. Decide them — never generate a diagram, never run proofshot.
 <!-- matecito-ai: presence-based, reader-less on purpose — never treat it like diagram/ui-test's "absent = not-needed" silence, because a set-declared repo with a missing line is the anomaly, not the default. -->
 - `Components` is presence-based, not absence-tolerant: with `repo.components` declared, emit the line on EVERY brief — a missing line is an anomaly, not "the axis doesn't apply". With no set declared, never emit it and never mention components. It has NO phase reader — do not invent one, do not use it to scope any later phase's work. When rendering the return (Step 5), the gate boolean (`components_axis_active`) is REQUIRED and explicit — never omit it hoping it defaults to "off".
 <!-- matecito-ai: la forma del retorno tiene UNA fuente. Si volvés a escribirla acá, creaste la copia que este cambio vino a eliminar. -->

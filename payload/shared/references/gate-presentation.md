@@ -186,10 +186,10 @@ the walkthrough is about not gating on it, not about withholding where it comes 
 This walkthrough and this template govern the same mechanism wherever it applies — the count decides
 the form (see above), never a hardcoded list of gates. Eight moments cite this file today; a ninth
 would cite it the same way, without this section growing to keep up. **Eight is not the whole inventory
-of interruption points** — it is only the count of moments that cite this walkthrough. The Change
-Workspace's merge-conflict report and the commit-atomicity STOP (`~/.claude/skills/git/SKILL.md`) both
-stop the flow too, outside this file: no trigger this walkthrough governs reaches either one, and
-neither is modified by anything here.
+of interruption points** — it is only the count of moments that cite this walkthrough. The turn's own
+contended-claim stop (`.matecito-ai/development-specs/flow/claim-shared-branch-turn.md`) and the
+commit-atomicity STOP (`~/.claude/skills/git/SKILL.md`) both stop the flow too, outside this file: no
+trigger this walkthrough governs reaches either one, and neither is modified by anything here.
 
 **The two gates that ratify a batch of items:**
 

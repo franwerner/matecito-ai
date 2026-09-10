@@ -57,12 +57,11 @@ value — it is metadata, decided by this phase and reported once when the brief
 - Type: {feature|bug|refactor|chore}
 - Domains touched: {list of canonical EDR domains}
 <!-- matecito-ai: estos flags los DECIDE intake y los LEEN fases/consumidores posteriores (`sdd-design`
-     lee `diagram` del brief; `sdd-verify` lee `ui-test`; el orquestador lee `worktree-isolation`). Vivían sólo
+     lee `diagram` del brief; `sdd-verify` lee `ui-test`). Vivían sólo
      en el envelope, que es efímero: al persistir el brief se perdían, y el lector downstream no los
      encontraba. Van en el brief. -->
 - Diagram: {needed|not-needed} — {one line why}
 - UI test: {needed|not-needed} — {one line why}
-- Worktree isolation: {active|inactive} — {one line why}
 {If `repo.components` is declared: "- Components: {name[, name...] | unassigned}" — omit this bullet
 entirely when the project config declares no `repo.components`.}
 

@@ -78,9 +78,7 @@ Before forming any batch, the orchestrator runs `validate-parallel-marks.js` aga
 (see "Validated mechanically, before a batch is formed" above) — this is a precondition of everything
 below, not a separate step elsewhere. For each eligible round, immediately after that validation and
 before capturing `base`, the orchestrator runs the **Uncommitted-Work Gate** (below). Once the gate
-clears — silently, or through a chosen outcome — the orchestrator reads `HEAD` of the round's
-**immediate container** — the change workspace when change-level isolation is active
-(`~/.claude/matecito-ai.md` → "Change Workspace (opt-in)"), the working branch when it is not — and
+clears — silently, or through a chosen outcome — the orchestrator reads `HEAD` of the working branch and
 records it as `base`, and dispatches every task of that group in **one message** — N `Task` tool calls,
 each with its own task, `base`, and `isolation: "worktree"`. It waits for the whole batch to return
 before dispatching the consolidation run (batch-bound dispatch — background per-completion dispatch is
@@ -92,9 +90,8 @@ only the versioned files, never a second copy of history.
 
 Before dispatching a round that will use worktree isolation — after `validate-parallel-marks.js`, before
 the orchestrator captures `HEAD` as that round's `base` — the orchestrator inspects the uncommitted
-changes of the round's **immediate container**: the change workspace's tree when change-level isolation
-is active, the main repo's when it is not (`contracts/uncommitted-gate-follows-the-container.md`) — the
-same principle the base handshake already fixes for what `base` compares against. It runs once per
+changes of the main repo, always — the same principle the base handshake already fixes for what `base`
+compares against. It runs once per
 **eligible round**, not once per phase run (`base` is captured per round, so a single phase-wide pass
 would miss a round that got dirtied mid-phase), and it does not re-prompt within the same phase run when
 the dirty set is unchanged from its last check. A serial dispatch and the consolidation run never trigger
@@ -105,8 +102,7 @@ it — no worktree is in play, so there is nothing to warn about.
 never parsed for paths — they are prose, not a field, and cross-referencing them against dirty files is
 explicitly out of scope.
 
-**Entry.** `git status --porcelain --untracked-files=all`, run from the immediate container's root — the
-change workspace when change-level isolation is active, the main repo's root when it is not.
+**Entry.** `git status --porcelain --untracked-files=all`, run from the main repo's root.
 `--untracked-files=all` is deliberate over the default: an untracked (`??`) file is exactly the kind of
 change that never travels into a worktree (see "Repositioning onto `base`" below), so it is exactly what
 this gate must not miss. A rename takes its new path. When the dirty (and especially untracked) list is
@@ -134,9 +130,9 @@ unattended is never licence to skip it:
 
 | Outcome | What happens |
 |---|---|
-| **Commit first** | The user commits. The orchestrator re-reads the round's immediate container's `HEAD` (the change workspace's, when change-level isolation is active; the working branch's, when it is not) and uses that new sha as this round's `base`; the tree is clean and the round dispatches isolated, normally. If the tree is still dirty and still intersects after the commit, the gate re-runs and presents the three outcomes again. |
+| **Commit first** | The user commits. The orchestrator re-reads the working branch's `HEAD` and uses that new sha as this round's `base`; the tree is clean and the round dispatches isolated, normally. If the tree is still dirty and still intersects after the commit, the gate re-runs and presents the three outcomes again. |
 | **Continue anyway** | The round dispatches isolated as-is, `base` already captured, the warning understood. The consolidation run records the notice (below). |
-| **Work on the branch, no worktree** | The round degrades to the serial path on the container's own branch — the change workspace's branch when isolation is active, the working branch when it is not — no worktree, no fan-out, uncommitted work available to it. No isolated run is dispatched for this round. |
+| **Work on the branch, no worktree** | The round degrades to the serial path on the working branch — no worktree, no fan-out, uncommitted work available to it. No isolated run is dispatched for this round. |
 
 Silence from the user is not consent: with no answer, nothing dispatches — not isolated, not serial,
 whatever the execution mode.
@@ -160,28 +156,26 @@ serial, adds none.
 ## Repositioning onto `base` (before the handshake)
 
 The harness's worktree starting point is not the round's base — it can be `origin/<branch>`, behind the
-immediate container's local `HEAD` whenever there are unpushed local commits, which is the common case.
-The **immediate container** is the change workspace's own branch when change-level isolation is active,
-the working branch when it is not — the same distinction the base handshake and the Uncommitted-Work
-Gate already fix. An isolated run MUST reposition its worktree onto the `base` sha it received **before**
-running the Level 1 handshake and before writing anything.
+working branch's local `HEAD` whenever there are unpushed local commits, which is the common case. An
+isolated run MUST reposition its worktree onto the `base` sha it received **before** running the Level 1
+handshake and before writing anything.
 
-**`<branch>` is the worktree's own branch — never the immediate container's.** Read it from inside the
+**`<branch>` is the worktree's own branch — never the working branch's.** Read it from inside the
 worktree, before repositioning: `git rev-parse --abbrev-ref HEAD` (the harness already checked the
 worktree out onto an ephemeral branch of its own, typically `worktree-agent-<hex>`). The mechanism:
 `git checkout -B <branch> <base>`, using that same name — it works because the worktree shares the
 repository's object store, so the `base` sha is reachable from inside it. Repositioning does not replace
 the handshake; it precedes it — the handshake still runs afterward exactly as it always has.
 
-**Using the container's branch name instead (e.g. `main`, or the change workspace's own
-`matecito-ai/<change-name>`) is a bug, not a variant — worktrees share the repository's ref store.**
-`git checkout -B <container-branch> <base>` run inside a worktree resets that ref **globally**: every
-worktree checked out on that same branch name (including the container itself) moves with it, and any
-commit that was only reachable through the branch's old tip becomes orphaned — no ref points at it any
-longer, even though `git worktree list` still shows the other worktrees "on" that name, now silently
-repositioned to `base` alongside this one. This is not a theoretical risk: it is exactly what a run that
-skips "read your own branch name first" produces. Determine `<branch>` from the worktree itself, every
-time — never assume it, never reuse the name of the branch you are trying to reach.
+**Using the working branch's name instead (e.g. `main`) is a bug, not a variant — worktrees share the
+repository's ref store.** `git checkout -B <working-branch> <base>` run inside a worktree resets that ref
+**globally**: every worktree checked out on that same branch name (including the working tree itself)
+moves with it, and any commit that was only reachable through the branch's old tip becomes orphaned — no
+ref points at it any longer, even though `git worktree list` still shows the other worktrees "on" that
+name, now silently repositioned to `base` alongside this one. This is not a theoretical risk: it is
+exactly what a run that skips "read your own branch name first" produces. Determine `<branch>` from the
+worktree itself, every time — never assume it, never reuse the name of the branch you are trying to
+reach.
 
 Repositioning onto a base the worktree already sits on is inert: it neither fails nor changes the
 worktree's content, and the handshake still passes.
@@ -197,13 +191,12 @@ today's only invoker; that is a fact about the moment, not the scope of the rule
 that adopts worktree isolation without touching this file inherits the same repositioning,
 unconditionally.
 
-**Uncommitted work in the immediate container never reaches an isolated run — before or after
-repositioning.** A worktree is a checkout of a commit: an uncommitted new file is simply absent inside
-it, an uncommitted modification to a versioned file reads as its last committed content, and `git status
---porcelain` inside the isolated run's worktree comes back empty regardless of what the container's tree
-looks like — the change workspace's, when change-level isolation is active; the main repo's, when it is
-not. This is what makes the handshake's "clean tree" half satisfiable by construction, and it is the
-premise the Uncommitted-Work Gate (above) acts on.
+**Uncommitted work in the main repo never reaches an isolated run — before or after repositioning.** A
+worktree is a checkout of a commit: an uncommitted new file is simply absent inside it, an uncommitted
+modification to a versioned file reads as its last committed content, and `git status --porcelain` inside
+the isolated run's worktree comes back empty regardless of what the main repo's tree looks like. This is
+what makes the handshake's "clean tree" half satisfiable by construction, and it is the premise the
+Uncommitted-Work Gate (above) acts on.
 
 ## The base handshake (two levels)
 
@@ -227,8 +220,8 @@ inspection.
 ## Isolated run: task, then one commit
 
 1. Reposition the worktree onto `base` — reading `<branch>` from inside the worktree first, never the
-   immediate container's branch name (see "Repositioning onto `base` (before the handshake)" above).
-   Fails → report `not-implemented / base-not-established`, done.
+   working branch's name (see "Repositioning onto `base` (before the handshake)" above). Fails → report
+   `not-implemented / base-not-established`, done.
 2. Run the base handshake (Level 1). Fails → report `not-implemented / base-not-established`, done.
 3. Implement the assigned task per Steps 2-4 of `~/.claude/skills/sdd-apply/SKILL.md` — same reading,
    same fork test, same UI-counterpart obligation, same content-conflict guard (`domains/development.md`
@@ -273,7 +266,7 @@ governs — **not** `contracts/single-writer-per-batch.md`, whose scope is `appl
   different `slug`s are two different rows). Scaffolds an absent `INDEX.md` (domain or root) from
   `references/edr/templates/index-domain.md` / `index-root.md` on first write. A report whose
   `Result: not-implemented`, whose Level-2 base check failed, or whose cherry-pick conflicted
-  contributes **no** INDEX row — its record body never reached the round's container, so indexing it
+  contributes **no** INDEX row — its record body never reached the working branch, so indexing it
   would create a dangling entry.
 - **Serial mode** — does both in the same step: writes the body and applies the INDEX rows, since there
   is no isolation split to observe.
@@ -374,7 +367,15 @@ Where and when this sequence runs: "Cleanup (after the loop, once)", below.
 
 ## Consolidation run: integrate, then write once
 
-Receives the batch's N Task Run Reports verbatim, in the same message. For each, ascending by task id:
+Receives the batch's N Task Run Reports verbatim, in the same message. Before the loop, claim the turn
+once, unconditionally — `matecito-ai turn claim --change <name> --destination <branch> --moment
+batch-consolidation` — chained ahead of the loop with `&&`: no test precedes it, and no branch exists in
+which the round does not claim. A refused claim means this round integrates nothing, reports itself
+`status: blocked` with the facts the claim reported (holder, since when, what is queued), and leaves
+every isolated run's committed work untouched for a later attempt. A successful claim proceeds into the
+loop; see the `worktrees` skill for the claim's three outcomes and how to read a refusal.
+
+For each report, ascending by task id:
 
 1. **Level-2 base check** (above). Fails → treat as a conflict for this task; do not cherry-pick;
    `base-mismatch` in the Integration Log; continue to the next report.
@@ -384,8 +385,7 @@ Receives the batch's N Task Run Reports verbatim, in the same message. For each,
    round's consolidated return **verbatim, never re-judged** — the consolidation run does not re-run
    the content-conflict guard, it only copies the isolated run's declaration forward.
 3. `Result: committed` → `git cherry-pick <sha>`.
-   - **Clean.** The task lands on the round's container — the change workspace when change-level
-     isolation is active, the working branch when it is not. Record it as integrated and move on — its
+   - **Clean.** The task lands on the working branch. Record it as integrated and move on — its
      worktree and branch are **not** touched here; removal is deferred to the single cleanup pass
      below, which runs only after the whole loop has finished.
    - **Conflict.** `git cherry-pick --abort` — the only recovery. Never `git reset --hard`, `git
@@ -396,6 +396,11 @@ Receives the batch's N Task Run Reports verbatim, in the same message. For each,
 
 Integrations run strictly one at a time, in this loop, in ascending task-id order — this is automatic
 inside a single non-isolated run and needs no extra guard.
+
+Once every report has been processed, release the turn once — `matecito-ai turn release --token
+<token>`, the token the claim returned — whatever the loop's outcome: a round that integrated nothing
+releases exactly the same as one that integrated every report. Release runs before the cleanup pass
+below.
 
 ### Cleanup (after the loop, once)
 

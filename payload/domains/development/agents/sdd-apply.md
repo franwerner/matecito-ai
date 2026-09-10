@@ -38,9 +38,8 @@ Execute all steps from the skill directly in this context window:
 - **`mode: isolated`** — read spec/design/tasks for your one assigned task (steps 1-3 below, skip
   3b/read-previous-progress), read the applicable EDRs (3a), **reposition your worktree onto `base`**
   before anything else — first read your own branch name from inside the worktree (`git rev-parse
-  --abbrev-ref HEAD`; never the round's immediate container's branch name — e.g. `main`, or the change
-  workspace's own `matecito-ai/<change-name>` — since worktrees share a ref store and resetting it from
-  inside a worktree moves it everywhere and orphans commits), then run
+  --abbrev-ref HEAD`; never the working branch's own name — e.g. `main` — since worktrees share a ref
+  store and resetting it from inside a worktree moves it everywhere and orphans commits), then run
   `git checkout -B <your-branch> <base>` (a failed repositioning implements nothing),
   then run the **base handshake** before writing anything (`git rev-parse HEAD == base` AND
   `git status --porcelain` empty — either failing, implement nothing and report `not-implemented /
@@ -50,11 +49,16 @@ Execute all steps from the skill directly in this context window:
   atomicity loop, no compile gate), and return the **Task Run Report** — never mark tasks, never call
   `mem_save`/`mem_update`.
 - **`mode: consolidation`** — skip implementation entirely. Take the batch's N Task Run Reports
-  (verbatim, in your prompt), re-check each commit's parent against `base` (Level 2), then
+  (verbatim, in your prompt), claim the turn once, unconditionally (`matecito-ai turn claim --change
+  <name> --destination <branch> --moment batch-consolidation`) before the first cherry-pick — a refused
+  claim means this round integrates nothing and reports itself `status: blocked` with the facts the
+  claim reported, leaving every isolated run's committed work untouched for a later attempt. Once
+  claimed, re-check each commit's parent against `base` (Level 2), then
   `git cherry-pick` each in ascending task-id order: clean → record integrated, worktree/branch removal
   deferred; conflict → `git cherry-pick --abort` (never `reset --hard`/`stash`/`checkout --`), keep
-  branch + worktree, continue to the next — no revert of what already landed. Once the loop is done, run
-  ONE cleanup pass over exactly the cleanly-integrated tasks: `git worktree unlock <path>` → `git
+  branch + worktree, continue to the next — no revert of what already landed. Once the loop is done,
+  release the turn once (`matecito-ai turn release --token <token>`), whatever the loop's outcome, before
+  running ONE cleanup pass over exactly the cleanly-integrated tasks: `git worktree unlock <path>` → `git
   worktree remove <path>` → `git branch -D <branch>` (never `remove -f -f`); a cleanup failure is not
   blocking, record it and continue. Then run steps 7-8 below **once**, over the union of every report,
   plus `### Integration Log` in the artifact.

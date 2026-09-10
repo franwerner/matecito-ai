@@ -68,9 +68,8 @@ payload — not as an example, not as a default, not as "the one that works toda
    prompt in its input: text nobody submitted is a session that never began. Whatever opens it must
    therefore wait until the session is ready to receive input before delivering the prompt, and deliver
    it as a submitted message rather than typed text left standing.
-5. **It opens on the tree the launching session is working on, and creates none** — the change workspace
-   when change-level isolation is active for the current change, the ordinary working tree otherwise. A
-   launch that produces its own worktree or checkout does not satisfy this.
+5. **It opens on the tree the launching session is working on, and creates none** — the ordinary working
+   tree. A launch that produces its own worktree or checkout does not satisfy this.
 
 **How** those five are achieved is resolved at the moment of use, against whatever the environment
 offers — it is fixed in no file. This mirrors the rule this ecosystem already applies to its exploration
@@ -78,10 +77,10 @@ index (`payload/domains/development/CLAUDE.md:49`): reference the capability, ne
 that provides it, resolve it at use time.
 
 **Why inheriting the directory is safe, instead of assumed.** Two sessions standing in one working tree
-would be a real problem if both wrote — that is exactly the collision the change-workspace mechanism
-exists to prevent. It is not a problem here because the side session only discusses: it reads and
-reasons, and its single output is an Engram key. Inheriting is therefore not a shortcut around
-isolation — it is what the read-only boundary buys. It also gives the discussion something a separate
+would be a real problem if both wrote — that is exactly the collision the turn now prevents. It is not
+a problem here because the side session only discusses: it reads and reasons, and its single output is
+an Engram key. Inheriting is therefore not a shortcut around isolation — it is what the read-only
+boundary buys. It also gives the discussion something a separate
 checkout would have taken away: the side session sees the main thread's uncommitted work, because it is
 standing in the same tree.
 

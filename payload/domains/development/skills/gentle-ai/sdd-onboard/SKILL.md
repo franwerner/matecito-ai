@@ -75,11 +75,11 @@ Present 2-3 options to the user. Let them choose or suggest their own.
 
 Run `sdd-intake` behavior on the chosen improvement. Two things to show the user, because they are the mechanics that surprise people most:
 
-<!-- matecito-ai: `sdd-intake` runs headless and never talks to the user — it decides its four flags
+<!-- matecito-ai: `sdd-intake` runs headless and never talks to the user — it decides its three flags
      in one pass and returns the brief. Discovery moved to `sdd-explore`, which is where the headless/
      needs-input mechanics belong in this walkthrough now. -->
-1. **Intake decides four flags and reports them — it never asks anything.** In a real dispatch the phase runs headless: one pass, one brief, no discovery form. It decides `diagram`, `ui-test`, `components` and `worktree-isolation` on the user's behalf and writes them into the brief.
-2. **The brief moves straight downstream — nothing confirms it.** Show the brief and report the four decided flags in one line, exactly as the orchestrator would. Point out: this is the whole flow, always — there is no lane to choose and no gate to pass; the tradeoff is that a wrongly-decided flag reaches its reader with nobody having checked it.
+1. **Intake decides three flags and reports them — it never asks anything.** In a real dispatch the phase runs headless: one pass, one brief, no discovery form. It decides `diagram`, `ui-test` and `components` on the user's behalf and writes them into the brief.
+2. **The brief moves straight downstream — nothing confirms it.** Show the brief and report the three decided flags in one line, exactly as the orchestrator would. Point out: this is the whole flow, always — there is no lane to choose and no gate to pass; the tradeoff is that a wrongly-decided flag reaches its reader with nobody having checked it.
 
 ```
 "Notice what just happened: the brief moved straight downstream. Its flags were

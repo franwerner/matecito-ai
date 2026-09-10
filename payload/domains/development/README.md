@@ -30,7 +30,7 @@ intake → explore → propose → spec → design → tasks → apply → verif
 
 Todo cambio en el lane `full` recorre las nueve, siempre, en este orden — no hay fases opcionales. `direct` no corre ninguna: se usa solo cuando el pedido lo pide explícitamente.
 
-`intake` es la fase de entrada: decide los cuatro decision flags (`diagram`, `ui-test`, `components`, `worktree-isolation`), corre el guard de EDRs tempranos si el store está activo, y produce el brief — en un solo pase, sin discovery (eso corre en `sdd-explore`). No hay gate que confirme el brief: el orquestador lo despacha directo a la siguiente fase.
+`intake` es la fase de entrada: decide los tres decision flags (`diagram`, `ui-test`, `components`), corre el guard de EDRs tempranos si el store está activo, y produce el brief — en un solo pase, sin discovery (eso corre en `sdd-explore`). No hay gate que confirme el brief: el orquestador lo despacha directo a la siguiente fase.
 
 | Fase | Lee | Escribe |
 | --- | --- | --- |

@@ -136,49 +136,19 @@ brief, before anything is dispatched — not by a per-flag check nobody runs.
 | `diagram` | `- Diagram: {needed\|not-needed}` | `sdd-intake` per the diagram inference test in `## Architecture diagrams (drawio)` above | `sdd-design` | Whether a **drawio** architecture diagram is warranted. `sdd-design` only NOTES the recommendation in its `executive_summary`; the main thread renders it live via `mcp__drawio__*`. Nothing is ever written to the repo. |
 | `ui-test` | `- UI test: {needed\|not-needed}` | `sdd-intake`, by keyword inference over the request (`browser`, `page`, `form`, `screen`, `visual`, `click`, `render`), overridable explicitly in the request | `sdd-spec`, `sdd-verify` | Whether UI verification via **proofshot** is warranted. `sdd-spec` authors the `ui-scenarios` block only when this is `needed`; `sdd-verify` runs the ProofShot session only when this is `needed` AND `uiTest.available = ✅`. |
 | `components` | `- Components: {name[, name...] \| unassigned}` | `sdd-intake`, by mapping the request's scope against `repo.components[].paths` | ninguno | Nothing — it is metadata reported alongside the rest of the brief's flags, not a phase input. **Presence-based, unlike the two above**: with no `repo.components` declared for the project the field does not exist and is never mentioned; declared, it is multivalued and always emitted (`unassigned` when no `paths` match — never omitted to mean "no match"). |
-| `worktree-isolation` | `- Worktree isolation: {active\|inactive}` | `sdd-intake`, decided per `structure/change-isolation-activation-flag.md`: active only when the request explicitly asks for isolated work | the orchestrator (kernel's "Change Workspace (opt-in)") | Whether the orchestrator opens a dedicated **git worktree** for this change — its own branch and directory, where every phase's work lands, merged back once at the end. Named for what it is: the flag was `isolation`, which read as a policy rather than as the concrete thing it opens. For `direct`/ad-hoc work — which never reaches an intake brief — the explicit request itself is the only confirmation; a request that never asked for it means inactive. |
 
 None of these is executed by intake: it decides, others (or, for `components`, no one) act. A wrong
 value is caught at the Brief Confirmation Gate — the user corrects the brief there, as a whole, rather
 than any one flag being checked on its own.
 
-## Change Workspace — git mechanics
+## Shared-branch turn
 
-Binds the kernel's `### Change Workspace (opt-in)` policy to this domain's concrete mechanism: a git
-worktree, on its own branch, added from the main repo.
-
-**Identity.** Branch `matecito-ai/<change-name>`; directory
-`<repo>/.matecito-ai/workspaces/<change-name>` (`structure/change-workspace-identity.md`). Opened with
-`git worktree add <dir> -b matecito-ai/<change-name> <original-branch>`. At open time, before any phase
-writes into it, confirm `.matecito-ai/workspaces/` is listed in the repo's `.gitignore` — add the line if
-it is not, so the Uncommitted-Work Gate never reads the workspace directory itself as dirty work in the
-main repo.
-
-**Forwarding.** While the workspace is open, every phase dispatch prompt carries a `workspace: <absolute
-path>` line — readers included (`contracts/workspace-forwarded-in-dispatch.md`). A phase resolves repo
-paths under that path and runs git with `git -C <workspace> ...` rather than assuming the session's own
-working directory; a phase that runs a project command (a test runner, a linter, a build) runs it with
-that same path as the command's working directory, for the identical reason.
-
-**Nesting.** A parallel implementation batch dispatched while the workspace is open nests on it exactly
-as "Phase fan-out" above describes: the round's `base` is `git -C <workspace> rev-parse HEAD`, and the
-consolidation run's cherry-picks land on the workspace's branch, never on the original branch. Full
-mechanics: `~/.claude/references/phase-returns/sdd-apply/parallel-batch.md`.
-
-**Integration (orchestrator, once, at cycle close).** From the main repo: `git merge --no-ff
-matecito-ai/<change-name>`. On failure, the orchestrator does not abort right away — it first runs `git
-rebase <original-branch>` **inside the change workspace**. A clean rebase means retrying the merge (now a
-fast-forward). If the rebase also conflicts, the orchestrator runs `git rebase --abort` then `git merge
---abort`, and reports to the user what happened — which file, in which commit, which side each version
-comes from — with a recommendation suited to the case (resolve by hand in the workspace · leave it open ·
-another way out). Nothing is forced at any point; the workspace stays intact on every failure path
-(`structure/change-level-integration-act.md`).
-
-**Cleanup (after a clean integration only).** `git worktree unlock <dir>` → `git worktree remove <dir>` →
-`git branch -D matecito-ai/<change-name>` — never `remove -f -f`; a failure at any step is recorded, not
-forced, same as the batch-level cleanup pass in `parallel-batch.md`
-(`structure/change-workspace-cleanup.md`). After a failed integration, the workspace and its branch are
-both kept, untouched, for inspection.
+Two commands, `matecito-ai turn claim` and `matecito-ai turn release`, guard the working branch from two
+concurrent orchestrator sessions landing a write on it at once. The consolidation run (see "Phase
+fan-out" above) brackets its cherry-pick loop with them — claim once before the first cherry-pick,
+release once after the last, whatever the loop's outcome. The mechanism's only home, invocable and
+never restated here, is the `worktrees` skill:
+`~/.claude/skills/worktrees/SKILL.md`.
 
 ## Guards
 
@@ -249,11 +219,9 @@ three malformed shapes, eligibility per group — `~/.claude/references/phase-re
 ### Uncommitted-Work Gate (MANDATORY)
 For each eligible `sdd-apply` round that will use worktree isolation, immediately after
 `validate-parallel-marks.js` and **before** the orchestrator reads `HEAD` as that round's `base`,
-inspect the round's **immediate container's** uncommitted changes — the change workspace's tree when
-change-level isolation is active, the main repo's when it is not
-(`contracts/uncommitted-gate-follows-the-container.md`). Clean tree, or dirty with no relevant
+inspect the main repo's uncommitted changes — always. Clean tree, or dirty with no relevant
 intersection → silent, nothing to do. Dirty and relevant → present exactly three outcomes (commit first
-· continue anyway · work on that same container's branch without a worktree) and dispatch nothing until
+· continue anyway · work on the working branch without a worktree) and dispatch nothing until
 the user picks one; picking "continue anyway" leaves a trace the
 consolidation run records. Those three outcomes are presented through the shared walkthrough in
 `~/.claude/references/gate-presentation.md`, anchored to the dirty paths `git status --porcelain`

@@ -119,10 +119,6 @@ The active domains are listed in the **"Active domains — load on demand"** ind
 1. **Before creating or modifying the first file of a domain's material** — code, tests, config, design assets. This trigger fires in EVERY lane, `direct` included, and is not conditional on having run intake, classified anything, or entered the flow at all. If you are about to edit, you load first.
 2. **When intake classifies the request**, for work that does go through the flow.
 
-With change-level isolation active (see "Lanes" above), this same first-file trigger is also when
-the change workspace opens for direct/ad-hoc work — before this first file, not after: see the
-orchestrator's "Change Workspace (opt-in)" section below for what opens and how.
-
 **READ that domain's fragment (`~/.claude/matecito-ai/domains/<id>.md`) before applying its rules, dispatching its intake, or writing anything.** The `direct` lane does NOT exempt you: it is the shortest path to the code, which makes it the one where an unloaded fragment does the most damage. A summary does not count, and neither does the domain's name in the index above — the rules are in the file.
 
 ### Ecosystem (matecito-ai)
@@ -145,16 +141,6 @@ it is still confirmed as a whole, at the orchestrator's Brief Confirmation Gate)
   and none is optional. Nothing about a request's size, phrasing, or grammatical form changes this.
 - **`direct`** — runs only when the user explicitly asks for direct/ad-hoc work. No flow phase runs.
   Trivial or imperative phrasing is not, by itself, an explicit ask.
-
-<!-- matecito-ai: see `structure/change-isolation-activation-flag.md` (development's binding of this flag). -->
-**Change-level workspace isolation is decided the same way as `direct`: only on an explicit request,
-never by default.** For in-flow work, `sdd-intake` decides it and reports it with the rest of the
-brief's decision flags; no gate confirms it **as an item of its own** — it is neither offered nor
-walked separately, and it travels inside the brief the Brief Confirmation Gate offers as a whole, so a
-correction to it is written like any other correction to the brief. For direct/ad-hoc work, the
-explicit request itself is the only confirmation — a request that never asked for it means isolation
-stays inactive, and nothing downstream assumes otherwise. See the orchestrator's "Change Workspace
-(opt-in)" section below for what isolation does once it is active.
 
 ### Feature discovery (general behavior, outside the flow)
 Max 3 questions per message, grouped, one round. Only what can't be inferred. If the request already has enough detail, start directly. Large feature → brief plan before coding.
@@ -347,9 +333,9 @@ Every domain MUST declare that row. A fragment without it leaves this guard with
 
 The intake brief is what every later phase reads as this change's confirmed scope, so it gets
 confirmed before any of them runs. When intake returns, the orchestrator stops here: it puts the brief
-to the user as **one** question, and dispatches nothing — and opens no change workspace — until the
-answer arrives. Nothing waives this stop: not how obvious the brief looks, not that phases otherwise
-run back-to-back (see "Execution" below).
+to the user as **one** question, and dispatches nothing until the answer arrives. Nothing waives this
+stop: not how obvious the brief looks, not that phases otherwise run back-to-back (see "Execution"
+below).
 
 **One item, one question.** The brief is exactly **one** ratifiable item, presented through
 `~/.claude/references/gate-presentation.md` — this section states no presentation of its own. That
@@ -358,8 +344,8 @@ index, no "confirm the rest". The item's **anchor** is the brief's own artifact 
 is one line carrying intake's reading of the request alone. Beneath it print the item's field lines,
 one per line, in the brief's own order, each as `· field: {name} — {value}` — and **which lines those
 are is enumerated here, not left to whoever presents**: the brief's `Type`, then every decided flag
-(`Diagram`, `UI test`, `Components` where the axis is declared, `Worktree isolation`). `Domains
-touched` is the one line of `### Classification` that never prints. An orchestrator that has only this
+(`Diagram`, `UI test`, `Components` where the axis is declared). `Domains touched` is the one line of
+`### Classification` that never prints. An orchestrator that has only this
 text — no memory of why the list is what it is — must be able to produce the right lines from it, which
 is exactly what printing the whole classification block gets wrong. Asking to see the detail retrieves
 the whole brief through that anchor, so the one-line summary hides nothing. No decision flag is ever offered as an item of its own —
@@ -371,7 +357,7 @@ line of what it costs:
 
 | Answer | What it costs |
 | --- | --- |
-| **Accept as-is** | the flow proceeds on this brief — the change workspace opens first when the brief carries isolation as active, then the next phase is dispatched |
+| **Accept as-is** | the flow proceeds on this brief — the next phase is dispatched |
 | **Correct it** | you write what is wrong, in prose; intake runs again and this gate runs again over what comes back |
 
 There is no third answer: nothing here cancels the change. An answer that is neither an acceptance nor
@@ -402,44 +388,6 @@ When decision records are active: if the brief came back `status: blocked` (conf
 ### Artifact Store Mode
 
 On first flow command in a session, detect: engram available → `engram`, else `none`. Cache it; pass as `artifact_store.mode` to every sub-agent launch.
-
-### Change Workspace (opt-in)
-
-When change-level isolation is active for this change (see "Lanes" above), the orchestrator opens
-a dedicated **change workspace** — a separate copy of the project, on its own line of history, where
-every phase's work for this change lands instead of the original working tree. With isolation inactive,
-none of this applies: every path behaves exactly as it did before this section existed.
-
-**When it opens — exactly once per change.** In the flow, once the brief is confirmed at the Brief
-Confirmation Gate, before the next phase is dispatched. Outside the
-flow — direct or ad-hoc work, where no brief exists — right before the first file of the work is created
-or modified (the same trigger the kernel already fires for domain-fragment loading; see "Domain
-resolution & on-demand loading" above). A change whose workspace is already open never gets a second
-one; a later phase, or a resumed session, reuses the one that exists.
-
-**While it is open.** A session's own working directory is fixed at start and never relocates — every
-phase keeps running from wherever it was launched and reaches the workspace by its absolute path
-instead. That is why the workspace has to be **handed** to each phase, not discovered: every phase
-dispatch prompt — including one that only reads — carries the workspace's location, so each step
-resolves paths and runs its checks against the tree the work is actually in, never the original one. A
-parallel implementation batch dispatched while the workspace is open nests inside it instead of on the
-original branch: the round's base becomes the workspace's own current state, and its consolidation run
-integrates into the workspace, never the original branch. The active domain fragment defines the
-concrete mechanism and the exact line a dispatch prompt carries.
-
-**Who integrates, and when.** Only the orchestrator integrates the change workspace back into the
-original branch — exactly once, after the change's pipeline has finished (after archive, in-flow; or
-when the requested work is reported done, for direct/ad-hoc). No phase performs this or anticipates it.
-When the integration cannot complete cleanly, the orchestrator does not force it through: it attempts
-the domain's own recovery step once, and if that also fails, it reports to the user exactly what
-conflicts — which file, in which commit, which side each version comes from — and asks them to choose a
-way forward, with a recommendation, rather than picking one for them. The workspace and the original
-branch are both left intact on every failure path, at every step of this — nothing is ever forced past a
-conflict.
-
-**Cleanup.** After a clean integration, the workspace is discarded the same way a per-task workspace
-already is once its work lands. After a failed one, everything is kept exactly as it was, for
-inspection.
 
 ### Side Discussion (opt-in)
 
