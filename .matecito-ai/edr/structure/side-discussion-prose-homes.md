@@ -18,6 +18,3 @@ Todo en el kernel, con la forma de `### Change Workspace (opt-in)` — descartad
 
 ## Consecuencias
 Dos archivos en vez de uno, pero ninguno de los dos duplica lo que el otro ya dice: el kernel dice qué es y cuándo, la referencia dice cómo. El kernel no crece con el detalle de un mecanismo de bajo uso.
-
-## Relacionados
-- `relacionado-con` → [change-workspace-prose-homes.md](change-workspace-prose-homes.md) — mismo criterio de reparto (política neutral en el kernel, mecanismo al lado), aplicado antes a otro mecanismo del orquestador.

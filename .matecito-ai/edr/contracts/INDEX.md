@@ -16,8 +16,6 @@ Decisiones sobre los contratos entre piezas del ecosistema: qué forma tiene lo 
 | [closing-line-only-for-a-pending-decision.md](closing-line-only-for-a-pending-decision.md) | Accepted | Te tienta cerrar una respuesta ofreciendo ayuda, o vas a decidir si una pregunta de cierre está permitida. |
 | [plain-register-over-technical-neutral.md](plain-register-over-technical-neutral.md) | Accepted | Vas a describir el registro de una zona de tono y te tienta usar una etiqueta técnica interna en vez de una instrucción positiva. |
 | [emit-in-english-present-translated.md](emit-in-english-present-translated.md) | Accepted | Vas a decidir si un aviso interno de una línea se traduce igual que el material gate-facing. |
-| [uncommitted-gate-follows-the-container.md](uncommitted-gate-follows-the-container.md) | Accepted | Vas a tocar qué árbol inspecciona un chequeo cuando el aislamiento anidado puede desplazar cuál es el contenedor relevante. |
-| [workspace-forwarded-in-dispatch.md](workspace-forwarded-in-dispatch.md) | Accepted | Vas a tocar cómo una fase se entera de dónde está el espacio de trabajo en el que tiene que operar. |
 | [gate-summary-cap-in-characters.md](gate-summary-cap-in-characters.md) | Accepted | Vas a tocar el límite de longitud de un resumen de ítem en un gate, o en qué momento del ciclo de vida del retorno se aplica ese chequeo. |
 | [anchor-token-free-form.md](anchor-token-free-form.md) | Accepted | Vas a validar (o te tienta validar) la forma del token de ancla de un ítem de gate. |
 | [subverifier-item-shape-single-declaration.md](subverifier-item-shape-single-declaration.md) | Accepted | Vas a tocar la forma de un hallazgo de sub-verificador, o el prompt de despacho de uno de los siete. |
@@ -60,6 +58,10 @@ Decisiones sobre los contratos entre piezas del ecosistema: qué forma tiene lo 
 | [shortcuts-named-by-shape.md](shortcuts-named-by-shape.md) | Accepted | Vas a tocar la sección `Open question = blocked`, o a documentar un atajo nuevo que la rodea. |
 | [contract-shape-forwarding-is-not-decision-forwarding.md](contract-shape-forwarding-is-not-decision-forwarding.md) | Accepted | Vas a tocar el forwarding de una decisión o de una forma de contrato ratificada de vuelta a la fase que la propuso. |
 | [omitted-section-examples-are-return-sections.md](omitted-section-examples-are-return-sections.md) | Accepted | Vas a agregar o revisar un ejemplo de sección condicional legítimamente ausente en el Unresolved Decisions Guard. |
+| [turn-claimed-by-explicit-call.md](turn-claimed-by-explicit-call.md) | Accepted | Vas a tocar cómo se toma o se libera el turno de rama compartida, o te tienta agregar un mecanismo que lo detecte automáticamente. |
+| [turn-release-keyed-to-the-claim-token.md](turn-release-keyed-to-the-claim-token.md) | Accepted | Vas a tocar qué autoriza una liberación del turno de rama compartida. |
+| [turn-release-exit-code-is-cleanup-not-verdict.md](turn-release-exit-code-is-cleanup-not-verdict.md) | Accepted | Vas a tocar el código de salida de `turn release`, o a interpretar qué significa un exit distinto de cero. |
+| [merge-turn-holder-token.md](merge-turn-holder-token.md) | Accepted | Vas a tocar cómo se representa el valor holder del turno de rama compartida. |
 
 ## No aplican en este dominio
 

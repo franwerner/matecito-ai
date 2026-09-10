@@ -6,6 +6,12 @@
 ## Contexto
 two-lanes-fixed-flow retira el modelo de cuatro lanes (direct/reduced/full/custom) y el fork/INTAKE GATE que los seleccionaba, reemplazándolos por dos lanes fijos sin gate de confirmación de scope. Dos filas de navegación en los índices de los stores durables seguían nombrando el mecanismo retirado por su nombre: `.matecito-ai/edr/structure/INDEX.md:23`, la celda "Consultá cuando..." de `change-isolation-activation-flag.md`, y `.matecito-ai/development-specs/rule/INDEX.md:34`, la celda de descripción de `intake-brief-components-line.md`. La tarea 6.14 necesitaba decidir si el sweep final del cambio alcanza esas dos celdas de navegación, y si alcanza además a una tercera candidata, `.matecito-ai/edr/contracts/side-discussion-conclusion-is-not-a-record.md:10`, que sigue leyendo "se ratifica una vez en el gate del lane".
 
+**Nota (port-turn-mechanism):** `change-isolation-activation-flag.md`, nombrado arriba, fue retirado en
+ese cambio posterior — el aislamiento por espacio de trabajo que gobernaba dejó de existir. La celda de
+`.matecito-ai/edr/structure/INDEX.md:23` que este registro describe ya no existe tampoco (su fila se
+eliminó junto con el archivo); la mención sigue siendo válida como ejemplo histórico del sweep de
+vocabulario de lane, no como cita resoluble.
+
 ## Decisión
 El sweep alcanza las dos celdas de navegación y deja la tercera intacta. IN: `.matecito-ai/edr/structure/INDEX.md:23` y `.matecito-ai/development-specs/rule/INDEX.md:34` son filas de navegación de records que este mismo cambio reescribe — su celda "leé esto cuando..." apuntaba a un fork y a un gate que ya no existen, así que quedarían apuntando a algo que no resuelve si no se reescribían. Ambas se reescriben para no nombrar el mecanismo retirado. OUT: `.matecito-ai/edr/contracts/side-discussion-conclusion-is-not-a-record.md:10` queda tal cual — la regla que enuncia (una conclusión de discusión lateral que zanja una pregunta arquitectónica entra al camino existente del flujo, se ratifica una vez y `sdd-apply` materializa el EDR) sigue siendo correcta palabra por palabra salvo por el sustantivo "el gate del lane", que ahora es una etiqueta vieja para el mismo mecanismo (un único gate por fase, sin fork de lane). Ambos criterios ya estaban ratificados antes de esta tarea, no se re-deciden acá: el criterio residuo-vs-defecto viene de `structure/retired-vocabulary-in-record-stores.md`, y el criterio de cuándo un puntero stale sí entra al sweep viene de `structure/gating-vocabulary-sweep-scope.md`.
 

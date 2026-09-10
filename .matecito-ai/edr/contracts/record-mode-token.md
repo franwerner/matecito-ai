@@ -6,6 +6,10 @@
 ## Contexto
 El mecanismo de captura in-flow sólo sabía crear un EDR nuevo. No existía forma de que un cambio in-flow editara un EDR Accepted ya existente, y esto dejó sin camino formal ediciones como las de Slice F sobre structure/change-isolation-activation-flag.md y structure/change-level-worktree-isolation.md.
 
+**Nota (port-turn-mechanism):** ambos registros nombrados arriba fueron retirados en ese cambio — el
+aislamiento por espacio de trabajo que cada uno gobernaba dejó de existir. La mención sigue siendo válida
+como ejemplo histórico de por qué `modify` hacía falta; no es una cita resoluble y no se repara.
+
 ## Decisión
 Una proposal declara `· record-mode: create | modify` junto a `· record:` en el ítem de `### New Decisions` de sdd-design. Closed value set pero sin `passing:` — cualquier valor declarado es legal; sólo la ausencia falla `TOKEN-MISSING`. `sdd-apply` Step 4b ramifica sobre el token: `create` son los cuatro pasos de siempre (render, escribir, aplicar filas de INDEX); `modify` abre el archivo nombrado, edita sólo las cláusulas que la proposal ratificada nombra, corre `validate-artifact.js`, y no llama a `render-artifact.js` ni agrega fila de INDEX. Una declaración que no coincide con la realidad del disco (`modify` sobre un archivo inexistente, o `create` sobre uno que ya existe) es una falla — nunca un cambio silencioso de rama, nunca un overwrite. El token es de ruteo, leído verbatim por `sdd-apply` — no un veredicto que el orquestador clasifica: sigue el precedente de `record:`, no el de `structure/verdict-classified-by-the-orchestrator.md`.
 

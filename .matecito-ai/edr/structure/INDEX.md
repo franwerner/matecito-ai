@@ -14,16 +14,10 @@ Decisiones sobre cómo se organiza el payload del repo (dónde vive cada concept
 | [root-index-cardinality-per-domain-type.md](root-index-cardinality-per-domain-type.md) | Accepted | Vas a materializar una tanda de artefactos durables y tenés que actualizar los índices del store. |
 | [dispatch-batch-bound-integration.md](dispatch-batch-bound-integration.md) | Accepted | Vas a tocar cómo se despacha o integra un batch de implementación paralelo. |
 | [consolidation-run-is-the-integrator.md](consolidation-run-is-the-integrator.md) | Accepted | Vas a decidir quién ejecuta una integración, en cualquiera de sus dos niveles. |
-| [change-level-worktree-isolation.md](change-level-worktree-isolation.md) | Accepted | Vas a tocar cómo se aísla un cambio completo del resto del repo, o cuándo se abre y se integra ese aislamiento. |
 | [phase-fanout-two-cases.md](phase-fanout-two-cases.md) | Accepted | Vas a tocar la prosa de fan-out del pipeline o a agregar un tercer caso de despacho concurrente. |
 | [prose-register-single-home.md](prose-register-single-home.md) | Accepted | Vas a agregar o editar una instrucción de registro de prosa gate-facing y te tienta copiarla en más de un contrato de retorno. |
 | [pr-base-branch-rule-reach.md](pr-base-branch-rule-reach.md) | Accepted | Vas a tocar la descripción de una estrategia de cadena de PRs (stacked-to-main, feature-branch-chain) o a agregar una nueva. |
 | [pr-base-explicit-argument-form.md](pr-base-explicit-argument-form.md) | Accepted | Vas a documentar o revisar cómo se abre un PR (por el flujo o a mano) y te tienta enunciarlo como norma en vez de argumento obligatorio. |
-| [change-isolation-activation-flag.md](change-isolation-activation-flag.md) | Accepted | Vas a tocar cómo se activa el aislamiento por cambio, o cómo se decide y se reporta esa elección. |
-| [change-workspace-identity.md](change-workspace-identity.md) | Accepted | Vas a tocar la identidad (rama, directorio) del espacio de trabajo aislado de un cambio, o cómo se lo mantiene fuera de la vista de git. |
-| [change-level-integration-act.md](change-level-integration-act.md) | Accepted | Vas a tocar cómo se cierra el ciclo de un cambio con aislamiento activo, o cómo se maneja un conflicto al integrarlo. |
-| [change-workspace-cleanup.md](change-workspace-cleanup.md) | Accepted | Vas a tocar la limpieza del espacio de trabajo de un cambio, en cualquiera de sus dos resultados (integración limpia o fallida). |
-| [change-workspace-prose-homes.md](change-workspace-prose-homes.md) | Accepted | Vas a agregar o mover prosa de un mecanismo que toca el kernel, un dominio y una referencia de fase a la vez, y no sabés dónde va cada parte. |
 | [item-shaping-helper-seam.md](item-shaping-helper-seam.md) | Accepted | Vas a agregar una sección de retorno con ítems que renderiza como tabla, o a tocar cómo se imprime el adorno de un ítem. |
 | [footer-survives-the-sentinel.md](footer-survives-the-sentinel.md) | Accepted | Vas a agregar un footer de tabla que registra evidencia de un chequeo distinto al de las filas, y necesitás que sobreviva al retorno `None.` de una tabla vacía. |
 | [render-constraints-restated-for-subverifiers.md](render-constraints-restated-for-subverifiers.md) | Accepted | Vas a documentar una restricción que `render-return.js` impone sobre un campo que un sub-verificador de sdd-verify construye a mano. |
@@ -80,6 +74,14 @@ Decisiones sobre cómo se organiza el payload del repo (dónde vive cada concept
 | [short-guard-points-to-single-mechanism-file.md](short-guard-points-to-single-mechanism-file.md) | Accepted | Vas a tocar Parallel-Mark Validation o Uncommitted-Work Gate, o te tienta duplicar su mecanismo en el fragmento. |
 | [spec-always-reads-intake-for-ui-test.md](spec-always-reads-intake-for-ui-test.md) | Accepted | Vas a tocar si sdd-spec lee el intake brief siempre o sólo como fallback. |
 | [change-scoped-requirements-excluded-from-the-fold.md](change-scoped-requirements-excluded-from-the-fold.md) | Accepted | Vas a tocar cómo el paso que cierra un cambio decide qué requisitos del spec se pliegan en un capability-spec durable. |
+| [merge-turn-granularity.md](merge-turn-granularity.md) | Accepted | Vas a tocar en qué punto del loop de consolidación se reclama o se libera el turno de rama compartida. |
+| [merge-turn-wait-and-stop.md](merge-turn-wait-and-stop.md) | Accepted | Vas a tocar qué hace una corrida cuando encuentra el turno de rama compartida tomado. |
+| [merge-queue-lives-in-refs.md](merge-queue-lives-in-refs.md) | Accepted | Vas a tocar dónde vive la lista de espera del turno de rama compartida. |
+| [guard-queues-and-retries-agent-asks.md](guard-queues-and-retries-agent-asks.md) | Accepted | Vas a tocar la mecánica de cola y reintento de `turn claim`, o a decidir qué ve el que llama. |
+| [turn-mechanism-home-and-wiring-register.md](turn-mechanism-home-and-wiring-register.md) | Accepted | Vas a tocar dónde vive el mecanismo del turno de rama compartida, o dónde se cita cada punto de wiring. |
+| [manual-turn-procedure-retained-for-unguarded-sessions.md](manual-turn-procedure-retained-for-unguarded-sessions.md) | Accepted | Vas a tocar el procedimiento manual de claim/release para una sesión sin `matecito-ai` instalado. |
+| [ported-record-adapted-to-the-target-store.md](ported-record-adapted-to-the-target-store.md) | Accepted | Vas a portar un record a otro store y su premisa (un write-moment, una relación citada) deja de existir en el destino. |
+| [turn-port-sweep-reaches-five-more-sites.md](turn-port-sweep-reaches-five-more-sites.md) | Accepted | Vas a barrer vocabulario retirado y encontrás un sitio fuera del Scope original ratificado del cambio. |
 
 ## No aplican en este dominio
 
